@@ -13,6 +13,7 @@
 The input dialog box accepts a decimal representation of the desired character's code point.  If the code point is valid, its corresponding character will show up magnified in the box above.  On the other hand if a character isn't available in the font, a gray "`N/A`" question mark will take its place.
 
 In addition to manually adding code points, using the mouse wheel over the dialog scrolls through available characters, skipping missing ones along the way.  Once you find the right character, clicking the character's large preview will add it to either the macro or chat edit box.
+ http://saiket.wow.googlepages.com/UTFDialog.png
 
 == XML Entities ==
 A more general function of ‗UTF is the addition of XML character entity replacement in chat and macros.  If you type an entity into your chat edit box and hit the `[TAB]` key, that entity gets converted into the right character.  This system supports HTML 4.0 named character entities, as well as decimal and hexadecimal numeric references.  You can define custom named character entities on ‗UTF's "Custom Replacements" subcategory in the Interface Options menu, or disable entities entirely from ‗UTF's main Interface Options menu.
