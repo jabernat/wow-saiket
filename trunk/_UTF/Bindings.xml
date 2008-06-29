@@ -1,0 +1,5 @@
+<Bindings>
+	<Binding name="_UTF_TOGGLE" header="_UTF_KEYS">
+		_UTF.Toggle();
+	</Binding>
+</Bindings>
