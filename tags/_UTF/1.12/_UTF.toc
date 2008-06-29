@@ -1,0 +1,18 @@
+## Interface: 11200
+## Title: _UTF
+## Version: 1.12
+## Notes: Unicode input dialog.
+## Author: Saiket
+## SavedVariables: _UTFOptions
+## OptionalDeps: _Dev
+## DefaultState: disabled
+Localization.lua
+
+_UTF.lua
+
+_UTF.CharacterEntities.lua
+
+_UTF.Browse.lua
+
+_UTF.xml
+_UTF.Browse.xml
