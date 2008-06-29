@@ -253,8 +253,10 @@ _UTF.CharacterEntities = {
 	[ "clubs" ] = 9827;
 	[ "hearts" ] = 9829;
 	[ "diams" ] = 9830;
+};
 
-	-- These are here for convenience only and aren't part of the HTML spec
+
+_UTFOptions.CharacterEntities = {
 	[ "note" ] = 9834;
 	[ "notes" ] = 9835;
 	[ "sun" ] = 9788;
@@ -265,4 +267,12 @@ _UTF.CharacterEntities = {
 	[ "club" ] = 9827;
 	[ "spade" ] = 9824;
 	[ "smile" ] = 9787;
-}; -- End _UTF.CharacterEntities
+	[ "tm" ] = 8482;
+	-- Art blocks
+	[ "b1" ] = 9617; -- Light block
+	[ "b2" ] = 9618; -- Medium block
+	[ "b3" ] = 9619; -- Heavy block
+	[ "b4" ] = 9608; -- Solid block
+	[ "r" ] = 9658; -- Right
+	[ "l" ] = 9668; -- Left
+};
