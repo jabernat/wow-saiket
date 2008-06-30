@@ -1,0 +1,221 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\..\FrameXML\UI.xsd">
+<!-- _Link.xml -->
+
+	<!-- Editbox Template -->
+	<EditBox name="_LinkEditBoxTemplate" autoFocus="false" virtual="true">
+		<Size>
+			<AbsDimension x="80" y="32"/>
+		</Size>
+
+		<HitRectInsets>
+			<AbsInset left="0" right="0" top="6" bottom="6"/>
+		</HitRectInsets>
+
+		<Layers>
+			<Layer level="BACKGROUND">
+				<Texture file="Interface\ChatFrame\UI-ChatInputBorder-Left">
+					<Size>
+						<AbsDimension x="30" y="32"/>
+					</Size>
+					<Anchors>
+						<Anchor point="LEFT">
+							<Offset>
+								<AbsDimension x="-10" y="0"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+					<TexCoords left="0" right="0.1171875" top="0" bottom="1.0"/>
+				</Texture>
+				<Texture file="Interface\ChatFrame\UI-ChatInputBorder-Right">
+					<Size>
+						<AbsDimension x="30" y="32"/>
+					</Size>
+					<Anchors>
+						<Anchor point="RIGHT">
+							<Offset>
+								<AbsDimension x="10" y="0"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+					<TexCoords left="0.8828125" right="1.0" top="0" bottom="1.0"/>
+				</Texture>
+				<Texture file="Interface\ChatFrame\UI-ChatInputBorder-Left">
+					<Size>
+						<AbsDimension x="20" y="32"/>
+					</Size>
+					<Anchors>
+						<Anchor point="LEFT">
+							<Offset>
+								<AbsDimension x="10" y="0"/>
+							</Offset>
+						</Anchor>
+						<Anchor point="RIGHT">
+							<Offset>
+								<AbsDimension x="-10" y="0"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+					<TexCoords left="0.1171875" right="0.8046875" top="0" bottom="1.0"/>
+				</Texture>
+			</Layer>
+		</Layers>
+		<FontString inherits="ChatFontNormal"/>
+
+		<Scripts>
+			<OnEscapePressed>
+				_Link.EditBox.OnEscapePressed();
+			</OnEscapePressed>
+		</Scripts>
+	</EditBox>
+
+
+	<!-- Item ID Part EditBox Template -->
+	<EditBox name="_LinkItemPartEditBoxTemplate" inherits="_LinkEditBoxTemplate" numeric="true" letters="6" virtual="true">
+		<Size>
+			<AbsDimension x="52" y="32"/>
+		</Size>
+		<Scripts>
+			<OnTextChanged>
+				_Link.Item.OnTextChanged();
+			</OnTextChanged>
+		</Scripts>
+	</EditBox>
+
+
+	<!-- Prefix and Postfix Editbox Template -->
+	<EditBox name="_LinkTagEditBoxTemplate" inherits="_LinkEditBoxTemplate" virtual="true">
+		<Size>
+			<AbsDimension x="80" y="32"/>
+		</Size>
+		<Scripts>
+			<OnTextChanged>
+				_Link.Tag.OnTextChanged();
+			</OnTextChanged>
+		</Scripts>
+	</EditBox>
+
+
+
+
+	<!-- Main Frame -->
+	<Frame name="_LinkFrame" parent="UIParent" toplevel="true" frameStrata="DIALOG" movable="true" enableMouse="true" hidden="true">
+		<TitleRegion setAllPoints="true"/>
+		<Size>
+			<AbsDimension x="256" y="80"/>
+		</Size>
+		<Anchors>
+			<Anchor point="CENTER"/>
+		</Anchors>
+
+		<Backdrop bgFile="Interface\DialogFrame\UI-DialogBox-Background" edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true">
+			<BackgroundInsets>
+				<AbsInset left="11" right="12" top="12" bottom="11"/>
+			</BackgroundInsets>
+			<TileSize>
+				<AbsValue val="32"/>
+			</TileSize>
+			<EdgeSize>
+				<AbsValue val="32"/>
+			</EdgeSize>
+		</Backdrop>
+
+		<Frames>
+			<Button name="$parentCloseButton" inherits="UIPanelCloseButton">
+				<Anchors>
+					<Anchor point="TOPRIGHT">
+						<Offset>
+							<AbsDimension x="-2" y="-2"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<HitRectInsets>
+					<AbsInset left="6" right="6" top="6" bottom="6"/>
+				</HitRectInsets>
+			</Button>
+
+
+			<ScrollingMessageFrame name="$parentPreview" fade="false" maxLines ="1" toplevel="true">
+				<Size>
+					<AbsDimension x="1" y="14"/>
+				</Size>
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset>
+							<AbsDimension x="14" y="-10"/>
+						</Offset>
+					</Anchor>
+					<Anchor point="RIGHT" relativeTo="$parentCloseButton" relativePoint="LEFT"/>
+				</Anchors>
+				<FontString inherits="ChatFontNormal" justifyH="LEFT"/>
+				<Scripts>
+					<OnHyperlinkClick>
+						_Link.Preview.OnHyperlinkClick();
+					</OnHyperlinkClick>
+				</Scripts>
+			</ScrollingMessageFrame >
+
+
+			<EditBox name="$parentItemPart1" inherits="_LinkItemPartEditBoxTemplate" id="1">
+				<Anchors>
+					<Anchor point="BOTTOMLEFT">
+						<Offset>
+							<AbsDimension x="12" y="2"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+			</EditBox>
+			<EditBox name="$parentItemPart2" inherits="_LinkItemPartEditBoxTemplate" id="2">
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="$parentItemPart1" relativePoint="RIGHT">
+						<Offset>
+							<AbsDimension x="8" y="0"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+			</EditBox>
+			<EditBox name="$parentItemPart3" inherits="_LinkItemPartEditBoxTemplate" id="3">
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="$parentItemPart2" relativePoint="RIGHT">
+						<Offset>
+							<AbsDimension x="8" y="0"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+			</EditBox>
+			<EditBox name="$parentItemPart4" inherits="_LinkItemPartEditBoxTemplate" id="4" letters="14">
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="$parentItemPart3" relativePoint="RIGHT">
+						<Offset>
+							<AbsDimension x="8" y="0"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+			</EditBox>
+
+
+			<EditBox name="$parentTagPre" inherits="_LinkTagEditBoxTemplate">
+				<Anchors>
+					<Anchor point="BOTTOMLEFT" relativeTo="$parentItemPart1" relativePoint="TOPLEFT">
+						<Offset>
+							<AbsDimension x="0" y="-10"/>
+						</Offset>
+					</Anchor>
+					<Anchor point="RIGHT" relativeTo="$parentItemPart2"/>
+				</Anchors>
+			</EditBox>
+			<EditBox name="$parentTagPost" inherits="_LinkTagEditBoxTemplate">
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="$parentTagPre" relativePoint="RIGHT">
+						<Offset>
+							<AbsDimension x="8" y="0"/>
+						</Offset>
+					</Anchor>
+					<Anchor point="RIGHT" relativeTo="$parentItemPart4"/>
+				</Anchors>
+			</EditBox>
+
+
+			<GameTooltip name="$parentTooltip" inherits="GameTooltipTemplate"/>
+		</Frames>
+	</Frame>
+</Ui>
