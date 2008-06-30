@@ -1,13 +1,19 @@
 --[[****************************************************************************
   * _Vendor by Saiket                                                          *
   * _Vendor.lua - Buys items for free just before servers restart.             *
+NOTE(
+Possibly hide WorldFrame and UIParent during last 5 seconds for max framerate.
+)
   ****************************************************************************]]
 
 
-_VendorOptions = {
+local _VendorOptionsOriginal = {
 	PriceCheck = true; -- Whether to validate costs of items as added
-	ExtraLeadTime = 0;
+	ExtraLeadTime = 1;
+	TimerDisplay = 60; -- Min seconds before timer display is shown
+	Version = select( 3, GetAddOnMetadata( "_Vendor", "Version" ):find( "^([%d.]+)" ) );
 };
+_VendorOptions = _VendorOptionsOriginal;
 
 
 
@@ -15,7 +21,11 @@ _VendorOptions = {
 local L = _VendorLocalization;
 local me = CreateFrame( "Frame", "_Vendor" );
 
+me.Timer = CreateFrame( "Cooldown" );
+me.LatencyStart = CreateFrame( "Cooldown", nil, me.Timer );
+me.LatencyEnd = CreateFrame( "Cooldown", nil, me.Timer );
 me.Tooltip = CreateFrame( "GameTooltip", "_VendorTooltip" );
+
 me.MerchantItemButtonOnModifiedClickBackup = MerchantItemButton_OnModifiedClick;
 
 local SlashSubCommands = {}; -- Hash of name (caps) to handler
@@ -65,9 +75,24 @@ end
   * Function: _Vendor.GetLeadTime                                              *
   * Description: Returns the approximate lead time based on various factors.   *
   ****************************************************************************]]
-function me.GetLeadTime ()
-	local Latency = ( select( 3, GetNetStats() ) / 1000 ) / 2; -- One-way latency in seconds
-	return Latency + _VendorOptions.ExtraLeadTime;
+do
+	local GetNetStats = GetNetStats;
+	local select = select;
+	function me.GetLeadTime ()
+		local Latency = ( select( 3, GetNetStats() ) / 1000 ) / 2; -- One-way latency in seconds
+		return Latency + _VendorOptions.ExtraLeadTime;
+	end
+end
+--[[****************************************************************************
+  * Function: _Vendor.SetFixedCooldown                                         *
+  * Description: Locks a cooldown frame at a given position.                   *
+  ****************************************************************************]]
+do
+	local Max = 2 ^ 22; -- Too far beyond this and something overflows
+	local GetTime = GetTime;
+	function me:SetFixedCooldown ( Position )
+		self:SetCooldown( GetTime() - Position * Max, Max );
+	end
 end
 
 
@@ -203,6 +228,9 @@ function me.Add ( Name, Quantity )
 	if ( ItemInfo[ Name ] ) then -- Recognized item
 		if ( me.CanAffordItem( Name, Quantity ) ) then
 			Items[ Name ] = Quantity;
+			if ( me:IsShown() and me.Timer.Max <= _VendorOptions.TimerDisplay ) then
+				me.Timer:Show();
+			end
 			return true;
 		else
 			me.Error( L.ERROR_ITEM_TOO_EXPENSIVE );
@@ -218,6 +246,9 @@ function me.Add ( Name, Quantity )
 				if ( me.CacheItemInfo( Index ) ) then -- Scammable
 					if ( me.CanAffordItem( Name, Quantity ) ) then
 						Items[ Name ] = Quantity;
+						if ( me:IsShown() and me.Timer.Max <= _VendorOptions.TimerDisplay ) then
+							me.Timer:Show();
+						end
 						return true;
 					else
 						me.Error( L.ERROR_ITEM_TOO_EXPENSIVE );
@@ -239,10 +270,13 @@ end
   * Function: _Vendor.RemoveAll                                                *
   * Description: Removes all items from the queue of things to buy.            *
   ****************************************************************************]]
-function me.RemoveAll ()
+function me.RemoveAll ( KeepTimer )
 	if ( next( Items ) ) then
 		for Name in pairs( Items ) do
 			Items[ Name ] = nil;
+		end
+		if ( not KeepTimer ) then
+			me.Timer:Hide();
 		end
 		return true;
 	else
@@ -257,6 +291,9 @@ function me.Remove ( Name )
 	Name = Name:upper();
 	if ( Items[ Name ] ) then
 		Items[ Name ] = nil;
+		if ( not next( Items ) ) then -- Now empty
+			me.Timer:Hide();
+		end
 		return true;
 	else
 		me.Error( L.ERROR_ITEM_NOT_ADDED );
@@ -267,29 +304,31 @@ end
   * Description: Scans the current vendor and buys all given items.            *
   ****************************************************************************]]
 do
+	local Print = me.Print;
 	local GetMerchantItemInfo = GetMerchantItemInfo;
 	local BuyMerchantItem = BuyMerchantItem;
 	local min = min;
 	function me.Buy ()
 		if ( next( Items ) ) then -- At least one
 			if ( me.IsMerchantOpen() ) then
-				local Name, StackCount;
+				local Name, BuyCount;
 				for Index = 1, GetMerchantNumItems() do
 					Name = ( GetMerchantItemInfo( Index ) or "" ):upper();
 					Count = Items[ Name ];
 
 					if ( Count ) then -- Buy at least one
 						-- Buy in stacks if possible
-						StackCount = ItemInfo[ Name ].StackSize;
 						while ( Count > 0 ) do
-							BuyMerchantItem( Index, min( Count, StackCount ) );
-							Count = Count - StackCount;
+							BuyCount = min( Count, ItemInfo[ Name ].StackSize );
+							Print( L.MESSAGE_BUY_FORMAT:format( Name, BuyCount ), nil, GREEN_FONT_COLOR );
+							BuyMerchantItem( Index, BuyCount );
+							Count = Count - BuyCount;
 						end
 						Items[ Name ] = 0; -- Clear without modifying hash table mid-loop
 					end
 				end
 
-				me.RemoveAll(); -- Clear out zeroed items
+				me.RemoveAll( true ); -- Clear out zeroed items
 			else
 				me.Error( L.ERROR_NO_VENDOR );
 			end
@@ -461,24 +500,57 @@ end
 
 
 --[[****************************************************************************
+  * Function: _Vendor.ADDON_LOADED                                             *
+  ****************************************************************************]]
+function me:ADDON_LOADED ( Event, AddOn )
+	if ( AddOn == "_Vendor" ) then
+		me:UnregisterEvent( "ADDON_LOADED" );
+		if ( _VendorOptions.Version ~= _VendorOptionsOriginal.Version ) then
+			-- Reset settings
+			_VendorOptions = _VendorOptionsOriginal;
+		end
+	end
+end
+--[[****************************************************************************
+  * Function: _Vendor.CHAT_MSG_SYSTEM                                          *
+  ****************************************************************************]]
+function me:CHAT_MSG_SYSTEM ( Event, Message )
+	local Time = L.ALERT_TIMES[ select( 3, Message:find( L.SHUTDOWN_PATTERN ) ) or select( 3, Message:find( L.RESTART_PATTERN ) ) ];
+
+	if ( Time ) then
+		local LeadTime = me.GetLeadTime();
+
+		me.TimeLeft = Time - LeadTime;
+		me:Show();
+
+		me.Timer.Max = Time;
+		me.Timer:SetCooldown( GetTime() - LeadTime, Time );
+		me.SetFixedCooldown( me.LatencyStart, LeadTime / Time );
+
+		if ( next( Items ) ) then -- At least one item
+			local Start, End = Message:find( SERVER_MESSAGE_PREFIX, 1, true );
+			if ( Start ) then
+				Message = Message:sub( 1, Start - 1 )..Message:sub( End + 1, -1 );
+			end
+			me.Error( Message:trim(), NORMAL_FONT_COLOR );
+
+			if ( Time > _VendorOptions.TimerDisplay ) then
+				me.Timer:Hide();
+			end
+		else
+			me.Timer:Hide();
+		end
+	end
+end
+--[[****************************************************************************
   * Function: _Vendor:OnEvent                                                  *
   * Description: Global event handler.                                         *
   ****************************************************************************]]
-function me:OnEvent ( Event, Message )
-	if ( Event == "CHAT_MSG_SYSTEM" ) then
-		local Time = L.ALERT_TIMES[ select( 3, Message:find( L.SHUTDOWN_PATTERN ) ) or select( 3, Message:find( L.RESTART_PATTERN ) ) ];
-
-		if ( Time ) then
-			if ( next( Items ) ) then -- At least one item
-				local Start, End = Message:find( SERVER_MESSAGE_PREFIX, 1, true );
-				if ( Start ) then
-					Message = Message:sub( 1, Start - 1 )..Message:sub( End + 1, -1 );
-				end
-				me.Error( Message:trim(), NORMAL_FONT_COLOR );
-			end
-
-			me.TimeLeft = Time - me.GetLeadTime();
-			me:Show();
+do
+	local type = type;
+	function me:OnEvent ( Event, ... )
+		if ( type( self[ Event ] ) == "function" ) then
+			self[ Event ]( self, Event, ... );
 		end
 	end
 end
@@ -492,7 +564,30 @@ function me:OnUpdate ( Elapsed )
 	if ( me.TimeLeft <= me.GetLeadTime() ) then
 		me.Buy();
 		me:Hide();
+		me.Timer:SetReverse( false ); -- Allow cooldown to finish correctly
 	end
+end
+
+
+--[[****************************************************************************
+  * Function: _Vendor:TimerOnUpdate                                            *
+  * Description: Update handler that updates the end latency display.          *
+  ****************************************************************************]]
+function me:TimerOnUpdate ( Elapsed )
+	self.LastUpdate = self.LastUpdate + Elapsed;
+
+	-- Only update once per second
+	if ( self.LastUpdate >= 1 ) then
+		self.LastUpdate = 0;
+		me.SetFixedCooldown( me.LatencyEnd, 1 - me.GetLeadTime() / self.Max );
+	end
+end
+--[[****************************************************************************
+  * Function: _Vendor:TimerOnShow                                              *
+  * Description: Instantly updates the end latency timer.                      *
+  ****************************************************************************]]
+function me:TimerOnShow ()
+	self.LastUpdate = 1; -- Reset update timer
 end
 
 
@@ -506,8 +601,19 @@ do
 	me:SetScript( "OnEvent", me.OnEvent );
 	me:SetScript( "OnUpdate", me.OnUpdate );
 	me:RegisterEvent( "CHAT_MSG_SYSTEM" );
-
+	me:RegisterEvent( "ADDON_LOADED" );
 	me:Hide();
+
+	local Timer = me.Timer;
+	Timer:SetScript( "OnUpdate", me.TimerOnUpdate );
+	Timer:SetScript( "OnShow", me.TimerOnShow );
+	Timer:Hide();
+	Timer:SetAllPoints();
+	Timer:SetFrameStrata( "BACKGROUND" );
+	Timer:SetReverse( true );
+	me.LatencyStart:SetReverse( true );
+	me.LatencyStart:SetAllPoints();
+	me.LatencyEnd:SetAllPoints();
 
 	me.Tooltip:SetOwner( WorldFrame, "ANCHOR_NONE" );
 	-- Allow blank template to dynamically add new lines based on these
