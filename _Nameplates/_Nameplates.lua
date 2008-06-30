@@ -21,8 +21,7 @@ _Nameplates = {
 	ShowFriendly = FRIENDNAMEPLATES_ON;
 	ShowHostile  = NAMEPLATES_ON;
 
-	NameplateCount = 0; -- Number of nameplates found
-	ChildCount     = 0; -- Counts children of WorldFrame, determines when to scan them
+	ChildCount = 0; -- Counts children of WorldFrame, determines when to scan them
 	Frames = {}; -- Keys are nameplates, values are buttons
 
 
@@ -83,12 +82,85 @@ end;
 
 
 --[[****************************************************************************
-  * Function: _Nameplates.InitializeFrame                                      *
+  * Function: _Nameplates.OnUpdate                                             *
+  * Description: Monitors children of WorldFrame to initialize new nameplates, *
+  *   updates visible buttons to match their nameplates, and sorts them into   *
+  *   the Friendly/Other columns.                                              *
+  ****************************************************************************]]
+OnUpdate = function ()
+	NewChildCount = WorldFrame:GetNumChildren();
+	if ( NewChildCount > _Nameplates.ChildCount ) then -- A frame was added
+		_Nameplates.ChildCount = NewChildCount;
+
+		for _, Frame in ipairs( { WorldFrame:GetChildren() } ) do
+			_Nameplates.Nameplate.Initialize( Frame );
+		end
+	end
+
+	for Nameplate, Button in pairs( _Nameplates.Frames ) do
+		if ( Nameplate:IsShown() ) then
+			_Nameplates.Button.Update( Button );
+			_Nameplates.Nameplate.Update( Nameplate );
+		else
+			_Nameplates.Column.RemoveButton( Button );
+		end
+	end
+end;
+--[[****************************************************************************
+  * Function: _Nameplates.OnEvent                                              *
+  * Description: Synchronizes nameplate settings on variables loaded.          *
+  ****************************************************************************]]
+OnEvent = function ()
+	if ( event == "VARIABLES_LOADED" ) then
+		_Nameplates.UpdateEnabled( true ); -- Synchronize
+	end
+end;
+--[[****************************************************************************
+  * Function: _Nameplates.OnLoad                                               *
+  * Description: Function hooks and event registers.                           *
+  ****************************************************************************]]
+OnLoad = function ()
+	-- Hook the nameplate show/hide functions
+	ShowNameplates       = _Nameplates.ShowNameplates;
+	HideNameplates       = _Nameplates.HideNameplates;
+	ShowFriendNameplates = _Nameplates.ShowFriendNameplates;
+	HideFriendNameplates = _Nameplates.HideFriendNameplates;
+
+	_Nameplates.Nameplate.Font:SetFont( NAMEPLATE_FONT, 10 );
+
+	-- Calculate colors for button text based on nameplate bar color
+	for Index, Color in ipairs( _Nameplates.Nameplate.Colors ) do
+		_Nameplates.Button.TextColors[ Index ]          = { r = 1 - ( 1 - Color.r ) / 2; g = 1 - ( 1 - Color.g ) / 2; b = 1 - ( 1 - Color.b ) / 2; };
+		_Nameplates.Button.TextHighlightColors[ Index ] = { r = 1 - ( 1 - Color.r ) / 3; g = 1 - ( 1 - Color.g ) / 3; b = 1 - ( 1 - Color.b ) / 3; };
+	end
+
+	_Nameplates.UpdateEnabled( true ); -- Synchronize
+	this:RegisterEvent( "VARIABLES_LOADED" );
+end;
+
+
+
+
+--------------------------------------------------------------------------------
+-- _Nameplates.Nameplate
+------------------------
+
+	Nameplate = {
+		Font = CreateFont( "_NameplatesNameplateFont" ); -- Set up in _Nameplates.OnLoad
+		Colors = { -- Used only to calculate colors for button text
+			{ r = 0, g = 0, b = 1 }, -- Blue
+			{ r = 0, g = 1, b = 0 }, -- Green
+			{ r = 1, g = 1, b = 0 }, -- Yellow
+			{ r = 1, g = 0, b = 0 }  -- Red
+		};
+
+--[[****************************************************************************
+  * Function: _Nameplates.Nameplate.Initialize                                 *
   * Description: Takes a potential nameplate frame and initializes it if       *
   *   recognized. Child frames and regions are identified, and a button is     *
   *   created to complement the nameplate in the nearby units list.            *
   ****************************************************************************]]
-InitializeFrame = function ( Nameplate )
+Initialize = function ( Nameplate )
 	if ( Nameplate:GetObjectType() ~= "Button" or Nameplate:GetName() or _Nameplates.Frames[ Nameplate ] ) then
 		return;
 	end
@@ -136,7 +208,8 @@ InitializeFrame = function ( Nameplate )
 		Nameplate:SetScript( "OnEnter", _Nameplates.Nameplate.OnEnter );
 		Nameplate:SetScript( "OnLeave", _Nameplates.Nameplate.OnLeave );
 		-- Adjust the name and icon
-		Name:SetAllPoints( Nameplate );
+		Name:SetAllPoints( Bar );
+		Name:SetFontObject( _Nameplates.Nameplate.Font );
 		Icon:SetWidth( 14 );
 		Icon:SetHeight( 14 );
 		-- Fix the border and outline textures
@@ -153,83 +226,34 @@ InitializeFrame = function ( Nameplate )
 		return true;
 	end
 end;
-
-
 --[[****************************************************************************
-  * Function: _Nameplates.OnUpdate                                             *
-  * Description: Monitors children of WorldFrame to initialize new nameplates, *
-  *   updates visible buttons to match their nameplates, and sorts them into   *
-  *   the Friendly/Other columns.                                              *
+  * Function: _Nameplates.Nameplate.GetColor                                   *
+  * Description: Returns a color index that represents the nameplate's color,  *
+  *   which should be used as an index in other color tables.                  *
   ****************************************************************************]]
-OnUpdate = function ()
-	NewChildCount = WorldFrame:GetNumChildren();
-	if ( NewChildCount > _Nameplates.ChildCount ) then -- A frame was added
-		_Nameplates.ChildCount = NewChildCount;
+GetColor = function ( Nameplate )
+	local R, G, B = Nameplate.Bar:GetStatusBarColor();
+	R, G, B = R > 0.9, G > 0.9, B > 0.9;
 
-		for _, Frame in ipairs( { WorldFrame:GetChildren() } ) do
-			_Nameplates.InitializeFrame( Frame );
-		end
-	end
-
-	for Nameplate, Button in pairs( _Nameplates.Frames ) do
-		if ( Nameplate:IsShown() ) then
-			local R, G, B = Nameplate.Bar:GetStatusBarColor();
-			_Nameplates.Column.AddButton( Button, _Nameplates.Column[ ( R > 0.9 and B < 0.1 and G < 0.1 ) and "Hostile" or "Friendly" ] );
-
-			Button:SetText( Nameplate.Name:GetText() );
-			Button:SetTextColor( 1 - ( 1 - R ) / 2, 1 - ( 1 - G ) / 2, 1 - ( 1 - B ) / 2 );
-			Button:SetHighlightTextColor( 1 - ( 1 - R ) / 3, 1 - ( 1 - G ) / 3, 1 - ( 1 - B ) / 3 );
-			Button:SetAlpha( Nameplate:GetAlpha() );
-			Button.Bar:SetMinMaxValues( Nameplate.Bar:GetMinMaxValues() );
-			Button.Bar:SetValue( Nameplate.Bar:GetValue() );
-			Nameplate:SetHeight( 14 );
-			Nameplate:EnableMouse( false );
-			Nameplate.Bar:SetAlpha( 0.75 );
-			Nameplate.Name:SetAlpha( 0.75 );
-			Nameplate.Level:SetAlpha( 0.5 );
-			if ( Nameplate.Icon:IsShown() ) then
-				Button.Icon:SetTexCoord( Nameplate.Icon:GetTexCoord() );
-				Button.Icon:Show();
-			else
-				Button.Icon:Hide();
-			end
-		else
-			_Nameplates.Column.RemoveButton( Button );
-		end
+	if ( G ) then
+		return R and 3 or 2; -- Yellow or green
+	elseif ( B ) then
+		return 1; -- Blue
+	elseif ( R ) then
+		return 4; -- Red
 	end
 end;
 --[[****************************************************************************
-  * Function: _Nameplates.OnEvent                                              *
-  * Description: Synchronizes nameplate settings on variables loaded.          *
+  * Function: _Nameplates.Nameplate.Update                                     *
+  * Description: Refreshes visual settings for the nameplate.                  *
   ****************************************************************************]]
-OnEvent = function ()
-	if ( event == "VARIABLES_LOADED" ) then
-		_Nameplates.UpdateEnabled( true ); -- Synchronize
-	end
+Update = function ( Nameplate )
+	Nameplate:SetHeight( 14 );
+	Nameplate:EnableMouse( false );
+	Nameplate.Bar:SetAlpha( 0.75 );
+	Nameplate.Name:SetAlpha( 0.75 );
+	Nameplate.Level:SetAlpha( 0.5 );
 end;
---[[****************************************************************************
-  * Function: _Nameplates.OnLoad                                               *
-  * Description: Function hooks and event registers.                           *
-  ****************************************************************************]]
-OnLoad = function ()
-	-- Hook the nameplate show/hide functions
-	ShowNameplates       = _Nameplates.ShowNameplates;
-	HideNameplates       = _Nameplates.HideNameplates;
-	ShowFriendNameplates = _Nameplates.ShowFriendNameplates;
-	HideFriendNameplates = _Nameplates.HideFriendNameplates;
-
-	_Nameplates.UpdateEnabled( true ); -- Synchronize
-	this:RegisterEvent( "VARIABLES_LOADED" );
-end;
-
-
-
-
---------------------------------------------------------------------------------
--- _Nameplates.Nameplate
-------------------------
-
-	Nameplate = {
 
 --[[****************************************************************************
   * Function: _Nameplates.Nameplate.OnLeave                                    *
@@ -256,6 +280,9 @@ end;
 ---------------------
 
 	Button = {
+		Count = 0;
+		TextColors = {}; -- Calculated in _Nameplates.OnLoad
+		TextHighlightColors = {};
 
 --[[****************************************************************************
   * Function: _Nameplates.Button.SetTextSide                                   *
@@ -267,6 +294,30 @@ SetTextSide = function ( Button, Side )
 
 	FontString:ClearAllPoints();
 	FontString:SetPoint( Point, Button, Side );
+end;
+--[[****************************************************************************
+  * Function: _Nameplates.Button.Update                                        *
+  * Description: Synchronizes the button's data with its nameplate.            *
+  ****************************************************************************]]
+Update = function ( Button )
+	local ColorIndex = _Nameplates.Nameplate.GetColor( Button.Nameplate );
+	local Color = _Nameplates.Button.TextColors[ ColorIndex ];
+	Button:SetTextColor( Color.r, Color.g, Color.b );
+	Color = _Nameplates.Button.TextHighlightColors[ ColorIndex ];
+	Button:SetHighlightTextColor( Color.r, Color.g, Color.b );
+	_Nameplates.Column.AddButton( Button, _Nameplates.Column[ ColorIndex == 4 and "Hostile" or "Friendly" ] );
+
+	Button:SetText( Button.Nameplate.Name:GetText() );
+	Button:SetAlpha( Button.Nameplate:GetAlpha() );
+	if ( Button.Nameplate.Icon:IsShown() ) then
+		Button.Icon:SetTexCoord( Button.Nameplate.Icon:GetTexCoord() );
+		Button.Icon:Show();
+	else
+		Button.Icon:Hide();
+	end
+
+	Button.Bar:SetMinMaxValues( Button.Nameplate.Bar:GetMinMaxValues() );
+	Button.Bar:SetValue( Button.Nameplate.Bar:GetValue() );
 end;
 
 --[[****************************************************************************
@@ -308,8 +359,8 @@ OnLoad = function ()
 	end
 	this.Icon:SetAlpha( 0.75 );
 	this:GetHighlightTexture():SetAlpha( 0.5 );
-	_Nameplates.NameplateCount = _Nameplates.NameplateCount + 1;
-	this:SetID( _Nameplates.NameplateCount );
+	_Nameplates.Button.Count = _Nameplates.Button.Count + 1;
+	this:SetID( _Nameplates.Button.Count );
 end;
 
 

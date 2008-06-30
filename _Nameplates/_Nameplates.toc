@@ -1,6 +1,6 @@
 ## Interface: 11200
 ## Title: _Nameplates
-## Version: 1.12.2
+## Version: 1.12.3
 ## Notes: Makes nameplates less obtrusive and gives lists of nearby friendly/hostile units.
 ## Author: Saiket
 ## SavedVariables: _NameplatesOptions
