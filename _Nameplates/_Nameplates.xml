@@ -66,7 +66,7 @@
 		</Scripts>
 	</Button>
 	<!-- Template for nearby unit list column -->
-	<Button name="_NameplatesColumnTemplate" hidden="true" movable="true" clampedToScreen="true" virtual="true">
+	<Button name="_NameplatesColumnTemplate" parent="UIParent" hidden="true" movable="true" clampedToScreen="true" virtual="true">
 		<Size>
 			<AbsDimension x="96" y="12"/>
 		</Size>
@@ -140,21 +140,19 @@
 			</Layer>
 		</Layers>
 	</Frame>
-	<!-- Main frame -->
-	<Frame name="_NameplatesFrame" parent="UIParent">
-		<Frames>
-			<Button name="$parentFriendlyColumn" inherits="_NameplatesColumnTemplate">
-				<Anchors>
-					<Anchor point="TOPRIGHT" relativeTo="UIParent" relativePoint="CENTER"/>
-				</Anchors>
-			</Button>
-			<Button name="$parentHostileColumn" inherits="_NameplatesColumnTemplate">
-				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="UIParent" relativePoint="CENTER"/>
-				</Anchors>
-			</Button>
-		</Frames>
-
+	<!-- Unit columns -->
+	<Button name="_NameplatesColumnFriendly" inherits="_NameplatesColumnTemplate">
+		<Anchors>
+			<Anchor point="TOPRIGHT" relativeTo="UIParent" relativePoint="CENTER"/>
+		</Anchors>
+	</Button>
+	<Button name="_NameplatesColumnHostile" inherits="_NameplatesColumnTemplate">
+		<Anchors>
+			<Anchor point="TOPLEFT" relativeTo="UIParent" relativePoint="CENTER"/>
+		</Anchors>
+	</Button>
+	<!-- Global update handler -->
+	<Frame name="_NameplatesFrame" parent="WorldFrame">
 		<Scripts>
 			<OnUpdate>
 				_Nameplates.OnUpdate();
