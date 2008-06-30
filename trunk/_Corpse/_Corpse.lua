@@ -25,7 +25,6 @@ me.RemoveFriendSwapLast = nil;
 me.AddFriendSwapLast = nil;
 
 me.UIErrorsFrameOnEventBackup = UIErrorsFrame_OnEvent;
-me.ChatFrameMessageEventHandlerBackup = ChatFrame_MessageEventHandler;
 
 
 -- Commonly used functions
@@ -254,40 +253,34 @@ function me.UIErrorsFrameOnEvent ( Event, Message, ... )
 	end
 end
 --[[****************************************************************************
-  * Function: _Corpse.ChatFrameMessageEventHandler                             *
+  * Function: _Corpse.MessageEventHandler                                      *
   * Description: Blocks automated invite and remove messages.                  *
   ****************************************************************************]]
-function me.ChatFrameMessageEventHandler ( Event, ... )
-	if ( Event == "CHAT_MSG_SYSTEM" ) then
-		local Message = arg1;
-		local Name;
+function me.MessageEventHandler ( Message )
+	local Name;
 
-		if ( me.AddFriendLast or me.AddFriendSwapLast ) then
-			if ( Message == L.FRIEND_IS_ENEMY ) then
-				return;
-			else
-				Name = select( 3, Message:find( L.FRIEND_ADDED_PATTERN ) );
-				if ( Name and ( Name == me.AddFriendLast or Name == me.AddFriendSwapLast ) ) then
-					return;
-				end
-			end
-		end
-		if ( me.InviteUnitLast ) then
-			Name = select( 3, Message:find( L.ENEMY_OFFLINE_PATTERN ) );
-			if ( Name and Name == me.InviteUnitLast ) then
-				return;
-			end
-		end
-		if ( me.RemoveFriendLast or me.RemoveFriendSwapLast ) then
-			Name = select( 3, Message:find( L.FRIEND_REMOVED_PATTERN ) );
-			if ( Name and ( Name == me.RemoveFriendLast or Name == me.RemoveFriendSwapLast ) ) then
-				return;
+	if ( me.AddFriendLast or me.AddFriendSwapLast ) then
+		if ( Message == L.FRIEND_IS_ENEMY ) then
+			return true;
+		else
+			Name = select( 3, Message:find( L.FRIEND_ADDED_PATTERN ) );
+			if ( Name and ( Name == me.AddFriendLast or Name == me.AddFriendSwapLast ) ) then
+				return true;
 			end
 		end
 	end
-
-	-- Not caused by _Corpse, okay to display message
-	return me.ChatFrameMessageEventHandlerBackup( Event, ... );
+	if ( me.InviteUnitLast ) then
+		Name = select( 3, Message:find( L.ENEMY_OFFLINE_PATTERN ) );
+		if ( Name and Name == me.InviteUnitLast ) then
+			return true;
+		end
+	end
+	if ( me.RemoveFriendLast or me.RemoveFriendSwapLast ) then
+		Name = select( 3, Message:find( L.FRIEND_REMOVED_PATTERN ) );
+		if ( Name and ( Name == me.RemoveFriendLast or Name == me.RemoveFriendSwapLast ) ) then
+			return true;
+		end
+	end
 end
 
 
@@ -525,5 +518,5 @@ do
 	me.ShowHookUpdate();
 
 	UIErrorsFrame_OnEvent = me.UIErrorsFrameOnEvent;
-	ChatFrame_MessageEventHandler = me.ChatFrameMessageEventHandler;
+	ChatFrame_AddMessageEventFilter( "CHAT_MSG_SYSTEM", me.MessageEventHandler );
 end
