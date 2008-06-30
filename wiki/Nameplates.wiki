@@ -6,11 +6,11 @@
  _*Note:* ‗Nameplates was broken with the Burning Crusade expansion, since the nameplate frames are now secure._
 
 Healing in PvP was a pain, so I wrote this to give me a list of nearby units like _CT_RaidAssist's_ Emergency Monitor.  It shows up automatically when you enable nameplates, and tries its best to sort them into friendly and hostile columns.  To make the nameplates more bearable, the mod shrinks them slightly and puts the unit names directly over the health bar.  Hover over a unit in the list and the add-on will point to that unit with crosshairs.
- http://saiket.wow.googlepages.com/NameplatesNameplates.jpg
+ http://wow-saiket.googlecode.com/svn-history/r54/wiki/NameplatesNameplates.jpg
 
 == Priority List ==
 The priority lists for "Friendly" and "Hostile" units appear automatically when you turn those types of nameplates on.  There are three keybindings in the default UI to enable and disable these two types.
- http://saiket.wow.googlepages.com/NameplatesExample.jpg
+ http://wow-saiket.googlecode.com/svn-history/r54/wiki/NameplatesExample.jpg
 
 Hovering your cursor over the text label of a column will show the keybinding to turn those nameplates on or off, and will give instructions for how to manipulate the column.  Right clicking will lock or unlock the list for dragging.  While unlocked, double-clicking will swap the name labels' side from left to right and back, and shift double clicking will flip the vertical direction the column will expand towards.
- http://saiket.wow.googlepages.com/NameplatesTooltip.jpg
+ http://wow-saiket.googlecode.com/svn-history/r54/wiki/NameplatesTooltip.jpg
