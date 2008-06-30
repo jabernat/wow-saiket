@@ -1,0 +1,18 @@
+## Interface: 20400
+## Title: _|cffCCCC88Arena|r
+## Author: Saiket
+## Version: 2.4.1
+## X-Date: 2008-04-05
+## X-Category: Battlegrounds/PvP
+## X-Localizations: enUS
+## Notes: Scans mouseover units in battlegrounds to find enemy group makeup.
+## SavedVariables: _ArenaOptions
+## OptionalDeps: _Dev
+## DefaultState: enabled
+Localization.lua
+
+_Arena.lua
+_Arena.Buttons.lua
+_Arena.Camera.lua
+_Arena.List.lua
+_Arena.Scan.lua
