@@ -1,8 +1,8 @@
 ## Interface: 20400
 ## Title: _|cffCCCC88Immunize|r
 ## Author: Saiket
-## Version: 2.4.1
-## X-Date: 2008-05-05
+## Version: 2.4.2
+## X-Date: 2008-05-13
 ## X-Category: Chat/Communication
 ## X-Localizations: enUS
 ## Notes: Immunizes the client to the "||3" crash.
