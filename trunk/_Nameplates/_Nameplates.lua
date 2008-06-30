@@ -200,7 +200,7 @@ Initialize = function ( Nameplate )
 		Nameplate.Icon = Icon;
 
 		-- Set up the new button
-		local Button = CreateFrame( "Button", nil, _NameplatesFrame, "_NameplatesButtonTemplate" );
+		local Button = CreateFrame( "Button", nil, UIParent, "_NameplatesButtonTemplate" );
 		Button.Nameplate = Nameplate;
 		_Nameplates.Frames[ Nameplate ] = Button;
 
@@ -649,7 +649,7 @@ end;
   ****************************************************************************]]
 OnLoad = function ()
 	this.Buttons = {};
-	_, _, this.Type = string.find( this:GetName(), "^"..this:GetParent():GetName().."(.+)Column$" );
+	_, _, this.Type = string.find( this:GetName(), "^_NameplatesColumn(.+)$" );
 
 	this:SetText( string.format( _NAMEPLATES_COLUMN_LABEL_FORMAT, _NAMEPLATES_COLUMN_TITLES[ this.Type ] ) );
 	_Nameplates.Column[ this.Type ] = this;
