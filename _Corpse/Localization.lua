@@ -24,8 +24,6 @@ do
 
 			AFK = CHAT_FLAG_AFK;
 			DND = CHAT_FLAG_DND;
-
-			ERR_FRIENDS_MAX = NORMAL_FONT_COLOR_CODE.."_|cffCCCC88Corpse|r failed: Friends list full!";
 		}, {
 			__index = function ( self, Key )
 				rawset( self, Key, Key );
