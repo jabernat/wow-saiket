@@ -1,0 +1,170 @@
+<!--****************************************************************************
+    * _Nameplates by Saiket                                                    *
+    * _Nameplates.xml - Enhances the default nameplate frames and adds an      *
+    *   emergency monitor list of nearby friendly/hostile units.               *
+    *************************************************************************-->
+
+
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\..\FrameXML\UI.xsd">
+	<!-- Template for nearby unit list buttons -->
+	<Button name="_NameplatesButtonTemplate" virtual="true">
+		<Size>
+			<AbsDimension x="96" y="12"/>
+		</Size>
+
+		<NormalText inherits="NumberFontNormalSmall"/>
+		<PushedTextOffset>
+			<AbsDimension x="2" y="-2"/> 
+		</PushedTextOffset>
+		<HighlightTexture file="Interface\QuestFrame\UI-QuestLogTitleHighlight" alphaMode="ADD"/>
+		<Layers>
+			<Layer level="ARTWORK">
+				<Texture hidden="true" file="Interface\TargetingFrame\UI-RaidTargetingIcons">
+					<Size>
+						<AbsDimension x="12" y="12"/>
+					</Size>
+					<Anchors>
+						<Anchor point="RIGHT"/>
+					</Anchors>
+				</Texture>
+			</Layer>
+		</Layers>
+
+		<Frames>
+			<StatusBar setAllPoints="true">
+				<BarTexture file="Interface\TargetingFrame\UI-StatusBar" drawLayer="BACKGROUND"/>
+				<Backdrop bgFile="Interface\Tooltips\UI-Tooltip-Background"/>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString inherits="NumberFontNormalSmall"/>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnValueChanged>
+						_Nameplates.Button.Bar.OnValueChanged();
+					</OnValueChanged>
+					<OnLoad>
+						_Nameplates.Button.Bar.OnLoad();
+					</OnLoad>
+				</Scripts>
+			</StatusBar>
+		</Frames>
+
+		<Scripts>
+			<OnLeave>
+				_Nameplates.Button.OnLeave();
+			</OnLeave>
+			<OnEnter>
+				_Nameplates.Button.OnEnter();
+			</OnEnter>
+			<OnClick>
+				_Nameplates.Button.OnClick();
+			</OnClick>
+			<OnLoad>
+				_Nameplates.Button.OnLoad();
+			</OnLoad>
+		</Scripts>
+	</Button>
+	<!-- Template for nearby unit list column -->
+	<Button name="_NameplatesColumnTemplate" hidden="true" movable="true" virtual="true">
+		<Size>
+			<AbsDimension x="96" y="12"/>
+		</Size>
+
+		<NormalText inherits="NumberFontNormalSmall"/>
+
+		<Scripts>
+			<OnLeave>
+				_Nameplates.Column.OnLeave();
+			</OnLeave>
+			<OnEnter>
+				_Nameplates.Column.OnEnter();
+			</OnEnter>
+			<OnDragStop>
+				_Nameplates.Column.OnDragStop();
+			</OnDragStop>
+			<OnDragStart>
+				_Nameplates.Column.OnDragStart();
+			</OnDragStart>
+			<OnDoubleClick>
+				_Nameplates.Column.OnDoubleClick();
+			</OnDoubleClick>
+			<OnClick>
+				_Nameplates.Column.OnClick();
+			</OnClick>
+			<OnUpdate>
+				_Nameplates.Column.OnUpdate();
+			</OnUpdate>
+			<OnEvent>
+				_Nameplates.Column.OnEvent();
+			</OnEvent>
+			<OnLoad>
+				_Nameplates.Column.OnLoad();
+			</OnLoad>
+		</Scripts>
+	</Button>
+
+
+	<!-- Highlight frame that points to its center -->
+	<Frame name="_NameplatesHighlight" parent="WorldFrame" frameStrata="BACKGROUND" frameLevel="0" hidden="true" alpha="0.5">
+		<Layers>
+			<Layer level="ARTWORK">
+				<Texture file="Interface\AddOns\_Nameplates\Skin\HorizontalBar" alphaMode="ADD">
+					<Size>
+						<AbsDimension x="8" y="8"/>
+					</Size>
+					<Anchors>
+						<Anchor point="BOTTOM" relativePoint="CENTER">
+							<Offset>
+								<AbsDimension x="0" y="-4"/>
+							</Offset>
+						</Anchor>
+						<Anchor point="LEFT" relativeTo="WorldFrame"/>
+						<Anchor point="RIGHT" relativeTo="WorldFrame"/>
+					</Anchors>
+				</Texture>
+				<Texture file="Interface\AddOns\_Nameplates\Skin\VerticalBar" alphaMode="ADD">
+					<Size>
+						<AbsDimension x="8" y="8"/>
+					</Size>
+					<Anchors>
+						<Anchor point="LEFT" relativePoint="CENTER">
+							<Offset>
+								<AbsDimension x="-4" y="0"/>
+							</Offset>
+						</Anchor>
+						<Anchor point="TOP" relativeTo="WorldFrame"/>
+						<Anchor point="BOTTOM" relativeTo="WorldFrame"/>
+					</Anchors>
+				</Texture>
+			</Layer>
+		</Layers>
+	</Frame>
+	<!-- Main frame -->
+	<Frame name="_NameplatesFrame" parent="UIParent">
+		<Frames>
+			<Button name="$parentFriendlyColumn" inherits="_NameplatesColumnTemplate">
+				<Anchors>
+					<Anchor point="TOPRIGHT" relativeTo="UIParent" relativePoint="CENTER"/>
+				</Anchors>
+			</Button>
+			<Button name="$parentHostileColumn" inherits="_NameplatesColumnTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="UIParent" relativePoint="CENTER"/>
+				</Anchors>
+			</Button>
+		</Frames>
+
+		<Scripts>
+			<OnUpdate>
+				_Nameplates.OnUpdate();
+			</OnUpdate>
+			<OnEvent>
+				_Nameplates.OnEvent();
+			</OnEvent>
+			<OnLoad>
+				_Nameplates.OnLoad();
+			</OnLoad>
+		</Scripts>
+	</Frame>
+</Ui>
