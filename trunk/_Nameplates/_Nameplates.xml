@@ -66,7 +66,7 @@
 		</Scripts>
 	</Button>
 	<!-- Template for nearby unit list column -->
-	<Button name="_NameplatesColumnTemplate" hidden="true" movable="true" virtual="true">
+	<Button name="_NameplatesColumnTemplate" hidden="true" movable="true" clampedToScreen="true" virtual="true">
 		<Size>
 			<AbsDimension x="96" y="12"/>
 		</Size>
