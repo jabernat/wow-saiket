@@ -35,6 +35,7 @@ do
 			MESSAGE_LISTELEMENT_FORMAT = Bullet..ItemCount..LIGHTYELLOW_FONT_COLOR_CODE.." (%s)"; -- [Name]x# (Cost)
 			MESSAGE_PRICECHECK_ON  = "Price checking "..GREEN_FONT_COLOR_CODE.."enabled"..FONT_COLOR_CODE_CLOSE..".";
 			MESSAGE_PRICECHECK_OFF = "Price checking "..RED_FONT_COLOR_CODE.."disabled"..FONT_COLOR_CODE_CLOSE..".";
+			MESSAGE_BUY_FORMAT = "Bought "..ItemCount..".";
 
 			ERROR_FORMAT = "%s";
 			ERROR_NO_VENDOR = "Vendor window must be open!";

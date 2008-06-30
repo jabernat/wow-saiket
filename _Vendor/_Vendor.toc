@@ -2,7 +2,7 @@
 ## Title: _|cffCCCC88Vendor|r
 ## Author: Saiket
 ## Version: 2.4.1
-## X-Date: 2008-04-21
+## X-Date: 2008-05-11
 ## X-Category: Auction
 ## X-Localizations: enUS
 ## Notes: Buys items for free just before servers restart.
