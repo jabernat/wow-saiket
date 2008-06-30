@@ -1,0 +1,13 @@
+## Interface: 10900
+## Title: _Link
+## Version: 1.9.0
+## Notes: Spoof item links.
+## Author: Saiket
+## DefaultState: enabled
+Localization.lua
+
+_Link.lua
+_Link.Enchants.lua
+_Link.Subtypes.lua
+
+_Link.xml
