@@ -1,0 +1,14 @@
+## Interface: 20400
+## Title: _|cffCCCC88Vendor|r
+## Author: Saiket
+## Version: 2.4.1
+## X-Date: 2008-04-21
+## X-Category: Auction
+## X-Localizations: enUS
+## Notes: Buys items for free just before servers restart.
+## SavedVariables: _VendorOptions
+## OptionalDeps: _Dev
+## DefaultState: enabled
+Localization.lua
+
+_Vendor.lua
