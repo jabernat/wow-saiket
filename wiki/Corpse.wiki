@@ -4,9 +4,9 @@
 = About ‗Corpse =
 
 ‗Corpse tells you the faction, online status, and other information about corpses you see.  That is, when you mouse over a corpse (after the player releases spirit), ‗Corpse automatically queries the server about who owns the body and automatically colors and fills out its tooltip like a regular living unit.
- http://saiket.wow.googlepages.com/CorpseHostileOffline.png  http://saiket.wow.googlepages.com/CorpseHostileOnline.png
+ http://wow-saiket.googlecode.com/svn-history/r55/wiki/CorpseHostileOffline.png  http://wow-saiket.googlecode.com/svn-history/r55/wiki/CorpseHostileOnline.png
 
- http://saiket.wow.googlepages.com/CorpseFriendlyOffline.png  http://saiket.wow.googlepages.com/CorpseFriendlyOnline.png
+ http://wow-saiket.googlecode.com/svn-history/r55/wiki/CorpseFriendlyOffline.png  http://wow-saiket.googlecode.com/svn-history/r55/wiki/CorpseFriendlyOnline.png
 
 == How It Works ==
 This mod is a spiritual successor to _!CorpseInfo,_ however it is significantly
