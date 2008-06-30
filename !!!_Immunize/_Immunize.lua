@@ -7,6 +7,8 @@
 local L = _ImmunizeLocalization;
 local me = CreateFrame( "Frame", "_Immunize" );
 
+me.IsPrivateServer = false; -- Set to true for extra protection on private servers
+
 me.Enabled = false; -- True when danger is present
 
 local EventIntercept = {
@@ -17,13 +19,6 @@ local EventIntercept = {
 me.EventIntercept = EventIntercept;
 local EventInterceptHandlers = EventIntercept.Handlers;
 local EventInterceptFrames = EventIntercept.Frames;
-
-me.ReloadUIBackup = ReloadUI;
-me.GetGuildRosterMOTDBackup = GetGuildRosterMOTD;
-me.GetGuildRosterInfoBackup = GetGuildRosterInfo;
-me.GuildControlGetRankNameBackup = GuildControlGetRankName;
-me.GetGuildInfoBackup = GetGuildInfo;
-me.GetGuildInfoTextBackup = GetGuildInfoText;
 
 
 
@@ -172,6 +167,25 @@ end
 
 
 
+--[[****************************************************************************
+  * Function: _Immunize:PLAYER_LOGIN                                           *
+  ****************************************************************************]]
+function me:PLAYER_LOGIN ()
+	-- Disable chat bubbles
+	SetCVar( "ChatBubbles", "0" );
+	SetCVar( "ChatBubblesParty", "0" );
+	hooksecurefunc( "SetCVar", function ( CVar, Value )
+		Value = tonumber( Value );
+		if ( Value ~= 0 ) then
+			CVar = CVar:upper();
+			if ( CVar == "CHATBUBBLES" ) then
+				SetCVar( "ChatBubbles", "0" );
+			elseif ( CVar == "CHATBUBBLESPARTY" ) then
+				SetCVar( "ChatBubblesParty", "0" );
+			end
+		end
+	end );
+end
 --[[****************************************************************************
   * Function: _Immunize:GUILD_MOTD                                             *
   ****************************************************************************]]
@@ -335,8 +349,6 @@ end
 
 do
 	me:SetScript( "OnEvent", me.OnEvent );
-	me:RegisterEvent( "GUILD_ROSTER_UPDATE" );
-	me:RegisterEvent( "PLAYER_GUILD_UPDATE" );
 
 	-- Hook all register/unregister event methods
 	do
@@ -368,15 +380,6 @@ do
 	end
 
 	do
-		local function GUILD_MOTD ( Message, ... )
-			Message = me.Filter( Message );
-			arg1 = Message;
-			return Message, ...;
-		end
-		EventIntercept.Add( "GUILD_MOTD", GUILD_MOTD, GetFramesRegisteredForEvent( "GUILD_MOTD" ) );
-	end
-
-	do
 		local FilterRemove = me.FilterRemove;
 		local function CHAT_MSG_ADDON ( Prefix, Message, ... )
 			Prefix = FilterRemove( Prefix );
@@ -388,11 +391,54 @@ do
 		EventIntercept.Add( "CHAT_MSG_ADDON", CHAT_MSG_ADDON, GetFramesRegisteredForEvent( "CHAT_MSG_ADDON" ) );
 	end
 
+	if ( me.IsPrivateServer ) then
+		local Filter = me.Filter;
+		local function CHAT_MSG ( Message, ... )
+			if ( Message ) then
+				Message = Filter( Message );
+				arg1 = Message;
+			end
+			return Message, ...;
+		end
 
-	ReloadUI = me.ReloadUI;
-	GetGuildRosterMOTD = me.GetGuildRosterMOTD;
-	GetGuildRosterInfo = me.GetGuildRosterInfo;
-	GuildControlGetRankName = me.GuildControlGetRankName;
-	GetGuildInfo = me.GetGuildInfo;
-	GetGuildInfoText = me.GetGuildInfoText;
+		me:RegisterEvent( "PLAYER_LOGIN" );
+		me:RegisterEvent( "PLAYER_GUILD_UPDATE" );
+		me:RegisterEvent( "GUILD_ROSTER_UPDATE" );
+
+		EventIntercept.Add( "GUILD_MOTD", CHAT_MSG, GetFramesRegisteredForEvent( "GUILD_MOTD" ) );
+		EventIntercept.Add( "SYSMSG", CHAT_MSG, GetFramesRegisteredForEvent( "SYSMSG" ) );
+
+		EventIntercept.Add( "CHAT_MSG_AFK", CHAT_MSG, GetFramesRegisteredForEvent( "CHAT_MSG_AFK" ) );
+		EventIntercept.Add( "CHAT_MSG_BATTLEGROUND", CHAT_MSG, GetFramesRegisteredForEvent( "CHAT_MSG_BATTLEGROUND" ) );
+		EventIntercept.Add( "CHAT_MSG_BATTLEGROUND_LEADER", CHAT_MSG, GetFramesRegisteredForEvent( "CHAT_MSG_BATTLEGROUND_LEADER" ) );
+		EventIntercept.Add( "CHAT_MSG_CHANNEL", CHAT_MSG, GetFramesRegisteredForEvent( "CHAT_MSG_CHANNEL" ) );
+		EventIntercept.Add( "CHAT_MSG_DND", CHAT_MSG, GetFramesRegisteredForEvent( "CHAT_MSG_DND" ) );
+		EventIntercept.Add( "CHAT_MSG_EMOTE", CHAT_MSG, GetFramesRegisteredForEvent( "CHAT_MSG_EMOTE" ) );
+		EventIntercept.Add( "CHAT_MSG_GUILD", CHAT_MSG, GetFramesRegisteredForEvent( "CHAT_MSG_GUILD" ) );
+		EventIntercept.Add( "CHAT_MSG_OFFICER", CHAT_MSG, GetFramesRegisteredForEvent( "CHAT_MSG_OFFICER" ) );
+		EventIntercept.Add( "CHAT_MSG_PARTY", CHAT_MSG, GetFramesRegisteredForEvent( "CHAT_MSG_PARTY" ) );
+		EventIntercept.Add( "CHAT_MSG_RAID", CHAT_MSG, GetFramesRegisteredForEvent( "CHAT_MSG_RAID" ) );
+		EventIntercept.Add( "CHAT_MSG_RAID_LEADER", CHAT_MSG, GetFramesRegisteredForEvent( "CHAT_MSG_RAID_LEADER" ) );
+		EventIntercept.Add( "CHAT_MSG_RAID_WARNING", CHAT_MSG, GetFramesRegisteredForEvent( "CHAT_MSG_RAID_WARNING" ) );
+		EventIntercept.Add( "CHAT_MSG_SAY", CHAT_MSG, GetFramesRegisteredForEvent( "CHAT_MSG_SAY" ) );
+		EventIntercept.Add( "CHAT_MSG_SYSTEM", CHAT_MSG, GetFramesRegisteredForEvent( "CHAT_MSG_SYSTEM" ) );
+		EventIntercept.Add( "CHAT_MSG_WHISPER", CHAT_MSG, GetFramesRegisteredForEvent( "CHAT_MSG_WHISPER" ) );
+		EventIntercept.Add( "CHAT_MSG_WHISPER_INFORM", CHAT_MSG, GetFramesRegisteredForEvent( "CHAT_MSG_WHISPER_INFORM" ) );
+		EventIntercept.Add( "CHAT_MSG_YELL", CHAT_MSG, GetFramesRegisteredForEvent( "CHAT_MSG_YELL" ) );
+
+
+		me.ReloadUIBackup = ReloadUI;
+		me.GetGuildRosterMOTDBackup = GetGuildRosterMOTD;
+		me.GetGuildRosterInfoBackup = GetGuildRosterInfo;
+		me.GuildControlGetRankNameBackup = GuildControlGetRankName;
+		me.GetGuildInfoBackup = GetGuildInfo;
+		me.GetGuildInfoTextBackup = GetGuildInfoText;
+
+		ReloadUI = me.ReloadUI;
+		GetGuildRosterMOTD = me.GetGuildRosterMOTD;
+		GetGuildRosterInfo = me.GetGuildRosterInfo;
+		GuildControlGetRankName = me.GuildControlGetRankName;
+		GetGuildInfo = me.GetGuildInfo;
+		GetGuildInfoText = me.GetGuildInfoText;
+	end
 end
