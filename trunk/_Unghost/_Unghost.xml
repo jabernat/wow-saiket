@@ -1,0 +1,47 @@
+<!--****************************************************************************
+    * _Unghost by Saiket                                                       *
+    * _Unghost.xml - Unghost button and events frame.                          *
+    *************************************************************************-->
+
+
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\..\FrameXML\UI.xsd">
+	<!-- Unghost button also used to catch events -->
+	<Frame name="_UnghostFrame">
+		<Frames>
+			<CheckButton name="_UnghostButtonFrame" inherits="ActionButtonTemplate" hidden="true">
+				<Scripts>
+					<OnEnter>
+						_Unghost.Button.OnEnter();
+					</OnEnter>
+					<OnLeave>
+						_Unghost.Button.OnLeave();
+					</OnLeave>
+					<OnClick>
+						_Unghost.Button.OnClick();
+					</OnClick>
+					<OnUpdate>
+						_Unghost.Button.OnUpdate();
+					</OnUpdate>
+					<OnLoad>
+						_Unghost.Button.OnLoad();
+					</OnLoad>
+				</Scripts>
+			</CheckButton>
+			<Frame name="_UnghostTimerFrame" hidden="true">
+				<Scripts>
+					<OnUpdate>
+						_Unghost.Timer.OnUpdate();
+					</OnUpdate>
+				</Scripts>
+			</Frame>
+		</Frames>
+		<Scripts>
+			<OnEvent>
+				_Unghost.OnEvent();
+			</OnEvent>
+			<OnLoad>
+				_Unghost.OnLoad();
+			</OnLoad>
+		</Scripts>
+	</Frame>
+</Ui>
