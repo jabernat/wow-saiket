@@ -20,6 +20,10 @@ local EventInterceptFrames = EventIntercept.Frames;
 
 me.ReloadUIBackup = ReloadUI;
 me.GetGuildRosterMOTDBackup = GetGuildRosterMOTD;
+me.GetGuildRosterInfoBackup = GetGuildRosterInfo;
+me.GuildControlGetRankNameBackup = GuildControlGetRankName;
+me.GetGuildInfoBackup = GetGuildInfo;
+me.GetGuildInfoTextBackup = GetGuildInfoText;
 
 
 
@@ -33,7 +37,7 @@ do
 	function me.FilterGsub ( Match )
 		local Count = #Match;
 		if ( band( Count, 1 ) == 1 ) then -- Odd number of pipe characters
-			return ( "|" ):rep( Count - 1 ).."|cffff1111||3|r";
+			return Match:sub( 1, -2 ).."|cffff1111||3|r";
 		end
 	end
 end
@@ -45,6 +49,27 @@ function me.Filter ( Message )
 	return ( Message:gsub( "(|+)3", me.FilterGsub ) );
 end
 
+--[[****************************************************************************
+  * Function: _Immunize.FilterRemoveGsub                                       *
+  * Description: Callback used to remove harmful escape sequences.             *
+  ****************************************************************************]]
+do
+	local band = bit.band;
+	function me.FilterRemoveGsub ( Match )
+		local Count = #Match;
+		if ( band( Count, 1 ) == 1 ) then -- Odd number of pipe characters
+			return Match:sub( 1, -2 ); -- Remove last pipe
+		end
+	end
+end
+--[[****************************************************************************
+  * Function: _Immunize.FilterRemove                                           *
+  * Description: Removes harmful escape sequences.                             *
+  ****************************************************************************]]
+function me.FilterRemove ( Message )
+	return ( Message:gsub( "(|+)3", me.FilterRemoveGsub ) );
+end
+
 
 
 
@@ -53,22 +78,95 @@ end
   * Description: Disables normal ReloadUI commands when a bad GMotD is set.    *
   *   Reloading UI with a bad GMotD will lock up the client at the load bar.   *
   ****************************************************************************]]
-function me.ReloadUI  ()
+function me.ReloadUI  ( ... )
 	if ( me.Enabled ) then
 		( IsResting() and Logout or ForceQuit )();
 	else
-		me.ReloadUIBackup();
+		me.ReloadUIBackup( ... );
 	end
 end
 --[[****************************************************************************
-  * Function: _Immunize.GetGuildRosterMOTD                                     *
-  * Description: Replaces all escape sequences.                                *
+  * Function: _Immunize.GetGuildRosterMOTDVararg                               *
   ****************************************************************************]]
-function me.GetGuildRosterMOTD ()
-	local Message = me.GetGuildRosterMOTDBackup();
+function me.GetGuildRosterMOTDVararg ( Message, ... )
 	if ( Message ) then
-		return me.Filter( Message );
+		Message = me.Filter( Message );
 	end
+	return Message, ...;
+end
+--[[****************************************************************************
+  * Function: _Immunize.GetGuildRosterMOTD                                     *
+  * Description: Replaces all harmful escape sequences.                        *
+  ****************************************************************************]]
+function me.GetGuildRosterMOTD ( ... )
+	return me.GetGuildRosterMOTDVararg( me.GetGuildRosterMOTDBackup( ... ) );
+end
+--[[****************************************************************************
+  * Function: _Immunize.GetGuildRosterInfoVararg                               *
+  ****************************************************************************]]
+function me.GetGuildRosterInfoVararg ( Name, Rank, RankIndex, Level, Class, Zone, Note, OfficerNote, ... )
+	if ( Rank ) then
+		Rank = me.Filter( Rank );
+	end
+	if ( Note ) then
+		Note = me.Filter( Note );
+	end
+	if ( OfficerNote ) then
+		OfficerNote = me.Filter( OfficerNote );
+	end
+	return Name, Rank, RankIndex, Level, Class, Zone, Note, OfficerNote, ...;
+end
+--[[****************************************************************************
+  * Function: _Immunize.GetGuildRosterInfo                                     *
+  * Description: Replaces all harmful escape sequences from ranks and notes.   *
+  ****************************************************************************]]
+function me.GetGuildRosterInfo ( Index, ... )
+	return me.GetGuildRosterInfoVararg( me.GetGuildRosterInfoBackup( Index, ... ) );
+end
+--[[****************************************************************************
+  * Function: _Immunize.GuildControlGetRankNameVararg                          *
+  ****************************************************************************]]
+function me.GuildControlGetRankNameVararg ( Rank, ... )
+	return me.Filter( Rank ), ...;
+end
+--[[****************************************************************************
+  * Function: _Immunize.GuildControlGetRankName                                *
+  * Description: Replaces all harmful escape sequences.                        *
+  ****************************************************************************]]
+function me.GuildControlGetRankName ( Index, ... )
+	return me.GuildControlGetRankNameVararg( me.GuildControlGetRankNameBackup( Index, ... ) );
+end
+--[[****************************************************************************
+  * Function: _Immunize.GetGuildInfoVararg                                     *
+  ****************************************************************************]]
+function me.GetGuildInfoVararg ( Guild, Rank, RankID, ... )
+	if ( Rank ) then
+		Rank = me.Filter( Rank );
+	end
+	return Guild, Rank, RankID, ...;
+end
+--[[****************************************************************************
+  * Function: _Immunize.GetGuildInfo                                           *
+  * Description: Replaces all harmful escape sequences in rank name.           *
+  ****************************************************************************]]
+function me.GetGuildInfo ( UnitID, ... )
+	return me.GetGuildInfoVararg( me.GetGuildInfoBackup( UnitID, ... ) );
+end
+--[[****************************************************************************
+  * Function: _Immunize.GetGuildInfoTextVararg                                 *
+  ****************************************************************************]]
+function me.GetGuildInfoTextVararg ( Info, ... )
+	if ( Info ) then
+		Info = me.Filter( Info );
+	end
+	return Info, ...;
+end
+--[[****************************************************************************
+  * Function: _Immunize.GetGuildInfoText                                       *
+  * Description: Replaces all harmful escape sequences in guild info.          *
+  ****************************************************************************]]
+function me.GetGuildInfoText ( ... )
+	return me.GetGuildInfoTextVararg( me.GetGuildInfoTextBackup( ... ) );
 end
 
 
@@ -81,6 +179,38 @@ function me:GUILD_MOTD ( _, Message )
 	-- Enable lockdown if harmful GMotD is found
 	me.Enabled = Message ~= me.Filter( Message );
 end
+--[[****************************************************************************
+  * Function: _Immunize:GUILD_ROSTER_UPDATE                                    *
+  ****************************************************************************]]
+function me:GUILD_ROSTER_UPDATE ()
+	-- Scan for harmful player notes
+	local Rank, Note, OfficerNote, _;
+	for Index = 1, GetNumGuildMembers( GetGuildRosterShowOffline() ) do
+		_, Rank, _, _, _, _, Note, OfficerNote = me.GetGuildRosterInfoBackup( Index );
+		if ( ( Rank ~= me.Filter( Rank ) )
+		  or ( Note ~= me.Filter( Note ) )
+		  or ( OfficerNote ~= me.Filter( OfficerNote ) )
+		) then
+			me.Enabled = true;
+			return;
+		end
+	end
+
+	-- Scan ranks
+	for Index = 1, GuildControlGetNumRanks() do
+		Rank = me.GuildControlGetRankNameBackup( Index );
+		if ( Rank ~= me.Filter( Rank ) ) then
+			me.Enabled = true;
+			return;
+		end
+	end
+
+	me.Enabled = false; -- Nothing found
+end
+--[[****************************************************************************
+  * Function: _Immunize:PLAYER_GUILD_UPDATE                                    *
+  ****************************************************************************]]
+me.PLAYER_GUILD_UPDATE = me.GUILD_ROSTER_UPDATE; -- Check when entering/leaving guild
 --[[****************************************************************************
   * Function: _Immunize:OnEvent                                                *
   * Description: Global event handler.                                         *
@@ -205,42 +335,64 @@ end
 
 do
 	me:SetScript( "OnEvent", me.OnEvent );
+	me:RegisterEvent( "GUILD_ROSTER_UPDATE" );
+	me:RegisterEvent( "PLAYER_GUILD_UPDATE" );
 
 	-- Hook all register/unregister event methods
-	local function HookRegisterEvent ( self )
-		local MetaIndex = getmetatable( type( self ) == "string" and CreateFrame( self ) or self ).__index;
-		hooksecurefunc( MetaIndex, "RegisterEvent", EventIntercept.RegisterEvent );
-		hooksecurefunc( MetaIndex, "UnregisterEvent", EventIntercept.UnregisterEvent );
-		hooksecurefunc( MetaIndex, "RegisterAllEvents", EventIntercept.RegisterAllEvents );
-		hooksecurefunc( MetaIndex, "UnregisterAllEvents", EventIntercept.UnregisterAllEvents );
+	do
+		local function HookRegisterEvent ( self )
+			local MetaIndex = getmetatable( type( self ) == "string" and CreateFrame( self ) or self ).__index;
+			hooksecurefunc( MetaIndex, "RegisterEvent", EventIntercept.RegisterEvent );
+			hooksecurefunc( MetaIndex, "UnregisterEvent", EventIntercept.UnregisterEvent );
+			hooksecurefunc( MetaIndex, "RegisterAllEvents", EventIntercept.RegisterAllEvents );
+			hooksecurefunc( MetaIndex, "UnregisterAllEvents", EventIntercept.UnregisterAllEvents );
+		end
+		HookRegisterEvent( me ); -- Frame
+		HookRegisterEvent( "Cooldown" );
+		HookRegisterEvent( ChatFrameEditBox ); -- EditBox
+		HookRegisterEvent( GameTooltip ); -- GameTooltip
+		HookRegisterEvent( UIErrorsFrame ); -- MessageFrame
+		HookRegisterEvent( MiniMapPing ); -- Model
+		HookRegisterEvent( WorldStateScoreScrollFrame ); -- ScrollFrame
+		HookRegisterEvent( GuildEventMessageFrame ); -- ScrollingMessageFrame
+		HookRegisterEvent( ItemTextPageText ); -- SimpleHTML
+		HookRegisterEvent( CharacterModelFrame ); -- PlayerModel
+		HookRegisterEvent( DressUpModel ); -- DressUpModel
+		HookRegisterEvent( TabardModel ); -- TabardModel
+		HookRegisterEvent( "Button" );
+		HookRegisterEvent( TutorialFrameCheckButton ); -- CheckButton
+		HookRegisterEvent( ColorPickerFrame ); -- ColorSelect
+		HookRegisterEvent( Minimap ); -- Minimap
+		HookRegisterEvent( OpacitySliderFrame ); -- Slider
+		HookRegisterEvent( CastingBarFrame ); -- StatusBar
 	end
-	HookRegisterEvent( me ); -- Frame
-	HookRegisterEvent( "Cooldown" );
-	HookRegisterEvent( ChatFrameEditBox ); -- EditBox
-	HookRegisterEvent( GameTooltip ); -- GameTooltip
-	HookRegisterEvent( UIErrorsFrame ); -- MessageFrame
-	HookRegisterEvent( MiniMapPing ); -- Model
-	HookRegisterEvent( WorldStateScoreScrollFrame ); -- ScrollFrame
-	HookRegisterEvent( GuildEventMessageFrame ); -- ScrollingMessageFrame
-	HookRegisterEvent( ItemTextPageText ); -- SimpleHTML
-	HookRegisterEvent( CharacterModelFrame ); -- PlayerModel
-	HookRegisterEvent( DressUpModel ); -- DressUpModel
-	HookRegisterEvent( TabardModel ); -- TabardModel
-	HookRegisterEvent( "Button" );
-	HookRegisterEvent( TutorialFrameCheckButton ); -- CheckButton
-	HookRegisterEvent( ColorPickerFrame ); -- ColorSelect
-	HookRegisterEvent( Minimap ); -- Minimap
-	HookRegisterEvent( OpacitySliderFrame ); -- Slider
-	HookRegisterEvent( CastingBarFrame ); -- StatusBar
 
-	local function GUILD_MOTD ( Message, ... )
-		Message = me.Filter( Message );
-		arg1 = Message;
-		return Message, ...;
+	do
+		local function GUILD_MOTD ( Message, ... )
+			Message = me.Filter( Message );
+			arg1 = Message;
+			return Message, ...;
+		end
+		EventIntercept.Add( "GUILD_MOTD", GUILD_MOTD, GetFramesRegisteredForEvent( "GUILD_MOTD" ) );
 	end
-	EventIntercept.Add( "GUILD_MOTD", GUILD_MOTD, GetFramesRegisteredForEvent( "GUILD_MOTD" ) );
+
+	do
+		local FilterRemove = me.FilterRemove;
+		local function CHAT_MSG_ADDON ( Prefix, Message, ... )
+			Prefix = FilterRemove( Prefix );
+			arg1 = Prefix;
+			Message = FilterRemove( Message );
+			arg2 = Message;
+			return Prefix, Message, ...;
+		end
+		EventIntercept.Add( "CHAT_MSG_ADDON", CHAT_MSG_ADDON, GetFramesRegisteredForEvent( "CHAT_MSG_ADDON" ) );
+	end
 
 
 	ReloadUI = me.ReloadUI;
 	GetGuildRosterMOTD = me.GetGuildRosterMOTD;
+	GetGuildRosterInfo = me.GetGuildRosterInfo;
+	GuildControlGetRankName = me.GuildControlGetRankName;
+	GetGuildInfo = me.GetGuildInfo;
+	GetGuildInfoText = me.GetGuildInfoText;
 end
