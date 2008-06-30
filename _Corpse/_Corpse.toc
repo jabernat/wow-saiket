@@ -2,7 +2,7 @@
 ## Title: _|cffCCCC88Corpse|r
 ## Author: Saiket
 ## Version: 2.3.3
-## X-Date: 2008-03-12
+## X-Date: 2008-03-15
 ## X-Category: Tooltips, Interface Enhancements
 ## X-Localizations: enUS
 ## Notes: Adds online/offline status and other info to corpse tooltips.

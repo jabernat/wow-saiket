@@ -378,7 +378,9 @@ function me:PLAYER_ENTERING_WORLD ()
 	local Type = select( 2, IsInInstance() );
 	if ( Type == "pvp" ) then -- In battleground
 		me.Battlegrounds.Enable();
-	elseif ( Type ~= "arena" ) then -- Not cross-server
+	elseif ( Type == "arena" ) then
+		me.Disable();
+	else
 		me.Enable();
 	end
 end
