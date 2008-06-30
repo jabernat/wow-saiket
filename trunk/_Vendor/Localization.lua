@@ -6,7 +6,7 @@
 
 do
 	local Title = "_|cffCCCC88Vendor|r";
-	local Bullet = "    \226\151\143 ";
+	local Bullet = "    \226\128\162 ";
 	local LDQuo, RDQuo = GRAY_FONT_COLOR_CODE.."\226\128\156", "\226\128\157"..FONT_COLOR_CODE_CLOSE;
 	local EpicColor = select( 4, GetItemQualityColor( 4 ) );
 	local Item      = GRAY_FONT_COLOR_CODE.."[%s]"..FONT_COLOR_CODE_CLOSE; -- [Name]
@@ -30,7 +30,7 @@ do
 			MESSAGE_DECREMENT_FORMAT = "Reduced to "..ItemCount..".";
 			MESSAGE_REMOVEALL = "All items removed.";
 			MESSAGE_REMOVE_FORMAT = "Removed "..Item..".";
-			MESSAGE_LIST_FORMAT = "Listing - %d items:"; -- Total item count
+			MESSAGE_LIST_FORMAT = "Listing - %d |4item:items;:"; -- Total item count
 			MESSAGE_LIST_NONE   = "Listing - No items.";
 			MESSAGE_LISTELEMENT_FORMAT = Bullet..ItemCount..LIGHTYELLOW_FONT_COLOR_CODE.." (%s)"; -- [Name]x# (Cost)
 			MESSAGE_PRICECHECK_ON  = "Price checking "..GREEN_FONT_COLOR_CODE.."enabled"..FONT_COLOR_CODE_CLOSE..".";

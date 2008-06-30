@@ -78,9 +78,9 @@ end
 do
 	local GetNetStats = GetNetStats;
 	local select = select;
-	function me.GetLeadTime ()
+	function me.GetLeadTime ( JustLatency )
 		local Latency = ( select( 3, GetNetStats() ) / 1000 ) / 2; -- One-way latency in seconds
-		return Latency + _VendorOptions.ExtraLeadTime;
+		return Latency + ( JustLatency and 0 or _VendorOptions.ExtraLeadTime );
 	end
 end
 --[[****************************************************************************
@@ -518,7 +518,7 @@ function me:CHAT_MSG_SYSTEM ( Event, Message )
 	local Time = L.ALERT_TIMES[ select( 3, Message:find( L.SHUTDOWN_PATTERN ) ) or select( 3, Message:find( L.RESTART_PATTERN ) ) ];
 
 	if ( Time ) then
-		local LeadTime = me.GetLeadTime();
+		local LeadTime = me.GetLeadTime( true ); -- Don't inculde extra lead time
 
 		me.TimeLeft = Time - LeadTime;
 		me:Show();
