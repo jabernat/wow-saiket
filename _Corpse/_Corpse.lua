@@ -10,9 +10,10 @@ local me = CreateFrame( "Frame", "_Corpse" );
 local ShowHookFrame = CreateFrame( "Frame" );
 me.ShowHookFrame = ShowHookFrame;
 
-local Enemies = {}; -- Name-indexed hash of connection status
-	                  -- Values: false = Unknown, 0 = Offline, 1 = Online
-me.Enemies = Enemies;
+local Enemies = {};   -- Name-indexed hash of connection status
+me.Enemies = Enemies; -- Values: false = Unknown, 0 = Offline, 1 = Online
+local Allies = {};
+me.Allies = Allies;
 
 me.Enabled = false;
 
@@ -47,6 +48,22 @@ do
 			end
 		end
 	end
+end
+--[[****************************************************************************
+  * Function: _Corpse.CacheFriendInfo                                          *
+  * Description: Caches the online status of results from GetFriendInfo, and   *
+  *   then updates the corpse tooltip if necessary.                            *
+  ****************************************************************************]]
+function me.CacheFriendInfo ( ... )
+	local Name, ConnectedStatus = ..., select( 5, ... ) or 0;
+
+	if ( ConnectedStatus == 1 or Allies[ Name ] ~= 0 ) then
+		-- Info changed
+		if ( Name == me.GetCorpseName() ) then -- Tooltip still up
+			me.BuildCorpseTooltip( false, ... );
+		end
+	end
+	Allies[ Name ] = ConnectedStatus;
 end
 --[[****************************************************************************
   * Function: _Corpse.GetCorpseName                                            *
@@ -119,7 +136,8 @@ function me.BuildCorpseTooltip ( Hostile, Name, Level, Class, Location, Connecte
 		end
 	end
 
-	GameTooltip:Show();
+	-- Hack to effectively resize the tooltip without breaking FadeOut() like Show() does
+	GameTooltip:AppendText( "" );
 end
 
 
@@ -295,9 +313,8 @@ function me:CHAT_MSG_SYSTEM ( _, Message )
 			if ( Name ) then
 				-- Added successfully
 				if ( Name == me.AddFriendLast ) then
-					if ( Name == me.GetCorpseName() ) then -- Tooltip still up
-						me.BuildCorpseTooltip( false, GetFriendInfo( me.GetFriendIndex( Name ) ) );
-					end
+					-- Update tooltip
+					me.CacheFriendInfo( GetFriendInfo( me.GetFriendIndex( Name ) ) );
 					me.RemoveFriend(); -- Remove temporary friend
 					me.AddFriendSwap(); -- Add swapped friend back onto list
 					me.SafelyUnregisterChatMsgSystem();
@@ -366,8 +383,8 @@ function me:FRIENDLIST_UPDATE ()
 	local Name = me.GetCorpseName();
 	if ( Name ) then
 		local Index = me.GetFriendIndex( Name );
-		if ( Index ) then
-			me.BuildCorpseTooltip( false, GetFriendInfo( Index ) );
+		if ( Index ) then -- Corpse is a friend
+			me.CacheFriendInfo( GetFriendInfo( Index ) );
 		end
 	end
 end
@@ -419,6 +436,10 @@ function me:OnUpdate ()
 				-- Build tooltip with possibly old data
 				me.BuildCorpseTooltip( false, GetFriendInfo( Index ) );
 			else
+				if ( Allies[ Name ] ~= nil ) then
+					me.BuildCorpseTooltip( false, Name , nil, nil, nil,
+						Allies[ Name ] == 0 and 0 or false ); -- Don't fill in if last seen online
+				end
 				me.AddFriend( Name );
 			end
 		end
