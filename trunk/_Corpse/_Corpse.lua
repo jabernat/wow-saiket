@@ -19,6 +19,9 @@ me.Enabled = false;
 me.AddFriendLast = nil; -- Saved in case added friend is hostile(ambiguous case)
 me.RemoveFriendLast = nil; -- Saved so system message can be hidden
 me.InviteUnitLast = nil; -- Saved in case invited enemy is online(ambiguous case)
+-- Following used when friends list is full
+me.RemoveFriendSwapLast = nil;
+me.AddFriendSwapLast = nil;
 
 me.UIErrorsFrameOnEventBackup = UIErrorsFrame_OnEvent;
 me.ChatFrameMessageEventHandlerBackup = ChatFrame_MessageEventHandler;
@@ -118,6 +121,40 @@ function me.BuildCorpseTooltip ( Hostile, Name, Level, Class, Location, Connecte
 
 	GameTooltip:Show();
 end
+
+
+
+
+--[[****************************************************************************
+  * Function: _Corpse.SafelyUnregisterChatMsgSystem                            *
+  * Description: Unregisters for system chat message events when not expecting *
+  *   any more.                                                                *
+  ****************************************************************************]]
+function me.SafelyUnregisterChatMsgSystem ()
+	if ( not me.Enabled
+		and not (
+			me.AddFriendLast or me.RemoveFriendLast
+			or me.InviteUnitLast
+			or me.AddFriendSwapLast or me.RemoveFriendSwapLast )
+	) then
+		me:UnregisterEvent( "CHAT_MSG_SYSTEM" );
+	end
+end
+--[[****************************************************************************
+  * Function: _Corpse.ReregisterChatMsgSystem                                  *
+  * Description: Reregisters for system chat messages to make sure _Corpse     *
+  *   gets those events last.                                                  *
+  ****************************************************************************]]
+function me.ReregisterChatMsgSystem ()
+	if ( me:IsEventRegistered( "CHAT_MSG_SYSTEM" ) ) then
+		me:UnregisterEvent( "CHAT_MSG_SYSTEM" );
+		me:RegisterEvent( "CHAT_MSG_SYSTEM" );
+	end
+end
+
+
+
+
 --[[****************************************************************************
   * Function: _Corpse.InviteUnit                                               *
   * Description: Invites and saves the name of a player.                       *
@@ -126,10 +163,11 @@ function me.InviteUnit ( Name )
 	if ( me.Enabled and not me.InviteUnitLast ) then
 		me.InviteUnitLast = Name;
 		-- Make sure _Corpse gets events last
-		me:UnregisterEvent( "UI_ERROR_MESSAGE" );
-		me:RegisterEvent( "UI_ERROR_MESSAGE" );
-		me:UnregisterEvent( "CHAT_MSG_SYSTEM" );
-		me:RegisterEvent( "CHAT_MSG_SYSTEM" );
+		if ( me:IsEventRegistered( "UI_ERROR_MESSAGE" ) ) then
+			me:UnregisterEvent( "UI_ERROR_MESSAGE" );
+			me:RegisterEvent( "UI_ERROR_MESSAGE" );
+		end
+		me.ReregisterChatMsgSystem();
 		InviteUnit( Name );
 		return true;
 	end
@@ -139,29 +177,48 @@ end
   * Description: Adds a friend and saves the name.                             *
   ****************************************************************************]]
 function me.AddFriend ( Name )
-	if ( me.Enabled and not me.AddFriendLast ) then
-		if ( GetNumFriends() < MAX_IGNORE ) then
-			me.AddFriendLast = Name;
-			-- Make sure _Corpse gets events last
-			me:UnregisterEvent( "CHAT_MSG_SYSTEM" );
-			me:RegisterEvent( "CHAT_MSG_SYSTEM" );
-			AddFriend( Name );
-			return true;
-		else
-			RaidNotice_AddMessage( RaidWarningFrame, L.ERR_FRIENDS_MAX, RED_FONT_COLOR );
-			PlaySound( "RaidWarning" );
+	if ( me.Enabled and not ( me.AddFriendLast or me.AddFriendSwapLast ) ) then
+		me.AddFriendLast = Name;
+		me.ReregisterChatMsgSystem();
+
+		if ( GetNumFriends() >= MAX_IGNORE ) then
+			me.RemoveFriendSwap( ( GetFriendInfo( MAX_IGNORE ) ) );
 		end
+		AddFriend( Name );
+		return true;
 	end
 end
 --[[****************************************************************************
   * Function: _Corpse.RemoveFriend                                             *
-  * Description: Removes a friend and saves the name.                          *
+  * Description: Removes the last added friend and saves the name.             *
   ****************************************************************************]]
-function me.RemoveFriend ( Name )
-	me.RemoveFriendLast = Name;
-	-- Make sure _Corpse gets events last
-	me:UnregisterEvent( "CHAT_MSG_SYSTEM" );
-	me:RegisterEvent( "CHAT_MSG_SYSTEM" );
+function me.RemoveFriend ()
+	me.RemoveFriendLast = me.AddFriendLast;
+	me.AddFriendLast = nil;
+	me.ReregisterChatMsgSystem();
+	RemoveFriend( me.RemoveFriendLast );
+end
+--[[****************************************************************************
+  * Function: _Corpse.AddFriendSwap                                            *
+  * Description: Adds the last removed friend that was swapped to make room.   *
+  ****************************************************************************]]
+function me.AddFriendSwap ()
+	if ( me.RemoveFriendSwapLast and not me.AddFriendSwapLast ) then
+		me.AddFriendSwapLast = me.RemoveFriendSwapLast;
+		me.RemoveFriendSwapLast = nil;
+		me.ReregisterChatMsgSystem();
+
+		AddFriend( me.AddFriendSwapLast );
+		return true;
+	end
+end
+--[[****************************************************************************
+  * Function: _Corpse.RemoveFriendSwap                                         *
+  * Description: Removes a real friend to make room for a temporary friend.    *
+  ****************************************************************************]]
+function me.RemoveFriendSwap ( Name )
+	me.RemoveFriendSwapLast = Name;
+	--me.ReregisterChatMsgSystem(); -- Always called before RemoveFriendSwap
 	RemoveFriend( Name );
 end
 
@@ -187,12 +244,12 @@ function me.ChatFrameMessageEventHandler ( Event, ... )
 		local Message = arg1;
 		local Name;
 
-		if ( me.AddFriendLast ) then
+		if ( me.AddFriendLast or me.AddFriendSwapLast ) then
 			if ( Message == L.FRIEND_IS_ENEMY ) then
 				return;
 			else
 				Name = select( 3, Message:find( L.FRIEND_ADDED_PATTERN ) );
-				if ( Name and Name == me.AddFriendLast ) then
+				if ( Name and ( Name == me.AddFriendLast or Name == me.AddFriendSwapLast ) ) then
 					return;
 				end
 			end
@@ -203,9 +260,9 @@ function me.ChatFrameMessageEventHandler ( Event, ... )
 				return;
 			end
 		end
-		if ( me.RemoveFriendLast ) then
+		if ( me.RemoveFriendLast or me.RemoveFriendSwapLast ) then
 			Name = select( 3, Message:find( L.FRIEND_REMOVED_PATTERN ) );
-			if ( Name and Name == me.RemoveFriendLast ) then
+			if ( Name and ( Name == me.RemoveFriendLast or Name == me.RemoveFriendSwapLast ) ) then
 				return;
 			end
 		end
@@ -222,7 +279,7 @@ end
   * Function: _Corpse:CHAT_MSG_SYSTEM                                          *
   ****************************************************************************]]
 function me:CHAT_MSG_SYSTEM ( _, Message )
-	if ( me.AddFriendLast ) then
+	if ( me.AddFriendLast or me.AddFriendSwapLast ) then
 		if ( Message == L.FRIEND_IS_ENEMY ) then
 			-- Add failed (Ambiguous); horde
 			Enemies[ me.AddFriendLast ] = false;
@@ -231,9 +288,7 @@ function me:CHAT_MSG_SYSTEM ( _, Message )
 			end
 			me.InviteUnit( me.AddFriendLast );
 			me.AddFriendLast = nil;
-			if ( not me.Enabled and not ( me.InviteUnitLast or me.RemoveFriendLast ) ) then
-				me:UnregisterEvent( "CHAT_MSG_SYSTEM" );
-			end
+			me.SafelyUnregisterChatMsgSystem();
 			return;
 		else
 			local Name = select( 3, Message:find( L.FRIEND_ADDED_PATTERN ) );
@@ -243,11 +298,12 @@ function me:CHAT_MSG_SYSTEM ( _, Message )
 					if ( Name == me.GetCorpseName() ) then -- Tooltip still up
 						me.BuildCorpseTooltip( false, GetFriendInfo( me.GetFriendIndex( Name ) ) );
 					end
-					me.RemoveFriend( Name );
-					me.AddFriendLast = nil;
-					if ( not me.Enabled and not ( me.InviteUnitLast or me.RemoveFriendLast ) ) then
-						me:UnregisterEvent( "CHAT_MSG_SYSTEM" );
-					end
+					me.RemoveFriend(); -- Remove temporary friend
+					me.AddFriendSwap(); -- Add swapped friend back onto list
+					me.SafelyUnregisterChatMsgSystem();
+				elseif ( Name == me.AddFriendSwapLast ) then
+					me.AddFriendSwapLast = nil;
+					me.SafelyUnregisterChatMsgSystem();
 				end
 				return;
 			end
@@ -266,9 +322,7 @@ function me:CHAT_MSG_SYSTEM ( _, Message )
 					end
 				end
 				me.InviteUnitLast = nil;
-				if ( not me.Enabled and not ( me.AddFriendLast or me.RemoveFriendLast ) ) then
-					me:UnregisterEvent( "CHAT_MSG_SYSTEM" );
-				end
+				me.SafelyUnregisterChatMsgSystem();
 			end
 			return;
 		end
@@ -280,9 +334,7 @@ function me:CHAT_MSG_SYSTEM ( _, Message )
 			if ( Name == me.RemoveFriendLast ) then
 				-- Temporary friend removed successfully
 				me.RemoveFriendLast = nil;
-				if ( not me.Enabled and not ( me.AddFriendLast or me.InviteUnitLast ) ) then
-					me:UnregisterEvent( "CHAT_MSG_SYSTEM" );
-				end
+				me.SafelyUnregisterChatMsgSystem();
 			end
 			return;
 		end
@@ -428,9 +480,7 @@ function me.Disable ()
 		me:UnregisterEvent( "FRIENDLIST_UPDATE" );
 		if ( not me.InviteUnitLast ) then
 			me:UnregisterEvent( "UI_ERROR_MESSAGE" );
-			if ( not ( me.AddFriendLast or me.RemoveFriendLast ) ) then
-				me:UnregisterEvent( "CHAT_MSG_SYSTEM" );
-			end
+			me.SafelyUnregisterChatMsgSystem();
 		end
 
 		return true;
