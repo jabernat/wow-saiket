@@ -1,0 +1,27 @@
+<!--****************************************************************************
+    * _Units by Saiket                                                         *
+    * _Units.xml - Global events/updates frame.                                *
+    *************************************************************************-->
+
+
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\..\FrameXML\UI.xsd">
+	<Frame name="_UnitsMouseoverTargetFrame" parent="GameTooltip">
+		<Size>
+			<AbsDimension x="1" y="1"/>
+		</Size>
+		<Anchors>
+			<Anchor point="BOTTOMLEFT" relativePoint="BOTTOMRIGHT"/>
+		</Anchors>
+		<Frames>
+			<GameTooltip name="$parentTooltip" frameStrata="TOOLTIP" toplevel="true" scale="0.8" inherits="GameTooltipTemplate"/>
+		</Frames>
+		<Scripts>
+			<OnUpdate>
+				_Units.MouseoverTargetFrameOnUpdate( self, elapsed );
+			</OnUpdate>
+			<OnLoad>
+				_Units.MouseoverTargetFrameOnLoad( self );
+			</OnLoad>
+		</Scripts>
+	</Frame>
+</Ui>
