@@ -1,5 +1,0 @@
-<Bindings>
-	<Binding name="_LINK_TOGGLE" header="_LINK_KEYS">
-		_Link.Toggle();
-	</Binding>
-</Bindings>
