@@ -1,8 +1,0 @@
-<Bindings>
-	<Binding name="_ARENA_TOGGLE" header="_ARENA">
-		_Arena.Toggle();
-	</Binding>
-	<Binding name="_ARENA_CAMERA_TOGGLE">
-		_Arena.Camera.Toggle();
-	</Binding>
-</Bindings>
