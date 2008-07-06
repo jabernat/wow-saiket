@@ -9,8 +9,8 @@
 ## SavedVariables: _DevOptions
 ## OptionalDeps: !ImprovedErrorFrame, !BugGrabber, !Swatter
 ## DefaultState: enabled
-# LoadOnDemand: 1
-# LoadManagers: AddonLoader
+## LoadManagers: AddonLoader
+## X-LoadOn-Always: true
 Localization.lua
 
 _Dev.lua
