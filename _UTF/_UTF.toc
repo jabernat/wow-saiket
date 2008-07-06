@@ -2,8 +2,11 @@
 ## Title: _|cffCCCC88UTF|r
 ## Author: Saiket
 ## Version: 2.4.1 (2008-04-07)
-## X-Date: 2008-04-07
+## X-Date: 2008-07-06
 ## X-Category: Chat/Communication
+## X-Email: saiket.wow@gmail.com
+## X-Website: http://groups.google.com/group/wow-saiket/web/_utf
+## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:UTF
 ## X-Localizations: enUS
 ## Notes: Unicode input dialog and text replacement.
 ## SavedVariables: _UTFOptions
