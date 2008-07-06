@@ -2,8 +2,11 @@
 ## Title: _|cffCCCC88Corpse|r
 ## Author: Saiket
 ## Version: 2.4.1
-## X-Date: 2008-06-18
+## X-Date: 2008-07-06
 ## X-Category: Tooltips, Interface Enhancements
+## X-Email: saiket.wow@gmail.com
+## X-Website: http://groups.google.com/group/wow-saiket/web/_corpse
+## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Corpse
 ## X-Localizations: enUS
 ## Notes: Adds online/offline status and other info to corpse tooltips.
 ## OptionalDeps: _Dev
