@@ -2,8 +2,11 @@
 ## Title: _|cffCCCC88Units|r
 ## Author: Saiket
 ## Version: 2.4.2
-## X-Date: 2008-05-04
+## X-Date: 2008-07-06
 ## X-Category: UnitFrame
+## X-Email: saiket.wow@gmail.com
+## X-Website: http://groups.google.com/group/wow-saiket/web/_units
+## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Units
 ## X-Localizations: enUS
 ## Notes: Modifications specific to unit frames.
 ## SavedVariables: _UnitsOptions
