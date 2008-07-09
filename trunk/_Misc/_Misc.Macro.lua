@@ -38,6 +38,17 @@ function me.UnitInGroup ( Unit )
 		or UnitIsUnit( Unit, "pet" );
 end
 --[[****************************************************************************
+  * Function: _Misc.Macro.UnitIsCastable                                       *
+  * Description: Returns true if the specified unit can be cast upon.          *
+  ****************************************************************************]]
+function me.UnitIsCastable ( Unit )
+	return UnitIsFriend( "player", Unit )
+		and not UnitIsDeadOrGhost( Unit )
+		and UnitIsConnected( Unit )
+		and UnitIsVisible( Unit )
+		and UnitInRange( Unit );
+end
+--[[****************************************************************************
   * Function: _Misc.Macro.ItemUsable                                           *
   * Description: Returns true if an item is usable.                            *
   ****************************************************************************]]
@@ -219,6 +230,7 @@ end
 
 do
 	UnitInGroup = me.UnitInGroup;
+	UnitIsCastable = me.UnitIsCastable;
 	garble = me.Garble;
 	usable = me.ItemUsable;
 	trunc = me.Truncate;
