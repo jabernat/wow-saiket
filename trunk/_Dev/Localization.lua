@@ -158,6 +158,6 @@ do
 	SLASH_DEV_OUTLINE1 = "/outline";
 
 	-- Frames
-	SLASH_DEV_FRAMESTOGGLE1 = "/frames"; -- NOTE(Temporary name.)
+	SLASH_DEV_FRAMESTOGGLE1 = "/frames";
 	BINDING_NAME__DEV_FRAMESTOGGLE = "Toggle Frames Browsing";
 end
