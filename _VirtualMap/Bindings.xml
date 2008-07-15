@@ -1,0 +1,5 @@
+<Bindings>
+	<Binding name="TOGGLEVIRTUALMAP" header="_VIRTUALMAP">
+		_VirtualMap.Toggle();
+	</Binding>
+</Bindings>
