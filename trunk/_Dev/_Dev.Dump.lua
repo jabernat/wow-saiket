@@ -271,4 +271,16 @@ do
 	dump = me.Explore;
 
 	SlashCmdList[ "DEV_DUMP" ] = me.SlashCommand;
+
+	local Forbidden = {
+		[ "PRINT" ] = true;
+	};
+	for Key in pairs( Forbidden ) do
+		SlashCmdList[ Key ] = nil;
+	end
+	setmetatable( SlashCmdList, { __newindex = function ( self, Key, Value )
+		if ( not Forbidden[ Key ] ) then
+			rawset( self, Key, Value );
+		end
+	end; } );
 end
