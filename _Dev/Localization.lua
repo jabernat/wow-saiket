@@ -152,6 +152,7 @@ do
 
 	-- Dump
 	SLASH_DEV_DUMP1 = "/dump";
+	SLASH_DEV_DUMP2 = "/d";
 
 
 	-- Outline
