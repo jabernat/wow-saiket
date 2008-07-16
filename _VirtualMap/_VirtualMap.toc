@@ -11,7 +11,7 @@
 ## Notes: Virtual 3D map overlay for GatherMate.
 ## SavedVariables: _VirtualMapDB
 ## RequiredDeps: GatherMate
-## OptionalDeps: _Dev, LibStub
+## OptionalDeps: _Dev, LibStub, Ace3
 ## DefaultState: enabled
 Locales.xml
 
