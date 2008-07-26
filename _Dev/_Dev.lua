@@ -12,6 +12,9 @@
   * + Key bindings to reload the UI and to open chat with /script.             *
   * + Adds /togglemod <modname> to toggle on and off the given addon and       *
   *   reload the UI if necessary.                                              *
+  * + Applies fix to all scrolling message frames to speed up printing many    *
+  *   lines to them.  Idea courtesy of Drundia's Fix ScrollingMessageFrame Lag *
+  *   addon.                                                                   *
   ****************************************************************************]]
 
 
@@ -26,6 +29,9 @@ _DevOptions = _DevOptionsOriginal;
 local L = _DevLocalization;
 local me = CreateFrame( "Frame" );
 _Dev = me;
+
+local ScrollingMessageFrames = {};
+me.ScrollingMessageFrames = ScrollingMessageFrames;
 
 me.Font = CreateFont( "_DevFont" );
 me.ScriptSlashCommandBackup = SlashCmdList[ "SCRIPT" ];
@@ -50,6 +56,17 @@ do
 			Color = NORMAL_FONT_COLOR;
 		end
 		( ChatFrame or DEFAULT_CHAT_FRAME ):AddMessage( tostring( Message ), Color.r, Color.g, Color.b, Color.id );
+	end
+end
+--[[****************************************************************************
+  * Function: _Dev:AddMessage                                                  *
+  * Description: Hook to speed up printing to scrolling message frames.  Idea  *
+  *   courtesy of Drundia's Fix ScrollingMessageFrame Lag addon.               *
+  ****************************************************************************]]
+function me:AddMessage ()
+	if ( not ScrollingMessageFrames[ self ] ) then
+		ScrollingMessageFrames[ self ] = true;
+		self:SetHeight( self:GetHeight() );
 	end
 end
 --[[****************************************************************************
@@ -270,6 +287,15 @@ do
 			LastAlt = Alt;
 			me:OnEvent( "MODIFIER_STATE_CHANGED", "*ALT", Alt or 0 );
 		end
+
+		-- Reshow any updated message frames
+		for MessageFrame in pairs( ScrollingMessageFrames ) do
+			ScrollingMessageFrames[ MessageFrame ] = nil;
+			if ( MessageFrame:IsVisible() ) then
+				MessageFrame:Hide();
+				MessageFrame:Show();
+			end
+		end
 	end
 end
 
@@ -295,4 +321,7 @@ do
 
 	SlashCmdList[ "SCRIPT" ] = me.ScriptSlashCommand;
 	SlashCmdList[ "DEV_TOGGLEADDON" ] = me.ToggleAddOnSlashCommand;
+
+	-- Fix to speed up printing many lines to scrolling message frames, by Drundia
+	hooksecurefunc( getmetatable( ChatFrame1 ).__index, "AddMessage", me.AddMessage );
 end
