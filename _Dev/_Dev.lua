@@ -273,6 +273,7 @@ do
 
 	local LastShift, LastCtrl, LastAlt; -- Last states of modifiers
 	local Shift, Ctrl, Alt;
+	local Color = ChatTypeInfo[ "SYSTEM" ]; -- ID 0
 	function me:OnUpdate ()
 		Shift, Ctrl, Alt = IsShiftKeyDown(), IsControlKeyDown(), IsAltKeyDown();
 		if ( Shift ~= LastShift ) then
@@ -292,8 +293,7 @@ do
 		for MessageFrame in pairs( ScrollingMessageFrames ) do
 			ScrollingMessageFrames[ MessageFrame ] = nil;
 			if ( MessageFrame:IsVisible() ) then
-				MessageFrame:Hide();
-				MessageFrame:Show();
+				MessageFrame:UpdateColorByID( Color.id, Color.r, Color.g, Color.b ); -- Redraws text
 			end
 		end
 	end
