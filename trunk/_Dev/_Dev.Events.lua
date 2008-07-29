@@ -71,7 +71,7 @@ do
 	function AddOnChat.AddMessage ( Prefix, Message, Type, Sender )
 		local Color = ChatTypeInfo[ Type ];
 		local Message = L.ADDONCHAT_MSG_FORMAT:format( L.ADDONCHAT_TYPES[ Type ],
-			Sender, Sender, Prefix, --[[EscapeString]]( Message ) );
+			Sender, Sender, EscapeString( Prefix ), EscapeString( Message ) );
 	
 		for ChatFrame, TypeList in pairs( ChatFrames ) do
 			if ( TypeList[ Type ] ) then

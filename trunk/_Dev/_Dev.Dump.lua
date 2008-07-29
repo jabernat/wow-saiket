@@ -20,7 +20,7 @@
 
 
 _DevOptions.Dump = {
-	SkipGlobalEnv = true; -- Precaches _G to avoid lockups
+	SkipGlobalEnv = false; -- Precaches _G to avoid lockups
 
 	-- 0 = None
 	-- 1 = Escape pipes
@@ -32,7 +32,7 @@ _DevOptions.Dump = {
 	MaxStrLen = false; -- Cutoff length for printed strings
 	MaxTableLen = false; -- Max table elements to print before leaving the table
 
-	MaxExploreTime = 15.0; -- Seconds to run before stopping execution
+	MaxExploreTime = 10.0; -- Seconds to run before stopping execution
 };
 
 
@@ -40,17 +40,18 @@ local _Dev = _Dev;
 local L = _DevLocalization;
 local me = {
 	EscapeSequences = {
-		[ "\a" ] = "\\a"; -- bell
-		[ "\b" ] = "\\b"; -- backspace
-		[ "\t" ] = "\\t"; -- horizontal tab
-		[ "\n" ] = "\\n"; -- newline
-		[ "\v" ] = "\\v"; -- vertical tab
-		[ "\f" ] = "\\f"; -- form feed
-		[ "\r" ] = "\\r"; -- carriage return
-		[ "\\" ] = "\\\\"; -- backslash
-		[ "\"" ] = "\\\""; -- quotation mark
+		[ "\a" ] = "\\a"; -- Bell
+		[ "\b" ] = "\\b"; -- Backspace
+		[ "\t" ] = "\\t"; -- Horizontal tab
+		[ "\n" ] = "\\n"; -- Newline
+		[ "\v" ] = "\\v"; -- Vertical tab
+		[ "\f" ] = "\\f"; -- Form feed
+		[ "\r" ] = "\\r"; -- Carriage return
+		[ "\\" ] = "\\\\"; -- Backslash
+		[ "\"" ] = "\\\""; -- Quotation mark
+		[ "|" ]  = "||";
 	};
-}; -- End _Dev.Dump
+};
 _Dev.Dump = me;
 local EscapeSequences = me.EscapeSequences;
 
@@ -60,45 +61,31 @@ local Temp = {}; -- Private: Lists of known data structures
 
 
 --[[****************************************************************************
-  * Function: _Dev.Dump.GsubEscapeExtended                                     *
-  * Description: Function used by string.gsub to replace special characters    *
-  *   with their escape sequence representations.                              *
-  ****************************************************************************]]
-function me.GsubEscapeExtended ( Character )
-	local EscapeSequence = EscapeSequences[ Character ];
-
-	if ( EscapeSequence ) then
-		return EscapeSequence;
-	else
-		Character = Character:byte();
-		if ( Character >= 100 ) then
-			return "\\"..Character;
-		elseif ( Character >= 10 ) then
-			return "\\0"..Character;
-		else -- < 10
-			return "\\00"..Character;
-		end
-	end
-end
---[[****************************************************************************
   * Function: _Dev.Dump.EscapeString                                           *
   * Description: Optionally escapes the given string's pipe characters,        *
   *   newlines/tabs, and extended characters.                                  *
   ****************************************************************************]]
-function me.EscapeString ( Input )
-	local EscapeMode = _DevOptions.Dump.EscapeMode;
-	if ( EscapeMode >= 1 ) then
-		local MaxStrLen = _DevOptions.Dump.MaxStrLen;
-		local Truncated = MaxStrLen and #Input > MaxStrLen;
-		Input = ( MaxStrLen and Input:sub( 1, MaxStrLen ) or Input ):gsub( "|", "||" );
-		if ( EscapeMode >= 2 ) then
-			Input = Input:gsub( "[%z\1-\31\"\\\127-\255]", me.GsubEscapeExtended );
+do
+	local EscapeMode, MaxStrLen, Truncated;
+	function me.EscapeString ( Input )
+		EscapeMode = _DevOptions.Dump.EscapeMode;
+		if ( EscapeMode >= 1 ) then
+			MaxStrLen = _DevOptions.Dump.MaxStrLen;
+			Truncated = MaxStrLen and #Input > MaxStrLen;
+			if ( Truncated ) then
+				Input = Input:sub( 1, MaxStrLen );
+			end
+			if ( EscapeMode == 1 ) then
+				Input = Input:gsub( "|", "||" );
+			elseif ( EscapeMode >= 2 ) then
+				Input = Input:gsub( "[%z\1-\31\"\\|\127-\255]", EscapeSequences );
+			end
+			if ( Truncated ) then
+				Input = Input..L.DUMP_MAXSTRLEN_ABBR;
+			end
 		end
-		if ( Truncated ) then
-			Input = Input..L.DUMP_MAXSTRLEN_ABBR;
-		end
+		return Input;
 	end
-	return Input;
 end
 --[[****************************************************************************
   * Function: _Dev.Dump.ToString                                               *
@@ -137,8 +124,10 @@ end
   ****************************************************************************]]
 do
 	local type = type;
+
+	local History;
 	function me.AddHistory ( Input )
-		local History = Temp[ type( Input ) ];
+		History = Temp[ type( Input ) ];
 	
 		if ( History and not History[ Input ] ) then
 			History.n = History.n + 1;
@@ -268,6 +257,15 @@ end
 -----------------------------
 
 do
+	-- Add all non-printed characters to replacement table
+	for Index = 0, 31 do
+		EscapeSequences[ strchar( Index ) ] = ( "\\%03d" ):format( Index );
+	end
+	for Index = 127, 255 do
+		EscapeSequences[ strchar( Index ) ] = ( "\\%03d" ):format( Index );
+	end
+
+
 	dump = me.Explore;
 
 	SlashCmdList[ "DEV_DUMP" ] = me.SlashCommand;
