@@ -180,9 +180,9 @@ do
 		if ( Text ) then
 			if ( select( 4, ... ) == nil ) then -- Most likely a message added by another addon which won't be caught by the event handler
 				Text = ParseMessageURLs( Text );
-			else -- Add item and spell icons
-				Text = Text:gsub( "|Hspell:(%d+)", AddMessageSpellGsub ):gsub( "|H(item:[^|]+)|h%[", AddMessageItemGsub );
 			end
+			-- Add item and spell icons
+			Text = Text:gsub( "|Hspell:(%d+)", AddMessageSpellGsub ):gsub( "|H(item:[^|]+)|h%[", AddMessageItemGsub );
 			if ( not Text:find( L.FCF_TIMESTAMP_PATTERN ) and TimeIsKnown() ) then
 				Text = L.FCF_TIMESTAMP_FORMAT:format( GetGameTimeString(), Text );
 			end
