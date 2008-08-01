@@ -59,7 +59,7 @@ do
 
 			-- Outline
 			OUTLINE_MESSAGE_FORMAT = Title..".Outline: %s";
-			OUTLINE_ADD_FORMAT = "Borders added to "..LDQuo..GREEN_FONT_COLOR_CODE.."%s"..FONT_COLOR_CODE_CLOSE..RDQuo.." (|cff%02x%02x%02x\226\150\136"..FONT_COLOR_CODE_CLOSE..")."; -- ObjectName, R, G, B
+			OUTLINE_ADD_FORMAT = "[|cff%02x%02x%02x\226\150\136"..FONT_COLOR_CODE_CLOSE.."] Borders added to "..LDQuo..GREEN_FONT_COLOR_CODE.."%s"..FONT_COLOR_CODE_CLOSE..RDQuo.."."; -- R, G, B, ObjectName
 			OUTLINE_REMOVE_FORMAT = "Borders removed from "..LDQuo..GREEN_FONT_COLOR_CODE.."%s"..FONT_COLOR_CODE_CLOSE..RDQuo.."."; -- ObjectName
 			OUTLINE_REMOVEALL_FORMAT = "%d |4border:borders; removed."; -- OutlineCount
 			OUTLINE_INVALID = "Input must evaluate to a valid Region UIObject.";
