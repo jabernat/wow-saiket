@@ -64,7 +64,7 @@ end
   *   courtesy of Drundia's Fix ScrollingMessageFrame Lag addon.               *
   ****************************************************************************]]
 function me:AddMessage ()
-	if ( not ScrollingMessageFrames[ self ] ) then
+	if ( not ( ScrollingMessageFrames[ self ] or self:IsProtected() ) ) then
 		ScrollingMessageFrames[ self ] = true;
 		self:SetHeight( self:GetHeight() );
 	end
@@ -273,7 +273,7 @@ do
 
 	local LastShift, LastCtrl, LastAlt; -- Last states of modifiers
 	local Shift, Ctrl, Alt;
-	local Color = ChatTypeInfo[ "SYSTEM" ]; -- ID 0
+	local Color = ChatTypeInfo[ "SYSTEM" ]; -- ID 1
 	function me:OnUpdate ()
 		Shift, Ctrl, Alt = IsShiftKeyDown(), IsControlKeyDown(), IsAltKeyDown();
 		if ( Shift ~= LastShift ) then
@@ -289,7 +289,7 @@ do
 			me:OnEvent( "MODIFIER_STATE_CHANGED", "*ALT", Alt or 0 );
 		end
 
-		-- Reshow any updated message frames
+		-- Refresh any updated message frames
 		for MessageFrame in pairs( ScrollingMessageFrames ) do
 			ScrollingMessageFrames[ MessageFrame ] = nil;
 			if ( MessageFrame:IsVisible() ) then

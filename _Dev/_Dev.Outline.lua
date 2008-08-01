@@ -57,6 +57,9 @@ function me:RemoveAll ()
 		OutlineFrame:ClearAllPoints();
 		self.Targets[ Region ] = nil;
 		self.UnusedOutlines[ OutlineFrame ] = true;
+		if ( self.OnSetTarget ) then
+			self.OnSetTarget( OutlineFrame, nil );
+		end
 		Count = Count + 1;
 	end
 	return Count;
@@ -73,6 +76,9 @@ function me:Remove ( Region )
 		OutlineFrame:ClearAllPoints();
 		self.Targets[ Region ] = nil;
 		self.UnusedOutlines[ OutlineFrame ] = true;
+		if ( self.OnSetTarget ) then
+			self.OnSetTarget( OutlineFrame, nil );
+		end
 
 		return true;
 	end
@@ -104,7 +110,9 @@ end
   * Description: Called for outlines when they are anchored to a target frame. *
   ****************************************************************************]]
 function me:OnSetTarget ( Target )
-	self.NameText:SetText( Target:GetName() );
+	if ( Target ) then
+		self.NameText:SetText( Target:GetName() );
+	end
 end
 
 
@@ -222,10 +230,11 @@ function me.Toggle ( Region, DefaultName )
 		if ( me:Add( Region ) ) then
 			-- Display the color of the added borders in the message
 			local Color = me.Targets[ Region ].Color;
-			_Dev.Print( L.OUTLINE_MESSAGE_FORMAT:format( L.OUTLINE_ADD_FORMAT:format( Region:GetName() or DefaultName,
+			_Dev.Print( L.OUTLINE_MESSAGE_FORMAT:format( L.OUTLINE_ADD_FORMAT:format(
 				_Dev.Round( Color.r * 255 ),
 				_Dev.Round( Color.g * 255 ),
-				_Dev.Round( Color.b * 255 ) ) ) );
+				_Dev.Round( Color.b * 255 ),
+				Region:GetName() or DefaultName ) ) );
 			if ( Region:GetWidth() == 0 or Region:GetHeight() == 0 ) then
 				_Dev.Error( L.OUTLINE_MESSAGE_FORMAT:format( L.OUTLINE_INVALID_DIMENSIONS ), true );
 			elseif ( not Region:GetLeft() or not Region:GetBottom() ) then
