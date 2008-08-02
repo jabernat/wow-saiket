@@ -259,10 +259,16 @@ end
 do
 	-- Add all non-printed characters to replacement table
 	for Index = 0, 31 do
-		EscapeSequences[ strchar( Index ) ] = ( "\\%03d" ):format( Index );
+		local Character = strchar( Index );
+		if ( not EscapeSequences[ Character ] ) then
+			EscapeSequences[ Character ] = ( "\\%03d" ):format( Index );
+		end
 	end
 	for Index = 127, 255 do
-		EscapeSequences[ strchar( Index ) ] = ( "\\%03d" ):format( Index );
+		local Character = strchar( Index );
+		if ( not EscapeSequences[ Character ] ) then
+			EscapeSequences[ Character ] = ( "\\%03d" ):format( Index );
+		end
 	end
 
 
