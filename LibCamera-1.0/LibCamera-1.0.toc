@@ -8,7 +8,6 @@
 ## X-Website: http://groups.google.com/group/wow-saiket/web/libcamera-1.0
 ## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:LibCamera
 ## Notes: Keeps track of where your camera is.
-## OptionalDeps: _Dev, LibStub
 ## LoadOnDemand: 1
 
 LibStub\LibStub.lua
