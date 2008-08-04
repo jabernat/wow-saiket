@@ -1,12 +1,12 @@
 --[[****************************************************************************
-  * _Clean by Saiket                                                           *
-  * _Clean.ItemRack.lua - Modifies the ItemRack addon.                         *
+  * _Misc by Saiket                                                            *
+  * _Misc.ItemRack.lua - Modifies the ItemRack addon.                          *
   *                                                                            *
-  * + Repositions the minimap icon.                                            *
+  * + Changes your character's title based on the set you wear.                *
   ****************************************************************************]]
 
 
-local _Clean = _Clean;
+local _Misc = _Misc;
 local me = {
 	SetTitles = {
 		[ "1.Heal" ]  = 36; -- Champion of the Naaru
@@ -14,13 +14,13 @@ local me = {
 		[ "3.Tank" ]  =  6; -- Knight
 	};
 };
-_Clean.ItemRack = me;
+_Misc.ItemRack = me;
 
 
 
 
 --[[****************************************************************************
-  * Function: _Clean.ItemRack.EquipSet                                         *
+  * Function: _Misc.ItemRack.EquipSet                                          *
   * Description: Changes the player's title when swapping sets.  Unspecified   *
   *   sets will clear the title.                                               *
   ****************************************************************************]]
@@ -30,22 +30,10 @@ end
 
 
 --[[****************************************************************************
-  * Function: _Clean.ItemRack.OnLoad                                           *
+  * Function: _Misc.ItemRack.OnLoad                                            *
   * Description: Makes modifications just after the addon is loaded.           *
   ****************************************************************************]]
 function me.OnLoad ()
-	ItemRackMinimapFrame:RegisterForDrag();
-	ItemRackMinimapFrame:DisableDrawLayer( "OVERLAY" );
-	_Clean.ClearAllPoints( ItemRackMinimapFrame );
-	_Clean.SetPoint( ItemRackMinimapFrame, "TOPLEFT", Minimap, "TOPLEFT", 1, -1 );
-	ItemRackMinimapFrame:SetWidth( 14 );
-	ItemRackMinimapFrame:SetHeight( 14 );
-	ItemRackMinimapFrame:SetAlpha( 0.6 );
-	_Clean.SetAllPoints( ItemRackMinimapIcon, ItemRackMinimapFrame );
-	_Clean.RemoveButtonIconBorder( ItemRackMinimapIcon );
-	ItemRackMinimapIcon.SetTexCoord = _Clean.NilFunction;
-	ItemRackMinimapFrame.SetPoint = _Clean.NilFunction;
-
 	hooksecurefunc( ItemRack, "EquipSet", me.EquipSet );
 end
 
@@ -57,5 +45,5 @@ end
 -----------------------------
 
 do
-	_Clean.RegisterAddOnInitializer( "ItemRack", me.OnLoad );
+	_Misc.RegisterAddOnInitializer( "ItemRack", me.OnLoad );
 end
