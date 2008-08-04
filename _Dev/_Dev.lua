@@ -226,10 +226,10 @@ end
   ****************************************************************************]]
 function me:MODIFIER_STATE_CHANGED ( _, Modifier, State )
 	Modifier = Modifier:sub( 2 );
-	if ( Modifier == GetModifiedClick( "_DEV_ENABLECONSOLE" ) ) then
+	if ( GetModifiedClick( "_DEV_ENABLECONSOLE" ):find( Modifier, 1, true ) ) then
 		SetConsoleKey( State == 1 and "`" or nil );
 	end
-	if ( Modifier == GetModifiedClick( "_DEV_FRAMES_INTERACTIVE" ) ) then
+	if ( GetModifiedClick( "_DEV_FRAMES_INTERACTIVE" ):find( Modifier, 1, true ) ) then
 		me.Frames.SetInteractive( State == 1 );
 	end
 end
