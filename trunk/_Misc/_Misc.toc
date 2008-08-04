@@ -23,6 +23,7 @@ _Misc.CastingBar.lua
 _Misc.ColorPickerFrame.lua
 _Misc.FCF.lua
 _Misc.GameTooltip.lua
+_Misc.ItemRack.lua
 _Misc.ItemRefTooltip.lua
 _Misc.Macro.lua
 _Misc.Minimap.lua
