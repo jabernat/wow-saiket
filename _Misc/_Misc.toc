@@ -2,7 +2,7 @@
 ## Title: _|cffCCCC88Misc|r
 ## Author: Saiket
 ## Version: 2.4.3
-## X-Date: 2008-07-31
+## X-Date: 2008-08-03
 ## X-Category: Miscellaneous, Interface Enhancements
 ## X-Email: saiket.wow@gmail.com
 ## X-Website: http://groups.google.com/group/wow-saiket/web/_misc
@@ -27,6 +27,7 @@ _Misc.ItemRefTooltip.lua
 _Misc.Macro.lua
 _Misc.Minimap.lua
 _Misc.QuestLog.lua
+_Misc.PushToTalk.lua
 _Misc.WorldMapFrame.lua
 
 _Misc.ColorPickerFrame.xml
