@@ -1,15 +1,14 @@
 --[[****************************************************************************
-  * _Clean by Saiket                                                           *
-  * _Clean.PushToTalk.lua - Voice chat indicator frame.                        *
+  * _Misc by Saiket                                                            *
+  * _Misc.PushToTalk.lua - Voice chat indicator frame.                         *
   *                                                                            *
   * + Adds a voice transmitting icon to the center of the screen.              *
-  * + Moves the in-game voice indicator to the center of the screen.           *
   ****************************************************************************]]
 
 
-local _Clean = _Clean;
+local _Misc = _Misc;
 local me = CreateFrame( "Frame", nil, UIParent );
-_Clean.PushToTalk = me;
+_Misc.PushToTalk = me;
 
 me.Enabled = false;
 me.EnabledExternal = false;
@@ -19,7 +18,7 @@ me.Icon = me:CreateTexture( nil, "ARTWORK" );
 
 
 --[[****************************************************************************
-  * Function: _Clean.PushToTalk.UpdateIcon                                     *
+  * Function: _Misc.PushToTalk.UpdateIcon                                      *
   * Description: Hides or shows the push to talk icon.                         *
   ****************************************************************************]]
 function me:UpdateIcon ()
@@ -32,21 +31,21 @@ end
 
 
 --[[****************************************************************************
-  * Function: _Clean.PushToTalk:VOICE_PUSH_TO_TALK_START                       *
+  * Function: _Misc.PushToTalk:VOICE_PUSH_TO_TALK_START                        *
   ****************************************************************************]]
 function me:VOICE_PUSH_TO_TALK_START ()
 	self.Enabled = true;
 	self:UpdateIcon();
 end
 --[[****************************************************************************
-  * Function: _Clean.PushToTalk:VOICE_PUSH_TO_TALK_STOP                        *
+  * Function: _Misc.PushToTalk:VOICE_PUSH_TO_TALK_STOP                         *
   ****************************************************************************]]
 function me:VOICE_PUSH_TO_TALK_STOP ()
 	self.Enabled = false;
 	self:UpdateIcon();
 end
 --[[****************************************************************************
-  * Function: _Clean.PushToTalk:MODIFIER_STATE_CHANGED                         *
+  * Function: _Misc.PushToTalk:MODIFIER_STATE_CHANGED                          *
   ****************************************************************************]]
 function me:MODIFIER_STATE_CHANGED ( _, Modifier, State )
 	if ( Modifier == "RCTRL" ) then
@@ -55,7 +54,7 @@ function me:MODIFIER_STATE_CHANGED ( _, Modifier, State )
 	end
 end
 --[[****************************************************************************
-  * Function: _Clean.PushToTalk:OnEvent                                        *
+  * Function: _Misc.PushToTalk:OnEvent                                         *
   * Description: Keeps track of whether voice is transmitting or not.          *
   ****************************************************************************]]
 function me:OnEvent ( Event, ... )
@@ -85,15 +84,4 @@ do
 	me.Icon:SetTexture( "Interface\\Common\\VoiceChat-Speaker" );
 	me.Icon:Hide();
 	me.Icon:SetAllPoints( me );
-
-	-- Voice chat indicator
-	VoiceChatTalkers:EnableMouse( false );
-	VoiceChatTalkers:SetUserPlaced( false );
-	VoiceChatTalkers:SetMovable( false );
-	VoiceChatTalkers:SetBackdrop( nil );
-	VoiceChatTalkers:ClearAllPoints();
-	VoiceChatTalkers:SetPoint( "BOTTOM", UIParent, "CENTER" );
-
-	-- Hooks
-	UIPARENT_MANAGED_FRAME_POSITIONS[ "VoiceChatTalkers" ] = nil;
 end
