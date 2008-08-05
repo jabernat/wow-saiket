@@ -18,12 +18,9 @@ local L = LibStub( "AceLocale-3.0" ):GetLocale( "_VirtualMap" );
 local NodeTextures = GatherMate.nodeTextures;
 me.NodeTextures = NodeTextures;
 
-me.Pitch    = 90;
-me.Yaw      =  0;
-me.Distance = 50;
-me.YawOffset = 0;
-
-me.IsCameraMoving = false;
+me.Pitch    = 0;
+me.Yaw      = 0;
+me.Distance = 0;
 
 
 local HUD = CreateFrame( "Frame", nil, me );
@@ -220,6 +217,17 @@ end
 function me:OnDisable ()
 	me:Hide();
 end
+--[[****************************************************************************
+  * Function: _VirtualMap:UpdateCamera                                         *
+  * Description: Updates the display from the camera's point of view.          *
+  ****************************************************************************]]
+function me:UpdateCamera ( Event, Pitch, Yaw, Distance )
+	me.Pitch    = Pitch;
+	me.Yaw      = Yaw;
+	me.Distance = Distance;
+
+	me.ForceUpdate = true;
+end
 
 --[[****************************************************************************
   * Function: _VirtualMap:OnInitialize                                         *
@@ -235,6 +243,8 @@ function me:OnInitialize ()
 	GatherMate:GetModule( "Config" ):RegisterModule( "_VirtualMap", me.Options );
 
 	self:RegisterMessage( "GatherMateConfigChanged", "UpdateFull" );
+
+	LibStub( "LibCamera-1.0" ).RegisterCallback( me, "LibCamera_Update", "UpdateCamera" );
 end
 
 
@@ -505,19 +515,9 @@ end
   ****************************************************************************]]
 do
 	local GetPlayerMapPosition = GetPlayerMapPosition;
-	local SaveView = SaveView;
-	local IsMouselooking = IsMouselooking;
 	local GetRealZoneText = GetRealZoneText;
-	local GetCVar = GetCVar;
-	local tonumber = tonumber;
-	local sin = math.sin;
-	local cos = math.cos;
-	local abs = math.abs;
-	local min = math.min;
 
-	local DegreesToRadians = math.pi / 180;
-
-	local Changed, NewX, NewY, NewPitch, NewYaw, NewDistance, NewZone, ZoneData;
+	local Changed, NewX, NewY, NewZone, ZoneData;
 
 	function me:OnUpdate ( Elapsed )
 		Changed = false;
@@ -533,29 +533,6 @@ do
 		else
 			HUD:Hide();
 			return;
-		end
-
-		-- Cache camera information
-		SaveView( 5 );
-		NewPitch = DegreesToRadians * tonumber( GetCVar( "cameraPitchD" ) );
-		if ( NewPitch ~= me.Pitch ) then
-			me.Pitch = NewPitch;
-			Changed = true;
-		end
-		NewYaw = DegreesToRadians * tonumber( GetCVar( "cameraYawD" ) ) + me.YawOffset;
-		if ( not ( me.IsCameraMoving or IsMouselooking() ) ) then -- Camera angle relative to player face
-			NewYaw = NewYaw + ( GetCVar( "rotateMinimap" ) ~= "0"
-				and -MiniMapCompassRing:GetFacing()
-				or me.ArrowModel:GetFacing() );
-		end
-		if ( NewYaw ~= me.Yaw ) then
-			me.Yaw = NewYaw;
-			Changed = true;
-		end
-		NewDistance = tonumber( GetCVar( "cameraDistanceD" ) );
-		if ( NewDistance ~= me.Distance ) then
-			me.Distance = NewDistance;
-			Changed = true;
 		end
 
 		-- Cache zone data
@@ -630,29 +607,6 @@ do
 	Border.TextureHalo:SetBlendMode( "ADD" );
 
 	HUD.NorthIndicator.Text:SetText( L.NORTH_INDICATOR );
-
-
-	-- Find player arrow model
-	for _, Child in pairs( { Minimap:GetChildren() } ) do
-		if ( Child:IsObjectType( "Model" ) and not Child:GetName()
-			and Child:GetModel():lower() == "interface\\minimap\\minimaparrow.m2"
-		) then
-			me.ArrowModel = Child;
-			break;
-		end
-	end
-
-
-	-- Hook camera movement
-	hooksecurefunc( "CameraOrSelectOrMoveStart", function ()
-		me.IsCameraMoving = true;
-	end );
-	hooksecurefunc( "CameraOrSelectOrMoveStop", function ()
-		me.IsCameraMoving = false;
-	end );
-	hooksecurefunc( "FlipCameraYaw", function ( YawOffset )
-		me.YawOffset = me.YawOffset + YawOffset / 180 * math.pi;
-	end );
 
 	ConsoleExec( "pitchLimit 1000" );
 

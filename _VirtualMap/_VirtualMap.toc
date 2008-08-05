@@ -8,10 +8,11 @@
 ## X-Website: http://groups.google.com/group/wow-saiket/web/_virtualmap
 ## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:VirtualMap
 ## X-Localizations: enUS
+## X-Embeds: LibCamera-1.0
 ## Notes: Virtual 3D map overlay for GatherMate.
 ## SavedVariables: _VirtualMapDB
 ## RequiredDeps: GatherMate
-## OptionalDeps: _Dev, LibStub, Ace3
+## OptionalDeps: _Dev, Ace3, LibCamera-1.0
 ## DefaultState: enabled
 Locales.xml
 
