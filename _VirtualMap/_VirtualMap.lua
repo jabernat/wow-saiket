@@ -1,10 +1,5 @@
 --[[****************************************************************************
-  * _VirtualMap by Saiket, an update from GatherHud by Grum and Xinhuan        *
-NOTE(
-Turn on CVar mouseinvertyaw when flying upside down.
-Rewrite to use true 3d perspective rather than isometric viewpoint.
-Make pin anchors calculate points as if they were spheres on a plane.
-)
+  * _VirtualMap by Saiket, a modification of GatherHud by Grum and Xinhuan     *
   ****************************************************************************]]
 
 
@@ -608,7 +603,20 @@ do
 
 	HUD.NorthIndicator.Text:SetText( L.NORTH_INDICATOR );
 
-	ConsoleExec( "pitchLimit 1000" );
-
 	SlashCmdList[ "VIRTUALMAP" ] = function () me.Toggle(); end;
+
+	ConsoleExec( "pitchLimit 10000" );
+	do
+		local IsFlying = IsFlying;
+		local IsSwimming = IsSwimming;
+		local SetCVar = SetCVar;
+		local cos = math.cos;
+		CreateFrame( "Frame" ):SetScript( "OnUpdate", function ()
+			if ( ( IsFlying() or IsSwimming() ) and cos( me.Pitch ) < 0 ) then
+				SetCVar( "mouseinvertyaw", "1" );
+			else
+				SetCVar( "mouseinvertyaw", "0" );
+			end
+		end );
+	end
 end
