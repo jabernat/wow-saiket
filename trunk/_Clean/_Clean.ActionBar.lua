@@ -13,12 +13,12 @@
   * + Only shows the backgrounds of buttons when actions are being dragged.    *
   * + Colors action buttons red when out of range.                             *
   ****************************************************************************]]
+-- NOTE(Slightly desaturate action buttons, possibly with gradient.)
 
 
 local _Clean = _Clean;
 local me = {
 	Bars = {
-		MainMenuBar,
 		MultiBarBottomLeft,
 		MultiBarBottomRight,
 		MultiBarLeft,
@@ -28,27 +28,11 @@ local me = {
 _Clean.ActionBar = me;
 local Bars = me.Bars;
 
+local Icons = {};
 
 
 
---[[****************************************************************************
-  * Function: _Clean.ActionBar.SetAlpha                                        *
-  * Description: Sets the alpha transparency for all action bars.              *
-  ****************************************************************************]]
-function me.SetAlpha ( Alpha )
-	for _, Frame in ipairs( Bars ) do
-		Frame:SetAlpha( Alpha );
-	end
-end
---[[****************************************************************************
-  * Function: _Clean.ActionBar.SetScale                                        *
-  * Description: Sets the scale for all action bars relative to UIParent.      *
-  ****************************************************************************]]
-function me.SetScale ( Scale )
-	for _, Frame in ipairs( Bars ) do
-		_Clean.RunProtectedMethod( Frame, "SetScale", Scale );
-	end
-end
+
 --[[****************************************************************************
   * Function: _Clean.ActionBar.ActionButtonModify                              *
   * Description: Modifies textures on an action button.                        *
@@ -73,23 +57,35 @@ end
   * Function: _Clean.ActionBar.ActionButtonUpdateUsable                        *
   * Description: Tints action buttons red when out of range.                   *
   ****************************************************************************]]
-function me.ActionButtonUpdateUsable ()
-	local Icon = _G[ this:GetName().."Icon" ];
-	local Usable, NotEnoughMana = IsUsableAction( this.action );
-
-	if ( Usable ) then -- Not out of mana or unusable
-		if ( IsActionInRange( this.action ) ~= 0 ) then
-			Icon:SetVertexColor( 1.0, 1.0, 1.0 ); -- Usable
-			this:SetAlpha( 1.0 );
-			return;
-		else
-			Icon:SetVertexColor( 0.8, 0.1, 0.1 );
+do
+	-- Note: This gets called a ton; optimize anything and everything.
+	local IsActionInRange = IsActionInRange;
+	local IsUsableAction = IsUsableAction;
+	local _G = _G;
+	local self, Action, Icon, Usable, NotEnoughMana;
+	function me.ActionButtonUpdateUsable ()
+		self = this;
+		Action = self.action;
+		Icon = Icons[ self ];
+		if ( not Icon ) then
+			Icon = _G[ self:GetName().."Icon" ];
+			Icons[ self ] = Icon;
 		end
-	elseif ( NotEnoughMana ) then -- Very distinct blue
-		Icon:SetVertexColor( 0.1, 0.1, 1.0 );
-	end
+		Usable, NotEnoughMana = IsUsableAction( Action );
 
-	this:SetAlpha( 0.6 );
+		if ( Usable ) then -- Not out of mana or unusable
+			if ( IsActionInRange( Action ) ~= 0 ) then
+				Icon:SetVertexColor( 1.0, 1.0, 1.0 ); -- Usable
+				self:SetAlpha( 1.0 );
+			else
+				Icon:SetVertexColor( 0.8, 0.1, 0.1 );
+				self:SetAlpha( 0.6 );
+			end
+		elseif ( NotEnoughMana ) then -- Very distinct blue
+			Icon:SetVertexColor( 0.1, 0.1, 1.0 );
+			self:SetAlpha( 0.6 );
+		end
+	end
 end
 
 
@@ -101,8 +97,14 @@ end
 
 do
 	-- Make the bars less obtrusive
-	me.SetAlpha( 0.75 );
-	me.SetScale( 0.75 );
+	MainMenuBarArtFrame:SetAlpha( 0.75 );
+	for _, Frame in ipairs( Bars ) do
+		Frame:SetAlpha( 0.75 );
+	end
+	MainMenuBar:SetScale( 0.75 );
+	for _, Frame in ipairs( Bars ) do
+		Frame:SetScale( 0.75 );
+	end
 
 
 	-- Remove spacing between buttons

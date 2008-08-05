@@ -39,20 +39,18 @@ function me.MinimapSetPing ( X, Y, Sound )
 	end
 end
 --[[****************************************************************************
-  * Function: _Clean.Minimap.MinimapOnClick                                    *
+  * Function: _Clean.Minimap:MinimapOnClick                                    *
   * Description: Broadcasts a ping at the cursor's location for a square       *
   *   minimap.                                                                 *
   ****************************************************************************]]
-function me.MinimapOnClick ()
-	if ( not SpellIsTargeting() ) then -- Ping protected when casting spells
-		local CursorX, CursorY = GetCursorPosition();
-		local CenterX, CenterY = this:GetCenter();
-		local Scale = this:GetEffectiveScale();
-	
-		Minimap:PingLocation(
-			CursorX / Scale - CenterX,
-			CursorY / Scale - CenterY );
-	end
+function me:MinimapOnClick ()
+	local CursorX, CursorY = GetCursorPosition();
+	local CenterX, CenterY = self:GetCenter();
+	local Scale = self:GetEffectiveScale();
+
+	self:PingLocation(
+		CursorX / Scale - CenterX,
+		CursorY / Scale - CenterY );
 end
 
 
@@ -73,27 +71,28 @@ end
 
 do
 	Minimap_SetPing = me.MinimapSetPing;
-	Minimap_OnClick = me.MinimapOnClick;
+	Minimap:SetScript( "OnMouseUp", me.MinimapOnClick );
 
-	GetMinimapShape = me.GetMinimapShape;
-
+	local Background = _Clean.Colors.Background;
+	local Foreground = _Clean.Colors.Foreground;
 
 	-- Expand the minimap to a square and replace the artwork with a simple border
+	GetMinimapShape = me.GetMinimapShape;
 	Minimap:SetMaskTexture( "Interface\\Buttons\\WHITE8X8" );
-	Minimap:SetBackdrop( {
-		bgFile = "Interface\\Tooltips\\UI-Tooltip-Background";
-		insets = { left = -2, right = -2, top = -2, bottom = -2 }
-	} );
+	Minimap:SetBackdrop( _Clean.Backdrop );
 	Minimap:SetBackdropColor(
-		DEFAULT_CHATFRAME_COLOR.r,
-		DEFAULT_CHATFRAME_COLOR.g,
-		DEFAULT_CHATFRAME_COLOR.b,
-		DEFAULT_CHATFRAME_ALPHA );
+		Background.r,
+		Background.g,
+		Background.b,
+		Background.a );
 	Minimap:SetBlipTexture( "Interface\\AddOns\\_Clean\\Skin\\ObjectIcons" );
 
+	MinimapCluster:SetWidth( Minimap:GetWidth() );
+	MinimapCluster:SetHeight( Minimap:GetHeight() );
+	Minimap:SetAllPoints( MinimapCluster );
 	MinimapCluster:SetScale( 0.9 );
 	MinimapCluster:ClearAllPoints();
-	MinimapCluster:SetPoint( "TOPRIGHT", UIParent, 17, 23 );
+	MinimapCluster:SetPoint( "TOPRIGHT", UIParent );
 	MinimapCluster:EnableMouse( false );
 
 	MinimapToggleButton:Hide();
@@ -106,16 +105,17 @@ do
 
 
 	-- Align the ping model with its frame
-	MiniMapPing:SetPosition( 0.0061, 0.0061, 0 );
 	MiniMapPing:SetWidth( 15 );
 	MiniMapPing:SetHeight( 15 );
+	local Hypotenuse = ( GetScreenWidth() ^ 2 + GetScreenHeight() ^ 2 ) ^ 0.5 * UIParent:GetEffectiveScale();
+	local Center = 0.5 * MiniMapPing:GetWidth() / Hypotenuse;
+	MiniMapPing:SetPosition( Center, Center, 0 );
 
 
 	-- Move default buttons that sit around the minimap
 	GameTimeFrame:Hide();
 	MiniMapWorldMapButton:Hide();
 
-	MiniMapTracking:SetAlpha( 0.6 );
 	MiniMapTracking:ClearAllPoints();
 	MiniMapTracking:SetPoint( "BOTTOMLEFT", Minimap )
 	MiniMapTracking:SetWidth( 14 );
@@ -125,6 +125,7 @@ do
 	MiniMapTrackingBackground:Hide();
 	MiniMapTrackingBackground:SetTexture();
 	MiniMapTrackingIcon:SetAllPoints( MiniMapTracking );
+	MiniMapTrackingIcon:SetGradientAlpha( "VERTICAL", Background.r, Background.g, Background.b, Background.a, Foreground.r, Foreground.g, Foreground.b, Foreground.a );
 	_Clean.RemoveButtonIconBorder( MiniMapTrackingIcon );
 
 	-- Voice chat button
@@ -138,6 +139,7 @@ do
 	MiniMapMailBorder:Hide();
 	MiniMapMailBorder:SetTexture();
 	MiniMapMailIcon:SetAllPoints( MiniMapMailFrame );
+	MiniMapMailIcon:SetGradientAlpha( "VERTICAL", Background.r, Background.g, Background.b, Background.a, Foreground.r, Foreground.g, Foreground.b, Foreground.a );
 	_Clean.RemoveButtonIconBorder( MiniMapMailIcon );
 
 	MiniMapBattlefieldFrame:ClearAllPoints();
@@ -147,6 +149,7 @@ do
 	MiniMapBattlefieldBorder:Hide();
 	MiniMapBattlefieldBorder:SetTexture();
 	MiniMapBattlefieldIcon:SetAllPoints( MiniMapBattlefieldFrame );
+	MiniMapBattlefieldIcon:SetGradientAlpha( "VERTICAL", Background.r, Background.g, Background.b, Background.a, Foreground.r, Foreground.g, Foreground.b, Foreground.a );
 	BattlegroundShine:SetAllPoints( MiniMapBattlefieldFrame );
 
 	MiniMapMeetingStoneFrame:ClearAllPoints();
@@ -156,6 +159,7 @@ do
 	MiniMapMeetingStoneBorder:Hide();
 	MiniMapMeetingStoneBorder:SetTexture();
 	MiniMapMeetingStoneFrameIcon:SetAllPoints( MiniMapMeetingStoneFrame );
+	MiniMapMeetingStoneFrameIconTexture:SetGradientAlpha( "VERTICAL", Background.r, Background.g, Background.b, Background.a, Foreground.r, Foreground.g, Foreground.b, Foreground.a );
 
 
 	-- Move the zone text inside of the square

@@ -56,7 +56,9 @@ function me:Expand ( Expand )
 		TabFrame:SetAlpha( 1.0 );
 
 		if ( ID == 1 or ID == 2 ) then
-			_Clean.SetPoint( self, "TOP", Minimap, "BOTTOM" );
+			_Clean:RunProtectedFunction( function ()
+				self:SetPoint( "TOP", Minimap, "BOTTOM" );
+			end, self:IsProtected() );
 		end
 	else -- Contract and restore old alpha
 		self:SetFrameStrata( "BACKGROUND" );
@@ -65,7 +67,9 @@ function me:Expand ( Expand )
 		TabFrame:SetAlpha( me.ButtonAlpha );
 
 		if ( ID == 1 or ID == 2 ) then
-			_Clean.SetPoint( self, "TOP", MultiBarLeftButton4, 0, -24 );
+			_Clean:RunProtectedFunction( function ()
+				self:SetPoint( "TOP", MultiBarLeftButton4, 0, -24 );
+			end, self:IsProtected() );
 		end
 	end
 end
@@ -80,11 +84,11 @@ function me:SetTabPosition ( Offset )
 	local TabFrame = TabFrames[ ID ];
 	local Background = _G[ self:GetName().."Background" ];
 
-	_Clean.ClearAllPoints( TabFrame );
+	TabFrame:ClearAllPoints();
 	if ( ID == 2 ) then
-		_Clean.SetPoint( TabFrame, "BOTTOMRIGHT", Background, "TOPRIGHT" );
+		TabFrame:SetPoint( "BOTTOMRIGHT", Background, "TOPRIGHT" );
 	else
-		_Clean.SetPoint( TabFrame, "BOTTOMLEFT", Background, "TOPLEFT",
+		TabFrame:SetPoint( "BOTTOMLEFT", Background, "TOPLEFT",
 			ID == 1 and 0 or ( Offset - 3 ), 0 );
 	end
 end
@@ -93,19 +97,22 @@ end
   * Description: Undoes the changes made by FCF_UpdateCombatLogPosition.       *
   ****************************************************************************]]
 function me.UpdateCombatLogPosition ()
-	_Clean.ClearAllPoints( ChatFrame2 );
-	_Clean.SetPoint( ChatFrame2, "BOTTOMLEFT", ChatFrame1, "BOTTOMRIGHT", 4, 0 );
-	_Clean.SetPoint( ChatFrame2, "RIGHT", MultiBarLeft, "LEFT" );
+	_Clean:RunProtectedFunction( function ()
+		ChatFrame2:ClearAllPoints();
+		ChatFrame2:SetPoint( "BOTTOMLEFT", ChatFrame1, "BOTTOMRIGHT", 4, 0 );
+		ChatFrame2:SetPoint( "RIGHT", MultiBarLeft, "LEFT" );
+	end, ChatFrame2:IsProtected() );
 end
 --[[****************************************************************************
   * Function: _Clean.FCF.UpdateDockPosition                                    *
   * Description: Undoes the changes made by FCF_UpdateDockPosition.            *
   ****************************************************************************]]
 function me.UpdateDockPosition ()
-	_Clean.ClearAllPoints( ChatFrame1 );
-	_Clean.SetPoint( ChatFrame1,
-		"BOTTOMLEFT", MultiBarBottomLeft, "TOPLEFT", 0, 4 );
-	_Clean.SetPoint( ChatFrame1, "RIGHT", MultiBarBottomRight, "LEFT" );
+	_Clean:RunProtectedFunction( function ()
+		ChatFrame1:ClearAllPoints();
+		ChatFrame1:SetPoint( "BOTTOMLEFT", MultiBarBottomLeft, "TOPLEFT", 0, 4 );
+		ChatFrame1:SetPoint( "RIGHT", MultiBarBottomRight, "LEFT" );
+	end, ChatFrame1:IsProtected() );
 end
 --[[****************************************************************************
   * Function: _Clean.FCF.ToggleLock                                            *
@@ -127,7 +134,7 @@ function me:SetLocked ( IsLocked )
 	else
 		local Method = IsLocked and "Hide" or "Show";
 		for _, Region in ipairs( Borders[ self ] ) do
-			_Clean.RunProtectedMethod( Region, Method );
+			Region[ Method ]( Region );
 		end
 	end
 end
@@ -137,9 +144,9 @@ end
   ****************************************************************************]]
 function me:SetButtonSide ()
 	local BottomButton = Buttons[ self ].Bottom
-	_Clean.ClearAllPoints( BottomButton );
-	_Clean.SetPoint( BottomButton, "TOPLEFT", self, "BOTTOMLEFT" );
-	_Clean.SetPoint( BottomButton, "BOTTOMRIGHT", self, 0, -6 );
+	BottomButton:ClearAllPoints();
+	BottomButton:SetPoint( "TOPLEFT", self, "BOTTOMLEFT" );
+	BottomButton:SetPoint( "BOTTOMRIGHT", self, 0, -6 );
 end
 
 
@@ -149,8 +156,8 @@ end
   ****************************************************************************]]
 function me:ChatFrameOnShow ()
 	local ButtonList = Buttons[ self or this ]; -- Workaround for bug in Blizzard_CombatLog
-	_Clean.RunProtectedMethod( ButtonList.Up, "Hide" );
-	_Clean.RunProtectedMethod( ButtonList.Down, "Hide" );
+	ButtonList.Up:Hide();
+	ButtonList.Down:Hide();
 end
 
 
@@ -159,45 +166,41 @@ end
   * Description: Keeps visible chat frames' tabs visible as well.              *
   ****************************************************************************]]
 do
-	local AtBottom, BottomButton, IsShown, TabFrame;
-	local RunProtectedMethod = _Clean.RunProtectedMethod;
 	local GetChatWindowInfo = GetChatWindowInfo;
 	local select = select;
 	local ipairs = ipairs;
+	local BottomButton, IsShown, Shown, Docked, TabFrame, _;
 	function me.OnUpdate ()
-		-- Be cautious to keep RunProtectedMethod from being clobbered.
 		for Index, ChatFrame in ipairs( ChatFrames ) do
-			-- Show bottom button when necessary
-			AtBottom = ChatFrame:AtBottom();
-			BottomButton = Buttons[ ChatFrame ].Bottom;
-			IsShown = BottomButton:IsShown();
-			if ( AtBottom ) then
-				if ( IsShown ) then
-					RunProtectedMethod( BottomButton, "Hide" );
+			if ( ChatFrame:IsVisible() ) then
+				-- Show bottom button when necessary
+				BottomButton = Buttons[ ChatFrame ].Bottom;
+				IsShown = BottomButton:IsShown();
+				if ( ChatFrame:AtBottom() ) then
+					BottomButton:Hide();
+				else
+					BottomButton:Show();
 				end
-			elseif ( not IsShown ) then
-				RunProtectedMethod( BottomButton, "Show" );
 			end
-	
+
 			-- Keep tab visible
-			local Shown, _, Docked = select( 7, GetChatWindowInfo( Index ) );
+			Shown, _, Docked = select( 7, GetChatWindowInfo( Index ) );
 			if ( Shown or ( Docked and Docked > 0 ) ) then -- In use
 				TabFrame = TabFrames[ Index ];
 				TabFrame:SetAlpha( Shown
 					and ( ExpandedFrames[ ChatFrame ] and 1.0 or me.ButtonAlpha )
 					or me.ButtonAlpha / 2 );
-				if ( not TabFrame:IsShown() ) then
-					RunProtectedMethod( TabFrame, "Show" );
-				end
+				TabFrame:Show();
 			end
 		end
 	end
 end
 --[[****************************************************************************
-  * Function: _Clean.FCF:UPDATE_CHAT_WINDOWS                                   *
+  * Function: _Clean.FCF.OnEvent                                               *
   * Description: Repositions the two main chat windows after they're updated.  *
   ****************************************************************************]]
-function me:UPDATE_CHAT_WINDOWS ()
+function me:OnEvent ()
+	-- UPDATE_CHAT_WINDOWS
 	-- General
 	ChatFrame1:SetUserPlaced( false );
 	FCF_SetWindowName( ChatFrame1, GENERAL );
@@ -206,7 +209,9 @@ function me:UPDATE_CHAT_WINDOWS ()
 	FCF_SetChatWindowFontSize( ChatFrame2, 12 );
 	me.UpdateDockPosition();
 	me.Expand( ChatFrame1, false );
-	_Clean.RunProtectedMethod( ChatFrame1, "Show" );
+	_Clean:RunProtectedFunction( function ()
+		ChatFrame1:Show();
+	end, ChatFrame1:IsProtected() );
 	FCF_SetLocked( ChatFrame1, 1 );
 
 	-- Combat Log
@@ -220,10 +225,14 @@ function me:UPDATE_CHAT_WINDOWS ()
 	FCF_SetChatWindowFontSize( ChatFrame2, 8 );
 	me.UpdateCombatLogPosition();
 	me.Expand( ChatFrame2, false );
-	_Clean.RunProtectedMethod( ChatFrame2, "Show" );
+	_Clean:RunProtectedFunction( function ()
+		ChatFrame2:Show();
+	end, ChatFrame2:IsProtected() );
 	FCF_SetLocked( ChatFrame2, 1 );
 
-	_Clean:UnregisterEvent( "UPDATE_CHAT_WINDOWS" );
+	me:UnregisterEvent( "UPDATE_CHAT_WINDOWS" );
+	me.OnEvent = nil;
+	me:SetScript( "OnEvent", nil );
 end
 
 
@@ -305,6 +314,7 @@ do
 		local Left, Top, _, _, Right = Texture:GetTexCoord();
 		Texture:SetTexCoord( Left, Right, Top, 0.9 );
 	end
+	local Foreground = _Clean.Colors.Foreground;
 	for Index = 1, NUM_CHAT_WINDOWS do
 		local Name = "ChatFrame"..Index;
 		local ChatFrame = _G[ Name ];
@@ -343,8 +353,8 @@ do
 		BottomButton:SetPushedTexture( nil );
 		BottomButton:SetDisabledTexture( nil );
 		BottomButton:SetBackdrop( BottomButtonSettings );
-		BottomButton:SetBackdropColor( 0, 0.5, 1, 0.25 );
-		_G[ Name.."BottomButtonFlash" ]:SetTexture( 0, 0.5, 1, 0.25 ); -- Transparent blue
+		BottomButton:SetBackdropColor( Foreground.r, Foreground.g, Foreground.b, 0.25 );
+		_G[ Name.."BottomButtonFlash" ]:SetTexture( Foreground.r, Foreground.g, Foreground.b, 0.25 );
 		Buttons[ ChatFrame ] = {
 			Up = UpButton;
 			Down = DownButton;
@@ -371,11 +381,17 @@ do
 	ChatFrame2TabRight:SetTexCoord( ChatFrame2TabMiddle:GetTexCoord() );
 
 
+	for _, Region in ipairs( { ChatFrameEditBox:GetRegions() } ) do
+		if ( Region:GetObjectType() == "Texture" ) then
+			Region:SetVertexColor( 0.5, 0.5, 0.5 );
+		end
+	end
+
+
 	-- Hooks
 	UIPARENT_MANAGED_FRAME_POSITIONS[ "ChatFrame1" ] = nil;
 	UIPARENT_MANAGED_FRAME_POSITIONS[ "ChatFrame2" ] = nil;
 
-	me:SetScript( "OnUpdate", me.OnUpdate );
 	hooksecurefunc( "FCF_SetTabPosition", me.SetTabPosition );
 	hooksecurefunc( "FCF_UpdateCombatLogPosition", me.UpdateCombatLogPosition );
 	hooksecurefunc( "FCF_UpdateDockPosition", me.UpdateDockPosition );
@@ -386,7 +402,8 @@ do
 	FCF_Set_SimpleChat = _Clean.NilFunction;
 	FCF_ToggleLock = me.ToggleLock;
 
-	me.UPDATE_CHAT_WINDOWS();
-	_Clean.UPDATE_CHAT_WINDOWS = me.UPDATE_CHAT_WINDOWS;
-	_Clean:RegisterEvent( "UPDATE_CHAT_WINDOWS" );
+	me:SetScript( "OnUpdate", me.OnUpdate );
+	me:SetScript( "OnEvent", me.OnEvent );
+	me:OnEvent();
+	me:RegisterEvent( "UPDATE_CHAT_WINDOWS" );
 end

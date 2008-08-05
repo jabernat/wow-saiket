@@ -22,63 +22,40 @@ local Replacements = {
 };
 me.Replacements = Replacements;
 
-local BackdropTable = {};
-me.BackdropTable = BackdropTable;
-
 local Hooks = {};
 me.Hooks = Hooks;
 
-me.LastUpdatedFrame = nil;
-me.UpdateNewFrames = false;
 
 
--- Commonly used functions
-local select = select;
-local type = type;
-
-
-
-
---[[****************************************************************************
-  * Function: _Clean.Skin.HookMetaIndex                                        *
-  * Description: Gets the metatable index of a given frame or frame type, and  *
-  *   hooks its base Frame object methods along with any additional methods.   *
-  ****************************************************************************]]
-function me:HookMetaIndex ( ... )
-	local MetaIndex = getmetatable( type( self ) == "string"
-		and CreateFrame( self ) or self ).__index;
-
-	hooksecurefunc( MetaIndex, "CreateTexture", Hooks.CreateTexture );
-	hooksecurefunc( MetaIndex, "SetBackdrop", Hooks.SetBackdrop );
-	local Method;
-	for Index = 1, select( "#", ... ) do
-		Method = select( Index, ... );
-		hooksecurefunc( MetaIndex, Method, Hooks[ Method ] );
-	end
-end
 
 --[[****************************************************************************
   * Function: _Clean.Skin:UpdateTexture                                        *
   * Description: Replaces a texture's current path.                            *
   ****************************************************************************]]
-function me:UpdateTexture ()
-	if ( self ) then
-		local Path = self:GetTexture();
-		if ( Replacements[ Path ] ) then
-			self:SetTexture( Path );
+do
+	local Path;
+	function me:UpdateTexture ()
+		if ( self ) then
+			Path = self:GetTexture();
+			if ( Replacements[ Path ] ) then
+				self:SetTexture( Path ); -- Let SetTexture do the replacement
+			end
 		end
 	end
 end
-local UpdateTexture = me.UpdateTexture;
 --[[****************************************************************************
   * Function: _Clean.Skin.ScanRegions                                          *
   * Description: Replaces all textures in the given set of regions.            *
   ****************************************************************************]]
-function me.ScanRegions ( ... )
-	for Index = 1, select( "#", ... ) do
-		local Region = select( Index, ... );
-		if ( Region:IsObjectType( "Texture" ) ) then
-			UpdateTexture( Region );
+do
+	local select = select;
+	local Region;
+	function me.ScanRegions ( ... )
+		for Index = 1, select( "#", ... ) do
+			Region = select( Index, ... );
+			if ( Region:IsObjectType( "Texture" ) ) then
+				me.UpdateTexture( Region );
+			end
 		end
 	end
 end
@@ -94,36 +71,59 @@ end
 
 
 --[[****************************************************************************
-  * Function: _Clean.Skin.Hooks.CreateFrameHook                                *
+  * Function: _Clean.Skin:OnEvent                                              *
+  * Description: Schedules full updates when LoadOnDemand addons load.         *
+  ****************************************************************************]]
+function me:OnEvent ()
+	-- ADDON_LOADED
+	self:Show();
+end
+--[[****************************************************************************
+  * Function: _Clean.Skin:OnUpdate                                             *
+  * Description: Handles texture update requests at most once per frame.       *
+  ****************************************************************************]]
+do
+	local EnumerateFrames = EnumerateFrames;
+	local Frame;
+	function me:OnUpdate ( Elapsed )
+		Frame = self.LastUpdatedFrame;
+		while ( EnumerateFrames( Frame ) ) do
+			Frame = EnumerateFrames( Frame );
+			me.UpdateFrame( Frame );
+		end
+		self.LastUpdatedFrame = Frame;
+		self:Hide();
+	end
+end
+
+
+
+
+--------------------------------------------------------------------------------
+-- _Clean.Skin.Hooks
+--------------------
+
+--[[****************************************************************************
+  * Function: _Clean.Skin.Hooks.CreateFrame                                    *
   * Description: Hook to replace textures in templates.                        *
   ****************************************************************************]]
-function Hooks.CreateFrame ()
-	me.UpdateNewFrames = true;
+function Hooks.CreateFrame ( _, _, _, InheritsFrom )
+	if ( InheritsFrom ) then
+		me:Show();
+	end
 end
 --[[****************************************************************************
   * Function: _Clean.Skin.Hooks:CreateTexture                                  *
   * Description: Replaces textures in templated texture objects.               *
   ****************************************************************************]]
-function Hooks:CreateTexture ( Name, _, InheritsFrom )
-	if ( InheritsFrom ) then
-		if ( Name ) then
-			UpdateTexture( _G[ Name ] ); -- May miss textures with duplicate names
-		else
-			me.ScanRegions( self:GetRegions() );
-		end
+do
+	local select = select;
+	local function UpdateNewTexture( ... )
+		me.UpdateTexture( select( "#", select( ... ) ) );
 	end
-end
---[[****************************************************************************
-  * Function: _Clean.Skin.Hooks:SetTexture                                     *
-  * Description: Replaces recognized textures.                                 *
-  ****************************************************************************]]
-function Hooks:SetTexture ( Path, ... )
-	if ( not Hooks.DisableSetTexture and type( Path ) == "string" ) then
-		local Replacement = Replacements[ Path ];
-		if ( Replacement ) then
-			Hooks.DisableSetTexture = true;
-			self:SetTexture( Replacement );
-			Hooks.DisableSetTexture = nil;
+	function Hooks:CreateTexture ( _, _, InheritsFrom )
+		if ( InheritsFrom ) then -- Could have inherited texture path
+			UpdateNewTexture( self:GetRegions() );
 		end
 	end
 end
@@ -132,191 +132,8 @@ end
   * Description: Replaces textures in backgrounds.                             *
   ****************************************************************************]]
 function Hooks:SetBackdrop ( Backdrop )
-	if ( Backdrop ) then
+	if ( Backdrop and next( Backdrop ) ) then
 		me.ScanRegions( self:GetRegions() );
-	end
-end
---[[****************************************************************************
-  * Function: _Clean.Skin.Hooks:SetDisabledTexture                             *
-  ****************************************************************************]]
-function Hooks:SetDisabledTexture ( Texture )
-	if ( not Hooks.DisableSetDisabledTexture and Replacements[ Texture ] ) then
-		Hooks.DisableSetDisabledTexture = true;
-		self:SetDisabledTexture( Replacements[ Texture ] );
-		Hooks.DisableSetDisabledTexture = nil;
-	end
-end
---[[****************************************************************************
-  * Function: _Clean.Skin.Hooks:SetHighlightTexture                            *
-  ****************************************************************************]]
-function Hooks:SetHighlightTexture ( Texture )
-	if ( not Hooks.DisableSetHighlightTexture and Replacements[ Texture ] ) then
-		Hooks.DisableSetHighlightTexture = true;
-		self:SetHighlightTexture( Replacements[ Texture ] );
-		Hooks.DisableSetHighlightTexture = nil;
-	end
-end
---[[****************************************************************************
-  * Function: _Clean.Skin.Hooks:SetNormalTexture                               *
-  ****************************************************************************]]
-function Hooks:SetNormalTexture ( Texture )
-	if ( not Hooks.DisableSetNormalTexture and Replacements[ Texture ] ) then
-		Hooks.DisableSetNormalTexture = true;
-		self:SetNormalTexture( Replacements[ Texture ] );
-		Hooks.DisableSetNormalTexture = nil;
-	end
-end
---[[****************************************************************************
-  * Function: _Clean.Skin.Hooks:SetPushedTexture                               *
-  ****************************************************************************]]
-function Hooks:SetPushedTexture ( Texture )
-	if ( not Hooks.DisableSetPushedTexture and Replacements[ Texture ] ) then
-		Hooks.DisableSetPushedTexture = true;
-		self:SetPushedTexture( Replacements[ Texture ] );
-		Hooks.DisableSetPushedTexture = nil;
-	end
-end
---[[****************************************************************************
-  * Function: _Clean.Skin.Hooks:SetColorValueTexture                           *
-  ****************************************************************************]]
-function Hooks:SetColorValueTexture ( Texture )
-	if ( not Hooks.DisableSetColorValueTexture and Replacements[ Texture ] ) then
-		Hooks.DisableSetColorValueTexture = true;
-		self:SetColorValueTexture( Replacements[ Texture ] );
-		Hooks.DisableSetColorValueTexture = nil;
-	end
-end
---[[****************************************************************************
-  * Function: _Clean.Skin.Hooks:SetColorValueThumbTexture                      *
-  ****************************************************************************]]
-function Hooks:SetColorValueThumbTexture ( Texture )
-	if ( not Hooks.DisableSetColorValueThumbTexture and Replacements[ Texture ] ) then
-		Hooks.DisableSetColorValueThumbTexture = true;
-		self:SetColorValueThumbTexture( Replacements[ Texture ] );
-		Hooks.DisableSetColorValueThumbTexture = nil;
-	end
-end
---[[****************************************************************************
-  * Function: _Clean.Skin.Hooks:SetColorWheelTexture                           *
-  ****************************************************************************]]
-function Hooks:SetColorWheelTexture ( Texture )
-	if ( not Hooks.DisableSetColorWheelTexture and Replacements[ Texture ] ) then
-		Hooks.DisableSetColorWheelTexture = true;
-		self:SetColorWheelTexture( Replacements[ Texture ] );
-		Hooks.DisableSetColorWheelTexture = nil;
-	end
-end
---[[****************************************************************************
-  * Function: _Clean.Skin.Hooks:SetColorWheelThumbTexture                      *
-  ****************************************************************************]]
-function Hooks:SetColorWheelThumbTexture ( Texture )
-	if ( not Hooks.DisableSetColorWheelThumbTexture and Replacements[ Texture ] ) then
-		Hooks.DisableSetColorWheelThumbTexture = true;
-		self:SetColorWheelThumbTexture( Replacements[ Texture ] );
-		Hooks.DisableSetColorWheelThumbTexture = nil;
-	end
-end
---[[****************************************************************************
-  * Function: _Clean.Skin.Hooks:SetBlipTexture                                 *
-  ****************************************************************************]]
-function Hooks:SetBlipTexture ( Texture )
-	if ( not Hooks.DisableSetBlipTexture and Replacements[ Texture ] ) then
-		Hooks.DisableSetBlipTexture = true;
-		self:SetBlipTexture( Replacements[ Texture ] );
-		Hooks.DisableSetBlipTexture = nil;
-	end
-end
---[[****************************************************************************
-  * Function: _Clean.Skin.Hooks:SetIconTexture                                 *
-  ****************************************************************************]]
-function Hooks:SetIconTexture ( Texture )
-	if ( not Hooks.DisableSetIconTexture and Replacements[ Texture ] ) then
-		Hooks.DisableSetIconTexture = true;
-		self:SetIconTexture( Replacements[ Texture ] );
-		Hooks.DisableSetIconTexture = nil;
-	end
-end
---[[****************************************************************************
-  * Function: _Clean.Skin.Hooks:SetThumbTexture                                *
-  ****************************************************************************]]
-function Hooks:SetThumbTexture ( Texture )
-	if ( not Hooks.DisableSetThumbTexture and Replacements[ Texture ] ) then
-		Hooks.DisableSetThumbTexture = true;
-		self:SetThumbTexture( Replacements[ Texture ] );
-		Hooks.DisableSetThumbTexture = nil;
-	end
-end
---[[****************************************************************************
-  * Function: _Clean.Skin.Hooks:SetStatusBarTexture                            *
-  ****************************************************************************]]
-function Hooks:SetStatusBarTexture ( Texture, Layer )
-	if ( not Hooks.DisableSetStatusBarTexture and Replacements[ Texture ] ) then
-		Hooks.DisableSetStatusBarTexture = true;
-		self:SetStatusBarTexture( Replacements[ Texture ], Layer );
-		Hooks.DisableSetStatusBarTexture = nil;
-	end
-end
---[[****************************************************************************
-  * Function: _Clean.Skin.Hooks:SetCheckedTexture                              *
-  ****************************************************************************]]
-function Hooks:SetCheckedTexture ( Texture )
-	if ( not Hooks.DisableSetCheckedTexture and Replacements[ Texture ] ) then
-		Hooks.DisableSetCheckedTexture = true;
-		self:SetCheckedTexture( Replacements[ Texture ] );
-		Hooks.DisableSetCheckedTexture = nil;
-	end
-end
---[[****************************************************************************
-  * Function: _Clean.Skin.Hooks:SetDisabledCheckedTexture                      *
-  ****************************************************************************]]
-function Hooks:SetDisabledCheckedTexture ( Texture )
-	if ( not Hooks.DisableSetDisabledCheckedTexture and Replacements[ Texture ] ) then
-		Hooks.DisableSetDisabledCheckedTexture = true;
-		self:SetDisabledCheckedTexture( Replacements[ Texture ] );
-		Hooks.DisableSetDisabledCheckedTexture = nil;
-	end
-end
-
-
-
-
---[[****************************************************************************
-  * Function: _Clean.Skin:ADDON_LOADED                                         *
-  ****************************************************************************]]
-function me:ADDON_LOADED ()
-	self.UpdateNewFrames = true;
-end
---[[****************************************************************************
-  * Function: _Clean.Skin:VARIABLES_LOADED                                     *
-  ****************************************************************************]]
-function me:VARIABLES_LOADED ()
-	self.UpdateNewFrames = true; -- Schedule update on first screen draw
-	self:RegisterEvent( "ADDON_LOADED" );
-end
-
---[[****************************************************************************
-  * Function: _Clean.Skin:OnEvent                                              *
-  * Description: Schedules full updates when LoadOnDemand addons load.         *
-  ****************************************************************************]]
-function me:OnEvent ( Event, ... )
-	if ( type( self[ Event ] ) == "function" ) then
-		self[ Event ]( self, Event, ... );
-	end
-end
---[[****************************************************************************
-  * Function: _Clean.Skin:OnUpdate                                             *
-  * Description: Handles texture update requests at most once per frame.       *
-  ****************************************************************************]]
-function me:OnUpdate ( Elapsed )
-	if ( self.UpdateNewFrames ) then
-		self.UpdateNewFrames = false;
-
-		local Frame = self.LastUpdatedFrame;
-		while ( EnumerateFrames( Frame ) ) do
-			Frame = EnumerateFrames( Frame );
-			me.UpdateFrame( Frame );
-		end
-		self.LastUpdatedFrame = Frame;
 	end
 end
 
@@ -330,42 +147,75 @@ end
 do
 	me:SetScript( "OnUpdate", me.OnUpdate );
 	me:SetScript( "OnEvent", me.OnEvent );
-	me:RegisterEvent( "VARIABLES_LOADED" );
+	me:RegisterEvent( "ADDON_LOADED" );
+
+
+	-- Gets a method's hook, and creates a generic one if necessary.
+	local function GetHook ( Method )
+		if ( not Hooks[ Method ] ) then
+			-- Create generic hook
+			local Disabled = {};
+			Hooks[ Method ] = function ( self, Path, ... )
+				if ( not Disabled[ self ] ) then
+					Path = Replacements[ Path ];
+					if ( Path ) then
+						Disabled[ self ] = true;
+						self[ Method ]( self, Path, ... );
+						Disabled[ self ] = nil;
+					end
+				end
+			end;
+		end
+		return Hooks[ Method ];
+	end
+
+	-- Hooks all given methods for a frame/uiobject type.
+	local function HookMetaIndex ( self, ... )
+		local MetaIndex = getmetatable( type( self ) == "string"
+			and CreateFrame( self, nil, me ) or self ).__index;
+
+		hooksecurefunc( MetaIndex, "CreateTexture", GetHook( "CreateTexture" ) );
+		hooksecurefunc( MetaIndex, "SetBackdrop", GetHook( "SetBackdrop" ) );
+		for Index = 1, select( "#", ... ) do
+			local Method = select( Index, ... );
+			hooksecurefunc( MetaIndex, Method, GetHook( Method ) );
+		end
+	end
+
 
 	-- Hook textures
-	hooksecurefunc( getmetatable( me:CreateTexture() ).__index, "SetTexture", Hooks.SetTexture );
-
+	hooksecurefunc( getmetatable( me:CreateTexture() ).__index, "SetTexture", GetHook( "SetTexture" ) );
 
 	-- Hook frame methods
-	me.HookMetaIndex( me ); -- Frame
-	me.HookMetaIndex( "Cooldown" );
-	me.HookMetaIndex( ChatFrameEditBox ); -- EditBox
-	me.HookMetaIndex( GameTooltip ); -- GameTooltip
-	me.HookMetaIndex( UIErrorsFrame ); -- MessageFrame
-	me.HookMetaIndex( MiniMapPing ); -- Model
-	me.HookMetaIndex( WorldStateScoreScrollFrame ); -- ScrollFrame
-	me.HookMetaIndex( GuildEventMessageFrame ); -- ScrollingMessageFrame
-	me.HookMetaIndex( ItemTextPageText ); -- SimpleHTML
-	me.HookMetaIndex( CharacterModelFrame ); -- PlayerModel
-	me.HookMetaIndex( DressUpModel ); -- DressUpModel
-	me.HookMetaIndex( TabardModel ); -- TabardModel
-	me.HookMetaIndex( "Button",
+	HookMetaIndex( me ); -- Frame
+	HookMetaIndex( ActionButton1Cooldown ); -- Cooldown
+	HookMetaIndex( ChatFrameEditBox ); -- EditBox
+	HookMetaIndex( GameTooltip ); -- GameTooltip
+	HookMetaIndex( UIErrorsFrame ); -- MessageFrame
+	HookMetaIndex( MiniMapPing ); -- Model
+	HookMetaIndex( WorldStateScoreScrollFrame ); -- ScrollFrame
+	HookMetaIndex( GuildEventMessageFrame ); -- ScrollingMessageFrame
+	HookMetaIndex( ItemTextPageText ); -- SimpleHTML
+	HookMetaIndex( CharacterModelFrame ); -- PlayerModel
+	HookMetaIndex( DressUpModel ); -- DressUpModel
+	HookMetaIndex( TabardModel ); -- TabardModel
+	HookMetaIndex( ScriptErrorsButton, -- Button
 		"SetDisabledTexture", "SetHighlightTexture",
 		"SetNormalTexture", "SetPushedTexture" );
-	me.HookMetaIndex( TutorialFrameCheckButton, -- CheckButton
+	HookMetaIndex( TutorialFrameCheckButton, -- CheckButton
 		"SetDisabledTexture", "SetHighlightTexture", "SetNormalTexture",
 		"SetPushedTexture", "SetCheckedTexture", "SetDisabledCheckedTexture" );
-	me.HookMetaIndex( ColorPickerFrame, -- ColorSelect
+	HookMetaIndex( ColorPickerFrame, -- ColorSelect
 		"SetColorValueTexture", "SetColorValueThumbTexture",
 		"SetColorWheelTexture", "SetColorWheelThumbTexture" );
-	me.HookMetaIndex( Minimap, -- Minimap
+	HookMetaIndex( Minimap, -- Minimap
 		"SetBlipTexture", "SetIconTexture" );
-	me.HookMetaIndex( OpacitySliderFrame, -- Slider
+	HookMetaIndex( OpacitySliderFrame, -- Slider
 		"SetThumbTexture" );
-	me.HookMetaIndex( CastingBarFrame, -- StatusBar
+	HookMetaIndex( CastingBarFrame, -- StatusBar
 		"SetStatusBarTexture" );
 
 
-	-- Hook frame creation
+	-- Hook frame creation (after we're done with HookMetaIndex)
 	hooksecurefunc( "CreateFrame", Hooks.CreateFrame );
 end
