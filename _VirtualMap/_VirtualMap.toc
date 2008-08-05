@@ -14,6 +14,7 @@
 ## RequiredDeps: GatherMate
 ## OptionalDeps: _Dev, Ace3, LibCamera-1.0
 ## DefaultState: enabled
+embeds.xml
 Locales.xml
 
 _VirtualMap.lua
