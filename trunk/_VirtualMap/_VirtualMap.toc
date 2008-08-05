@@ -1,8 +1,8 @@
 ## Interface: 20400
 ## Title: _|cffCCCC88VirtualMap|r
 ## Author: Saiket. Original GatherHud by Grum and Xinhuan
-## Version: 2.4.2.1
-## X-Date: 2008-07-14
+## Version: 2.4.3.1
+## X-Date: 2008-08-05
 ## X-Category: Map
 ## X-Email: saiket.wow@gmail.com
 ## X-Website: http://groups.google.com/group/wow-saiket/web/_virtualmap
