@@ -16,17 +16,20 @@ Localization.lua
 
 _Clean.lua
 _Clean.ActionBar.lua
-_Clean.BlizzardBattlefieldMinimap.lua
-_Clean.BlizzardCombatLog.lua
-_Clean.BlizzardCombatText.lua
-_Clean.BugSack.lua
 _Clean.CastingBar.lua
 _Clean.Crosshairs.lua
-_Clean.DBM.lua
 _Clean.FCF.lua
 _Clean.General.lua
-_Clean.ItemRack.lua
 _Clean.MainMenuBar.lua
 _Clean.Minimap.lua
 _Clean.Skin.lua
 _Clean.WorldStateFrame.lua
+
+_Clean.BlizzardBattlefieldMinimap.lua
+_Clean.BlizzardCombatLog.lua
+_Clean.BlizzardCombatText.lua
+_Clean.BlizzardTimeManager.lua
+
+_Clean.BugSack.lua
+_Clean.DBM.lua
+_Clean.ItemRack.lua

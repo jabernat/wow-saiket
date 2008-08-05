@@ -49,6 +49,15 @@ do
 	CastingBarFrameText:SetWidth( 0 ); -- Allow variable width
 	CastingBarFrameText:SetFontObject( GameFontHighlightLarge );
 
+	local Background = _Clean.Colors.Background;
+	for _, Region in ipairs( { CastingBarFrame:GetRegions() } ) do
+		if ( Region:GetObjectType() == "Texture" and Region:GetDrawLayer() == "BACKGROUND" and Region:GetTexture() == "Solid Texture" ) then
+			Region:SetTexture( _Clean.Backdrop.bgFile );
+			Region:SetVertexColor( Background.r, Background.g, Background.b, Background.a );
+			break;
+		end
+	end
+
 	-- Hooks
 	UIPARENT_MANAGED_FRAME_POSITIONS[ "CastingBarFrame" ] = nil;
 	CastingBarFrame:HookScript( "OnEvent", me.HideArtwork );

@@ -12,8 +12,8 @@ _Clean = me;
 
 local AddOnInitializers = {};
 me.AddOnInitializers = AddOnInitializers;
-local ProtectedMethodQueue = {};
-me.ProtectedMethodQueue = ProtectedMethodQueue;
+local ProtectedFunctionQueue = {};
+me.ProtectedFunctionQueue = ProtectedFunctionQueue;
 me.InCombatLockdown = false;
 local PositionManagers = {};
 me.PositionManagers = PositionManagers;
@@ -53,6 +53,15 @@ me.Colors = {
 	System  = { r = 1.0; g = 1.0; b = 0.0; };
 	Gain    = { r = 0.4; g = 2/3; b = 1.0; }; -- Rep., faction, XP, skills
 	Warning = { r = 1.0; g = 0.07; b = 0.0; }; -- Raidwarning, localdefense
+
+	Foreground = { r = 0.0; g = 0.5; b = 1.0; a = 1.0; };
+	Background = { r = 0.0; g = 0.0; b = 0.0; a = 0.5; };
+	Highlight = { r = 1.0; g = 1.0; b = 0.6; a = 1.0; }; -- Light yellow
+	Gold = { r = 0.8; g = 0.8; b = 8 / 15; a = 1.0; }; -- Gold, same as title
+};
+me.Backdrop = {
+	bgFile = "Interface\\Tooltips\\UI-Tooltip-Background";
+	insets = { left = -4, right = -4, top = -4, bottom = -4 }
 };
 
 me.MonospaceFont = CreateFont( "_CleanMonospace" );
@@ -107,47 +116,18 @@ end
 
 
 --[[****************************************************************************
-  * Function: _Clean:RunProtectedMethod                                        *
-  * Description: Runs an arbitrary method if possible, or after combat ends.   *
+  * Function: _Clean:RunProtectedFunction                                      *
+  * Description: Runs an function, or stores it until after combat ends if it  *
+  *   calls protected functions.                                               *
   ****************************************************************************]]
 do
 	local tinsert = tinsert;
-	function me:RunProtectedMethod ( Method, ... )
-		if ( me.InCombatLockdown and self:IsProtected() ) then -- Store for later
-			tinsert( ProtectedMethodQueue, { Method, self, ... } );
+	function me:RunProtectedFunction ( Function, Protected )
+		if ( self.InCombatLockdown and Protected ) then -- Store for later
+			tinsert( self.ProtectedFunctionQueue, Function );
 		else
-			self[ Method ]( self, ... );
+			Function();
 		end
-	end
-end
---[[****************************************************************************
-  * Function: _Clean:SetPoint                                                  *
-  * Description: RunProtectedMethod shortcut for SetPoint.                     *
-  ****************************************************************************]]
-do
-	local RunProtectedMethod = me.RunProtectedMethod;
-	function me:SetPoint ( ... )
-		RunProtectedMethod( self, "SetPoint", ... );
-	end
-end
---[[****************************************************************************
-  * Function: _Clean:SetAllPoints                                              *
-  * Description: RunProtectedMethod shortcut for SetAllPoints.                 *
-  ****************************************************************************]]
-do
-	local RunProtectedMethod = me.RunProtectedMethod;
-	function me:SetAllPoints ( Frame )
-		RunProtectedMethod( self, "SetAllPoints", Frame );
-	end
-end
---[[****************************************************************************
-  * Function: _Clean:ClearAllPoints                                            *
-  * Description: RunProtectedMethod shortcut for ClearAllPoints.               *
-  ****************************************************************************]]
-do
-	local RunProtectedMethod = me.RunProtectedMethod;
-	function me:ClearAllPoints ()
-		RunProtectedMethod( self, "ClearAllPoints" );
 	end
 end
 --[[****************************************************************************
@@ -173,11 +153,11 @@ function me.ManagePositions ()
 	end
 end
 --[[****************************************************************************
-  * Function: _Clean.AddPositionManager                                        *
+  * Function: _Clean:AddPositionManager                                        *
   * Description: Adds a position manager override.                             *
   ****************************************************************************]]
-function me.AddPositionManager ( Manager )
-	tinsert( PositionManagers, Manager );
+function me:AddPositionManager ( Manager )
+	tinsert( self.PositionManagers, Manager );
 end
 
 
@@ -188,7 +168,10 @@ end
   ****************************************************************************]]
 function me.AddLockedButton ( Button )
 	LockedButtons[ Button ] = true;
-	me.RunProtectedMethod( Button, "EnableMouse", IsControlKeyDown() == 1 );
+	local Enable = IsControlKeyDown() == 1;
+	me:RunProtectedFunction( function ()
+		Button:EnableMouse( Enable );
+	end, Button:IsProtected() );
 end
 --[[****************************************************************************
   * Function: _Clean.RemoveLockedButton                                        *
@@ -196,7 +179,9 @@ end
   ****************************************************************************]]
 function me.RemoveLockedButton ( Button )
 	LockedButtons[ Button ] = nil;
-	me.RunProtectedMethod( Button, "EnableMouse", true );
+	me:RunProtectedFunction( function ()
+		Button:EnableMouse( true );
+	end, Button:IsProtected() );
 end
 
 
@@ -212,47 +197,50 @@ end
 --[[****************************************************************************
   * Function: _Clean:MODIFIER_STATE_CHANGED                                    *
   ****************************************************************************]]
-do
-	local RunProtectedMethod = me.RunProtectedMethod;
-	local pairs = pairs;
-	function me:MODIFIER_STATE_CHANGED ( _, Modifier, State )
-		if ( Modifier:sub( 2 ) == "CTRL" ) then
-			local Enable = State == 1;
-			for Button in pairs( LockedButtons ) do
-				RunProtectedMethod( Button, "EnableMouse", Enable );
-				if ( not Enable ) then
-					-- Don't let it get locked on the cursor
-					RunProtectedMethod( Button, "StopMovingOrSizing" );
-				end
+function me:MODIFIER_STATE_CHANGED ( _, Modifier, State )
+	if ( Modifier:sub( 2 ) == "CTRL" ) then
+		local Enable = State == 1;
+		local Protected = false;
+		for Button in pairs( LockedButtons ) do
+			if ( Button:IsProtected() ) then
+				Protected = true;
+				break;
 			end
 		end
+		_Clean:RunProtectedFunction( function ()
+			for Button in pairs( LockedButtons ) do
+				Button:EnableMouse( Enable );
+				if ( not Enable ) then
+					-- Don't let it get locked on the cursor
+					Button:StopMovingOrSizing();
+				end
+			end
+		end, Protected );
 	end
 end
 --[[****************************************************************************
   * Function: _Clean:PLAYER_REGEN_DISABLED                                     *
   ****************************************************************************]]
 function me:PLAYER_REGEN_DISABLED ()
-	me.InCombatLockdown = true;
+	self.InCombatLockdown = true;
 end
 --[[****************************************************************************
   * Function: _Clean:PLAYER_REGEN_ENABLED                                      *
   ****************************************************************************]]
 function me:PLAYER_REGEN_ENABLED ()
-	me.InCombatLockdown = false;
+	self.InCombatLockdown = false;
 
-	-- Combat lockdown over; set all stored points
-	for Index = 1, #ProtectedMethodQueue do
-		local Args = ProtectedMethodQueue[ Index ];
-
-		Args[ 2 ][ Args[ 1 ] ]( select( 2, unpack( Args ) ) );
-		ProtectedMethodQueue[ Index ] = nil;
+	-- Combat lockdown over; run all stored functions
+	for Index = 1, #ProtectedFunctionQueue do
+		ProtectedFunctionQueue[ Index ]();
+		ProtectedFunctionQueue[ Index ] = nil;
 	end
 end
 --[[****************************************************************************
   * Function: _Clean:ADDON_LOADED                                              *
   ****************************************************************************]]
 function me:ADDON_LOADED ( _, AddOn )
-	me.InitializeAddOn( AddOn );
+	self.InitializeAddOn( AddOn );
 end
 
 --[[****************************************************************************
@@ -294,4 +282,13 @@ do
 		function () MacroFrameText:SetFontObject( me.MonospaceFont ); end );
 	me.RegisterAddOnInitializer( "_Dev",
 		function () _Dev.Font:SetFontObject( me.MonospaceNumberFont ); end );
+
+	local Gold = me.Colors.Gold;
+	NORMAL_FONT_COLOR = Gold;
+	GameFontNormal:SetTextColor( Gold.r, Gold.g, Gold.b );
+	GameFontNormalSmall:SetTextColor( Gold.r, Gold.g, Gold.b );
+	GameFontNormalLarge:SetTextColor( Gold.r, Gold.g, Gold.b );
+	GameFontNormalHuge:SetTextColor( Gold.r, Gold.g, Gold.b );
+	NumberFontNormalYellow:SetTextColor( Gold.r, Gold.g, Gold.b );
+	DialogButtonNormalText:SetTextColor( Gold.r, Gold.g, Gold.b );
 end

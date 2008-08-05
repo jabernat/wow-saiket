@@ -66,23 +66,6 @@ function me.UpdatePosition ()
 end
 
 
---[[****************************************************************************
-  * Function: _Clean.DBM.OnLoad                                                *
-  * Description: Makes modifications just after the addon is loaded.           *
-  ****************************************************************************]]
-function me.OnLoad ()
-	me.DBMStatusBarsCreateNewBarBackup = DBMStatusBars_CreateNewBar;
-	DBMStatusBars_CreateNewBar = me.DBMStatusBarsCreateNewBar;
-
-	-- Enlarge the special warning text
-	DBMSpecialWarningFrameText:SetTextHeight( 60 );
-	DBMSpecialWarningFrameText:SetHeight( 120 ); -- Two lines
-
-	me:RegisterEvent( "PLAYER_ENTERING_WORLD" );
-	me:SetScript( "OnEvent", me.UpdatePosition );
-end
-
-
 
 
 --------------------------------------------------------------------------------
@@ -90,5 +73,15 @@ end
 -----------------------------
 
 do
-	_Clean.RegisterAddOnInitializer( "DBM_API", me.OnLoad );
+	_Clean.RegisterAddOnInitializer( "DBM_API", function ()
+		me.DBMStatusBarsCreateNewBarBackup = DBMStatusBars_CreateNewBar;
+		DBMStatusBars_CreateNewBar = me.DBMStatusBarsCreateNewBar;
+
+		-- Enlarge the special warning text
+		DBMSpecialWarningFrameText:SetTextHeight( 60 );
+		DBMSpecialWarningFrameText:SetHeight( 120 ); -- Two lines
+
+		me:RegisterEvent( "PLAYER_ENTERING_WORLD" );
+		me:SetScript( "OnEvent", me.UpdatePosition );
+	end );
 end

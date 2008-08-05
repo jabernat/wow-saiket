@@ -24,25 +24,12 @@ function me.Screenshot ()
 end
 
 --[[****************************************************************************
-  * Function: _Clean.Crosshairs:SCREENSHOT_FAILED                              *
-  ****************************************************************************]]
-function me:SCREENSHOT_FAILED ()
-	self:Show();
-end
---[[****************************************************************************
-  * Function: _Clean.Crosshairs:SCREENSHOT_SUCCEEDED                           *
-  ****************************************************************************]]
-function me:SCREENSHOT_SUCCEEDED ()
-	self:Show();
-end
---[[****************************************************************************
   * Function: _Clean.Crosshairs:OnEvent                                        *
-  * Description: Keeps track of whether voice is transmitting or not.          *
+  * Description: Reshows the crosshairs after a screenshot is taken.           *
   ****************************************************************************]]
 function me:OnEvent ( Event )
-	if ( type( me[ Event ] ) == "function" ) then
-		me[ Event ]( self );
-	end
+	-- SCREENSHOT_SUCCEEDED / SCREENSHOT_FAILED
+	self:Show();
 end
 
 
@@ -66,6 +53,9 @@ do
 	-- For some reason, drawing the texture flipped like this makes it sharper
 	me.Texture:SetPoint( "TOPLEFT", me, "BOTTOMRIGHT" );
 	me.Texture:SetPoint( "BOTTOMRIGHT", me, "TOPLEFT" );
+
+	local Highlight = _Clean.Colors.Highlight;
+	me.Texture:SetVertexColor( Highlight.r, Highlight.g, Highlight.b, Highlight.a );
 
 	Screenshot = me.Screenshot;
 end

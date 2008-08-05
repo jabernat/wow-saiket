@@ -10,6 +10,8 @@ do
 			SECONDSTOTIMEABBREV_FORMAT = "%d:%02d";
 			SECONDSTOTIME_FORMAT       = "%02d:%02d:%02d";
 			SECONDSTOTIME_DAYS_FORMAT  = "%dd, %s"; -- "#d, SECONDSTOTIME_FORMAT"
+
+			BLIZZARDCOMBATLOG_TRUNCATESUFFIX = "-";
 		}, {
 			__index = function ( self, Key )
 				rawset( self, Key, Key );

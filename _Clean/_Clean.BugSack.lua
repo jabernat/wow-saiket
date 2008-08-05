@@ -3,6 +3,7 @@
   * _Clean.BugSack.lua - Modifies the BugSack addon.                           *
   *                                                                            *
   * + Repositions the minimap icon.                                            *
+  * + Reskins the error viewer.                                                *
   ****************************************************************************]]
 
 
@@ -18,6 +19,7 @@ _Clean.BugSack = me;
   * Function: _Clean.BugSack.OnError                                           *
   * Description: Plays a custom error sound.                                   *
   ****************************************************************************]]
+-- NOTE(Just add the sound to LibSharedMedia and use a sane hook if it's even needed.)
 function me:OnError ( err )
 	PlaySoundFile( "Interface\\AddOns\\_Clean\\Skin\\ErrorSound.mp3" );
 	local Profile = self.db.profile;
@@ -60,95 +62,13 @@ function me.OnTextUpdate ()
 
 	if ( Frame ) then
 		if ( #BugSack:GetErrors( "session" ) == 0 ) then -- Clean
-			Frame:SetAlpha( 0.5 );
+			Frame:SetAlpha( 0.75 );
 			_Clean.AddLockedButton( Frame );
 		else -- Errors
 			Frame:SetAlpha( 1.0 );
 			_Clean.RemoveLockedButton( Frame );
 		end
 	end
-end
-
-
---[[****************************************************************************
-  * Function: _Clean.BugSack.UpdateMinimapButton                               *
-  * Description: Skins the minimap icon.                                       *
-  ****************************************************************************]]
-function me.UpdateMinimapButton ()
-	local Frame = BugSackFu.minimapFrame;
-
-	if ( Frame ) then
-		_Clean.ClearAllPoints( Frame );
-		_Clean.SetPoint( Frame, "TOPRIGHT", Minimap );
-		_Clean.RunProtectedMethod( Frame, "SetWidth", 16 );
-		_Clean.RunProtectedMethod( Frame, "SetHeight", 16 );
-		_Clean.SetAllPoints( BugSackFu.minimapIcon, Frame );
-		_Clean.RunProtectedMethod( _G[ Frame:GetName().."Overlay" ], "Hide" );
-
-		me.OnTextUpdate();
-		Frame.SetPoint = _Clean.NilFunction;
-
-		return true;
-	end
-end
-
-
---[[****************************************************************************
-  * Function: _Clean.BugSack.OnLoad                                            *
-  * Description: Makes modifications just after the addon is loaded.           *
-  ****************************************************************************]]
-function me.OnLoad ()
-	if ( not me.UpdateMinimapButton() ) then
-		-- NOTE(Hack to update on first frame. No idea when the minimap button is actually created during loading.)
-		CreateFrame( "Frame" ):SetScript( "OnUpdate",
-			function ( self )
-				if ( me.UpdateMinimapButton() ) then
-					self:SetScript( "OnUpdate", nil );
-				end
-			end );
-	end
-
-	L = AceLibrary( "AceLocale-2.2" ):new( "BugSack" );
-	BugSack.OnError = me.OnError;
-	hooksecurefunc( BugSackFu, "OnTextUpdate", me.OnTextUpdate );
-
-
-	-- Reskin error frame
-	BugSackFrame:SetMovable( true );
-	BugSackFrame:SetUserPlaced( true );
-	BugSackFrame:SetClampedToScreen( true );
-	BugSackFrame:CreateTitleRegion():SetAllPoints();
-	BugSackFrame:SetBackdrop( {
-		bgFile = "Interface\\TutorialFrame\\TutorialFrameBackground";
-		edgeFile = "Interface\\TutorialFrame\\TutorialFrameBorder";
-		tile = true; tileSize = 32; edgeSize = 32;
-		insets = { left = 7; right = 5; top = 3; bottom = 6; };
-	} );
-	_Clean.RunProtectedMethod( BugSackFrame, "EnableMouse", true );
-
-	_Clean.SetPoint( BugSackFrameScroll, "TOPLEFT", BugSackErrorText, "BOTTOMLEFT", 12, -8 );
-	_Clean.RunProtectedMethod( BugSackFrameScroll, "SetHeight", 370 );
-	BugSackFrameScrollText:SetFontObject( _Clean.MonospaceNumberFont );
-	BugSackFrameScrollText:SetFont( BugSackFrameScrollText:GetFont(), 12 );
-
-	-- Reposition buttons
-	_Clean.RunProtectedMethod( BugSackFrameButton, "Hide" );
-	local LastButton =
-		CreateFrame( "Button", nil, BugSackFrame, "UIPanelCloseButton" );
-	LastButton:SetPoint( "TOPRIGHT", 4, 4 );
-
-	local function InitButton ( Button, Label )
-		Button:SetText( Label );
-		_Clean.RunProtectedMethod( Button, "SetWidth", 24 );
-		_Clean.RunProtectedMethod( Button, "SetHeight", 18 );
-		_Clean.ClearAllPoints( Button );
-		_Clean.SetPoint( Button, "RIGHT", LastButton, "LEFT", -8, 0 );
-		LastButton = Button;
-	end
-	InitButton( BugSackLastButton, ">>" );
-	InitButton( BugSackNextButton, ">" );
-	InitButton( BugSackPrevButton, "<" );
-	InitButton( BugSackFirstButton, "<<" );
 end
 
 
@@ -159,5 +79,79 @@ end
 -----------------------------
 
 do
-	_Clean.RegisterAddOnInitializer( "BugSack", me.OnLoad );
+	-- Skins the minimap, or returns false if not found yet.
+	local function UpdateMinimapButton ()
+		local Frame = BugSackFu.minimapFrame;
+
+		if ( Frame ) then
+			Frame:ClearAllPoints();
+			Frame:SetPoint( "TOPRIGHT", Minimap );
+			Frame:SetWidth( 16 );
+			Frame:SetHeight( 16 );
+			BugSackFu.minimapIcon:SetAllPoints( Frame );
+			_G[ Frame:GetName().."Overlay" ]:Hide();
+
+			local Background = _Clean.Colors.Background;
+			local Highlight = _Clean.Colors.Highlight;
+			BugSackFu.minimapIcon:SetGradientAlpha( "VERTICAL", Highlight.r, Highlight.g, Highlight.b, Highlight.a, Background.r, Background.g, Background.b, Background.a );
+
+			me.OnTextUpdate();
+			Frame.SetPoint = _Clean.NilFunction;
+
+			return true;
+		end
+	end
+
+	_Clean.RegisterAddOnInitializer( "BugSack", function ()
+		if ( not UpdateMinimapButton() ) then
+			-- NOTE(Hack to update on first frame. No idea when the minimap button is actually created during loading.)
+			CreateFrame( "Frame" ):SetScript( "OnUpdate", function ( self )
+				if ( UpdateMinimapButton() ) then
+					self:SetScript( "OnUpdate", nil );
+				end
+			end );
+		end
+
+		L = AceLibrary( "AceLocale-2.2" ):new( "BugSack" );
+		BugSack.OnError = me.OnError;
+		hooksecurefunc( BugSackFu, "OnTextUpdate", me.OnTextUpdate );
+
+
+		-- Reskin error frame
+		BugSackFrame:SetMovable( true );
+		BugSackFrame:SetUserPlaced( true );
+		BugSackFrame:SetClampedToScreen( true );
+		BugSackFrame:CreateTitleRegion():SetAllPoints();
+		BugSackFrame:SetBackdrop( {
+			bgFile = "Interface\\TutorialFrame\\TutorialFrameBackground";
+			edgeFile = "Interface\\TutorialFrame\\TutorialFrameBorder";
+			tile = true; tileSize = 32; edgeSize = 32;
+			insets = { left = 7; right = 5; top = 3; bottom = 6; };
+		} );
+		BugSackFrame:SetBackdropBorderColor( 0.5, 0.5, 0.5 );
+		BugSackFrame:EnableMouse( true );
+
+		BugSackFrameScroll:SetPoint( "TOPLEFT", BugSackErrorText, "BOTTOMLEFT", 12, -8 );
+		BugSackFrameScroll:SetHeight( 370 );
+		BugSackFrameScrollText:SetFontObject( _Clean.MonospaceNumberFont );
+		BugSackFrameScrollText:SetFont( BugSackFrameScrollText:GetFont(), 12 );
+
+		-- Reposition buttons
+		BugSackFrameButton:Hide();
+		local LastButton = CreateFrame( "Button", nil, BugSackFrame, "UIPanelCloseButton" );
+		LastButton:SetPoint( "TOPRIGHT", 4, 4 );
+
+		local function InitButton ( Button, Label )
+			Button:SetText( Label );
+			Button:SetWidth( 24 );
+			Button:SetHeight( 18 );
+			Button:ClearAllPoints();
+			Button:SetPoint( "RIGHT", LastButton, "LEFT", -8, 0 );
+			LastButton = Button;
+		end
+		InitButton( BugSackLastButton, ">>" );
+		InitButton( BugSackNextButton, ">" );
+		InitButton( BugSackPrevButton, "<" );
+		InitButton( BugSackFirstButton, "<<" );
+	end );
 end
