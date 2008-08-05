@@ -4,7 +4,7 @@
   ****************************************************************************]]
 
 
-local MAJOR, MINOR = "LibCamera-1.0", 1;
+local MAJOR, MINOR = "LibCamera-1.0", 1.01;
 
 local lib = LibStub:NewLibrary( MAJOR, MINOR );
 if ( not lib ) then
@@ -23,18 +23,7 @@ local YawOffset = 0;
 local IsCameraMoving = false;
 
 
-local RingModel = MiniMapCompassRing;
-local ArrowModel;
--- Find player arrow model
-for _, Child in ipairs( { Minimap:GetChildren() } ) do
-	if ( Child:IsObjectType( "Model" ) and not Child:GetName()
-		and Child:GetModel():lower() == "interface\\minimap\\minimaparrow.m2"
-	) then
-		ArrowModel = Child;
-		break;
-	end
-end
-assert( ArrowModel, MAJOR..": Arrow model not found!" );
+local ArrowModel = PlayerArrowFrame;
 
 
 
@@ -72,9 +61,8 @@ do
 		end
 		NewYaw = DegreesToRadians * GetCVar( "cameraYawD" ) + YawOffset;
 		if ( not ( IsCameraMoving or IsMouselooking() ) ) then -- Camera angle relative to player face
-			NewYaw = NewYaw + ( GetCVar( "rotateMinimap" ) ~= "0"
-				and -RingModel:GetFacing()
-				or ArrowModel:GetFacing() );
+			UpdateWorldMapArrowFrames();
+			NewYaw = NewYaw + ArrowModel:GetFacing();
 		end
 		if ( NewYaw ~= Yaw ) then
 			Yaw = NewYaw;

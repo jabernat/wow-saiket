@@ -2,7 +2,7 @@
 ## Title: Lib: Camera-1.0
 ## Author: Saiket
 ## Version: 2.4.3
-## X-Date: 2008-08-02
+## X-Date: 2008-08-04
 ## X-Category: Library
 ## X-Email: saiket.wow@gmail.com
 ## X-Website: http://groups.google.com/group/wow-saiket/web/libcamera-1.0
