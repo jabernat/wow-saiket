@@ -119,7 +119,7 @@ end
 do
 	local select = select;
 	local function UpdateNewTexture( ... )
-		me.UpdateTexture( select( "#", select( ... ) ) );
+		me.UpdateTexture( select( select( "#", ... ), ... ) );
 	end
 	function Hooks:CreateTexture ( _, _, InheritsFrom )
 		if ( InheritsFrom ) then -- Could have inherited texture path
