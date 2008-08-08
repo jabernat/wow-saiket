@@ -55,7 +55,7 @@ me.Colors = {
 	Warning = { r = 1.0; g = 0.07; b = 0.0; }; -- Raidwarning, localdefense
 
 	Foreground = { r = 0.0; g = 0.5; b = 1.0; a = 1.0; };
-	Background = { r = 0.0; g = 0.0; b = 0.0; a = 0.5; };
+	Background = { r = 0.0; g = 0.0; b = 0.0; a = 1.0; };
 	Highlight = { r = 1.0; g = 1.0; b = 0.6; a = 1.0; }; -- Light yellow
 	Gold = { r = 0.8; g = 0.8; b = 8 / 15; a = 1.0; }; -- Gold, same as title
 };
@@ -284,7 +284,6 @@ do
 		function () _Dev.Font:SetFontObject( me.MonospaceNumberFont ); end );
 
 	local Gold = me.Colors.Gold;
-	NORMAL_FONT_COLOR = Gold;
 	GameFontNormal:SetTextColor( Gold.r, Gold.g, Gold.b );
 	GameFontNormalSmall:SetTextColor( Gold.r, Gold.g, Gold.b );
 	GameFontNormalLarge:SetTextColor( Gold.r, Gold.g, Gold.b );
