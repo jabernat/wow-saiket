@@ -11,6 +11,7 @@
   *   tracking frame appears at the bottom left, and the mail/BG/meeting stone *
   *   icons line up in the bottom right. The game time frame is removed.       *
   ****************************************************************************]]
+-- NOTE(Add model "Spells\\Sunwell_beamfx.mdx" behind minimap.)
 
 
 local _Clean = _Clean;
