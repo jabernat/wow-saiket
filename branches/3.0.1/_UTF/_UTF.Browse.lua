@@ -303,13 +303,21 @@ do
 	local GlyphFont = CreateFont( "_UTFBrowseGlyphFont" );
 	Glyph.Font = GlyphFont;
 	GlyphFont:SetFont( "Fonts\\ARIALN.TTF", 50 );
+	GlyphFont:SetTextColor( 1.0, 0.82, 0.0 );
 
-	Glyph:SetTextFontObject( GlyphFont );
-	Glyph:SetTextColor( 1.0, 0.82, 0.0 );
-	Glyph:SetDisabledFontObject( GlyphFont );
-	Glyph:SetDisabledTextColor( 0.5, 0.5, 0.5 );
-	Glyph:SetHighlightFontObject( GlyphFont );
-	Glyph:SetHighlightTextColor( 1.0, 1.0, 1.0 );
+	local GlyphFontDisable = CreateFont( "_UTFBrowseGlyphFontDisable" );
+	Glyph.FontDisable = GlyphFontDisable;
+	GlyphFontDisable:SetFontObject( GlyphFont );
+	GlyphFontDisable:SetTextColor( 0.5, 0.5, 0.5 );
+
+	local GlyphFontHighlight = CreateFont( "_UTFBrowseGlyphFontHighlight" );
+	Glyph.FontHighlight = GlyphFontHighlight;
+	GlyphFontHighlight:SetFontObject( GlyphFont );
+	GlyphFontHighlight:SetTextColor( 1.0, 1.0, 1.0 );
+
+	Glyph:SetNormalFontObject( GlyphFont );
+	Glyph:SetDisabledFontObject( GlyphFontDisable );
+	Glyph:SetHighlightFontObject( GlyphFontHighlight );
 
 	-- Initialize button text
 	local GlyphText = Glyph:CreateFontString();
