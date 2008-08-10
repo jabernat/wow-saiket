@@ -220,6 +220,18 @@ end
 
 
 --[[****************************************************************************
+  * Function: _Cursor:OnShow                                                   *
+  * Description: Resets model animations when shown, to clear old trails.      *
+  ****************************************************************************]]
+function me:OnShow ()
+	for Model in pairs( ModelsUsed ) do
+		local Path = Model:GetModel();
+		if ( type( Path ) == "string" ) then
+			Model:SetModel( Path );
+		end
+	end
+end
+--[[****************************************************************************
   * Function: _Cursor:OnUpdate                                                 *
   * Description: Positions all active models.                                  *
   ****************************************************************************]]
@@ -247,6 +259,7 @@ end
 do
 	me:SetScript( "OnUpdate", me.OnUpdate );
 	me:SetScript( "OnEvent", me.OnEvent );
+	me:SetScript( "OnShow", me.OnShow );
 	me:RegisterEvent( "ADDON_LOADED" );
 
 	-- Hook camera movement to hide cursor effects

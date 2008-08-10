@@ -21,7 +21,10 @@ do
 			OPTIONS = setmetatable(
 				{
 					SETS = "Sets";
-					PREVIEW_DESC = "A preview of the chosen model.  Click to cycle animation speeds.";
+					APPLY = "Apply";
+					ENABLED = "Model Enabled";
+					ENABLED_DESC = "Toggles whether this model is shown.";
+					PREVIEW_DESC = "A preview of the chosen model.\n"..HIGHLIGHT_FONT_COLOR_CODE.."Click to cycle animation speeds.";
 					X_DESC = "X-offset: Moves the model left and right.";
 					Y_DESC = "Y-offset: Moves the model up and down.";
 					SCALE = "Scale";
@@ -30,6 +33,8 @@ do
 					FACING_DESC = "Rotates the model.";
 					FACING_LOW = "0";
 					FACING_HIGH = "2\207\128"; -- 2pi
+					PATH = "File Path";
+					PATH_DESC = "The location of the model file to use, excluding any file extension.";
 				}, {
 					__index = function ( self, Key )
 						rawset( self, Key, "OPTIONS."..Key );

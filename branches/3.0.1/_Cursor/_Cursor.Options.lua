@@ -15,11 +15,14 @@ me.SetsPanel = SetsPanel;
 
 local ModelsPanel = CreateFrame( "Frame", nil, me, "OptionFrameBoxTemplate" );
 me.ModelsPanel = ModelsPanel;
+ModelsPanel.ApplyButton = CreateFrame( "Button", nil, ModelsPanel, "UIPanelButtonGrayTemplate" );
+ModelsPanel.Enabled = CreateFrame( "CheckButton", "_CursorOptionsEnabled", ModelsPanel, "InterfaceOptionsCheckButtonTemplate" );
 ModelsPanel.Preview = CreateFrame( "Frame", nil, ModelsPanel );
 ModelsPanel.X = CreateFrame( "Slider", "_CursorOptionsX", ModelsPanel.Preview, "OptionsSliderTemplate" );
 ModelsPanel.Y = CreateFrame( "Slider", "_CursorOptionsY", ModelsPanel.Preview, "OptionsSliderTemplate" );
 ModelsPanel.Scale = CreateFrame( "Slider", "_CursorOptionsScale", ModelsPanel.Preview, "OptionsSliderTemplate" );
 ModelsPanel.Facing = CreateFrame( "Slider", "_CursorOptionsFacing", ModelsPanel.Preview, "OptionsSliderTemplate" );
+ModelsPanel.Path = CreateFrame( "EditBox", "_CursorOptionsPath", ModelsPanel, "InputBoxTemplate" );
 
 local TabsUnused = {};
 ModelsPanel.TabsUnused = TabsUnused;
@@ -91,16 +94,19 @@ function ModelsPanel:SetTab ()
 
 	if ( self ) then
 		PanelTemplates_SelectTab( self );
-
-		ModelsPanel.EnableControls();
-
 		local Settings = TabsUsed[ self ];
+
+		ModelsPanel[ Settings.Enabled and "EnableControls" or "DisableControls" ]();
+		OptionsFrame_EnableCheckBox( ModelsPanel.Enabled );
+		ModelsPanel.Enabled:SetChecked( Settings.Enabled );
+
 		ModelsPanel.X:SetValue( Settings.X or 0 );
 		ModelsPanel.Y:SetValue( Settings.Y and -Settings.Y or 0 ); -- Backwards
 		ModelsPanel.Scale:SetValue( Settings.Scale or 1.0 );
 		ModelsPanel.Facing:SetValue( Settings.Facing or 0 );
 		-- NOTE(Set controls to match settings.)
 
+		-- NOTE(Use a generic "SetType" function that accepts a type and a value, and handles updates.)
 		if ( Settings.Type == "CUSTOM" ) then
 			-- NOTE(Hide presets list; replace with edit box.)
 		else
@@ -113,11 +119,14 @@ function ModelsPanel:SetTab ()
 		ModelsPanel.Preview:SetScript( "OnUpdate", ModelsPanel.Preview.OnUpdate );
 		ModelsPanel.Preview.Update();
 	else
-		-- NOTE(Disable the enable checkbox!)
+		ModelsPanel.DisableControls();
+
+		OptionsFrame_DisableCheckBox( ModelsPanel.Enabled );
+		ModelsPanel.Enabled:SetChecked( false );
 		ModelsPanel.Preview.Cursor:Hide();
 		ModelsPanel.Preview:SetScript( "OnUpdate", nil );
 		ModelsPanel.Preview.Model:ClearModel();
-		ModelsPanel.DisableControls();
+		ModelsPanel.Path:SetText( "" );
 	end
 end
 
@@ -126,19 +135,53 @@ end
   * Function: _Cursor.Options.ModelsPanel.EnableControls                       *
   * Description: Enables the model controls.                                   *
   ****************************************************************************]]
-function ModelsPanel.EnableControls ()
-	ModelsPanel.Preview:EnableMouse( true );
-	SetDesaturation( ModelsPanel.Preview.Backdrop, false );
-	-- NOTE(Enable controls. Are there default UI functions for various controls?)
+do
+	local function EnableSlider ( self )
+		OptionsFrame_EnableSlider( self );
+		self:EnableMouse( true );
+	end
+	function ModelsPanel.EnableControls ()
+		ModelsPanel.Preview:EnableMouse( true );
+		SetDesaturation( ModelsPanel.Preview.Backdrop, false );
+		EnableSlider( ModelsPanel.X );
+		EnableSlider( ModelsPanel.Y );
+		EnableSlider( ModelsPanel.Scale );
+		EnableSlider( ModelsPanel.Facing );
+
+		ModelsPanel.Path:EnableMouse( true );
+		local Color = HIGHLIGHT_FONT_COLOR;
+		ModelsPanel.Path:SetTextColor( Color.r, Color.g, Color.b );
+		Color = NORMAL_FONT_COLOR;
+		ModelsPanel.Path.Text:SetTextColor( Color.r, Color.g, Color.b );
+
+		-- NOTE(Enable controls.)
+	end
 end
 --[[****************************************************************************
   * Function: _Cursor.Options.ModelsPanel.DisableControls                      *
   * Description: Disables the model controls.                                  *
   ****************************************************************************]]
-function ModelsPanel.DisableControls ()
-	ModelsPanel.Preview:EnableMouse( false );
-	SetDesaturation( ModelsPanel.Preview.Backdrop, true );
-	-- NOTE(Disable controls and gray them out.)
+do
+	local function DisableSlider ( self )
+		OptionsFrame_DisableSlider( self );
+		self:EnableMouse( false );
+	end
+	function ModelsPanel.DisableControls ()
+		ModelsPanel.Preview:EnableMouse( false );
+		SetDesaturation( ModelsPanel.Preview.Backdrop, true );
+		DisableSlider( ModelsPanel.X );
+		DisableSlider( ModelsPanel.Y );
+		DisableSlider( ModelsPanel.Scale );
+		DisableSlider( ModelsPanel.Facing );
+
+		ModelsPanel.Path:EnableMouse( false );
+		local Color = GRAY_FONT_COLOR;
+		ModelsPanel.Path:SetTextColor( Color.r, Color.g, Color.b );
+		ModelsPanel.Path.Text:SetTextColor( Color.r, Color.g, Color.b );
+		ModelsPanel.Path:ClearFocus();
+
+		-- NOTE(Disable controls and gray them out.)
+	end
 end
 
 
@@ -161,12 +204,31 @@ function me:ControlOnLeave ()
 end
 
 
+
+
+--[[****************************************************************************
+  * Function: _Cursor.Options.ModelsPanel.Enabled.OnClick                      *
+  * Description: Toggles whether the model is enabled or not.                  *
+  ****************************************************************************]]
+function ModelsPanel.Enabled:OnClick ()
+	local Checked = not not self:GetChecked();
+	local Settings = TabsUsed[ ModelsPanel.Selected ];
+	Settings.Enabled = Checked;
+	if ( Checked ) then
+		ModelsPanel.EnableControls();
+	else
+		ModelsPanel.DisableControls();
+	end
+	PlaySound( Checked and "igMainMenuOptionCheckBoxOn" or "igMainMenuOptionCheckBoxOff" );
+end
+
+
 --[[****************************************************************************
   * Function: _Cursor.Options.ModelsPanel.Preview.OnMouseUp                    *
   * Description: Cycles animation speeds for the model preview.                *
   ****************************************************************************]]
 function ModelsPanel.Preview:OnMouseUp ()
-	self.Rate  = self.Rate >= math.pi and 0 or self.Rate + math.pi / 2;
+	self.Rate = self.Rate >= math.pi * 2 and 0 or self.Rate + math.pi;
 	PlaySound( "igMainMenuOption" );
 end
 --[[****************************************************************************
@@ -207,8 +269,6 @@ do
 			end
 			Model:SetModelScale( Scale );
 			Model:SetFacing( Facing );
-
-			-- NOTE(Update actual cursor?)
 		end
 
 		Step = Step + Elapsed * self.Rate;
@@ -275,10 +335,54 @@ function ModelsPanel.Facing:OnValueChanged ( Value )
 		ModelsPanel.Preview.Update();
 	end
 end
+--[[****************************************************************************
+  * Function: _Cursor.Options.ModelsPanel.Path:OnEnterPressed                  *
+  * Description: Saves custom path value.                                      *
+  ****************************************************************************]]
+function ModelsPanel.Path:OnEnterPressed ()
+	local Settings = TabsUsed[ ModelsPanel.Selected ];
+	local Value = self:GetText();
+	local Extension = Value:match( "%.[^%.]+$" );
+	if ( Extension ) then
+		Extension = Extension:upper();
+		if ( Extension == ".M2" or Extension == ".MDX" ) then
+			Value = Value:sub( 1, -#Extension - 1 ); -- Remove extension
+			self:SetText( Value );
+		end
+	end
+
+	Settings.Value = Value;
+	ModelsPanel.Preview.Update();
+	self:ClearFocus();
+end
+--[[****************************************************************************
+  * Function: _Cursor.Options.ModelsPanel.Path:OnEscapePressed                 *
+  * Description: Cancels custom path value.                                    *
+  ****************************************************************************]]
+function ModelsPanel.Path:OnEscapePressed ()
+	local Settings = TabsUsed[ ModelsPanel.Selected ];
+	self:SetText( Settings.Value );
+	self:ClearFocus();
+end
+
+--[[****************************************************************************
+  * Function: _Cursor.Options.ModelsPanel.ApplyButton:OnClick                  *
+  * Description: Updates the actual cursor models.                             *
+  ****************************************************************************]]
+function ModelsPanel.ApplyButton:OnClick ()
+	_Cursor.Update();
+end
 
 
 
 
+--[[****************************************************************************
+  * Function: _Cursor.Options:OnHide                                           *
+  * Description: Updates the actual cursor models when settings are closed.    *
+  ****************************************************************************]]
+function me:OnHide ()
+	_Cursor.Update();
+end
 --[[****************************************************************************
   * Function: _Cursor.Options.Update                                           *
   * Description: Full update that syncronizes tabs to actual saved settings.   *
@@ -316,6 +420,7 @@ end
 do
 	me.name = L.OPTIONS_TITLE;
 	me:Hide();
+	me:SetScript( "OnHide", me.OnHide );
 
 
 	-- Pane title
@@ -348,6 +453,22 @@ do
 	ModelsPanel:SetPoint( "BOTTOMRIGHT", -14, 16 );
 
 
+	-- Apply button
+	local ApplyButton = ModelsPanel.ApplyButton;
+	ApplyButton:SetScript( "OnClick", ApplyButton.OnClick );
+	ApplyButton:SetPoint( "BOTTOMRIGHT", ModelsPanel, "TOPRIGHT", 0, 2 );
+	ApplyButton:SetWidth( 64 );
+	ApplyButton:SetHeight( 16 );
+	ApplyButton:SetText( L.OPTIONS.APPLY );
+
+	-- Enable button
+	local Enabled = ModelsPanel.Enabled;
+	Enabled:SetPoint( "TOPLEFT", 16, -8 );
+	Enabled:SetScale( 0.75 );
+	Enabled:SetScript( "OnClick", Enabled.OnClick );
+	Enabled.tooltipText = L.OPTIONS.ENABLED_DESC;
+	_G[ Enabled:GetName().."Text" ]:SetText( L.OPTIONS.ENABLED );
+
 	-- Preview window
 	local Preview = ModelsPanel.Preview;
 	Preview:SetPoint( "TOPRIGHT", -16, -8 );
@@ -359,7 +480,7 @@ do
 	Preview:SetScript( "OnMouseUp", Preview.OnMouseUp );
 	Preview:SetScript( "OnEnter", me.ControlOnEnter );
 	Preview:SetScript( "OnLeave", me.ControlOnLeave );
-	Preview.Rate = math.pi / 2;
+	Preview.Rate = math.pi;
 	Preview.tooltipText = L.OPTIONS.PREVIEW_DESC;
 
 	local Backdrop = Preview:CreateTexture( nil, "BACKGROUND" );
@@ -383,7 +504,8 @@ do
 	local X = ModelsPanel.X;
 	X:SetPoint( "LEFT", Preview, "BOTTOMLEFT" );
 	X:SetPoint( "RIGHT", Preview );
-	X:SetHeight( 13 );
+	X:SetHeight( 14 );
+	X:SetScale( 0.8 );
 	X:SetMinMaxValues( -16, 16 );
 	X:SetScript( "OnValueChanged", X.OnValueChanged );
 	X.tooltipText = L.OPTIONS[ "X_DESC" ];
@@ -401,7 +523,8 @@ do
 	Y:SetOrientation( "VERTICAL" );
 	Y:SetPoint( "TOP", Preview, "TOPLEFT" );
 	Y:SetPoint( "BOTTOM", Preview );
-	Y:SetWidth( 13 );
+	Y:SetWidth( 10 );
+	Y:SetScale( 0.8 );
 	Y:SetThumbTexture( "Interface\\Buttons\\UI-SliderBar-Button-Vertical" );
 	Y:SetMinMaxValues( -16, 16 );
 	Y:SetScript( "OnValueChanged", Y.OnValueChanged );
@@ -441,6 +564,22 @@ do
 	Text = _G[ Facing:GetName().."Text" ];
 	Text:SetText( L.OPTIONS.FACING );
 	Text:SetPoint( "BOTTOM", Facing, "TOP", 0, -2 );
+
+	-- Path editbox
+	local Path = ModelsPanel.Path;
+	Path:SetPoint( "BOTTOMLEFT", 16, 8 );
+	Path:SetPoint( "RIGHT", Facing, "LEFT", -16, 0 );
+	Path:SetHeight( 20 );
+	Path:SetAutoFocus( false );
+	Path:SetScript( "OnEnterPressed", Path.OnEnterPressed );
+	Path:SetScript( "OnEscapePressed", Path.OnEscapePressed );
+	Path:SetScript( "OnEnter", me.ControlOnEnter );
+	Path:SetScript( "OnLeave", me.ControlOnLeave );
+	Path.tooltipText = L.OPTIONS[ "PATH_DESC" ];
+	Text = Path:CreateFontString( nil, "ARTWORK", "GameFontNormalSmall" );
+	Path.Text = Text;
+	Text:SetPoint( "BOTTOMLEFT", Path, "TOPLEFT", -6, 0 );
+	Text:SetText( L.OPTIONS.PATH );
 
 
 
