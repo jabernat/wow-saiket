@@ -269,12 +269,9 @@ function AddOnChat.DropDownAddChatType ( Type )
 
 	Info.func = AddOnChat.DropDownButtonHandler;
 	Info.keepShownOnClick = 1;
-	Info.text = L.ADDONCHAT_TYPES[ Type ];
+	Info.text = ( "|cff%02x%02x%02x" ):format( Color.r * 255 + 0.5, Color.g * 255 + 0.5, Color.b * 255 + 0.5 )..L.ADDONCHAT_TYPES[ Type ];
 	Info.value = Type;
 	Info.checked = ( TypeList and TypeList[ Type ] ) and 1 or nil;
-	Info.textR = Color.r;
-	Info.textG = Color.g;
-	Info.textB = Color.b;
 	UIDropDownMenu_AddButton( Info, UIDROPDOWNMENU_MENU_LEVEL );
 end
 --[[****************************************************************************
