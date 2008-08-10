@@ -1,8 +1,8 @@
-## Interface: 20400
+## Interface: 30000
 ## Title: _|cffCCCC88Dev|r
 ## Author: Saiket
-## Version: 2.4.3.1
-## X-Date: 2008-08-03
+## Version: 3.0.1.1
+## X-Date: 2008-08-08
 ## X-Category: Development Tools
 ## X-Email: saiket.wow@gmail.com
 ## X-Website: http://groups.google.com/group/wow-saiket/web/_dev
@@ -10,7 +10,7 @@
 ## X-Localizations: enUS
 ## Notes: Special tools useful for debugging the UI.
 ## SavedVariables: _DevOptions
-## OptionalDeps: !ImprovedErrorFrame, !BugGrabber, !Swatter
+## OptionalDeps: !ImprovedErrorFrame, !BugGrabber, !Swatter, !BaudErrorFrame
 ## DefaultState: enabled
 ## LoadManagers: AddonLoader
 ## X-LoadOn-Always: true

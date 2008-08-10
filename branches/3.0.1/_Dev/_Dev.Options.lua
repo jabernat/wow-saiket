@@ -252,7 +252,7 @@ function me:CreateDropDown ( Variable )
 	DropDown:EnableMouse( true );
 	DropDown:SetScript( "OnEnter", me.ControlOnEnter );
 	DropDown:SetScript( "OnLeave", me.ControlOnLeave );
-	UIDropDownMenu_JustifyText( "LEFT", DropDown );
+	UIDropDownMenu_JustifyText( DropDown, "LEFT" );
 	_G[ Name.."Middle" ]:SetPoint( "RIGHT", -16, 0 );
 
 	DropDown.tooltipText = L.OPTIONS[ Variable.."_DESC" ];
