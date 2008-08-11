@@ -25,7 +25,7 @@ _Misc.BlizzardAuctionUI = me;
 function me.SearchFromLink ( Item )
 	if ( Item and AuctionFrameBrowse:IsVisible() ) then
 		-- Search the item link for its name
-		Item = select( 3, Item:find( "%[(.*)%]" ) );
+		Item = Item:match( "%[(.*)%]" );
 
 		if ( Item ) then
 			BrowseName:SetText( Item );

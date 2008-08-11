@@ -205,7 +205,7 @@ do
 	function me:CHAT_MSG_COMBAT_FACTION_CHANGE ( Event, Message )
 		-- Auto-update the reputation bar
 		for _, Pattern in ipairs( L.FACTION_CHANGE_PATTERNS ) do
-			local Faction = select( 3, Message:find( Pattern ) );
+			local Faction = Message:match( Pattern );
 			if ( Faction ) then -- Message recognized
 				if ( Faction ~= GetWatchedFactionInfo() ) then
 					-- Different faction - swap to latest

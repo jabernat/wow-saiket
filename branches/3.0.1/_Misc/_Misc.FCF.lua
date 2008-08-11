@@ -148,8 +148,9 @@ end
 do
 	local GetSpellInfo = GetSpellInfo;
 	local select = select;
+	local Texture;
 	function me.AddMessageSpellGsub ( Match )
-		local Texture = select( 3, GetSpellInfo( Match ) );
+		Texture = select( 3, GetSpellInfo( Match ) );
 		return Texture and "|T"..Texture..":0|t|Hspell:"..Match;
 	end
 end
@@ -159,8 +160,9 @@ end
   ****************************************************************************]]
 do
 	local GetItemIcon = GetItemIcon;
+	local Texture;
 	function me.AddMessageItemGsub ( Match )
-		local Texture = GetItemIcon( Match );
+		Texture = GetItemIcon( Match );
 		return Texture and "|T"..Texture..":0|t|H"..Match.."|h[";
 	end
 end

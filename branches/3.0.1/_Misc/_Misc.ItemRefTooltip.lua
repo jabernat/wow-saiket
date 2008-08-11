@@ -26,7 +26,7 @@ function me:SetHyperlink ( Link )
 		if ( Link:find( "^item:" ) ) then
 			Texture = GetItemIcon( Link );
 		else
-			local ID = select( 3, Link:find( "^spell:(%d+)" ) );
+			local ID = Link:match( "^spell:(%d+)" );
 			if ( ID ) then
 				Texture = select( 3, GetSpellInfo( ID ) );
 			end
