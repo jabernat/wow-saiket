@@ -2,7 +2,7 @@
 ## Title: _|cffCCCC88Corpse|r
 ## Author: Saiket
 ## Version: 3.0.1
-## X-Date: 2008-08-09
+## X-Date: 2008-08-10
 ## X-Category: Tooltips, Interface Enhancements
 ## X-Email: saiket.wow@gmail.com
 ## X-Website: http://groups.google.com/group/wow-saiket/web/_corpse
