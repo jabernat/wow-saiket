@@ -33,7 +33,7 @@ _UTF.Chat = me;
 function me.ReplaceEditBoxText ( EditBox )
 	if ( _UTFOptions.Chat.EntityReferenceReplace ) then
 		local OldText = EditBox:GetText();
-		local Command = select( 3, OldText:find( "^(/%S+)" ) );
+		local Command = OldText:match( "^(/%S+)" );
 		if ( not ( Command and IsSecureCmd( Command ) ) ) then
 			local NewText = _UTF.ReplaceCharacterReferences( OldText );
 			if ( OldText ~= NewText ) then

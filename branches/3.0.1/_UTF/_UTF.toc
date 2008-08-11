@@ -2,7 +2,7 @@
 ## Title: _|cffCCCC88UTF|r
 ## Author: Saiket
 ## Version: 3.0.1
-## X-Date: 2008-08-08
+## X-Date: 2008-08-10
 ## X-Category: Chat/Communication
 ## X-Email: saiket.wow@gmail.com
 ## X-Website: http://groups.google.com/group/wow-saiket/web/_utf
