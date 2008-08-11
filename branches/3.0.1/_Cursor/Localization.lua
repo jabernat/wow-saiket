@@ -15,6 +15,13 @@ do
 			MODEL_OVER = "Over"; -- Name of overlay model
 			MODEL_UNDER = "Under"; -- Name of underlay model
 
+			TYPES = {
+				[ "TRAIL" ] = "Trail";
+				[ "PARTICLE" ] = "Particle trail";
+				[ "GLOW" ] = "Glow";
+				[ "MISC" ] = "Miscellaneous";
+			};
+
 			-- Options
 			OPTIONS_TITLE = Title;
 			OPTIONS_DESC = "These options let you change the cursor models that follow your mouse.  You can choose from presets or specify your own.";
@@ -33,6 +40,11 @@ do
 					FACING_DESC = "Rotates the model.";
 					FACING_LOW = "0";
 					FACING_HIGH = "2\207\128"; -- 2pi
+					TYPE = "Preset Type";
+					TYPE_DESC = "Groups of preset models to chose from, or pick "..LDQuo.."Custom"..RDQuo.." to give a custom model path.";
+					CUSTOM = "Custom"; -- Custom type
+					VALUE = "Preset Name";
+					VALUE_DESC = "Possible presets to choose from in the selected type category.";
 					PATH = "File Path";
 					PATH_DESC = "The location of the model file to use, excluding any file extension.";
 				}, {
