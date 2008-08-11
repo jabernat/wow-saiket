@@ -18,7 +18,7 @@ local _CursorOptionsCharacterOriginal = {
 		}
 	};
 
-	Version = select( 3, GetAddOnMetadata( "_Cursor", "Version" ):find( "^([%d.]+)" ) );
+	Version = GetAddOnMetadata( "_Cursor", "Version" ):match( "^([%d.]+)" );
 };
 _CursorOptionsCharacter = _CursorOptionsCharacterOriginal;
 
