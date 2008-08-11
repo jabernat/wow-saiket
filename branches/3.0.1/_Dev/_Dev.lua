@@ -21,7 +21,7 @@
 local _DevOptionsOriginal = {
 	PrintLuaErrors = true;
 
-	Version = select( 3, GetAddOnMetadata( "_Dev", "Version" ):find( "^([%d.]+)" ) );
+	Version = GetAddOnMetadata( "_Dev", "Version" ):match( "^([%d.]+)" );
 };
 _DevOptions = _DevOptionsOriginal;
 
