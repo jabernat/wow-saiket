@@ -239,6 +239,7 @@ end
 function me:ADDON_LOADED ( _, AddOn )
 	if ( AddOn == "_Dev" ) then
 		me:UnregisterEvent( "ADDON_LOADED" );
+		me.ADDON_LOADED = nil;
 
 		if ( _DevOptions.Version ~= _DevOptionsOriginal.Version ) then
 			-- Reset settings

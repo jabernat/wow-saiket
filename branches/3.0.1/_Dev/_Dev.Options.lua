@@ -286,6 +286,15 @@ function me:OnLoad ()
 end
 
 
+--[[****************************************************************************
+  * Function: _Dev.Options.SlashCommand                                        *
+  * Description: Slash command chat handler to open the options pane.          *
+  ****************************************************************************]]
+function me.SlashCommand ()
+	InterfaceOptionsFrame_OpenToFrame( me );
+end
+
+
 
 
 --------------------------------------------------------------------------------
@@ -295,6 +304,8 @@ end
 do
 	me.name = L.OPTIONS_TITLE;
 	me:Hide();
+
+	InterfaceOptions_AddCategory( me );
 
 
 	-- Pane title
@@ -344,7 +355,5 @@ do
 
 
 
-	me.Update();
-
-	InterfaceOptions_AddCategory( me );
+	SlashCmdList[ "DEV_OPTIONS" ] = me.SlashCommand;
 end

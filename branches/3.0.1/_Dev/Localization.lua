@@ -135,6 +135,9 @@ do
 -- Globals
 ----------
 
+	SLASH_DEV_OPTIONS1 = "/dev";
+	SLASH_DEV_OPTIONS2 = "/devoptions";
+
 	-- Bindings
 	BINDING_HEADER__DEV = Title;
 
