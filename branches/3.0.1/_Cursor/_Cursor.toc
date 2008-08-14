@@ -2,12 +2,13 @@
 ## Title: _|cffCCCC88Cursor|r
 ## Author: Saiket
 ## Version: 3.0.1.1
-## X-Date: 2008-08-10
+## X-Date: 2008-08-13
 ## X-Category: Interface Enhancements
 ## X-Email: saiket.wow@gmail.com
 ## X-Website: http://groups.google.com/group/wow-saiket/web/_cursor
 ## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Cursor
 ## Notes: Adds custom effects to your cursor.
+## SavedVariables: _CursorOptions
 ## SavedVariablesPerCharacter: _CursorOptionsCharacter
 ## OptionalDeps: _Dev
 ## DefaultState: enabled

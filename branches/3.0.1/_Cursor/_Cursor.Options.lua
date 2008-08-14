@@ -3,6 +3,15 @@
   * _Cursor.Options.lua - Adds an options panel to the default UI config menu. *
   ****************************************************************************]]
 
+--[[NOTE(
+
+Sort lists alphabetically before building them.
+Perform thorough search for model files.
+Add mouseover warning to set delete.
+Add "Defaults" handler to nil one or both saved variables and reloadui.
+
+)]]
+
 
 local _Cursor = _Cursor;
 local L = _CursorLocalization;
@@ -12,6 +21,11 @@ _Cursor.Options = me;
 
 local SetsPanel = CreateFrame( "Frame", "_CursorOptionsSets", me, "OptionFrameBoxTemplate" );
 me.SetsPanel = SetsPanel;
+SetsPanel.Set = CreateFrame( "EditBox", "_CursorOptionsSet", SetsPanel, "InputBoxTemplate" );
+SetsPanel.Set.Button = CreateFrame( "Button", nil, SetsPanel.Set );
+SetsPanel.SaveButton = CreateFrame( "Button", nil, SetsPanel, "UIPanelButtonTemplate" );
+SetsPanel.LoadButton = CreateFrame( "Button", nil, SetsPanel, "UIPanelButtonTemplate" );
+SetsPanel.DeleteButton = CreateFrame( "Button", nil, SetsPanel, "UIPanelButtonTemplate" );
 
 local ModelsPanel = CreateFrame( "Frame", nil, me, "OptionFrameBoxTemplate" );
 me.ModelsPanel = ModelsPanel;
@@ -33,6 +47,95 @@ ModelsPanel.TabsUsed = TabsUsed;
 
 local Preset = {};
 me.Preset = Preset;
+
+
+
+
+--[[****************************************************************************
+  * Function: _Cursor.Options.SetsPanel.Set:OnEnterPressed                     *
+  ****************************************************************************]]
+function SetsPanel.Set:OnEnterPressed ()
+	self:ClearFocus();
+end
+--[[****************************************************************************
+  * Function: _Cursor.Options.SetsPanel.Set:OnTextChanged                      *
+  ****************************************************************************]]
+function SetsPanel.Set:OnTextChanged ()
+	local Name = self:GetText();
+	if ( Name == "" ) then -- No options when blank
+		SetsPanel.SaveButton:Disable();
+		SetsPanel.LoadButton:Disable();
+		SetsPanel.DeleteButton:Disable();
+	elseif ( _CursorOptions.Sets[ Name ] ) then
+		SetsPanel.SaveButton:Enable();
+		SetsPanel.LoadButton:Enable();
+		SetsPanel.DeleteButton:Enable();
+	else -- Only enable saving new set
+		SetsPanel.SaveButton:Enable();
+		SetsPanel.LoadButton:Disable();
+		SetsPanel.DeleteButton:Disable();
+	end
+end
+--[[****************************************************************************
+  * Function: _Cursor.Options.SetsPanel.Set.Initialize                         *
+  ****************************************************************************]]
+function SetsPanel.Set.Initialize ()
+	local Info = UIDropDownMenu_CreateInfo();
+	for Identifier in pairs( _CursorOptions.Sets ) do
+		Info.text = Identifier;
+		Info.value = Identifier;
+		Info.func = SetsPanel.Set.OnSelect;
+		UIDropDownMenu_AddButton( Info );
+	end
+end
+--[[****************************************************************************
+  * Function: _Cursor.Options.SetsPanel.Set.OnSelect                           *
+  ****************************************************************************]]
+function SetsPanel.Set.OnSelect ()
+	SetsPanel.Set:OnEnterPressed();
+	SetsPanel.Set:SetText( this.value );
+end
+--[[****************************************************************************
+  * Function: _Cursor.Options.SetsPanel.Set.Button:OnClick                     *
+  ****************************************************************************]]
+function SetsPanel.Set.Button:OnClick ()
+	local Parent = self:GetParent();
+	Parent:ClearFocus();
+	ToggleDropDownMenu( nil, nil, Parent, Parent:GetName(), 0, 0 );
+	PlaySound( "igMainMenuOptionCheckBoxOn" );
+end
+--[[****************************************************************************
+  * Function: _Cursor.Options.SetsPanel.Set.Button:OnHide                      *
+  ****************************************************************************]]
+function SetsPanel.Set.Button:OnHide ()
+	CloseDropDownMenus();
+end
+
+
+--[[****************************************************************************
+  * Function: _Cursor.Options.SetsPanel.SaveButton:OnClick                     *
+  ****************************************************************************]]
+function SetsPanel.SaveButton:OnClick ()
+	local NewSet = _CursorOptions.Sets[ SetsPanel.Set:GetText() ] or {};
+	_Cursor.SaveSet( NewSet );
+	_CursorOptions.Sets[ SetsPanel.Set:GetText() ] = NewSet;
+	SetsPanel.Set:ClearFocus();
+end
+--[[****************************************************************************
+  * Function: _Cursor.Options.SetsPanel.LoadButton:OnClick                     *
+  ****************************************************************************]]
+function SetsPanel.LoadButton:OnClick ()
+	_Cursor.LoadSet( _CursorOptions.Sets[ SetsPanel.Set:GetText() ] );
+	SetsPanel.Set:ClearFocus();
+end
+--[[****************************************************************************
+  * Function: _Cursor.Options.SetsPanel.DeleteButton:OnClick                   *
+  ****************************************************************************]]
+function SetsPanel.DeleteButton:OnClick ()
+	_CursorOptions.Sets[ SetsPanel.Set:GetText() ] = nil;
+	SetsPanel.Set:SetText( "" );
+	SetsPanel.Set:ClearFocus();
+end
 
 
 
@@ -69,7 +172,7 @@ function ModelsPanel:TabEnable ( Settings )
 	TabsUnused[ self ] = nil;
 	TabsUsed[ self ] = Settings;
 
-	self:SetText( L[ Settings.Name ] );
+	self:SetText( L.MODELS[ Settings.Name ] );
 	self:Show();
 end
 --[[****************************************************************************
@@ -195,34 +298,36 @@ do
 	end
 	local function DisableDropDown ( self )
 		self:EnableMouse( false );
-		CloseDropDownMenus(); -- Close dropdown if open
 		UIDropDownMenu_DisableDropDown( self );
 		local Color = GRAY_FONT_COLOR;
 		self.Text:SetTextColor( Color.r, Color.g, Color.b );
 	end
 
 	function ModelsPanel.UpdatePreset ( Settings )
+		CloseDropDownMenus(); -- Close dropdown if open
+		-- Sync controls
 		if ( Settings ) then
-			UIDropDownMenu_SetSelectedValue( Type, Settings.Type );
-			EnableDropDown( Type );
+			UIDropDownMenu_SetText( Type, L.TYPES[ Settings.Type ] );
 
 			if ( Settings.Type == "CUSTOM" ) then
-				UIDropDownMenu_ClearAll( Value );
+				UIDropDownMenu_SetText( Value, "" );
 				Path:SetText( Settings.Value );
 			else
-				UIDropDownMenu_SetSelectedValue( Value, Settings.Value );
+				UIDropDownMenu_SetText( Value, _Cursor.Presets[ Settings.Type ][ Settings.Value ]:match( "^[^|]*" ) );
 				Preset.Name, Preset.Path, Preset.Scale, Preset.Facing, Preset.X, Preset.Y
 					= ( "|" ):split( _Cursor.Presets[ Settings.Type ][ Settings.Value ] );
 				Path:SetText( Preset.Path );
 			end
 			ModelsPanel.Preview.Update();
 		else
-			UIDropDownMenu_ClearAll( Type );
-			DisableDropDown( Type );
+			UIDropDownMenu_SetText( Type, "" );
+			UIDropDownMenu_SetText( Value, "" );
+			Path:SetText( "" );
 		end
 
-		-- Disable/enable sub-controls
+		-- Disable/enable controls
 		if ( Settings and Settings.Enabled ) then
+			EnableDropDown( Type );
 			if ( Settings.Type == "CUSTOM" ) then
 				EnablePath();
 				DisableDropDown( Value );
@@ -231,6 +336,7 @@ do
 				EnableDropDown( Value );
 			end
 		else
+			DisableDropDown( Type );
 			DisableDropDown( Value );
 			DisablePath();
 		end
@@ -284,7 +390,7 @@ end
   * Description: Cycles animation speeds for the model preview.                *
   ****************************************************************************]]
 function ModelsPanel.Preview:OnMouseUp ()
-	self.Rate = self.Rate >= math.pi * 2 and 0 or self.Rate + math.pi;
+	self.Rate = ( self.Rate + math.pi ) % ( math.pi * 2 );
 	PlaySound( "igMainMenuOption" );
 end
 --[[****************************************************************************
@@ -307,7 +413,7 @@ do
 			Settings = TabsUsed[ ModelsPanel.Selected ];
 			Model.X = Settings.X or 0;
 			Model.Y = Settings.Y or 0;
-			Scale = Settings.Scale or 1.0;
+			Scale = ( Settings.Scale or 1.0 ) * _Cursor.ScaleDefault;
 			Facing = Settings.Facing or 0;
 			if ( Settings.Type == "CUSTOM" ) then
 				Path = Settings.Value;
@@ -372,7 +478,7 @@ end
   * Function: _Cursor.Options.ModelsPanel.Facing:OnValueChanged                *
   ****************************************************************************]]
 function ModelsPanel.Facing:OnValueChanged ( Value )
-	TabsUsed[ ModelsPanel.Selected ].Facing = ( Value ~= 0 and Value ~= math.pi * 2 ) and Value or nil;
+	TabsUsed[ ModelsPanel.Selected ].Facing = Value % ( math.pi * 2 ) ~= 0 and Value or nil;
 	ModelsPanel.Preview.Update();
 end
 --[[****************************************************************************
@@ -384,8 +490,8 @@ function ModelsPanel.Type.Initialize ()
 	local Selected = Settings and Settings.Type or nil; -- Initializes with no selection onload
 
 	local Info = UIDropDownMenu_CreateInfo();
-	for Identifier, Localized in pairs( L.TYPES ) do
-		Info.text = Localized;
+	for Identifier in pairs( _Cursor.Presets ) do
+		Info.text = L.TYPES[ Identifier ];
 		Info.value = Identifier;
 		Info.func = ModelsPanel.Type.OnSelect;
 		Info.checked = Identifier == Selected;
@@ -398,7 +504,7 @@ function ModelsPanel.Type.Initialize ()
 	UIDropDownMenu_AddButton( Info );
 	-- Custom
 	Info.disabled = nil;
-	Info.text = L.OPTIONS.CUSTOM;
+	Info.text = L.TYPES[ "CUSTOM" ];
 	Info.value = "CUSTOM";
 	Info.func = ModelsPanel.Type.OnSelect;
 	Info.checked = "CUSTOM" == Selected;
@@ -414,7 +520,6 @@ function ModelsPanel.Type.OnSelect ()
 	if ( Type ~= Settings.Type ) then
 		Settings.Type = Type;
 		Settings.Value = Type ~= "CUSTOM" and 1 or Preset.Path; -- If custom, use last preset path
-		UIDropDownMenu_SetSelectedValue( ModelsPanel.Type, Type );
 		ModelsPanel.UpdatePreset( Settings );
 	end
 end
@@ -446,7 +551,6 @@ function ModelsPanel.Value.OnSelect ()
 	local Value = this.value;
 	if ( Value ~= Settings.Value ) then
 		Settings.Value = Value;
-		UIDropDownMenu_SetSelectedValue( ModelsPanel.Value, Value );
 		ModelsPanel.UpdatePreset( Settings );
 	end
 end
@@ -524,6 +628,15 @@ function me.Update ()
 end
 
 
+--[[****************************************************************************
+  * Function: _Cursor.Options.SlashCommand                                     *
+  * Description: Slash command chat handler to open the options pane.          *
+  ****************************************************************************]]
+function me.SlashCommand ()
+	InterfaceOptionsFrame_OpenToFrame( me );
+end
+
+
 
 
 --------------------------------------------------------------------------------
@@ -534,6 +647,8 @@ do
 	me.name = L.OPTIONS_TITLE;
 	me:Hide();
 	me:SetScript( "OnHide", me.OnHide );
+
+	InterfaceOptions_AddCategory( me );
 
 
 	-- Pane title
@@ -556,13 +671,59 @@ do
 	_G[ SetsPanel:GetName().."Title" ]:SetText( L.OPTIONS.SETS );
 	SetsPanel:SetPoint( "TOPLEFT", SubText, "BOTTOMLEFT", -2, -16 );
 	SetsPanel:SetPoint( "RIGHT", -14, 0 );
-	SetsPanel:SetHeight( 96 );
+	SetsPanel:SetHeight( 64 );
+
+	-- Set editbox
+	local Set = SetsPanel.Set;
+	Set:SetPoint( "TOPLEFT", 16, -10 );
+	Set:SetPoint( "RIGHT", -16, 0 );
+	Set:SetHeight( 20 );
+	Set.SetHeight = function () end;
+	Set:SetAutoFocus( false );
+	Set:SetScript( "OnEnterPressed", Set.OnEnterPressed );
+	Set:SetScript( "OnTextChanged", Set.OnTextChanged );
+	Set:SetScript( "OnEnter", me.ControlOnEnter );
+	Set:SetScript( "OnLeave", me.ControlOnLeave );
+	UIDropDownMenu_Initialize( Set, Set.Initialize );
+	Set.point = "TOPRIGHT";
+	Set.relativePoint = "BOTTOMRIGHT";
+	Set.tooltipText = L.OPTIONS[ "SET_DESC" ];
+	local SetButton = Set.Button;
+	SetButton:SetPoint( "RIGHT", Set, 3, 1 );
+	SetButton:SetWidth( 24 );
+	SetButton:SetHeight( 24 );
+	SetButton:SetNormalTexture( "Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Up" );
+	SetButton:SetPushedTexture( "Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Down" );
+	SetButton:SetHighlightTexture( "Interface\\Buttons\\UI-Common-MouseHilight", "ADD" );
+	SetButton:SetScript( "OnClick", SetButton.OnClick );
+	SetButton:SetScript( "OnHide", SetButton.OnHide );
+
+	local SaveButton = SetsPanel.SaveButton;
+	SaveButton:SetPoint( "BOTTOMLEFT", 8, 10 );
+	SaveButton:SetWidth( 74 );
+	SaveButton:SetHeight( 22 );
+	SaveButton:SetText( L.OPTIONS.SAVE );
+	SaveButton:SetScript( "OnClick", SaveButton.OnClick );
+
+	local LoadButton = SetsPanel.LoadButton;
+	LoadButton:SetPoint( "LEFT", SaveButton, "RIGHT", 4, 0 );
+	LoadButton:SetWidth( 74 );
+	LoadButton:SetHeight( 22 );
+	LoadButton:SetText( L.OPTIONS.LOAD );
+	LoadButton:SetScript( "OnClick", LoadButton.OnClick );
+
+	local DeleteButton = SetsPanel.DeleteButton;
+	DeleteButton:SetPoint( "BOTTOMRIGHT", -8, 10 );
+	DeleteButton:SetWidth( 74 );
+	DeleteButton:SetHeight( 22 );
+	DeleteButton:SetText( L.OPTIONS.DELETE );
+	DeleteButton:SetScript( "OnClick", DeleteButton.OnClick );
 
 
 
 
 	-- Models tabbed pane
-	ModelsPanel:SetPoint( "TOPLEFT", SetsPanel, "BOTTOMLEFT", 0, -32 );
+	ModelsPanel:SetPoint( "TOPLEFT", SetsPanel, "BOTTOMLEFT", 0, -64 );
 	ModelsPanel:SetPoint( "BOTTOMRIGHT", -14, 16 );
 
 
@@ -619,15 +780,15 @@ do
 	X:SetPoint( "RIGHT", Preview );
 	X:SetHeight( 14 );
 	X:SetScale( 0.8 );
-	X:SetMinMaxValues( -16, 16 );
+	X:SetMinMaxValues( -32, 32 );
 	X:SetScript( "OnValueChanged", X.OnValueChanged );
 	X.tooltipText = L.OPTIONS[ "X_DESC" ];
 	local Text = _G[ X:GetName().."Low" ];
-	Text:SetText( -16 );
+	Text:SetText( -32 );
 	Text:ClearAllPoints();
 	Text:SetPoint( "LEFT" );
 	Text = _G[ X:GetName().."High" ];
-	Text:SetText( 16 );
+	Text:SetText( 32 );
 	Text:ClearAllPoints();
 	Text:SetPoint( "RIGHT" );
 
@@ -639,15 +800,15 @@ do
 	Y:SetWidth( 10 );
 	Y:SetScale( 0.8 );
 	Y:SetThumbTexture( "Interface\\Buttons\\UI-SliderBar-Button-Vertical" );
-	Y:SetMinMaxValues( -16, 16 );
+	Y:SetMinMaxValues( -32, 32 );
 	Y:SetScript( "OnValueChanged", Y.OnValueChanged );
 	Y.tooltipText = L.OPTIONS[ "Y_DESC" ];
 	Text = _G[ Y:GetName().."Low" ];
-	Text:SetText( -16 );
+	Text:SetText( -32 );
 	Text:ClearAllPoints();
 	Text:SetPoint( "BOTTOM", 0, 6 );
 	Text = _G[ Y:GetName().."High" ];
-	Text:SetText( 16 );
+	Text:SetText( 32 );
 	Text:ClearAllPoints();
 	Text:SetPoint( "TOP", 0, -2 );
 
@@ -681,7 +842,7 @@ do
 	-- Type dropdown
 	local Type = ModelsPanel.Type;
 	Type:SetPoint( "LEFT", -6, 0 );
-	Type:SetPoint( "TOP", Enabled, "BOTTOM", 0, -6 );
+	Type:SetPoint( "TOP", Enabled, "BOTTOM", 0, -12 );
 	Type:SetPoint( "RIGHT", Y, "LEFT", -8, 0 );
 	Type:SetScript( "OnEnter", me.ControlOnEnter );
 	Type:SetScript( "OnLeave", me.ControlOnLeave );
@@ -696,8 +857,9 @@ do
 
 	-- Value dropdown
 	local Value = ModelsPanel.Value;
-	Value:SetPoint( "TOPLEFT", Type, "BOTTOMLEFT" );
+	Value:SetPoint( "LEFT", Type );
 	Value:SetPoint( "RIGHT", Type );
+	Value:SetPoint( "BOTTOM", Preview );
 	Value:SetScript( "OnEnter", me.ControlOnEnter );
 	Value:SetScript( "OnLeave", me.ControlOnLeave );
 	UIDropDownMenu_JustifyText( Value, "LEFT" );
@@ -711,7 +873,7 @@ do
 
 	-- Path editbox
 	local Path = ModelsPanel.Path;
-	Path:SetPoint( "BOTTOMLEFT", 16, 8 );
+	Path:SetPoint( "BOTTOMLEFT", 16, 16 );
 	Path:SetPoint( "RIGHT", Value, -8, 0 );
 	Path:SetHeight( 20 );
 	Path:SetAutoFocus( false );
@@ -728,7 +890,5 @@ do
 
 
 
-	me.Update();
-
-	InterfaceOptions_AddCategory( me );
+	SlashCmdList[ "CURSOR_OPTIONS" ] = me.SlashCommand;
 end
