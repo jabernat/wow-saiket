@@ -3,15 +3,6 @@
   * _Cursor.Options.lua - Adds an options panel to the default UI config menu. *
   ****************************************************************************]]
 
---[[NOTE(
-
-Sort lists alphabetically before building them.
-Perform thorough search for model files.
-Add mouseover warning to set delete.
-Add "Defaults" handler to nil one or both saved variables and reloadui.
-
-)]]
-
 
 local _Cursor = _Cursor;
 local L = _CursorLocalization;
@@ -25,7 +16,7 @@ SetsPanel.Set = CreateFrame( "EditBox", "_CursorOptionsSet", SetsPanel, "InputBo
 SetsPanel.Set.Button = CreateFrame( "Button", nil, SetsPanel.Set );
 SetsPanel.SaveButton = CreateFrame( "Button", nil, SetsPanel, "UIPanelButtonTemplate" );
 SetsPanel.LoadButton = CreateFrame( "Button", nil, SetsPanel, "UIPanelButtonTemplate" );
-SetsPanel.DeleteButton = CreateFrame( "Button", nil, SetsPanel, "UIPanelButtonTemplate" );
+SetsPanel.DeleteButton = CreateFrame( "Button", nil, SetsPanel, "UIPanelButtonGrayTemplate" );
 
 local ModelsPanel = CreateFrame( "Frame", nil, me, "OptionFrameBoxTemplate" );
 me.ModelsPanel = ModelsPanel;
@@ -77,15 +68,26 @@ function SetsPanel.Set:OnTextChanged ()
 	end
 end
 --[[****************************************************************************
-  * Function: _Cursor.Options.SetsPanel.Set.Initialize                         *
+  * Function: _Cursor.Options.SetsPanel.Set.initialize                         *
   ****************************************************************************]]
-function SetsPanel.Set.Initialize ()
-	local Info = UIDropDownMenu_CreateInfo();
-	for Identifier in pairs( _CursorOptions.Sets ) do
-		Info.text = Identifier;
-		Info.value = Identifier;
-		Info.func = SetsPanel.Set.OnSelect;
-		UIDropDownMenu_AddButton( Info );
+do
+	local Sorted = {};
+	function SetsPanel.Set.initialize ()
+		for Identifier in pairs( _CursorOptions.Sets ) do
+			Sorted[ #Sorted + 1 ] = Identifier;
+		end
+		table.sort( Sorted );
+		local Info = UIDropDownMenu_CreateInfo();
+		for _, Identifier in ipairs( Sorted ) do
+			Info.text = Identifier;
+			Info.value = Identifier;
+			Info.func = SetsPanel.Set.OnSelect;
+			UIDropDownMenu_AddButton( Info );
+		end
+
+		for Index = 1, #Sorted do
+			Sorted[ Index ] = nil;
+		end
 	end
 end
 --[[****************************************************************************
@@ -120,6 +122,7 @@ function SetsPanel.SaveButton:OnClick ()
 	_Cursor.SaveSet( NewSet );
 	_CursorOptions.Sets[ SetsPanel.Set:GetText() ] = NewSet;
 	SetsPanel.Set:ClearFocus();
+	SetsPanel.Set:OnTextChanged();
 end
 --[[****************************************************************************
   * Function: _Cursor.Options.SetsPanel.LoadButton:OnClick                     *
@@ -482,33 +485,43 @@ function ModelsPanel.Facing:OnValueChanged ( Value )
 	ModelsPanel.Preview.Update();
 end
 --[[****************************************************************************
-  * Function: _Cursor.Options.ModelsPanel.Type.Initialize                      *
+  * Function: _Cursor.Options.ModelsPanel.Type.initialize                      *
   * Description: Builds the type dropdown menu.                                *
   ****************************************************************************]]
-function ModelsPanel.Type.Initialize ()
-	local Settings = TabsUsed[ ModelsPanel.Selected ];
-	local Selected = Settings and Settings.Type or nil; -- Initializes with no selection onload
+do
+	local Sorted = {};
+	function ModelsPanel.Type.initialize ()
+		local Selected = TabsUsed[ ModelsPanel.Selected ].Type;
 
-	local Info = UIDropDownMenu_CreateInfo();
-	for Identifier in pairs( _Cursor.Presets ) do
-		Info.text = L.TYPES[ Identifier ];
-		Info.value = Identifier;
-		Info.func = ModelsPanel.Type.OnSelect;
-		Info.checked = Identifier == Selected;
+		for Identifier in pairs( _Cursor.Presets ) do
+			Sorted[ #Sorted + 1 ] = Identifier;
+		end
+		table.sort( Sorted );
+		local Info = UIDropDownMenu_CreateInfo();
+		for _, Identifier in ipairs( Sorted ) do
+			Info.text = L.TYPES[ Identifier ];
+			Info.value = Identifier;
+			Info.func = ModelsPanel.Type.OnSelect;
+			Info.checked = Identifier == Selected;
+			UIDropDownMenu_AddButton( Info );
+		end
+
+		-- Spacer
+		Info = UIDropDownMenu_CreateInfo();
+		Info.disabled = 1;
 		UIDropDownMenu_AddButton( Info );
-	end
+		-- Custom
+		Info.disabled = nil;
+		Info.text = L.TYPES[ "CUSTOM" ];
+		Info.value = "CUSTOM";
+		Info.func = ModelsPanel.Type.OnSelect;
+		Info.checked = "CUSTOM" == Selected;
+		UIDropDownMenu_AddButton( Info );
 
-	-- Spacer
-	Info = UIDropDownMenu_CreateInfo();
-	Info.disabled = 1;
-	UIDropDownMenu_AddButton( Info );
-	-- Custom
-	Info.disabled = nil;
-	Info.text = L.TYPES[ "CUSTOM" ];
-	Info.value = "CUSTOM";
-	Info.func = ModelsPanel.Type.OnSelect;
-	Info.checked = "CUSTOM" == Selected;
-	UIDropDownMenu_AddButton( Info );
+		for Index = 1, #Sorted do
+			Sorted[ Index ] = nil;
+		end
+	end
 end
 --[[****************************************************************************
   * Function: _Cursor.Options.ModelsPanel.Type.OnSelect                        *
@@ -524,21 +537,37 @@ function ModelsPanel.Type.OnSelect ()
 	end
 end
 --[[****************************************************************************
-  * Function: _Cursor.Options.ModelsPanel.Value.Initialize                     *
+  * Function: _Cursor.Options.ModelsPanel.Value.initialize                     *
   * Description: Builds the value dropdown menu.                               *
   ****************************************************************************]]
-function ModelsPanel.Value.Initialize ()
-	local Settings = TabsUsed[ ModelsPanel.Selected ];
-	if ( Settings and Settings.Type ~= "CUSTOM" ) then
-		local Selected = Settings and Settings.Value or nil; -- Initializes with no selection onload
+do
+	local Sorted = {};
+	local Presets;
+	local function SortFunc ( Index1, Index2 )
+		return Presets[ Index1 ] < Presets[ Index2 ];
+	end
+	function ModelsPanel.Value.initialize ()
+		local Settings = TabsUsed[ ModelsPanel.Selected ];
+		if ( Settings.Type ~= "CUSTOM" ) then
+			local Selected = Settings.Value;
+			Presets = _Cursor.Presets[ Settings.Type ];
 
-		local Info = UIDropDownMenu_CreateInfo();
-		for Index, Data in ipairs( _Cursor.Presets[ Settings.Type ] ) do
-			Info.text = Data:match( "^[^|]*" );
-			Info.value = Index;
-			Info.func = ModelsPanel.Value.OnSelect;
-			Info.checked = Index == Selected;
-			UIDropDownMenu_AddButton( Info );
+			for Index, Data in ipairs( Presets ) do
+				Sorted[ Index ] = Index;
+			end
+			table.sort( Sorted, SortFunc );
+			local Info = UIDropDownMenu_CreateInfo();
+			for _, Index in ipairs( Sorted ) do
+				Info.text = Presets[ Index ]:match( "^[^|]*" );
+				Info.value = Index;
+				Info.func = ModelsPanel.Value.OnSelect;
+				Info.checked = Index == Selected;
+				UIDropDownMenu_AddButton( Info );
+			end
+
+			for Index = 1, #Sorted do
+				Sorted[ Index ] = nil;
+			end
 		end
 	end
 end
@@ -588,6 +617,32 @@ end
   ****************************************************************************]]
 function ModelsPanel.ApplyButton:OnClick ()
 	_Cursor.Update();
+end
+
+
+
+
+--[[****************************************************************************
+  * Function: _Cursor.Options.ResetAll                                         *
+  * Description: Reloads cursor settings and all sets.                         *
+  ****************************************************************************]]
+function me.ResetAll ()
+	_CursorOptions.Sets = CopyTable( _Cursor.DefaultSets );
+	me.ResetCharacter();
+end
+--[[****************************************************************************
+  * Function: _Cursor.Options.ResetCharacter                                   *
+  * Description: Reloads cursor settings.                                      *
+  ****************************************************************************]]
+function me.ResetCharacter ()
+	_Cursor.LoadSet( _Cursor.DefaultSets[ L.SETS[ _Cursor.DefaultModelSet ] ] );
+end
+--[[****************************************************************************
+  * Function: _Cursor.Options:default                                          *
+  * Description: Prompts the user to reset settings to default.                *
+  ****************************************************************************]]
+function me:default ()
+	StaticPopup_Show( "_CURSOR_RESET_CONFIRM" );
 end
 
 
@@ -684,7 +739,6 @@ do
 	Set:SetScript( "OnTextChanged", Set.OnTextChanged );
 	Set:SetScript( "OnEnter", me.ControlOnEnter );
 	Set:SetScript( "OnLeave", me.ControlOnLeave );
-	UIDropDownMenu_Initialize( Set, Set.Initialize );
 	Set.point = "TOPRIGHT";
 	Set.relativePoint = "BOTTOMRIGHT";
 	Set.tooltipText = L.OPTIONS[ "SET_DESC" ];
@@ -718,6 +772,9 @@ do
 	DeleteButton:SetHeight( 22 );
 	DeleteButton:SetText( L.OPTIONS.DELETE );
 	DeleteButton:SetScript( "OnClick", DeleteButton.OnClick );
+	DeleteButton:SetScript( "OnEnter", me.ControlOnEnter );
+	DeleteButton:SetScript( "OnLeave", me.ControlOnLeave );
+	DeleteButton.tooltipText = L.OPTIONS.DELETE_DESC;
 
 
 
@@ -853,7 +910,6 @@ do
 	Type.Text = Text;
 	Text:SetPoint( "BOTTOMLEFT", Type, "TOPLEFT", 16, -2 );
 	Text:SetText( L.OPTIONS.TYPE );
-	UIDropDownMenu_Initialize( Type, Type.Initialize );
 
 	-- Value dropdown
 	local Value = ModelsPanel.Value;
@@ -869,7 +925,6 @@ do
 	Value.Text = Text;
 	Text:SetPoint( "BOTTOMLEFT", Value, "TOPLEFT", 16, -2 );
 	Text:SetText( L.OPTIONS.VALUE );
-	UIDropDownMenu_Initialize( Value, Value.Initialize );
 
 	-- Path editbox
 	local Path = ModelsPanel.Path;
@@ -890,5 +945,17 @@ do
 
 
 
-	SlashCmdList[ "CURSOR_OPTIONS" ] = me.SlashCommand;
+	StaticPopupDialogs[ "_CURSOR_RESET_CONFIRM" ] = {
+		text    = L.RESET_CONFIRM;
+		button1 = L.RESET_ALL;
+		button3 = L.RESET_CHARACTER;
+		button2 = L.RESET_CANCEL;
+		OnAccept = me.ResetAll;
+		OnAlt    = me.ResetCharacter;
+		timeout = 0;
+		exclusive = 1;
+		hideOnEscape = 1;
+		whileDead = 1;
+	};
+	SlashCmdList[ "_CURSOR_OPTIONS" ] = me.SlashCommand;
 end

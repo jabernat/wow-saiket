@@ -44,6 +44,7 @@ do
 			SAVE = "Save"; -- Save set
 			LOAD = "Load"; -- Load set
 			DELETE = "Delete"; -- Delete set
+			DELETE_DESC = "Removes this set for all characters.";
 			APPLY = "Apply"; -- Apply current options to cursor
 			ENABLED = "Model Enabled";
 			ENABLED_DESC = "Toggles whether this model is shown.";
@@ -63,6 +64,11 @@ do
 			PATH = "File Path";
 			PATH_DESC = "The location of the model file to use, excluding any file extension.";
 		}, Metatable );
+
+		RESET_CONFIRM = Title..": Reset sets for all characters and this character's cursor, or only the cursor?";
+		RESET_ALL = "Sets & Cursor";
+		RESET_CHARACTER = "Only Cursor";
+		RESET_CANCEL = CANCEL;
 	}, Metatable );
 
 
@@ -72,6 +78,6 @@ do
 -- Globals
 ----------
 
-	SLASH_CURSOR_OPTIONS1 = "/cursor";
-	SLASH_CURSOR_OPTIONS2 = "/cursoroptions";
+	SLASH__CURSOR_OPTIONS1 = "/cursor";
+	SLASH__CURSOR_OPTIONS2 = "/cursoroptions";
 end

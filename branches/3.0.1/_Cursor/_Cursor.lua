@@ -5,34 +5,14 @@
 
 
 local Version = GetAddOnMetadata( "_Cursor", "Version" ):match( "^([%d.]+)" );
-local L = _CursorLocalization;
-_CursorOptions = {
-	-- Set strings formatted as follows:
-	-- "Name|Enabled(1/0)|Strata|Type|Value[|Scale][|Facing][|X][|Y]"
-	Sets = {
-		[ L.SETS[ "ENERGY" ] ] = { -- Energy/lightning trail
-			"LAYER1|1|TOOLTIP|TRAIL|1",
-			"LAYER2|1|FULLSCREEN_DIALOG|PARTICLE|1",
-			"LAYER3|0|FULLSCREEN_DIALOG|CUSTOM|"
-		};
-		[ L.SETS[ "SHADOW" ] ] = { -- Cloudy shadow trail
-			"LAYER1|1|TOOLTIP|TRAIL|2|0.5",
-			"LAYER2|1|FULLSCREEN_DIALOG|PARTICLE|4",
-			"LAYER3|0|FULLSCREEN_DIALOG|CUSTOM|",
-		};
-		[ L.SETS[ "MELTER" ] ] = { -- Large red blowtorch
-			"LAYER1|1|TOOLTIP|CUSTOM|Spells\\Cthuneeyeattack|1.5|.4|32|13",
-			"LAYER2|1|FULLSCREEN_DIALOG|CUSTOM|Spells\\Deathanddecay_area_base",
-		};
-	};
-	Version = Version;
-};
+_CursorOptions = nil;
 _CursorOptionsCharacter = {
 	Models = {};
 	Version = Version;
 };
 
 
+local L = _CursorLocalization;
 local me = CreateFrame( "Frame", "_Cursor" );
 
 local ModelsUnused = {};
@@ -43,7 +23,25 @@ me.ModelsUsed = ModelsUsed;
 me.ScaleDefault = 0.01; -- Baseline scaling factor applied before presets and custom scales
 
 
-me.SetDefault = CopyTable( _CursorOptions.Sets[ L.SETS[ "ENERGY" ] ] );
+-- Set strings formatted as follows:
+-- "Name|Enabled(1/0)|Strata|Type|Value[|Scale][|Facing][|X][|Y]"
+me.DefaultSets = {
+	[ L.SETS[ "ENERGY" ] ] = { -- Energy/lightning trail
+		"LAYER1|1|TOOLTIP|TRAIL|1",
+		"LAYER2|1|FULLSCREEN_DIALOG|PARTICLE|1",
+		"LAYER3|0|FULLSCREEN_DIALOG|CUSTOM|"
+	};
+	[ L.SETS[ "SHADOW" ] ] = { -- Cloudy shadow trail
+		"LAYER1|1|TOOLTIP|TRAIL|2|0.5",
+		"LAYER2|1|FULLSCREEN_DIALOG|PARTICLE|4",
+		"LAYER3|0|FULLSCREEN_DIALOG|CUSTOM|",
+	};
+	[ L.SETS[ "MELTER" ] ] = { -- Large red blowtorch
+		"LAYER1|1|TOOLTIP|CUSTOM|Spells\\Cthuneeyeattack|1.5|.4|32|13",
+		"LAYER2|1|FULLSCREEN_DIALOG|CUSTOM|Spells\\Deathanddecay_area_base",
+	};
+};
+me.DefaultModelSet = "ENERGY";
 -- Preset strings formatted as follows:
 -- "Name|Path|Scale|Facing|X|Y"
 me.Presets = {
@@ -247,8 +245,11 @@ function me:ADDON_LOADED ( _, AddOn )
 		me:UnregisterEvent( "ADDON_LOADED" );
 		me.ADDON_LOADED = nil;
 
+		if ( not _CursorOptions ) then
+			_CursorOptions = { Sets = CopyTable( me.DefaultSets ) };
+		end
 		if ( not _CursorOptionsCharacter.Models[ 1 ] ) then
-			me.LoadSet( me.SetDefault );
+			me.LoadSet( me.DefaultSets[ L.SETS[ me.DefaultModelSet ] ] );
 		else
 			me.Update();
 			if ( me.Options ) then
