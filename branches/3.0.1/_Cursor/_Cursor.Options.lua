@@ -5,7 +5,7 @@
 -- NOTE(Temporary translation for pre-WotLK clients.)
 local UIDropDownMenu_JustifyText = UIDropDownMenu_JustifyText;
 local UIDropDownMenu_SetText = UIDropDownMenu_SetText;
-if ( select( 4, GetBuildInfo() ) <= 30000 ) then
+if ( select( 4, GetBuildInfo() ) < 30000 ) then
 	do
 		local Backup = UIDropDownMenu_JustifyText;
 		function UIDropDownMenu_JustifyText ( self, Alignment, ... )

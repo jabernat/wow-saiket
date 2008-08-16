@@ -37,8 +37,9 @@ me.DefaultSets = {
 		"LAYER3|0|FULLSCREEN_DIALOG|CUSTOM|",
 	};
 	[ L.SETS[ "MELTER" ] ] = { -- Large red blowtorch
-		"LAYER1|1|TOOLTIP|CUSTOM|Spells\\Cthuneeyeattack|1.5|.4|32|13",
-		"LAYER2|1|FULLSCREEN_DIALOG|CUSTOM|Spells\\Deathanddecay_area_base",
+		"LAYER1|0|LOW|CUSTOM|",
+		"LAYER2|1|LOW|CUSTOM|Spells\\Cthuneeyeattack|1.5|.4|32|13",
+		"LAYER3|1|BACKGROUND|CUSTOM|Spells\\Deathanddecay_area_base",
 	};
 };
 me.DefaultModelSet = "ENERGY";
