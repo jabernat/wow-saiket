@@ -20,7 +20,7 @@ do
 		SETS = setmetatable( { -- Only for SetsDefault
 			[ "ENERGY" ] = "Energy beam";
 			[ "SHADOW" ]  = "Shadow trail";
-			[ "MELTER" ]  = "UI Melter (Warning, bright!)";
+			[ "MELTER" ]  = "Face Melter (Warning, bright!)";
 		}, Metatable );
 		MODELS = setmetatable( {
 			[ "LAYER1" ] = "Layer 1";
@@ -29,11 +29,13 @@ do
 		}, Metatable );
 
 		TYPES = setmetatable( {
-			[ "TRAIL" ] = "Trail";
-			[ "PARTICLE" ] = "Particle trail";
 			[ "GLOW" ] = "Glow";
+			[ "INDICATOR" ] = "Indicator";
+			[ "PARTICLE" ] = "Particle trail";
+			[ "TRAIL" ] = "Trail";
 			[ "CUSTOM" ] = "Custom"; -- Custom type; not an actual category
 		}, Metatable );
+		PRESETS = setmetatable( {}, Metatable ); -- All names of presets passed through this table
 
 		-- Options
 		OPTIONS_TITLE = Title;

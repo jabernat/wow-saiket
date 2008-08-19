@@ -334,9 +334,9 @@ do
 				UIDropDownMenu_SetText( Value, "" );
 				Path:SetText( Settings.Value );
 			else
-				UIDropDownMenu_SetText( Value, _Cursor.Presets[ Settings.Type ][ Settings.Value ]:match( "^[^|]*" ) );
 				Preset.Name, Preset.Path, Preset.Scale, Preset.Facing, Preset.X, Preset.Y
 					= ( "|" ):split( _Cursor.Presets[ Settings.Type ][ Settings.Value ] );
+				UIDropDownMenu_SetText( Value, L.PRESETS[ Preset.Name ] );
 				Path:SetText( Preset.Path );
 			end
 			ModelsPanel.Preview.Update();
@@ -576,7 +576,7 @@ do
 			table.sort( Sorted, SortFunc );
 			local Info = UIDropDownMenu_CreateInfo();
 			for _, Index in ipairs( Sorted ) do
-				Info.text = Presets[ Index ]:match( "^[^|]*" );
+				Info.text = L.PRESETS[ Presets[ Index ]:match( "^[^|]*" ) ];
 				Info.value = Index;
 				Info.func = ModelsPanel.Value.OnSelect;
 				Info.checked = Index == Selected;
@@ -841,6 +841,7 @@ do
 
 	Preview.Model = CreateFrame( "Model", nil, Preview );
 	Preview.Model:SetAllPoints( Backdrop );
+	Preview.Model:SetLight( 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ); -- Allows trails like warriors' intervene to work
 
 	local Cursor = Preview.Model:CreateTexture( nil, "OVERLAY" );
 	Preview.Cursor = Cursor;

@@ -37,37 +37,94 @@ me.DefaultSets = {
 		"LAYER3|0|FULLSCREEN_DIALOG|CUSTOM|",
 	};
 	[ L.SETS[ "MELTER" ] ] = { -- Large red blowtorch
-		"LAYER1|0|LOW|CUSTOM|",
-		"LAYER2|1|LOW|CUSTOM|Spells\\Cthuneeyeattack|1.5|.4|32|13",
-		"LAYER3|1|BACKGROUND|CUSTOM|Spells\\Deathanddecay_area_base",
+		"Laser|1|LOW|CUSTOM|spells\\cthuneeyeattack|1.5|.4|32|13",
+		"Heat|1|BACKGROUND|CUSTOM|spells\\deathanddecay_area_base",
+		"Smoke|1|BACKGROUND|CUSTOM|spells\\sandvortex_state_base",
+		"Nova|0|LOW|CUSTOM|spells\\aimedshot_impact_chest",
 	};
 };
 me.DefaultModelSet = "ENERGY";
 -- Preset strings formatted as follows:
 -- "Name|Path|Scale|Facing|X|Y"
 me.Presets = {
-	[ "TRAIL" ] = {
-		"Lightning trail|Spells\\Lightning_precast_low_hand|1|0|4|-6",
-		"Shadow trail|Spells\\Shadow_precast_uber_hand|1|0|4|-6",
-		"Nature trail|Spells\\Wrath_precast_hand|1|0|0|0",
-		"First-aid trail|Spells\\Firstaid_hand|2|0|4|-6",
-		--[[ Fading trails disappear on half the screen :(
-		"Long white trail|Spells\\Chargetrail|1|2.4|0|0",
-		"Short white trail|Spells\\Ribbontrail|1|0|0|0",
-		"Short sparkling trail|Spells\\Intervenetrail|1|2.4|0|0",
-		]]
-	};
 	[ "GLOW" ] = {
-		"Frost cloud|Spells\\Enchantments\\battlemasterglow_high|6|0|8|-8",
-		"Snowflake cloud|Spells\\Icyenchant_high|8|0|8|-8",
-		"Burning cloud|Spells\\Healrag_state_chest|1|0|4|-6",
+		"Burning cloud, blue|spells\\manafunnel_impact_chest|1|0|4|-6",
+		"Burning cloud, green|spells\\lifetap_state_chest|1|0|4|-6",
+		"Burning cloud, purple|spells\\soulfunnel_impact_chest|1|0|4|-6",
+		"Burning cloud, red|spells\\healrag_state_chest|1|0|4|-6",
+		"Cloud, black & blue|spells\\enchantments\\soulfrostglow_high|4|0|8|-7",
+		"Cloud, blue|spells\\enchantments\\spellsurgeglow_high|6|0|10|-8",
+		"Cloud, bright purple|spells\\gouge_precast_state_hand|2.4|0|11|-9",
+		"Cloud, corruption|spells\\seedofcorruption_state|.9|0|9|-8",
+		"Cloud, dark blue|spells\\summon_precast_hand|2.7|0|9|-8",
+		"Cloud, executioner|spells\\enchantments\\disintigrateglow_high|4|0|8|-7",
+		"Cloud, fire|spells\\enchantments\\sunfireglow_high|5|0|10|-8",
+		"Cloud, frost|spells\\icyenchant_high|8|0|8|-8",
+		"Ring, bloodlust|spells\\bloodlust_state_hand|2.6|0|9|-8",
+		"Ring, pulse blue|spells\\brillianceaura|.8|0|8|-8",
+		"Ring, frost|spells\\ice_precast_high_hand|1.9|0|11|-9",
+		"Ring, swirl|particles\\stunswirl_state_head|1|0|9|-8",
+		"Ring, vengeance|spells\\vengeance_state_hand|2|0|9|-8",
+		"Simple, black|spells\\shadowmissile|2|0|5|-6",
+		"Simple, white|spells\\enchantments\\whiteflame_low|4|5.3|10|-8",
+		"Weather, lightning|spells\\goblin_weather_machine_lightning|1.3|0|10|-11",
+		"Weather, sun|spells\\goblin_weather_machine_sunny|1.5|2.1|11|-9",
+		"Weather, snow|spells\\goblin_weather_machine_snow|1.5|2.1|11|-9",
+		"Weather, cloudy|spells\\goblin_weather_machine_cloudy|1.5|2.1|11|-9",
+	};
+	[ "INDICATOR" ] = {
+		"Blood cloud|spells\\beastwithin_state_base|.5|0|0|0",
+		"Light blue pulse|spells\\stoneform_state_base|1|0|9|-8",
+		"Periodic glint|spells\\enchantments\\sparkle_a|4|0|0|0",
+		"Shockwave red|spells\\lacerate_impact|1.3|0|0|0",
+		"Snowball hit|spells\\snowball_impact_chest|1|0|5|-6",
 	};
 	[ "PARTICLE" ] = {
-		"Blue fire|Spells\\Fire_blue_precast_hand|1|0|6|-8",
-		"Orange Fire|Spells\\Fire_precast_hand|1.5|0|4|-6",
-		"Fel fire|Spells\\Fel_fire_precast_hand|1|0|6|-8",
-		"Shadow cloud|Spells\\Cripple_state_chest|.5|0|8|-8",
-		"Healing sparks|Spells\\Lifebloom_state|1|0|8|-8",
+		"Dust, arcane|spells\\arcane_form_precast|1.1|.7|9|-11",
+		"Dust, embers|spells\\fire_form_precast|1.1|.7|9|-11",
+		"Dust, holy|spells\\holy_form_precast|1.1|.7|9|-11",
+		"Dust, ice shards|spells\\frost_form_precast|1.1|.7|9|-11",
+		"Dust, shadow|spells\\shadow_form_precast|1.1|.7|9|-11",
+		"Fire, blue|spells\\fire_blue_precast_uber_hand|1|0|6|-8",
+		"Fire, fel|spells\\fel_fire_precast_hand|1|0|6|-8",
+		"Fire, orange|spells\\fire_precast_uber_hand|1.5|0|4|-6",
+		"Fire, periodic red & blue|spells\\incinerate_impact_base|.8|0|11|-10",
+		"Fire, wavy purple|spells\\incinerateblue_low_base|.25|2.3|11|-10",
+		"Frost|spells\\ice_precast_low_hand|2.5|0|8|-7",
+		"Leaves|spells\\nature_form_precast|2.5|1|13|-11",
+		"Shadow cloud|spells\\cripple_state_chest|.5|0|8|-8",
+		"Spark, small white|spells\\dispel_low_recursive|4|0|0|0",
+		"Spark, small blue|spells\\detectmagic_recursive|4|0|0|0",
+		"Sparks, periodic healing|spells\\lifebloom_state|1|0|8|-8",
+		"Sparks, red|spells\\immolationtrap_recursive|4|0|0|0",
+	};
+	[ "TRAIL" ] = {
+		"Electric, blue long|spells\\lightningboltivus_missile|.1|0|4|-6",
+		"Electric, blue|spells\\lightning_precast_low_hand|1|0|4|-6",
+		"Electric, green|spells\\lightning_fel_precast_low_hand|1|0|4|-6",
+		"Electric, yellow|spells\\wrath_precast_hand|1.5|0|4|-6",
+		"First-aid|spells\\firstaid_hand|2|0|4|-6",
+		"Freedom|spells\\blessingoffreedom_state|.4|0|8|-8",
+		"Ghost|spells\\zig_missile|.7|1|8|-5",
+		"Holy bright|spells\\holy_missile_uber|.9|0|11|-9",
+		"Long blue & holy glow|spells\\alliancectfflag_spell|.9|2.3|1|-2",
+		"Shadow|spells\\shadow_precast_uber_hand|1|0|4|-6",
+		"Souls, small|spells\\soulshatter_missile|1.7|0|5|-6",
+		"Souls|spells\\wellofsouls_base|.5|0|9|-8",
+		"Sparkling, blue|spells\\intervenetrail|1|2.4|7|-7",
+		"Sparkling, light green|spells\\sprint_impact_chest|1.3|.8|3|-4",
+		"Sparkling, red|spells\\chargetrail|1|2.4|0|0",
+		"Sparkling, white|spells\\ribbontrail|1|0|0|0",
+		"Swirling, black|spells\\shadow_impactdd_med_base|.5|0|5|-6",
+		"Swirling, blood|spells\\bloodbolt_chest|.5|0|5|-6",
+		"Swirling, blue|spells\\banish_chest_blue|.5|0|11|-9",
+		"Swirling, holy|spells\\holy_precast_uber_hand|1|0|5|-6",
+		"Swirling, nature|spells\\rejuvenation_impact_base|.35|0|5|-6",
+		"Swirling, poison|spells\\banish_chest|.5|0|11|-9",
+		"Swirling, purple|spells\\banish_chest_purple|.5|0|11|-9",
+		"Swirling, shadow|spells\\banish_chest_dark|.5|0|11|-9",
+		"Swirling, white|spells\\banish_chest_white|.5|0|11|-9",
+		"Swirling, yellow|spells\\banish_chest_yellow|.5|0|11|-9",
 	};
 };
 
@@ -88,6 +145,7 @@ function me.GetModel ()
 		Model = CreateFrame( "Model", nil, me );
 		Model:SetAllPoints( nil ); -- Fullscreen
 		Model:Hide();
+		Model:SetLight( 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ); -- Allows trails like warriors' intervene to work
 	end
 
 	ModelsUnused[ Model ] = true;
@@ -225,14 +283,29 @@ end
   * Function: _Cursor.Update                                                   *
   * Description: Resynchronizes _Cursor with its settings table.               *
   ****************************************************************************]]
-function me.Update ()
-	for Model in pairs( ModelsUsed ) do
-		me.ModelDisable( Model );
-	end
+do
+	local StrataLevels = {
+		BACKGROUND = false; LOW = false; MEDIUM = false; HIGH = false;
+		DIALOG = false; FULLSCREEN = false; FULLSCREEN_DIALOG = false; TOOLTIP = false;
+	};
+	local Model, Level;
+	function me.Update ()
+		for Model in pairs( ModelsUsed ) do
+			me.ModelDisable( Model );
+		end
 
-	for _, Settings in ipairs( _CursorOptionsCharacter.Models ) do
-		if ( Settings.Enabled ) then
-			me.ModelEnable( me.GetModel(), Settings );
+		for Strata in pairs( StrataLevels ) do
+			StrataLevels[ Strata ] = 0;
+		end
+		for _, Settings in ipairs( _CursorOptionsCharacter.Models ) do
+			if ( Settings.Enabled ) then
+				Model = me.GetModel();
+				me.ModelEnable( Model, Settings );
+
+				Level = StrataLevels[ Settings.Strata ] + 1;
+				StrataLevels[ Settings.Strata ] = Level;
+				Model:SetFrameLevel( Level );
+			end
 		end
 	end
 end
