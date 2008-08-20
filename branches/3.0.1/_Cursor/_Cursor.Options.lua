@@ -36,23 +36,23 @@ SetsPanel.SaveButton = CreateFrame( "Button", nil, SetsPanel, "UIPanelButtonTemp
 SetsPanel.LoadButton = CreateFrame( "Button", nil, SetsPanel, "UIPanelButtonTemplate" );
 SetsPanel.DeleteButton = CreateFrame( "Button", nil, SetsPanel, "UIPanelButtonGrayTemplate" );
 
-local ModelsPanel = CreateFrame( "Frame", nil, me, "OptionFrameBoxTemplate" );
-me.ModelsPanel = ModelsPanel;
-ModelsPanel.ApplyButton = CreateFrame( "Button", nil, ModelsPanel, "UIPanelButtonGrayTemplate" );
-ModelsPanel.Enabled = CreateFrame( "CheckButton", "_CursorOptionsEnabled", ModelsPanel, "InterfaceOptionsCheckButtonTemplate" );
-ModelsPanel.Preview = CreateFrame( "Frame", nil, ModelsPanel );
-ModelsPanel.X = CreateFrame( "Slider", "_CursorOptionsX", ModelsPanel.Preview, "OptionsSliderTemplate" );
-ModelsPanel.Y = CreateFrame( "Slider", "_CursorOptionsY", ModelsPanel.Preview, "OptionsSliderTemplate" );
-ModelsPanel.Scale = CreateFrame( "Slider", "_CursorOptionsScale", ModelsPanel.Preview, "OptionsSliderTemplate" );
-ModelsPanel.Facing = CreateFrame( "Slider", "_CursorOptionsFacing", ModelsPanel.Preview, "OptionsSliderTemplate" );
-ModelsPanel.Type = CreateFrame( "Frame", "_CursorOptionsType", ModelsPanel, "UIDropDownMenuTemplate" );
-ModelsPanel.Value = CreateFrame( "Frame", "_CursorOptionsValue", ModelsPanel, "UIDropDownMenuTemplate" );
-ModelsPanel.Path = CreateFrame( "EditBox", "_CursorOptionsPath", ModelsPanel, "InputBoxTemplate" );
+local CursorsPanel = CreateFrame( "Frame", "_CursorOptionsCursors", me, "OptionFrameBoxTemplate" );
+me.CursorsPanel = CursorsPanel;
+CursorsPanel.ApplyButton = CreateFrame( "Button", nil, CursorsPanel, "UIPanelButtonGrayTemplate" );
+CursorsPanel.Enabled = CreateFrame( "CheckButton", "_CursorOptionsEnabled", CursorsPanel, "InterfaceOptionsCheckButtonTemplate" );
+CursorsPanel.Preview = CreateFrame( "Frame", nil, CursorsPanel );
+CursorsPanel.X = CreateFrame( "Slider", "_CursorOptionsX", CursorsPanel.Preview, "OptionsSliderTemplate" );
+CursorsPanel.Y = CreateFrame( "Slider", "_CursorOptionsY", CursorsPanel.Preview, "OptionsSliderTemplate" );
+CursorsPanel.Scale = CreateFrame( "Slider", "_CursorOptionsScale", CursorsPanel.Preview, "OptionsSliderTemplate" );
+CursorsPanel.Facing = CreateFrame( "Slider", "_CursorOptionsFacing", CursorsPanel.Preview, "OptionsSliderTemplate" );
+CursorsPanel.Type = CreateFrame( "Frame", "_CursorOptionsType", CursorsPanel, "UIDropDownMenuTemplate" );
+CursorsPanel.Value = CreateFrame( "Frame", "_CursorOptionsValue", CursorsPanel, "UIDropDownMenuTemplate" );
+CursorsPanel.Path = CreateFrame( "EditBox", "_CursorOptionsPath", CursorsPanel, "InputBoxTemplate" );
 
 local TabsUnused = {};
-ModelsPanel.TabsUnused = TabsUnused;
+CursorsPanel.TabsUnused = TabsUnused;
 local TabsUsed = {};
-ModelsPanel.TabsUsed = TabsUsed;
+CursorsPanel.TabsUsed = TabsUsed;
 
 local Preset = {};
 me.Preset = Preset;
@@ -71,16 +71,11 @@ end
   ****************************************************************************]]
 function SetsPanel.Set:OnTextChanged ()
 	local Name = self:GetText();
-	if ( Name == "" ) then -- No options when blank
-		SetsPanel.SaveButton:Disable();
-		SetsPanel.LoadButton:Disable();
-		SetsPanel.DeleteButton:Disable();
-	elseif ( _CursorOptions.Sets[ Name ] ) then
-		SetsPanel.SaveButton:Enable();
+	SetsPanel.SaveButton[ Name == "" and "Disable" or "Enable" ]( SetsPanel.SaveButton );
+	if ( _CursorOptions.Sets[ Name ] ) then
 		SetsPanel.LoadButton:Enable();
 		SetsPanel.DeleteButton:Enable();
-	else -- Only enable saving new set
-		SetsPanel.SaveButton:Enable();
+	else
 		SetsPanel.LoadButton:Disable();
 		SetsPanel.DeleteButton:Disable();
 	end
@@ -91,14 +86,14 @@ end
 do
 	local Sorted = {};
 	function SetsPanel.Set.initialize ()
-		for Identifier in pairs( _CursorOptions.Sets ) do
-			Sorted[ #Sorted + 1 ] = Identifier;
+		for Name in pairs( _CursorOptions.Sets ) do
+			Sorted[ #Sorted + 1 ] = Name;
 		end
 		table.sort( Sorted );
 		local Info = UIDropDownMenu_CreateInfo();
-		for _, Identifier in ipairs( Sorted ) do
-			Info.text = Identifier;
-			Info.value = Identifier;
+		for _, Name in ipairs( Sorted ) do
+			Info.text = Name;
+			Info.value = Name;
 			Info.func = SetsPanel.Set.OnSelect;
 			UIDropDownMenu_AddButton( Info );
 		end
@@ -136,9 +131,10 @@ end
   * Function: _Cursor.Options.SetsPanel.SaveButton:OnClick                     *
   ****************************************************************************]]
 function SetsPanel.SaveButton:OnClick ()
-	local NewSet = _CursorOptions.Sets[ SetsPanel.Set:GetText() ] or {};
+	local Name = SetsPanel.Set:GetText();
+	local NewSet = _CursorOptions.Sets[ Name ] or {};
 	_Cursor.SaveSet( NewSet );
-	_CursorOptions.Sets[ SetsPanel.Set:GetText() ] = NewSet;
+	_CursorOptions.Sets[ Name ] = NewSet;
 	SetsPanel.Set:ClearFocus();
 	SetsPanel.Set:OnTextChanged();
 end
@@ -162,18 +158,18 @@ end
 
 
 --[[****************************************************************************
-  * Function: _Cursor.Options.ModelsPanel.GetTab                               *
+  * Function: _Cursor.Options.CursorsPanel.GetTab                              *
   * Description: Gets an unused tab frame.                                     *
   ****************************************************************************]]
 do
-	local TabID = 0;
-	function ModelsPanel.GetTab ()
+	local TabID = 0; -- Only used to create unique names
+	function CursorsPanel.GetTab ()
 		local Tab = next( TabsUnused );
 		if ( not Tab ) then
 			TabID = TabID + 1;
-			Tab = CreateFrame( "Button", "_CursorOptionsTab"..TabID, ModelsPanel, "OptionsFrameTabButtonTemplate" );
+			Tab = CreateFrame( "Button", "_CursorOptionsTab"..TabID, CursorsPanel, "OptionsFrameTabButtonTemplate" );
 			Tab:Hide();
-			Tab:SetScript( "OnClick", ModelsPanel.SetTab );
+			Tab:SetScript( "OnClick", CursorsPanel.SetTab );
 			PanelTemplates_DeselectTab( Tab );
 		end
 
@@ -182,25 +178,25 @@ do
 	end
 end
 --[[****************************************************************************
-  * Function: _Cursor.Options.ModelsPanel:TabEnable                            *
+  * Function: _Cursor.Options.CursorsPanel:TabEnable                           *
   * Description: Ties a tab to a settings table.                               *
   ****************************************************************************]]
-function ModelsPanel:TabEnable ( Settings )
+function CursorsPanel:TabEnable ( Cursor )
 	if ( TabsUsed[ self ] ) then
-		ModelsPanel.TabDisable( self );
+		CursorsPanel.TabDisable( self );
 	end
 
 	TabsUnused[ self ] = nil;
-	TabsUsed[ self ] = Settings;
+	TabsUsed[ self ] = Cursor;
 
-	self:SetText( L.MODELS[ Settings.Name ] );
+	self:SetText( Cursor.Name );
 	self:Show();
 end
 --[[****************************************************************************
-  * Function: _Cursor.Options.ModelsPanel:TabDisable                           *
+  * Function: _Cursor.Options.CursorsPanel:TabDisable                          *
   * Description: Frees up a tab.                                               *
   ****************************************************************************]]
-function ModelsPanel:TabDisable ()
+function CursorsPanel:TabDisable ()
 	if ( TabsUsed[ self ] ) then
 		TabsUsed[ self ] = nil;
 		TabsUnused[ self ] = true;
@@ -209,47 +205,51 @@ function ModelsPanel:TabDisable ()
 	end
 end
 --[[****************************************************************************
-  * Function: _Cursor.Options.ModelsPanel:SetTab                               *
+  * Function: _Cursor.Options.CursorsPanel:SetTab                              *
   * Description: Highlights the tab and fills in the data.                     *
   ****************************************************************************]]
-function ModelsPanel:SetTab ()
-	if ( ModelsPanel.Selected ) then
-		PanelTemplates_DeselectTab( ModelsPanel.Selected );
-	end
-	ModelsPanel.Selected = self;
+do
+	local Enabled = CursorsPanel.Enabled;
+	local Preview = CursorsPanel.Preview;
+	function CursorsPanel:SetTab ()
+		if ( CursorsPanel.Selected ) then
+			PanelTemplates_DeselectTab( CursorsPanel.Selected );
+		end
+		CursorsPanel.Selected = self;
 
-	if ( self ) then
-		PanelTemplates_SelectTab( self );
-		local Settings = TabsUsed[ self ];
+		if ( self ) then
+			PanelTemplates_SelectTab( self );
+			local Cursor = TabsUsed[ self ];
 
-		ModelsPanel[ Settings.Enabled and "EnableControls" or "DisableControls" ]();
-		OptionsFrame_EnableCheckBox( ModelsPanel.Enabled );
-		ModelsPanel.Enabled:SetChecked( Settings.Enabled );
-		ModelsPanel.UpdatePreset( Settings );
+			CursorsPanel[ Cursor.Enabled and "EnableControls" or "DisableControls" ]();
+			OptionsFrame_EnableCheckBox( Enabled );
+			Enabled:SetChecked( Cursor.Enabled );
+			CursorsPanel.UpdatePreset( Cursor );
 
-		ModelsPanel.X:SetValue( Settings.X or 0 );
-		ModelsPanel.Y:SetValue( Settings.Y and -Settings.Y or 0 ); -- Backwards
-		ModelsPanel.Scale:SetValue( Settings.Scale or 1.0 );
-		ModelsPanel.Facing:SetValue( Settings.Facing or 0 );
+			CursorsPanel.X:SetValue( Cursor.X or 0 );
+			CursorsPanel.Y:SetValue( Cursor.Y and -Cursor.Y or 0 ); -- Backwards
+			CursorsPanel.Scale:SetValue( Cursor.Scale or 1.0 );
+			CursorsPanel.Facing:SetValue( Cursor.Facing or 0 );
 
-		ModelsPanel.Preview.Cursor:Show();
-		ModelsPanel.Preview:SetScript( "OnUpdate", ModelsPanel.Preview.OnUpdate );
-		ModelsPanel.Preview.Update();
-	else -- Clear and disable everything
-		ModelsPanel.DisableControls();
-		ModelsPanel.UpdatePreset( nil );
+			Preview.Cursor:Show();
+			Preview:SetScript( "OnUpdate", Preview.OnUpdate );
+			Preview.Update();
+		else -- Clear and disable everything
+			CursorsPanel.DisableControls();
+			CursorsPanel.UpdatePreset( nil );
 
-		OptionsFrame_DisableCheckBox( ModelsPanel.Enabled );
-		ModelsPanel.Enabled:SetChecked( false );
-		ModelsPanel.Preview.Cursor:Hide();
-		ModelsPanel.Preview:SetScript( "OnUpdate", nil );
-		ModelsPanel.Preview.Model:ClearModel();
+			OptionsFrame_DisableCheckBox( Enabled );
+			Enabled:SetChecked( false );
+			Preview.Cursor:Hide();
+			Preview:SetScript( "OnUpdate", nil );
+			Preview.Model:ClearModel();
+		end
 	end
 end
 
 
 --[[****************************************************************************
-  * Function: _Cursor.Options.ModelsPanel.EnableControls                       *
+  * Function: _Cursor.Options.CursorsPanel.EnableControls                      *
   * Description: Enables the model controls, and caches preset data.           *
   ****************************************************************************]]
 do
@@ -257,17 +257,17 @@ do
 		OptionsFrame_EnableSlider( self );
 		self:EnableMouse( true );
 	end
-	function ModelsPanel.EnableControls ()
-		ModelsPanel.Preview:EnableMouse( true );
-		SetDesaturation( ModelsPanel.Preview.Backdrop, false );
-		EnableSlider( ModelsPanel.X );
-		EnableSlider( ModelsPanel.Y );
-		EnableSlider( ModelsPanel.Scale );
-		EnableSlider( ModelsPanel.Facing );
+	function CursorsPanel.EnableControls ()
+		CursorsPanel.Preview:EnableMouse( true );
+		SetDesaturation( CursorsPanel.Preview.Backdrop, false );
+		EnableSlider( CursorsPanel.X );
+		EnableSlider( CursorsPanel.Y );
+		EnableSlider( CursorsPanel.Scale );
+		EnableSlider( CursorsPanel.Facing );
 	end
 end
 --[[****************************************************************************
-  * Function: _Cursor.Options.ModelsPanel.DisableControls                      *
+  * Function: _Cursor.Options.CursorsPanel.DisableControls                     *
   * Description: Disables the model controls.                                  *
   ****************************************************************************]]
 do
@@ -275,25 +275,25 @@ do
 		OptionsFrame_DisableSlider( self );
 		self:EnableMouse( false );
 	end
-	function ModelsPanel.DisableControls ()
-		ModelsPanel.Preview:EnableMouse( false );
-		SetDesaturation( ModelsPanel.Preview.Backdrop, true );
-		DisableSlider( ModelsPanel.X );
-		DisableSlider( ModelsPanel.Y );
-		DisableSlider( ModelsPanel.Scale );
-		DisableSlider( ModelsPanel.Facing );
+	function CursorsPanel.DisableControls ()
+		CursorsPanel.Preview:EnableMouse( false );
+		SetDesaturation( CursorsPanel.Preview.Backdrop, true );
+		DisableSlider( CursorsPanel.X );
+		DisableSlider( CursorsPanel.Y );
+		DisableSlider( CursorsPanel.Scale );
+		DisableSlider( CursorsPanel.Facing );
 	end
 end
 
 
 --[[****************************************************************************
-  * Function: _Cursor.Options.ModelsPanel.UpdatePreset                         *
+  * Function: _Cursor.Options.CursorsPanel.UpdatePreset                        *
   * Description: Manages the preset type, value, and path controls.            *
   ****************************************************************************]]
 do
-	local Type = ModelsPanel.Type;
-	local Value = ModelsPanel.Value;
-	local Path = ModelsPanel.Path;
+	local Type = CursorsPanel.Type;
+	local Value = CursorsPanel.Value;
+	local Path = CursorsPanel.Path;
 
 	local function EnablePath ()
 		Path:EnableMouse( true );
@@ -324,22 +324,26 @@ do
 		self.Text:SetTextColor( Color.r, Color.g, Color.b );
 	end
 
-	function ModelsPanel.UpdatePreset ( Settings )
+	function CursorsPanel.UpdatePreset ( Cursor )
 		CloseDropDownMenus(); -- Close dropdown if open
 		-- Sync controls
-		if ( Settings ) then
-			UIDropDownMenu_SetText( Type, L.TYPES[ Settings.Type ] );
+		if ( Cursor ) then
+			UIDropDownMenu_SetText( Type, L.TYPES[ Cursor.Type ] );
 
-			if ( Settings.Type == "CUSTOM" ) then
+			if ( #Cursor.Type == 0 ) then -- Custom
 				UIDropDownMenu_SetText( Value, "" );
-				Path:SetText( Settings.Value );
+				Path:SetText( Cursor.Value );
 			else
-				Preset.Name, Preset.Path, Preset.Scale, Preset.Facing, Preset.X, Preset.Y
-					= ( "|" ):split( _Cursor.Presets[ Settings.Type ][ Settings.Value ] );
-				UIDropDownMenu_SetText( Value, L.PRESETS[ Preset.Name ] );
+				UIDropDownMenu_SetText( Value, L.VALUES[ Cursor.Value ] );
+				Preset.Path, Preset.Scale, Preset.Facing, Preset.X, Preset.Y
+					= ( "|" ):split( _Cursor.Presets[ Cursor.Type ][ Cursor.Value ] );
+				Preset.Scale = tonumber( Preset.Scale ) or 1.0;
+				Preset.Facing = tonumber( Preset.Facing ) or 0;
+				Preset.X = tonumber( Preset.X ) or 0;
+				Preset.Y = tonumber( Preset.Y ) or 0;
 				Path:SetText( Preset.Path );
 			end
-			ModelsPanel.Preview.Update();
+			CursorsPanel.Preview.Update();
 		else
 			UIDropDownMenu_SetText( Type, "" );
 			UIDropDownMenu_SetText( Value, "" );
@@ -347,9 +351,9 @@ do
 		end
 
 		-- Disable/enable controls
-		if ( Settings and Settings.Enabled ) then
+		if ( Cursor and Cursor.Enabled ) then
 			EnableDropDown( Type );
-			if ( Settings.Type == "CUSTOM" ) then
+			if ( #Cursor.Type == 0 ) then -- Custom
 				EnablePath();
 				DisableDropDown( Value );
 			else
@@ -387,35 +391,31 @@ end
 
 
 --[[****************************************************************************
-  * Function: _Cursor.Options.ModelsPanel.Enabled.OnClick                      *
+  * Function: _Cursor.Options.CursorsPanel.Enabled.OnClick                     *
   * Description: Toggles whether the model is enabled or not.                  *
   ****************************************************************************]]
-function ModelsPanel.Enabled:OnClick ()
+function CursorsPanel.Enabled:OnClick ()
 	local Checked = not not self:GetChecked();
-	local Settings = TabsUsed[ ModelsPanel.Selected ];
+	local Cursor = TabsUsed[ CursorsPanel.Selected ];
 
-	Settings.Enabled = Checked;
-	if ( Checked ) then
-		ModelsPanel.EnableControls();
-	else
-		ModelsPanel.DisableControls();
-	end
-	ModelsPanel.UpdatePreset( Settings );
+	Cursor.Enabled = Checked;
+	CursorsPanel[ Checked and "EnableControls" or "DisableControls" ]();
+	CursorsPanel.UpdatePreset( Cursor );
 
 	PlaySound( Checked and "igMainMenuOptionCheckBoxOn" or "igMainMenuOptionCheckBoxOff" );
 end
 
 
 --[[****************************************************************************
-  * Function: _Cursor.Options.ModelsPanel.Preview.OnMouseUp                    *
+  * Function: _Cursor.Options.CursorsPanel.Preview.OnMouseUp                   *
   * Description: Cycles animation speeds for the model preview.                *
   ****************************************************************************]]
-function ModelsPanel.Preview:OnMouseUp ()
+function CursorsPanel.Preview:OnMouseUp ()
 	self.Rate = ( self.Rate + math.pi ) % ( math.pi * 2 );
 	PlaySound( "igMainMenuOption" );
 end
 --[[****************************************************************************
-  * Function: _Cursor.Options.ModelsPanel.Preview.OnUpdate                     *
+  * Function: _Cursor.Options.CursorsPanel.Preview.OnUpdate                    *
   * Description: Animates the preview model and maintains its scale.           *
   ****************************************************************************]]
 do
@@ -425,19 +425,19 @@ do
 	local Hypotenuse = ( GetScreenWidth() ^ 2 + GetScreenHeight() ^ 2 ) ^ 0.5 * UIParent:GetEffectiveScale();
 	local Step = 0;
 	local Model, Dimension, MaxPosition, X, Y;
-	local Settings, Scale, Facing, Path, CurrentModel;
-	function ModelsPanel.Preview:OnUpdate ( Elapsed )
+	local Cursor, Scale, Facing, Path, CurrentModel;
+	function CursorsPanel.Preview:OnUpdate ( Elapsed )
 		Model = self.Model;
 		if ( self.ShouldUpdate ) then
 			self.ShouldUpdate = false;
 
-			Settings = TabsUsed[ ModelsPanel.Selected ];
-			Model.X = Settings.X or 0;
-			Model.Y = Settings.Y or 0;
-			Scale = ( Settings.Scale or 1.0 ) * _Cursor.ScaleDefault;
-			Facing = Settings.Facing or 0;
-			if ( Settings.Type == "CUSTOM" ) then
-				Path = Settings.Value;
+			Cursor = TabsUsed[ CursorsPanel.Selected ];
+			Model.X = Cursor.X or 0;
+			Model.Y = Cursor.Y or 0;
+			Scale = ( Cursor.Scale or 1.0 ) * _Cursor.ScaleDefault;
+			Facing = Cursor.Facing or 0;
+			if ( #Cursor.Type == 0 ) then -- Custom
+				Path = Cursor.Value;
 			else
 				Path = Preset.Path;
 				Model.X = Model.X + Preset.X;
@@ -466,61 +466,64 @@ do
 	end
 end
 --[[****************************************************************************
-  * Function: _Cursor.Options.ModelsPanel.Preview.Update                       *
+  * Function: _Cursor.Options.CursorsPanel.Preview.Update                      *
   * Description: Requests a refresh of the model preview window.               *
   ****************************************************************************]]
-function ModelsPanel.Preview.Update ()
-	ModelsPanel.Preview.ShouldUpdate = true;
+function CursorsPanel.Preview.Update ()
+	CursorsPanel.Preview.ShouldUpdate = true;
 end
 
 
 --[[****************************************************************************
-  * Function: _Cursor.Options.ModelsPanel.X:OnValueChanged                     *
+  * Function: _Cursor.Options.CursorsPanel.X:OnValueChanged                    *
   ****************************************************************************]]
-function ModelsPanel.X:OnValueChanged ( Value )
-	TabsUsed[ ModelsPanel.Selected ].X = Value ~= 0 and Value or nil;
-	ModelsPanel.Preview.Update();
+function CursorsPanel.X:OnValueChanged ( Value )
+	TabsUsed[ CursorsPanel.Selected ].X = abs( Value ) - 0.5 > 0 and Value or nil;
+	CursorsPanel.Preview.Update();
 end
 --[[****************************************************************************
-  * Function: _Cursor.Options.ModelsPanel.Y:OnValueChanged                     *
+  * Function: _Cursor.Options.CursorsPanel.Y:OnValueChanged                    *
   ****************************************************************************]]
-function ModelsPanel.Y:OnValueChanged ( Value )
-	TabsUsed[ ModelsPanel.Selected ].Y = Value ~= 0 and -Value or nil;
-	ModelsPanel.Preview.Update();
+function CursorsPanel.Y:OnValueChanged ( Value )
+	TabsUsed[ CursorsPanel.Selected ].Y = abs( Value ) - 0.5 > 0 and -Value or nil;
+	CursorsPanel.Preview.Update();
 end
 --[[****************************************************************************
-  * Function: _Cursor.Options.ModelsPanel.Scale:OnValueChanged                 *
+  * Function: _Cursor.Options.CursorsPanel.Scale:OnValueChanged                *
   ****************************************************************************]]
-function ModelsPanel.Scale:OnValueChanged ( Value )
-	TabsUsed[ ModelsPanel.Selected ].Scale = Value ~= 1.0 and Value or nil;
-	ModelsPanel.Preview.Update();
+function CursorsPanel.Scale:OnValueChanged ( Value )
+	TabsUsed[ CursorsPanel.Selected ].Scale = abs( Value - 1.0 ) - 0.1 > 0 and Value or nil;
+	CursorsPanel.Preview.Update();
 end
 --[[****************************************************************************
-  * Function: _Cursor.Options.ModelsPanel.Facing:OnValueChanged                *
+  * Function: _Cursor.Options.CursorsPanel.Facing:OnValueChanged               *
   ****************************************************************************]]
-function ModelsPanel.Facing:OnValueChanged ( Value )
-	TabsUsed[ ModelsPanel.Selected ].Facing = Value % ( math.pi * 2 ) ~= 0 and Value or nil;
-	ModelsPanel.Preview.Update();
+function CursorsPanel.Facing:OnValueChanged ( Value )
+	TabsUsed[ CursorsPanel.Selected ].Facing = abs( Value % ( math.pi * 2 ) ) - 0.1 > 0 and Value or nil;
+	CursorsPanel.Preview.Update();
 end
 --[[****************************************************************************
-  * Function: _Cursor.Options.ModelsPanel.Type.initialize                      *
+  * Function: _Cursor.Options.CursorsPanel.Type.initialize                     *
   * Description: Builds the type dropdown menu.                                *
   ****************************************************************************]]
 do
 	local Sorted = {};
-	function ModelsPanel.Type.initialize ()
-		local Selected = TabsUsed[ ModelsPanel.Selected ].Type;
+	local function SortFunc ( Name1, Name2 )
+		return L.TYPES[ Name1 ] < L.TYPES[ Name2 ];
+	end
+	function CursorsPanel.Type.initialize ()
+		local Selected = TabsUsed[ CursorsPanel.Selected ].Type;
 
-		for Identifier in pairs( _Cursor.Presets ) do
-			Sorted[ #Sorted + 1 ] = Identifier;
+		for Name in pairs( _Cursor.Presets ) do
+			Sorted[ #Sorted + 1 ] = Name;
 		end
-		table.sort( Sorted );
+		table.sort( Sorted, SortFunc );
 		local Info = UIDropDownMenu_CreateInfo();
-		for _, Identifier in ipairs( Sorted ) do
-			Info.text = L.TYPES[ Identifier ];
-			Info.value = Identifier;
-			Info.func = ModelsPanel.Type.OnSelect;
-			Info.checked = Identifier == Selected;
+		for _, Name in ipairs( Sorted ) do
+			Info.text = L.TYPES[ Name ];
+			Info.value = Name;
+			Info.func = CursorsPanel.Type.OnSelect;
+			Info.checked = Name == Selected;
 			UIDropDownMenu_AddButton( Info );
 		end
 
@@ -530,10 +533,10 @@ do
 		UIDropDownMenu_AddButton( Info );
 		-- Custom
 		Info.disabled = nil;
-		Info.text = L.TYPES[ "CUSTOM" ];
-		Info.value = "CUSTOM";
-		Info.func = ModelsPanel.Type.OnSelect;
-		Info.checked = "CUSTOM" == Selected;
+		Info.text = L.TYPES[ "" ];
+		Info.value = "";
+		Info.func = CursorsPanel.Type.OnSelect;
+		Info.checked = #Selected == 0;
 		UIDropDownMenu_AddButton( Info );
 
 		for Index = 1, #Sorted do
@@ -542,73 +545,79 @@ do
 	end
 end
 --[[****************************************************************************
-  * Function: _Cursor.Options.ModelsPanel.Type.OnSelect                        *
+  * Function: _Cursor.Options.CursorsPanel.Type.OnSelect                       *
   ****************************************************************************]]
-function ModelsPanel.Type.OnSelect ()
-	local Settings = TabsUsed[ ModelsPanel.Selected ];
+function CursorsPanel.Type.OnSelect ()
+	local Cursor = TabsUsed[ CursorsPanel.Selected ];
 
 	local Type = this.value;
-	if ( Type ~= Settings.Type ) then
-		Settings.Type = Type;
-		Settings.Value = Type ~= "CUSTOM" and 1 or Preset.Path; -- If custom, use last preset path
-		ModelsPanel.UpdatePreset( Settings );
+	if ( Type ~= Cursor.Type ) then
+		Cursor.Type = Type;
+		if ( #Type == 0 ) then -- Custom
+			Cursor.Value = Preset.Path; -- Use last preset
+		else -- Select first value
+			Cursor.Value = nil;
+			for Value in pairs( _Cursor.Presets[ Cursor.Type ] ) do
+				if ( not Cursor.Value or Value < Cursor.Value ) then
+					Cursor.Value = Value;
+				end
+			end
+		end
+		CursorsPanel.UpdatePreset( Cursor );
 	end
 end
 --[[****************************************************************************
-  * Function: _Cursor.Options.ModelsPanel.Value.initialize                     *
+  * Function: _Cursor.Options.CursorsPanel.Value.initialize                    *
   * Description: Builds the value dropdown menu.                               *
   ****************************************************************************]]
 do
 	local Sorted = {};
-	local Presets;
-	local function SortFunc ( Index1, Index2 )
-		return Presets[ Index1 ] < Presets[ Index2 ];
+	local function SortFunc ( Name1, Name2 )
+		return L.VALUES[ Name1 ] < L.VALUES[ Name2 ];
 	end
-	function ModelsPanel.Value.initialize ()
-		local Settings = TabsUsed[ ModelsPanel.Selected ];
-		if ( Settings.Type ~= "CUSTOM" ) then
-			local Selected = Settings.Value;
-			Presets = _Cursor.Presets[ Settings.Type ];
+	function CursorsPanel.Value.initialize ()
+		local Cursor = TabsUsed[ CursorsPanel.Selected ];
+		local Selected = Cursor.Value;
+		local Values = _Cursor.Presets[ Cursor.Type ];
 
-			for Index, Data in ipairs( Presets ) do
-				Sorted[ Index ] = Index;
-			end
-			table.sort( Sorted, SortFunc );
-			local Info = UIDropDownMenu_CreateInfo();
-			for _, Index in ipairs( Sorted ) do
-				Info.text = L.PRESETS[ Presets[ Index ]:match( "^[^|]*" ) ];
-				Info.value = Index;
-				Info.func = ModelsPanel.Value.OnSelect;
-				Info.checked = Index == Selected;
-				UIDropDownMenu_AddButton( Info );
-			end
+		for Name in pairs( Values ) do
+			Sorted[ #Sorted + 1 ] = Name;
+		end
+		table.sort( Sorted, SortFunc );
+		local Info = UIDropDownMenu_CreateInfo();
+		for _, Name in ipairs( Sorted ) do
+			Info.text = L.VALUES[ Name ];
+			Info.value = Name;
+			Info.func = CursorsPanel.Value.OnSelect;
+			Info.checked = Name == Selected;
+			UIDropDownMenu_AddButton( Info );
+		end
 
-			for Index = 1, #Sorted do
-				Sorted[ Index ] = nil;
-			end
+		for Index = 1, #Sorted do
+			Sorted[ Index ] = nil;
 		end
 	end
 end
 --[[****************************************************************************
-  * Function: _Cursor.Options.ModelsPanel.Value.OnSelect                       *
+  * Function: _Cursor.Options.CursorsPanel.Value.OnSelect                      *
   ****************************************************************************]]
-function ModelsPanel.Value.OnSelect ()
-	local Settings = TabsUsed[ ModelsPanel.Selected ];
+function CursorsPanel.Value.OnSelect ()
+	local Cursor = TabsUsed[ CursorsPanel.Selected ];
 
 	local Value = this.value;
-	if ( Value ~= Settings.Value ) then
-		Settings.Value = Value;
-		ModelsPanel.UpdatePreset( Settings );
+	if ( Value ~= Cursor.Value ) then
+		Cursor.Value = Value;
+		CursorsPanel.UpdatePreset( Cursor );
 	end
 end
 --[[****************************************************************************
-  * Function: _Cursor.Options.ModelsPanel.Path:OnEnterPressed                  *
+  * Function: _Cursor.Options.CursorsPanel.Path:OnEnterPressed                 *
   * Description: Saves custom path value.                                      *
   ****************************************************************************]]
-function ModelsPanel.Path:OnEnterPressed ()
-	local Settings = TabsUsed[ ModelsPanel.Selected ];
+function CursorsPanel.Path:OnEnterPressed ()
+	local Cursor = TabsUsed[ CursorsPanel.Selected ];
 	local Value = self:GetText();
-	local Extension = Value:match( "%.[^%.]+$" );
+	local Extension = Value:match( "%.[^.]+$" );
 	if ( Extension ) then
 		Extension = Extension:upper();
 		if ( Extension == ".M2" or Extension == ".MDX" ) then
@@ -617,23 +626,23 @@ function ModelsPanel.Path:OnEnterPressed ()
 		end
 	end
 
-	Settings.Value = Value;
+	Cursor.Value = Value;
 	self:ClearFocus();
-	ModelsPanel.UpdatePreset( Settings );
+	CursorsPanel.UpdatePreset( Cursor );
 end
 --[[****************************************************************************
-  * Function: _Cursor.Options.ModelsPanel.Path:OnEscapePressed                 *
+  * Function: _Cursor.Options.CursorsPanel.Path:OnEscapePressed                *
   * Description: Cancels custom path value.                                    *
   ****************************************************************************]]
-function ModelsPanel.Path:OnEscapePressed ()
-	self:SetText( TabsUsed[ ModelsPanel.Selected ].Value );
+function CursorsPanel.Path:OnEscapePressed ()
+	self:SetText( TabsUsed[ CursorsPanel.Selected ].Value );
 	self:ClearFocus();
 end
 
 --[[****************************************************************************
-  * Function: _Cursor.Options.ModelsPanel.ApplyButton:OnClick                  *
+  * Function: _Cursor.Options.CursorsPanel.ApplyButton:OnClick                 *
   ****************************************************************************]]
-function ModelsPanel.ApplyButton:OnClick ()
+function CursorsPanel.ApplyButton:OnClick ()
 	_Cursor.Update();
 end
 
@@ -653,7 +662,7 @@ end
   * Description: Reloads cursor settings.                                      *
   ****************************************************************************]]
 function me.ResetCharacter ()
-	_Cursor.LoadSet( _Cursor.DefaultSets[ L.SETS[ _Cursor.DefaultModelSet ] ] );
+	_Cursor.LoadSet( _Cursor.DefaultSets[ _Cursor.DefaultModelSet ] );
 end
 --[[****************************************************************************
   * Function: _Cursor.Options:default                                          *
@@ -679,24 +688,24 @@ end
   ****************************************************************************]]
 function me.Update ()
 	for Tab in pairs( TabsUsed ) do
-		ModelsPanel.TabDisable( Tab );
+		CursorsPanel.TabDisable( Tab );
 	end
 
 	local LastTab;
-	for Index, Settings in ipairs( _CursorOptionsCharacter.Models ) do
-		local Tab = ModelsPanel.GetTab( Settings );
+	for _, Cursor in ipairs( _CursorOptionsCharacter.Cursors ) do
+		local Tab = CursorsPanel.GetTab( Cursor );
 
-		ModelsPanel.TabEnable( Tab, Settings );
+		CursorsPanel.TabEnable( Tab, Cursor );
 		if ( LastTab ) then
 			Tab:SetPoint( "BOTTOMLEFT", LastTab, "BOTTOMRIGHT", -16, 0 );
 		else
-			Tab:SetPoint( "BOTTOMLEFT", ModelsPanel, "TOPLEFT", 6, -2 );
-			ModelsPanel.SetTab( Tab );
+			Tab:SetPoint( "BOTTOMLEFT", CursorsPanel, "TOPLEFT", 6, -2 );
+			CursorsPanel.SetTab( Tab );
 		end
 		LastTab = Tab;
 	end
 	if ( not LastTab ) then -- Has no models
-		ModelsPanel.SetTab( nil );
+		CursorsPanel.SetTab( nil );
 	end
 end
 
@@ -797,21 +806,24 @@ do
 
 
 
-	-- Models tabbed pane
-	ModelsPanel:SetPoint( "TOPLEFT", SetsPanel, "BOTTOMLEFT", 0, -64 );
-	ModelsPanel:SetPoint( "BOTTOMRIGHT", -14, 16 );
+	-- Cursors tabbed pane
+	CursorsPanel:SetPoint( "TOPLEFT", SetsPanel, "BOTTOMLEFT", 0, -64 );
+	CursorsPanel:SetPoint( "BOTTOMRIGHT", -14, 16 );
+	local Text = _G[ CursorsPanel:GetName().."Title" ];
+	Text:SetText( L.OPTIONS.CURSORS );
+	Text:SetPoint( "BOTTOMLEFT", CursorsPanel, "TOPLEFT", 9, 20 );
 
 
 	-- Apply button
-	local ApplyButton = ModelsPanel.ApplyButton;
+	local ApplyButton = CursorsPanel.ApplyButton;
 	ApplyButton:SetScript( "OnClick", ApplyButton.OnClick );
-	ApplyButton:SetPoint( "BOTTOMRIGHT", ModelsPanel, "TOPRIGHT", 0, 2 );
+	ApplyButton:SetPoint( "BOTTOMRIGHT", CursorsPanel, "TOPRIGHT", 0, 2 );
 	ApplyButton:SetWidth( 64 );
 	ApplyButton:SetHeight( 16 );
 	ApplyButton:SetText( L.OPTIONS.APPLY );
 
 	-- Enable button
-	local Enabled = ModelsPanel.Enabled;
+	local Enabled = CursorsPanel.Enabled;
 	Enabled:SetPoint( "TOPLEFT", 16, -8 );
 	Enabled:SetScale( 0.75 );
 	Enabled:SetScript( "OnClick", Enabled.OnClick );
@@ -819,7 +831,7 @@ do
 	_G[ Enabled:GetName().."Text" ]:SetText( L.OPTIONS.ENABLED );
 
 	-- Preview window
-	local Preview = ModelsPanel.Preview;
+	local Preview = CursorsPanel.Preview;
 	Preview:SetPoint( "TOPRIGHT", -16, -8 );
 	Preview:SetWidth( 96 );
 	Preview:SetHeight( 96 );
@@ -851,7 +863,7 @@ do
 	Cursor:SetVertexColor( 0.4, 0.4, 0.4 );
 
 	-- X-axis slider
-	local X = ModelsPanel.X;
+	local X = CursorsPanel.X;
 	X:SetPoint( "LEFT", Preview, "BOTTOMLEFT" );
 	X:SetPoint( "RIGHT", Preview );
 	X:SetHeight( 14 );
@@ -859,7 +871,7 @@ do
 	X:SetMinMaxValues( -32, 32 );
 	X:SetScript( "OnValueChanged", X.OnValueChanged );
 	X.tooltipText = L.OPTIONS[ "X_DESC" ];
-	local Text = _G[ X:GetName().."Low" ];
+	Text = _G[ X:GetName().."Low" ];
 	Text:SetText( -32 );
 	Text:ClearAllPoints();
 	Text:SetPoint( "LEFT" );
@@ -869,7 +881,7 @@ do
 	Text:SetPoint( "RIGHT" );
 
 	-- Y-axis slider
-	local Y = ModelsPanel.Y;
+	local Y = CursorsPanel.Y;
 	Y:SetOrientation( "VERTICAL" );
 	Y:SetPoint( "TOP", Preview, "TOPLEFT" );
 	Y:SetPoint( "BOTTOM", Preview );
@@ -889,7 +901,7 @@ do
 	Text:SetPoint( "TOP", 0, -2 );
 
 	-- Scale slider
-	local Scale = ModelsPanel.Scale;
+	local Scale = CursorsPanel.Scale;
 	Scale:SetPoint( "LEFT", Y );
 	Scale:SetPoint( "RIGHT", Preview );
 	Scale:SetPoint( "TOP", X, "BOTTOM", 0, -8 );
@@ -903,7 +915,7 @@ do
 	Text:SetPoint( "BOTTOM", Scale, "TOP", 0, -2 );
 
 	-- Facing slider
-	local Facing = ModelsPanel.Facing;
+	local Facing = CursorsPanel.Facing;
 	Facing:SetPoint( "TOPLEFT", Scale, "BOTTOMLEFT", 0, -8 );
 	Facing:SetPoint( "RIGHT", Scale );
 	Facing:SetMinMaxValues( 0, math.pi * 2 );
@@ -916,7 +928,7 @@ do
 	Text:SetPoint( "BOTTOM", Facing, "TOP", 0, -2 );
 
 	-- Type dropdown
-	local Type = ModelsPanel.Type;
+	local Type = CursorsPanel.Type;
 	Type:SetPoint( "LEFT", -6, 0 );
 	Type:SetPoint( "TOP", Enabled, "BOTTOM", 0, -12 );
 	Type:SetPoint( "RIGHT", Y, "LEFT", -8, 0 );
@@ -931,7 +943,7 @@ do
 	Text:SetText( L.OPTIONS.TYPE );
 
 	-- Value dropdown
-	local Value = ModelsPanel.Value;
+	local Value = CursorsPanel.Value;
 	Value:SetPoint( "LEFT", Type );
 	Value:SetPoint( "RIGHT", Type );
 	Value:SetPoint( "BOTTOM", Preview );
@@ -946,7 +958,7 @@ do
 	Text:SetText( L.OPTIONS.VALUE );
 
 	-- Path editbox
-	local Path = ModelsPanel.Path;
+	local Path = CursorsPanel.Path;
 	Path:SetPoint( "BOTTOMLEFT", 16, 16 );
 	Path:SetPoint( "RIGHT", Value, -8, 0 );
 	Path:SetHeight( 20 );

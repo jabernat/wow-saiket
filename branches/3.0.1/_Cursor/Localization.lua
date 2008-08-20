@@ -5,37 +5,23 @@
 
 
 do
-	local LDQuo, RDQuo = "\226\128\156", "\226\128\157";
-
-	local Title = "_|cffcccc88Cursor"..FONT_COLOR_CODE_CLOSE;
 	local Metatable = {
 		__index = function ( self, Key )
 			rawset( self, Key, Key );
 			return Key;
 		end;
 	};
+	local LDQuo, RDQuo = "\226\128\156", "\226\128\157";
+	local Title = "_|cffcccc88Cursor"..FONT_COLOR_CODE_CLOSE;
 
 
 	_CursorLocalization = setmetatable( {
-		SETS = setmetatable( { -- Only for SetsDefault
-			[ "ENERGY" ] = "Energy beam";
-			[ "SHADOW" ]  = "Shadow trail";
-			[ "MELTER" ]  = "Face Melter (Warning, bright!)";
+		SETS = setmetatable( {}, Metatable ); -- All DefaultSets names
+		CURSORS = setmetatable( {}, Metatable ); -- All names of cursor layers
+		TYPES = setmetatable( { -- All type names
+			[ "" ] = "Custom"; -- Custom type; not an actual type
 		}, Metatable );
-		MODELS = setmetatable( {
-			[ "LAYER1" ] = "Layer 1";
-			[ "LAYER2" ] = "Layer 2";
-			[ "LAYER3" ] = "Layer 3";
-		}, Metatable );
-
-		TYPES = setmetatable( {
-			[ "GLOW" ] = "Glow";
-			[ "INDICATOR" ] = "Indicator";
-			[ "PARTICLE" ] = "Particle trail";
-			[ "TRAIL" ] = "Trail";
-			[ "CUSTOM" ] = "Custom"; -- Custom type; not an actual category
-		}, Metatable );
-		PRESETS = setmetatable( {}, Metatable ); -- All names of presets passed through this table
+		VALUES = setmetatable( {}, Metatable ); -- All names of presets
 
 		-- Options
 		OPTIONS_TITLE = Title;
@@ -47,10 +33,11 @@ do
 			LOAD = "Load"; -- Load set
 			DELETE = "Delete"; -- Delete set
 			DELETE_DESC = "Removes this set for all characters.";
+			CURSORS = "Cursors";
 			APPLY = "Apply"; -- Apply current options to cursor
 			ENABLED = "Model Enabled";
-			ENABLED_DESC = "Toggles whether this model is shown.";
-			PREVIEW_DESC = "A preview of the chosen model.\n"..HIGHLIGHT_FONT_COLOR_CODE.."Click to cycle animation speeds.";
+			ENABLED_DESC = "Toggles whether this cursor layer is shown.";
+			PREVIEW_DESC = "A preview of the chosen cursor layer.\n"..HIGHLIGHT_FONT_COLOR_CODE.."Click to cycle animation speeds.";
 			X_DESC = "X-offset: Moves the model left and right.";
 			Y_DESC = "Y-offset: Moves the model up and down.";
 			SCALE = "Scale";
@@ -60,7 +47,7 @@ do
 			FACING_LOW = "0";
 			FACING_HIGH = "2\207\128"; -- 2pi
 			TYPE = "Preset Type";
-			TYPE_DESC = "Groups of preset models to chose from, or pick "..LDQuo.."Custom"..RDQuo.." to give a custom model path.";
+			TYPE_DESC = "Groups of preset cursor layers to chose from, or pick "..LDQuo.."Custom"..RDQuo.." to give a custom model path.";
 			VALUE = "Preset Name";
 			VALUE_DESC = "Possible presets to choose from in the selected type category.";
 			PATH = "File Path";
