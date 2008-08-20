@@ -33,7 +33,7 @@ do
 			LOAD = "Load"; -- Load set
 			DELETE = "Delete"; -- Delete set
 			DELETE_DESC = "Removes this set for all characters.";
-			CURSORS = "Cursors";
+			CURSORS = "Cursor";
 			APPLY = "Apply"; -- Apply current options to cursor
 			ENABLED = "Model Enabled";
 			ENABLED_DESC = "Toggles whether this cursor layer is shown.";
