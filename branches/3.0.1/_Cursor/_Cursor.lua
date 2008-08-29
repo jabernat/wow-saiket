@@ -148,9 +148,9 @@ function me.GetModel ()
 		Model:SetAllPoints( nil ); -- Fullscreen
 		Model:Hide();
 		Model:SetLight( 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ); -- Allows trails like warriors' intervene to work
+		ModelsUnused[ Model ] = true;
 	end
 
-	ModelsUnused[ Model ] = true;
 	return Model;
 end
 --[[****************************************************************************
@@ -354,7 +354,7 @@ end
   ****************************************************************************]]
 function me:OnShow ()
 	for Model in pairs( ModelsUsed ) do
-		local Path = Model:GetModel();
+		local Path = Model:GetModel(); -- Returns model table if unset
 		if ( type( Path ) == "string" ) then
 			Model:SetModel( Path );
 		end
