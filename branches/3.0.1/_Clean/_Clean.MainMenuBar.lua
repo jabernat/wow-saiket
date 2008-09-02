@@ -44,19 +44,6 @@ end
 
 
 --[[****************************************************************************
-  * Function: _Clean.MainMenuBar.ExhaustionTickUpdate                          *
-  * Description: Repositions the exhaustion fill bar. (Hooks                   *
-  *   ExhaustionTick_Update.)                                                  *
-  ****************************************************************************]]
-function me.ExhaustionTickUpdate ()
-	local self = this;
-	if ( self:IsShown() ) then
-		ExhaustionLevelFillBar:SetPoint( "RIGHT", self );
-	end
-end
-
-
---[[****************************************************************************
   * Function: _Clean.MainMenuBar.MenuBarManager                                *
   * Description: Manages the menu bar's position.                              *
   ****************************************************************************]]
@@ -91,9 +78,12 @@ do
 	local LastButton = MainMenuBarBackpackButton;
 	MainMenuBarBackpackButtonIconTexture:SetTexCoord( 0.08, 0.92, 0.08, 0.92 );
 	MainMenuBarBackpackButtonNormalTexture:SetTexture();
-	for Index = 0, 3 do
+	local Size = LastButton:GetWidth();
+	for Index = 0, NUM_BAG_SLOTS - 1 do
 		local Button = _G[ "CharacterBag"..Index.."Slot" ];
 		Button:SetPoint( "RIGHT", LastButton, "LEFT", 1, 0 );
+		Button:SetWidth( Size );
+		Button:SetHeight( Size );
 		_G[ "CharacterBag"..Index.."SlotIconTexture" ]:SetTexCoord( 0.08, 0.92, 0.08, 0.92 );
 		_G[ "CharacterBag"..Index.."SlotNormalTexture" ]:SetTexture();
 		LastButton = Button;
@@ -104,10 +94,6 @@ do
 	KeyRingButton:SetParent( CharacterBag3Slot );
 	KeyRingButton:SetWidth( 12 );
 	KeyRingButton:GetNormalTexture():SetTexCoord( 0.15, 0.45, 0.1, 0.52 );
-
-	-- Lag-o-meter
-	MainMenuBarPerformanceBar:Hide();
-	MainMenuBarPerformanceBarFrameButton:Hide();
 
 	-- Experience and Reputation Bars
 	MainMenuExpBar:EnableMouse( false );
@@ -201,6 +187,5 @@ do
 
 	-- Hooks
 	_Clean:AddPositionManager( me.MenuBarManager );
-	hooksecurefunc( "ExhaustionTick_Update", me.ExhaustionTickUpdate );
 	hooksecurefunc( "ReputationWatchBar_Update", me.ReputationWatchBarUpdate );
 end

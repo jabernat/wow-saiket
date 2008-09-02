@@ -50,9 +50,8 @@ function me.DropDownUpdate ()
 
 	UIDropDownMenu_SetSelectedValue( WorldMapZoneMinimapDropDown,
 		SHOW_BATTLEFIELD_MINIMAP );
-	UIDropDownMenu_SetText(
-		WorldMapZoneMinimapDropDown_GetText( SHOW_BATTLEFIELD_MINIMAP ),
-		WorldMapZoneMinimapDropDown );
+	UIDropDownMenu_SetText( WorldMapZoneMinimapDropDown,
+		WorldMapZoneMinimapDropDown_GetText( SHOW_BATTLEFIELD_MINIMAP ) );
 end
 
 --[[****************************************************************************

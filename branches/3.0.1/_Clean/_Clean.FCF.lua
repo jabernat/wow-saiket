@@ -206,7 +206,7 @@ function me:OnEvent ()
 	FCF_SetWindowName( ChatFrame1, GENERAL );
 	FCF_SetWindowColor( ChatFrame1, DEFAULT_CHATFRAME_COLOR.r, DEFAULT_CHATFRAME_COLOR.g, DEFAULT_CHATFRAME_COLOR.b );
 	FCF_SetWindowAlpha( ChatFrame1, DEFAULT_CHATFRAME_ALPHA );
-	FCF_SetChatWindowFontSize( ChatFrame2, 12 );
+	FCF_SetChatWindowFontSize( nil, ChatFrame2, 12 );
 	me.UpdateDockPosition();
 	me.Expand( ChatFrame1, false );
 	_Clean:RunProtectedFunction( function ()
@@ -222,7 +222,7 @@ function me:OnEvent ()
 	if ( not InCombatLockdown() ) then
 		FCF_UnDockFrame( ChatFrame2 );
 	end
-	FCF_SetChatWindowFontSize( ChatFrame2, 8 );
+	FCF_SetChatWindowFontSize( nil, ChatFrame2, 8 );
 	me.UpdateCombatLogPosition();
 	me.Expand( ChatFrame2, false );
 	_Clean:RunProtectedFunction( function ()
@@ -231,8 +231,6 @@ function me:OnEvent ()
 	FCF_SetLocked( ChatFrame2, 1 );
 
 	me:UnregisterEvent( "UPDATE_CHAT_WINDOWS" );
-	me.OnEvent = nil;
-	me:SetScript( "OnEvent", nil );
 end
 
 
@@ -327,7 +325,7 @@ do
 		-- Modify chat message frame
 		ChatFrame:SetMaxLines( me.MaxLines );
 		ChatFrame:SetFading( false );
-		FCF_SetChatWindowFontSize( ChatFrame, 12 );
+		FCF_SetChatWindowFontSize( nil, ChatFrame, 12 );
 
 
 		-- Save borders

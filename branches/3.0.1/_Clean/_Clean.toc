@@ -1,8 +1,8 @@
-## Interface: 20400
+## Interface: 30000
 ## Title: _|cffCCCC88Clean|r
 ## Author: Saiket
-## Version: 2.4.3
-## X-Date: 2008-08-03
+## Version: 3.0.1
+## X-Date: 2008-08-25
 ## X-Category: Frame Modification
 ## X-Email: saiket.wow@gmail.com
 ## X-Website: http://groups.google.com/group/wow-saiket/web/_clean

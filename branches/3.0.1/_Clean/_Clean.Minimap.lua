@@ -118,11 +118,11 @@ do
 	MiniMapWorldMapButton:Hide();
 
 	MiniMapTracking:ClearAllPoints();
-	MiniMapTracking:SetPoint( "BOTTOMLEFT", Minimap )
+	MiniMapTracking:SetPoint( "BOTTOMLEFT", Minimap, -1, 0 );
 	MiniMapTracking:SetWidth( 14 );
 	MiniMapTracking:SetHeight( 14 );
-	MiniMapTrackingBorder:Hide();
-	MiniMapTrackingBorder:SetTexture();
+	MiniMapTrackingButtonBorder:Hide();
+	MiniMapTrackingButtonBorder:SetTexture();
 	MiniMapTrackingBackground:Hide();
 	MiniMapTrackingBackground:SetTexture();
 	MiniMapTrackingIcon:SetAllPoints( MiniMapTracking );
