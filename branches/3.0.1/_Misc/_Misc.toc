@@ -1,17 +1,17 @@
 ## Interface: 20400
 ## Title: _|cffCCCC88Misc|r
+## Notes: Compilation of small changes.
 ## Author: Saiket
 ## Version: 2.4.3
 ## X-Date: 2008-08-10
 ## X-Category: Miscellaneous, Interface Enhancements
+## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
 ## X-Website: http://groups.google.com/group/wow-saiket/web/_misc
 ## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Misc
 ## X-Localizations: enUS
-## Notes: Compilation of small changes.
 ## SavedVariables: _MiscOptions
 ## OptionalDeps: _Dev
-## DefaultState: enabled
 Localization.lua
 
 _Misc.lua
