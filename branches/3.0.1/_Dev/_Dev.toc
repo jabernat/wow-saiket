@@ -1,17 +1,18 @@
 ## Interface: 30000
 ## Title: _|cffCCCC88Dev|r
+## Notes: Special tools useful for debugging the UI.
 ## Author: Saiket
-## Version: 3.0.1.1
-## X-Date: 2008-08-10
+## Version: 3.0.2.1
+## X-Date: 2008-09-07
 ## X-Category: Development Tools
+## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
 ## X-Website: http://groups.google.com/group/wow-saiket/web/_dev
 ## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Dev
+## X-RelSite-WoWI: 9333
 ## X-Localizations: enUS
-## Notes: Special tools useful for debugging the UI.
 ## SavedVariables: _DevOptions
 ## OptionalDeps: !ImprovedErrorFrame, !BugGrabber, !Swatter, !BaudErrorFrame
-## DefaultState: enabled
 ## LoadManagers: AddonLoader
 ## X-LoadOn-Always: true
 Localization.lua
