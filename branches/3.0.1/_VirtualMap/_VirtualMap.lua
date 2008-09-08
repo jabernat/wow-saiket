@@ -605,6 +605,10 @@ do
 
 	SlashCmdList[ "VIRTUALMAP" ] = function () me.Toggle(); end;
 
+	--[[ NOTE(PitchLimit behavior changed: When the camera would normally turn
+	over and be upside down, it "rights" itself instead.  The transition is
+	extremely disorienting, and shouldn't be included.)
+
 	ConsoleExec( "pitchLimit 10000" );
 	do
 		local IsFlying = IsFlying;
@@ -619,4 +623,5 @@ do
 			end
 		end );
 	end
+	]]
 end
