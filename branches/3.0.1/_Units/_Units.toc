@@ -3,7 +3,7 @@
 ## Notes: Modifications specific to unit frames.
 ## Author: Saiket
 ## Version: 3.0.2.1
-## X-Date: 2008-09-07
+## X-Date: 2008-09-08
 ## X-Category: UnitFrame
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
@@ -11,11 +11,12 @@
 ## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Units
 ## X-Localizations: enUS
 ## SavedVariables: _UnitsOptions
-## OptionalDeps: _Dev, _Misc
+## OptionalDeps: _Dev, _Misc, Grid, PitBull
 Localization.lua
 
 _Units.lua
-_Units.Grid.lua
 _Units.MouseoverTarget.lua
-_Units.PitBull.lua
 _Units.StatusMonitor.lua
+
+_Units.Grid.lua
+_Units.PitBull.lua
