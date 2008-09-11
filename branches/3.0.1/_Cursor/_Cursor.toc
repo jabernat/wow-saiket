@@ -7,7 +7,7 @@
 ## X-Category: Interface Enhancements
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
-## X-Website: http://groups.google.com/group/wow-saiket/web/_cursor
+## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons/Cursor
 ## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Cursor
 ## X-RelSite-WoWI: 10531
 ## X-Localizations: enUS
