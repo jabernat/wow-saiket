@@ -12,7 +12,6 @@ local L = _MiscLocalization;
 local _Misc = _Misc;
 local me = {
 	MessageMax = 40;
-	CombatTextOnEventBackup;
 };
 _Misc.BlizzardCombatText = me;
 
@@ -28,20 +27,20 @@ do
 	local UnitHealth = UnitHealth;
 	local UnitHealthMax = UnitHealthMax;
 	local tonumber = tonumber;
-	function me.AddHealMessage ( Type, Amount, Target, Caster )
-		local UnitID = Target or "player";
-		local Overhealed = UnitExists( UnitID )
-			and max( 0, tonumber( Amount ) - ( UnitHealthMax( UnitID ) - UnitHealth( UnitID ) ) ) or 0;
+	function me.AddHealMessage ( Target, Caster, Amount, Overhealing, Critical )
 		Caster = COMBAT_TEXT_SHOW_FRIENDLY_NAMES == "1" and Caster or "";
 
-		local Message = Overhealed == 0
-			and L.BLIZZARDCOMBATTEXT_HEAL_FORMAT:format( Caster, Amount, Target or "" )
-			or L.BLIZZARDCOMBATTEXT_OVERHEAL_FORMAT:format( Caster, Amount - Overhealed, Target or "", Overhealed );
+		local Message;
+		if ( Overhealing == 0 ) then
+			Message = L.BLIZZARDCOMBATTEXT_HEAL_FORMAT:format( Caster, Amount, Target or "", Overhealing );
+		else
+			Message = L.BLIZZARDCOMBATTEXT_OVERHEAL_FORMAT:format( Caster, Amount - Overhealing, Target or "", Overhealing );
+		end
 
-		local Info = COMBAT_TEXT_TYPE_INFO[ Type ];
+		local Info = COMBAT_TEXT_TYPE_INFO[ Critical and "HEAL_CRIT" or "HEAL" ];
 		CombatText_AddMessage( Message, COMBAT_TEXT_SCROLL_FUNCTION,
 			Info.r, Info.g, Info.b,
-			Type == "HEAL_CRIT" and "crit" or nil, Info.isStaggered );
+			Critical and "crit" or nil, Info.isStaggered );
 	end
 end
 
@@ -52,10 +51,14 @@ end
 do
 	local MeFlag = COMBATLOG_OBJECT_AFFILIATION_MINE;
 	local band = bit.band;
-	function me:COMBAT_LOG_EVENT_UNFILTERED ( Event, _, Type, _, _, CasterFlags, _, Target, TargetFlags, _, _, _, Amount, Critical )
-		if ( Type == "SPELL_HEAL" and band( CasterFlags, MeFlag ) == 1 and band( TargetFlags, MeFlag ) == 0 ) then
-			-- Heal cast by player onto someone else
-			me.AddHealMessage( Critical and "HEAL_CRIT" or "HEAL", Amount, Target, false );
+	local ByMe, OnMe;
+	function me:COMBAT_LOG_EVENT_UNFILTERED ( Event, _, Type, _, Caster, CasterFlags, _, Target, TargetFlags, _, _, _, Amount, Overhealing, Critical )
+		if ( Type:match( "_HEAL$" ) ) then
+			OnMe = band( TargetFlags, MeFlag ) ~= 0;
+			ByMe = band( CasterFlags, MeFlag ) ~= 0;
+			if ( OnMe or ByMe ) then
+				me.AddHealMessage( not OnMe and Target, not ByMe and Caster, Amount, Overhealing, Critical );
+			end
 		end
 	end
 end
@@ -63,9 +66,7 @@ end
   * Function: _Misc.BlizzardCombatText:COMBAT_TEXT_UPDATE                      *
   ****************************************************************************]]
 function me:COMBAT_TEXT_UPDATE ( Event, Type, Caster, Amount, ... )
-	if ( Type:find( "HEAL", 1, true ) ) then
-		me.AddHealMessage( Type, Amount, false, Caster ~= UnitName( "player" ) and Caster );
-	else
+	if ( not Type:find( "HEAL", 1, true ) ) then
 		me.CombatTextOnEventBackup( self, Event, Type, Caster, Amount, ... );
 	end
 end
@@ -84,21 +85,6 @@ do
 		end
 	end
 end
---[[****************************************************************************
-  * Function: _Misc.BlizzardCombatText.OnLoad                                  *
-  * Description: Makes modifications just after the addon is loaded.           *
-  ****************************************************************************]]
-function me.OnLoad ()
-	-- Allow a max of 40 messages
-	for Index = NUM_COMBAT_TEXT_LINES + 1, me.MessageMax do
-		CombatText:CreateFontString( "CombatText"..Index, "BACKGROUND", "CombatTextTemplate" );
-	end
-	NUM_COMBAT_TEXT_LINES = max( me.MessageMax, NUM_COMBAT_TEXT_LINES );
-
-	me.CombatTextOnEventBackup = CombatText:GetScript( "OnEvent" );
-	CombatText:SetScript( "OnEvent", me.CombatTextOnEvent );
-	CombatText:RegisterEvent( "COMBAT_LOG_EVENT_UNFILTERED" );
-end
 
 
 
@@ -108,5 +94,15 @@ end
 -----------------------------
 
 do
-	_Misc.RegisterAddOnInitializer( "Blizzard_CombatText", me.OnLoad );
+	_Misc.RegisterAddOnInitializer( "Blizzard_CombatText", function ()
+		-- Allow a max of 40 messages
+		for Index = NUM_COMBAT_TEXT_LINES + 1, me.MessageMax do
+			CombatText:CreateFontString( "CombatText"..Index, "BACKGROUND", "CombatTextTemplate" );
+		end
+		NUM_COMBAT_TEXT_LINES = max( me.MessageMax, NUM_COMBAT_TEXT_LINES );
+	
+		me.CombatTextOnEventBackup = CombatText:GetScript( "OnEvent" );
+		CombatText:SetScript( "OnEvent", me.CombatTextOnEvent );
+		CombatText:RegisterEvent( "COMBAT_LOG_EVENT_UNFILTERED" );
+	end );
 end

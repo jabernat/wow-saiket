@@ -37,9 +37,14 @@ do
 	
 			local TitleTextName = "QuestLogTitle"..DisplayOffset;
 			local TitleText = _G[ TitleTextName ];
-			local Title, Level, Tag, _, IsHeader, _, Completed = GetQuestLogTitle( QuestIndex );
+			local Title, Level, Tag, _, IsHeader, _, Completed, IsDaily = GetQuestLogTitle( QuestIndex );
 			if ( not IsHeader ) then
-				TitleText:SetFormattedText( L.QUESTLOG_TITLETEXT_FORMAT, Level, L.QUESTLOG_QUESTTAGS[ Tag ] or "", Title );
+				if ( IsDaily ) then
+					Tag = L.QUESTLOG_DAILY_FORMAT:format( Tag and L.QUESTLOG_QUESTTAGS[ Tag:match( L.QUESTLOG_DAILY_PATTERN ) ] or "" );
+				else
+					Tag = L.QUESTLOG_QUESTTAGS[ Tag ] or "";
+				end
+				TitleText:SetFormattedText( L.QUESTLOG_TITLETEXT_FORMAT, Level, Tag, Title );
 			end
 			if ( IsQuestWatched( QuestIndex ) ) then
 				_Misc.SetPoint( _G[ TitleTextName.."Check" ], "LEFT", TitleText, "LEFT", 6, 0 );

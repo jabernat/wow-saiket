@@ -29,15 +29,6 @@ function me.EquipSet ( SetName )
 end
 
 
---[[****************************************************************************
-  * Function: _Misc.ItemRack.OnLoad                                            *
-  * Description: Makes modifications just after the addon is loaded.           *
-  ****************************************************************************]]
-function me.OnLoad ()
-	hooksecurefunc( ItemRack, "EquipSet", me.EquipSet );
-end
-
-
 
 
 --------------------------------------------------------------------------------
@@ -45,5 +36,7 @@ end
 -----------------------------
 
 do
-	_Misc.RegisterAddOnInitializer( "ItemRack", me.OnLoad );
+	_Misc.RegisterAddOnInitializer( "ItemRack", function ()
+		hooksecurefunc( ItemRack, "EquipSet", me.EquipSet );
+	end );
 end
