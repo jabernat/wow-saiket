@@ -46,6 +46,6 @@ do
 	Tooltip.Text = _G[ Tooltip:GetName().."TextLeft1" ];
 
 	if ( IsAddOnLoaded( "_Misc" ) ) then
-		_Misc.HookScript( Tooltip, "OnTooltipSetUnit", _Misc.GameTooltip.UpdateUnitGuild );
+		_Misc.GameTooltip.RegisterTooltip( Tooltip );
 	end
 end
