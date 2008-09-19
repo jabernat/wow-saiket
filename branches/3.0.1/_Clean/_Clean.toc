@@ -2,8 +2,8 @@
 ## Title: _|cffCCCC88Clean|r
 ## Notes: Change the UI's look and feel.
 ## Author: Saiket
-## Version: 3.0.1
-## X-Date: 2008-08-25
+## Version: 3.0.2.1
+## X-Date: 2008-09-18
 ## X-Category: Frame Modification
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
@@ -28,8 +28,8 @@ _Clean.WorldStateFrame.lua
 _Clean.BlizzardBattlefieldMinimap.lua
 _Clean.BlizzardCombatLog.lua
 _Clean.BlizzardCombatText.lua
-_Clean.BlizzardTimeManager.lua
 
 _Clean.BugSack.lua
 _Clean.DBM.lua
 _Clean.ItemRack.lua
+_Clean.LibSharedMedia.lua

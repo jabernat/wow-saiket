@@ -230,7 +230,13 @@ function me:OnEvent ()
 	end, ChatFrame2:IsProtected() );
 	FCF_SetLocked( ChatFrame2, 1 );
 
-	me:UnregisterEvent( "UPDATE_CHAT_WINDOWS" );
+	-- Move frames and tabs front of lowest-level frames
+	for _, ChatFrame in ipairs( ChatFrames ) do
+		ChatFrame:SetFrameStrata( "LOW" );
+	end
+	for _, TabFrame in ipairs( TabFrames ) do
+		TabFrame:SetFrameStrata( "LOW" );
+	end
 end
 
 
@@ -317,8 +323,8 @@ do
 		local Name = "ChatFrame"..Index;
 		local ChatFrame = _G[ Name ];
 		local TabFrame = _G[ Name.."Tab" ];
-		tinsert( ChatFrames, Index, ChatFrame );
-		tinsert( TabFrames, Index, TabFrame );
+		ChatFrames[ Index ] = ChatFrame;
+		TabFrames[ Index ] = TabFrame;
 
 		_Clean.HookScript( ChatFrame, "OnShow", me.ChatFrameOnShow );
 
@@ -370,8 +376,7 @@ do
 		ShrinkTabBorder( Name.."TabRight" );
 
 		-- Disable some chat frame functions
-		hooksecurefunc( _G[ Name.."TabDropDown" ], "initialize",
-			Tab.DropDownInitialize );
+		hooksecurefunc( _G[ Name.."TabDropDown" ], "initialize", Tab.DropDownInitialize );
 		DisabledMenuButtons[ TabFrame ]
 			= Index <= 2 and DisabledMenuButtonsLocked or DisabledMenuButtonsNormal;
 	end

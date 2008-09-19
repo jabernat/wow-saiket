@@ -130,7 +130,7 @@ do
 		end
 
 		Blizzard_CombatLog_Update_QuickButtons();
-		OptionsFrame_DisableCheckBox( CombatConfigSettingsShowQuickButton );
+		BlizzardOptionsPanel_CheckButton_Disable( CombatConfigSettingsShowQuickButton );
 		Blizzard_CombatLog_RefreshGlobalLinks();
 
 		local ProgressBar = CombatLogQuickButtonFrame_CustomProgressBar;

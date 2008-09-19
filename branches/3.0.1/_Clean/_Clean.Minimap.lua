@@ -93,7 +93,7 @@ do
 	Minimap:SetAllPoints( MinimapCluster );
 	MinimapCluster:SetScale( 0.9 );
 	MinimapCluster:ClearAllPoints();
-	MinimapCluster:SetPoint( "TOPRIGHT", UIParent );
+	MinimapCluster:SetPoint( "TOPRIGHT", UIParent, 0, -16 );
 	MinimapCluster:EnableMouse( false );
 
 	MinimapToggleButton:Hide();
@@ -121,6 +121,7 @@ do
 	MiniMapTracking:SetPoint( "BOTTOMLEFT", Minimap, -1, 0 );
 	MiniMapTracking:SetWidth( 14 );
 	MiniMapTracking:SetHeight( 14 );
+	MiniMapTrackingButton:SetAllPoints( MiniMapTracking );
 	MiniMapTrackingButtonBorder:Hide();
 	MiniMapTrackingButtonBorder:SetTexture();
 	MiniMapTrackingBackground:Hide();
@@ -128,6 +129,8 @@ do
 	MiniMapTrackingIcon:SetAllPoints( MiniMapTracking );
 	MiniMapTrackingIcon:SetGradientAlpha( "VERTICAL", Background.r, Background.g, Background.b, Background.a, Foreground.r, Foreground.g, Foreground.b, Foreground.a );
 	_Clean.RemoveButtonIconBorder( MiniMapTrackingIcon );
+	MiniMapTrackingButton:SetScript( "OnMouseUp", nil );
+	MiniMapTrackingButton:SetScript( "OnMouseDown", nil );
 
 	-- Voice chat button
 	MiniMapVoiceChatFrame:ClearAllPoints();

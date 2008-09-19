@@ -15,9 +15,10 @@
 do
 	_Clean.RegisterAddOnInitializer( "ItemRack", function ()
 		ItemRackMinimapFrame:RegisterForDrag();
+		ItemRackMinimapFrame:DisableDrawLayer( "ARTWORK" );
 		ItemRackMinimapFrame:DisableDrawLayer( "OVERLAY" );
 		ItemRackMinimapFrame:ClearAllPoints();
-		ItemRackMinimapFrame:SetPoint( "TOPLEFT", Minimap, "TOPLEFT", 1, -1 );
+		ItemRackMinimapFrame:SetPoint( "TOPLEFT", Minimap, "TOPLEFT" );
 		ItemRackMinimapFrame:SetWidth( 14 );
 		ItemRackMinimapFrame:SetHeight( 14 );
 		ItemRackMinimapIcon:SetAllPoints( ItemRackMinimapFrame );
