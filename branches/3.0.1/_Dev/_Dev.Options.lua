@@ -328,11 +328,11 @@ do
 	me:CreateCheckButton( "PrintLuaErrors" ):SetPoint( "TOPLEFT", SubText, "BOTTOMLEFT", -2, -8 );
 
 	-- Create two columns for Dump and Outline options
-	local Column1 = CreateFrame( "Frame", "_DevOptionsDump", me, "OptionFrameBoxTemplate" );
+	local Column1 = CreateFrame( "Frame", "_DevOptionsDump", me, "OptionsBoxTemplate" );
 	_G[ Column1:GetName().."Title" ]:SetText( L.OPTIONS.DUMP );
 	Column1:SetPoint( "TOPLEFT", Controls[ "PrintLuaErrors" ], "BOTTOMLEFT", 0, -16 );
 	Column1:SetPoint( "BOTTOMRIGHT", me, "BOTTOM", 0, 16 );
-	local Column2 = CreateFrame( "Frame", "_DevOptionsOutline", me, "OptionFrameBoxTemplate" );
+	local Column2 = CreateFrame( "Frame", "_DevOptionsOutline", me, "OptionsBoxTemplate" );
 	_G[ Column2:GetName().."Title" ]:SetText( L.OPTIONS.OUTLINE );
 	Column2:SetPoint( "TOPLEFT", Column1, "TOPRIGHT", 8, 0 );
 	Column2:SetPoint( "BOTTOMRIGHT", -14, 16 );
