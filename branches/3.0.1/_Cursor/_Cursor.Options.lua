@@ -28,7 +28,7 @@ local me = CreateFrame( "Frame" );
 _Cursor.Options = me;
 
 
-local SetsPanel = CreateFrame( "Frame", "_CursorOptionsSets", me, "OptionFrameBoxTemplate" );
+local SetsPanel = CreateFrame( "Frame", "_CursorOptionsSets", me, "OptionsBoxTemplate" );
 me.SetsPanel = SetsPanel;
 SetsPanel.Set = CreateFrame( "EditBox", "_CursorOptionsSet", SetsPanel, "InputBoxTemplate" );
 SetsPanel.Set.Button = CreateFrame( "Button", nil, SetsPanel.Set );
@@ -36,7 +36,7 @@ SetsPanel.SaveButton = CreateFrame( "Button", nil, SetsPanel, "UIPanelButtonTemp
 SetsPanel.LoadButton = CreateFrame( "Button", nil, SetsPanel, "UIPanelButtonTemplate" );
 SetsPanel.DeleteButton = CreateFrame( "Button", nil, SetsPanel, "UIPanelButtonGrayTemplate" );
 
-local CursorsPanel = CreateFrame( "Frame", "_CursorOptionsCursors", me, "OptionFrameBoxTemplate" );
+local CursorsPanel = CreateFrame( "Frame", "_CursorOptionsCursors", me, "OptionsBoxTemplate" );
 me.CursorsPanel = CursorsPanel;
 CursorsPanel.Enabled = CreateFrame( "CheckButton", "_CursorOptionsEnabled", CursorsPanel, "InterfaceOptionsCheckButtonTemplate" );
 CursorsPanel.Preview = CreateFrame( "Frame", nil, CursorsPanel );
@@ -221,7 +221,7 @@ do
 			local Cursor = TabsUsed[ self ];
 
 			CursorsPanel[ Cursor.Enabled and "EnableControls" or "DisableControls" ]();
-			OptionsFrame_EnableCheckBox( Enabled );
+			BlizzardOptionsPanel_CheckButton_Enable( Enabled );
 			Enabled:SetChecked( Cursor.Enabled );
 			CursorsPanel.UpdatePreset( Cursor );
 
@@ -237,7 +237,7 @@ do
 			CursorsPanel.DisableControls();
 			CursorsPanel.UpdatePreset( nil );
 
-			OptionsFrame_DisableCheckBox( Enabled );
+			BlizzardOptionsPanel_CheckButton_Disable( Enabled );
 			Enabled:SetChecked( false );
 			Preview.Cursor:Hide();
 			Preview:SetScript( "OnUpdate", nil );
@@ -253,7 +253,7 @@ end
   ****************************************************************************]]
 do
 	local function EnableSlider ( self )
-		OptionsFrame_EnableSlider( self );
+		BlizzardOptionsPanel_Slider_Enable( self );
 		self:EnableMouse( true );
 	end
 	function CursorsPanel.EnableControls ()
@@ -271,7 +271,7 @@ end
   ****************************************************************************]]
 do
 	local function DisableSlider ( self )
-		OptionsFrame_DisableSlider( self );
+		BlizzardOptionsPanel_Slider_Disable( self );
 		self:EnableMouse( false );
 	end
 	function CursorsPanel.DisableControls ()
