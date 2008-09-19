@@ -1,8 +1,8 @@
 --[[****************************************************************************
-  * _Clean by Saiket                                                           *
-  * _Clean.BlizzardTimeManager.lua - Modifies the Blizzard_TimeManager addon.  *
+  * _Misc by Saiket                                                            *
+  * _Misc.BlizzardTimeManager.lua - Modifies the Blizzard_TimeManager addon.   *
   *                                                                            *
-  * + Removes the small time plate from the minimap.                           *
+  * + Moves the small time plate from the minimap.                             *
   ****************************************************************************]]
 
 
@@ -13,8 +13,11 @@
 -----------------------------
 
 do
-	_Clean.RegisterAddOnInitializer( "Blizzard_TimeManager", function ()
-		TimeManagerClockButton:Hide();
-		TimeManagerClockButton_Show = _Clean.NilFunction;
+	_Misc.RegisterAddOnInitializer( "Blizzard_TimeManager", function ()
+		-- Move time button on top of time text
+		TimeManagerClockButton:SetAlpha( 0 );
+		TimeManagerClockButton:SetAllPoints( _Misc.Time.Text );
+		TimeManagerClockButton:SetScript( "OnEnter", nil );
+		TimeManagerClockButton:SetScript( "OnLeave", nil );
 	end );
 end

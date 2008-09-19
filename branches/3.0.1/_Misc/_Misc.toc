@@ -3,7 +3,7 @@
 ## Notes: Compilation of small changes.
 ## Author: Saiket
 ## Version: 3.0.2.1
-## X-Date: 2008-09-12
+## X-Date: 2008-09-18
 ## X-Category: Miscellaneous, Interface Enhancements
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
@@ -15,19 +15,21 @@
 Localization.lua
 
 _Misc.lua
-_Misc.BlizzardAuctionUI.lua
-_Misc.BlizzardCombatText.lua
-_Misc.BlizzardTradeSkillUI.lua
 _Misc.Camera.lua
 _Misc.CastingBar.lua
 _Misc.ColorPickerFrame.lua
 _Misc.FCF.lua
 _Misc.GameTooltip.lua
-_Misc.ItemRack.lua
 _Misc.Macro.lua
 _Misc.Minimap.lua
 _Misc.QuestLog.lua
 _Misc.PushToTalk.lua
 _Misc.WorldMapFrame.lua
-
 _Misc.ColorPickerFrame.xml
+
+_Misc.ItemRack.lua
+
+_Misc.BlizzardAuctionUI.lua
+_Misc.BlizzardCombatText.lua
+_Misc.BlizzardTimeManager.lua
+_Misc.BlizzardTradeSkillUI.lua
