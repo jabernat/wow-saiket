@@ -12,6 +12,8 @@ local _Clean = _Clean;
 local me = {};
 _Clean.CastingBar = me;
 
+me.Overlay = CastingBarFrame:CreateTexture( nil, "OVERLAY" );
+
 
 
 
@@ -27,6 +29,32 @@ function me.HideArtwork ()
 	Border:Hide();
 	Flash:Hide();
 	Spark:Hide();
+end
+--[[****************************************************************************
+  * Function: _Clean.CastingBar:SetStatusBarColor                              *
+  * Description: Replaces the standard status colors.                          *
+  ****************************************************************************]]
+do
+	local Disabled = false;
+	function me:SetStatusBarColor ( R, G, B, A )
+		if ( not Disabled ) then -- Restore color
+			Disabled = true;
+
+			local Color;
+			if ( R == 0.0 and G == 1.0 and B == 0.0 ) then
+				Color = _Clean.Colors.Friendly2;
+			elseif ( R == 1.0 and G == 0.0 and B == 0.0 ) then
+				Color = _Clean.Colors.Hostile2;
+			elseif ( R == 1.0 and G == 0.7 and B == 0.0 ) then
+				Color = _Clean.Colors.Mana;
+			end
+			if ( Color ) then
+				self:SetStatusBarColor( Color.r, Color.g, Color.b, A );
+			end
+
+			Disabled = false;
+		end
+	end
 end
 
 
@@ -58,8 +86,17 @@ do
 		end
 	end
 
+	-- Add glossy overlay
+	me.Overlay:SetAllPoints( CastingBarFrame );
+	me.Overlay:SetTexture( "Interface\\TokenFrame\\UI-TokenFrame-CategoryButton" );
+	me.Overlay:SetBlendMode( "ADD" );
+	me.Overlay:SetTexCoord( 0.1, 0.9, 0, 0.28125 );
+	local Color = _Clean.Colors.Normal;
+	me.Overlay:SetVertexColor( Color.r, Color.g, Color.b, 0.5 );
+
 	-- Hooks
 	UIPARENT_MANAGED_FRAME_POSITIONS[ "CastingBarFrame" ] = nil;
 	CastingBarFrame:HookScript( "OnEvent", me.HideArtwork );
 	CastingBarFrame:HookScript( "OnUpdate", me.HideArtwork );
+	hooksecurefunc( CastingBarFrame, "SetStatusBarColor", me.SetStatusBarColor );
 end

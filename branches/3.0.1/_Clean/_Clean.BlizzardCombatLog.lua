@@ -141,8 +141,8 @@ do
 		ProgressBar:SetPoint( "BOTTOM", Background );
 		ProgressBar:SetWidth( 8 );
 		ProgressBar:SetOrientation( "VERTICAL" );
-		local Highlight = _Clean.Colors.Highlight;
-		ProgressBar:SetStatusBarColor( Highlight.r, Highlight.g, Highlight.b );
+		local Normal = _Clean.Colors.Normal;
+		ProgressBar:SetStatusBarColor( Normal.r, Normal.g, Normal.b );
 
 		local Frame = CombatLogQuickButtonFrame_Custom;
 		hooksecurefunc( "FCF_DockUpdate", me.FCFDockUpdate );

@@ -56,8 +56,9 @@ me.Colors = {
 
 	Foreground = { r = 0.0; g = 0.5; b = 1.0; a = 1.0; };
 	Background = { r = 0.0; g = 0.0; b = 0.0; a = 1.0; };
-	Highlight = { r = 1.0; g = 1.0; b = 0.6; a = 1.0; }; -- Light yellow
-	Normal = { r = 0.8; g = 0.8; b = 8 / 15; a = 1.0; }; -- Gold, same as title
+	Highlight = { r = 0.8; g = 0.8; b = 8 / 15; a = 1.0; }; -- Gold, same as title
+	Normal = { r = 0.6; g = 0.85; b = 1.0; a = 1.0; }; -- Frosty blue
+	Dark = { r = 0.4; g = 0.45; b = 0.5; a = 1.0; }; -- Grayish blue
 };
 me.Backdrop = {
 	bgFile = "Interface\\Tooltips\\UI-Tooltip-Background";

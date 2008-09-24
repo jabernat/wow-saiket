@@ -72,7 +72,7 @@ do
 	MainMenuBar:EnableMouse( false );
 
 	local Background = _Clean.Colors.Background;
-	local Highlight = _Clean.Colors.Highlight;
+	local Normal = _Clean.Colors.Normal;
 
 	-- Bags
 	local LastButton = MainMenuBarBackpackButton;
@@ -130,7 +130,7 @@ do
 			Texture:SetPoint( "TOPLEFT", Parent, not Even and "TOP" );
 			Texture:SetPoint( "BOTTOMRIGHT", Parent, Even and "BOTTOM" );
 			Texture:SetBlendMode( "ADD" );
-			Texture:SetVertexColor( Highlight.r, Highlight.g, Highlight.b, 0.25 );
+			Texture:SetVertexColor( Normal.r, Normal.g, Normal.b, 0.25 );
 		end
 	end
 
