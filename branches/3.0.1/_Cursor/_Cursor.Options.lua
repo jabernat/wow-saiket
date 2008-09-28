@@ -97,9 +97,7 @@ do
 			UIDropDownMenu_AddButton( Info );
 		end
 
-		for Index = 1, #Sorted do
-			Sorted[ Index ] = nil;
-		end
+		wipe( Sorted );
 	end
 end
 --[[****************************************************************************
@@ -538,9 +536,7 @@ do
 		Info.checked = #Selected == 0;
 		UIDropDownMenu_AddButton( Info );
 
-		for Index = 1, #Sorted do
-			Sorted[ Index ] = nil;
-		end
+		wipe( Sorted );
 	end
 end
 --[[****************************************************************************
@@ -592,9 +588,7 @@ do
 			UIDropDownMenu_AddButton( Info );
 		end
 
-		for Index = 1, #Sorted do
-			Sorted[ Index ] = nil;
-		end
+		wipe( Sorted );
 	end
 end
 --[[****************************************************************************
@@ -717,7 +711,7 @@ end
   * Description: Slash command chat handler to open the options pane.          *
   ****************************************************************************]]
 function me.SlashCommand ()
-	InterfaceOptionsFrame_OpenToFrame( me );
+	InterfaceOptionsFrame_OpenToCategory( me );
 end
 
 

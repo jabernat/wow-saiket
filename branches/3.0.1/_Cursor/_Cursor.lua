@@ -266,10 +266,7 @@ end
   * Description: Packs a set from the current settings.                        *
   ****************************************************************************]]
 function me.SaveSet ( Set )
-	-- Clear set table
-	for Index in ipairs( Set ) do
-		Set[ Index ] = nil;
-	end
+	wipe( Set );
 	-- Pack data
 	for Index, Cursor in ipairs( _CursorOptionsCharacter.Cursors ) do
 		Set[ Index ] = ( "|" ):join( Cursor.Name, Cursor.Enabled and 1 or "",
