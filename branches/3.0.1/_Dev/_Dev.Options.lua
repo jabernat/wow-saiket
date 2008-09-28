@@ -291,7 +291,7 @@ end
   * Description: Slash command chat handler to open the options pane.          *
   ****************************************************************************]]
 function me.SlashCommand ()
-	InterfaceOptionsFrame_OpenToFrame( me );
+	InterfaceOptionsFrame_OpenToCategory( me );
 end
 
 
