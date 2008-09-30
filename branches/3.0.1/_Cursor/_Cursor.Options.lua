@@ -2,24 +2,6 @@
   * _Cursor by Saiket                                                          *
   * _Cursor.Options.lua - Adds an options panel to the default UI config menu. *
   ****************************************************************************]]
--- NOTE(Temporary translation for pre-WotLK clients.)
-local UIDropDownMenu_JustifyText = UIDropDownMenu_JustifyText;
-local UIDropDownMenu_SetText = UIDropDownMenu_SetText;
-if ( select( 4, GetBuildInfo() ) < 30000 ) then
-	do
-		local Backup = UIDropDownMenu_JustifyText;
-		function UIDropDownMenu_JustifyText ( self, Alignment, ... )
-			return Backup( Alignment, self, ... );
-		end
-	end
-	do
-		local Backup = UIDropDownMenu_SetText;
-		function UIDropDownMenu_SetText ( self, Text, ... )
-			return Backup( Text, self, ... );
-		end
-	end
-end
--- NOTE(End temporary translation.)
 
 
 local _Cursor = _Cursor;
