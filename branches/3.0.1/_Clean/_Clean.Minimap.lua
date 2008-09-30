@@ -80,12 +80,7 @@ do
 	-- Expand the minimap to a square and replace the artwork with a simple border
 	GetMinimapShape = me.GetMinimapShape;
 	Minimap:SetMaskTexture( "Interface\\Buttons\\WHITE8X8" );
-	Minimap:SetBackdrop( _Clean.Backdrop );
-	Minimap:SetBackdropColor(
-		Background.r,
-		Background.g,
-		Background.b,
-		Background.a );
+	_Clean.Backdrop.Add( Minimap, _Clean.Backdrop.Padding );
 	Minimap:SetBlipTexture( "Interface\\AddOns\\_Clean\\Skin\\ObjectIcons" );
 
 	MinimapCluster:SetWidth( Minimap:GetWidth() );

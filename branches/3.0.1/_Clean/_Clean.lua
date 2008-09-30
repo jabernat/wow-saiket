@@ -60,10 +60,6 @@ me.Colors = {
 	Normal = { r = 0.6; g = 0.85; b = 1.0; a = 1.0; }; -- Frosty blue
 	Dark = { r = 0.4; g = 0.45; b = 0.5; a = 1.0; }; -- Grayish blue
 };
-me.Backdrop = {
-	bgFile = "Interface\\Tooltips\\UI-Tooltip-Background";
-	insets = { left = -4, right = -4, top = -4, bottom = -4 }
-};
 
 me.MonospaceFont = CreateFont( "_CleanMonospace" );
 me.MonospaceNumberFont = CreateFont( "_CleanMonospaceNumber" );

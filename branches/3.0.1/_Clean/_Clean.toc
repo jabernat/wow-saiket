@@ -2,8 +2,8 @@
 ## Title: _|cffCCCC88Clean|r
 ## Notes: Change the UI's look and feel.
 ## Author: Saiket
-## Version: 3.0.2.1
-## X-Date: 2008-09-23
+## Version: 3.0.2.2
+## X-Date: 2008-09-30
 ## X-Category: Frame Modification
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
@@ -15,6 +15,8 @@
 Localization.lua
 
 _Clean.lua
+_Clean.Backdrop.lua
+
 _Clean.ActionBar.lua
 _Clean.CastingBar.lua
 _Clean.Crosshairs.lua

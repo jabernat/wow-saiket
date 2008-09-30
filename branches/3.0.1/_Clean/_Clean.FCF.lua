@@ -100,7 +100,7 @@ function me.UpdateCombatLogPosition ()
 	_Clean:RunProtectedFunction( function ()
 		ChatFrame2:ClearAllPoints();
 		ChatFrame2:SetPoint( "BOTTOMLEFT", ChatFrame1, "BOTTOMRIGHT", 4, 0 );
-		ChatFrame2:SetPoint( "RIGHT", MultiBarLeft, "LEFT" );
+		ChatFrame2:SetPoint( "RIGHT", _Clean.ActionBar.BackdropRight, "LEFT", -2, 0 );
 	end, ChatFrame2:IsProtected() );
 end
 --[[****************************************************************************
@@ -110,8 +110,8 @@ end
 function me.UpdateDockPosition ()
 	_Clean:RunProtectedFunction( function ()
 		ChatFrame1:ClearAllPoints();
-		ChatFrame1:SetPoint( "BOTTOMLEFT", MultiBarBottomLeft, "TOPLEFT", 0, 4 );
-		ChatFrame1:SetPoint( "RIGHT", MultiBarBottomRight, "LEFT" );
+		ChatFrame1:SetPoint( "BOTTOMLEFT", _Clean.ActionBar.BackdropBottomLeft, "TOPLEFT", 0, 6 );
+		ChatFrame1:SetPoint( "RIGHT", _Clean.ActionBar.BackdropBottomRight, "LEFT" );
 	end, ChatFrame1:IsProtected() );
 end
 --[[****************************************************************************
@@ -382,13 +382,6 @@ do
 	end
 	ChatFrame1TabLeft:SetTexCoord( ChatFrame1TabMiddle:GetTexCoord() );
 	ChatFrame2TabRight:SetTexCoord( ChatFrame2TabMiddle:GetTexCoord() );
-
-
-	for _, Region in ipairs( { ChatFrameEditBox:GetRegions() } ) do
-		if ( Region:GetObjectType() == "Texture" ) then
-			Region:SetVertexColor( 0.5, 0.5, 0.5 );
-		end
-	end
 
 
 	-- Hooks

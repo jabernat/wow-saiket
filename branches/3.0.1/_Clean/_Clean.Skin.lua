@@ -17,11 +17,15 @@ local Replacements = {
 	--[[ Red button template
 	[ "interface\\buttons\\ui-panel-button-up" ] = "Interface\\GLUES\\COMMON\\Glue-Panel-Button-Up-Blue";
 	[ "interface\\buttons\\ui-dialogbox-button-up" ] = "Interface\\GLUES\\COMMON\\Glue-Panel-Button-Up-Blue";
-
-	[ "interface\\glues\\common\\glue-panel-button-up" ] = "Interface\\Glues\\Common\\Glue-Panel-Button-Up-Blue";
-	[ "interface\\glues\\common\\glue-panel-button-down" ] = "Interface\\Glues\\Common\\Glue-Panel-Button-Down-Blue";
-	[ "interface\\glues\\common\\glue-panel-button-highlight" ] = "Interface\\Glues\\Common\\Glue-Panel-Button-Highlight-Blue";
 	]]
+
+	[ "interface\\glues\\common\\glue-panel-button-up" ] = "interface\\glues\\common\\glue-panel-button-up-blue";
+	[ "interface\\glues\\common\\glue-panel-button-down" ] = "interface\\glues\\common\\glue-panel-button-down-blue";
+	[ "interface\\glues\\common\\glue-panel-button-highlight" ] = "interface\\glues\\common\\glue-panel-button-highlight-blue";
+
+	-- Make yellow highlights blue
+	[ "interface\\friendsframe\\ui-friendsframe-highlightbar" ] = "interface\\questframe\\ui-questlogtitlehighlight";
+	[ "interface\\questframe\\ui-questtitlehighlight" ] = "interface\\questframe\\ui-questlogtitlehighlight";
 };
 me.Replacements = Replacements;
 
@@ -29,7 +33,12 @@ local Shades;
 do
 	local Foreground = _Clean.Colors.Foreground;
 	local Background = _Clean.Colors.Dark;
+	local WatchBarBubbles = { r = Background.r; g = Background.g; b = Background.b; a = 0.4; };
 	Shades = {
+		-- Make yellow highlights blue
+		[ "interface\\friendsframe\\ui-friendsframe-highlightbar" ] = _Clean.Colors.Highlight;
+		[ "interface\\questframe\\ui-questtitlehighlight" ] = _Clean.Colors.Highlight;
+
 		[ "interface\\achievementframe\\ui-achievement-alert-background" ] = Foreground;
 		[ "interface\\achievementframe\\ui-achievement-header" ] = Background;
 		[ "interface\\achievementframe\\ui-achievement-metalborder-joint" ] = Background;
@@ -153,6 +162,7 @@ do
 		[ "interface\\mailframe\\mailpopup-bottom" ] = Background;
 		[ "interface\\mailframe\\mailpopup-top" ] = Background;
 		[ "interface\\mailframe\\ui-openmail-botleft" ] = Background;
+		[ "interface\\mainmenubar\\ui-mainmenubar-dwarf" ] = WatchBarBubbles; -- Alternate reputation watch bar texture
 		[ "interface\\merchantframe\\ui-buyback-botleft" ] = Background;
 		[ "interface\\merchantframe\\ui-buyback-botright" ] = Background;
 		[ "interface\\merchantframe\\ui-buyback-topleft" ] = Background;
@@ -185,7 +195,7 @@ do
 		[ "interface\\paperdollinfoframe\\ui-character-inactivetab" ] = Foreground;
 		[ "interface\\paperdollinfoframe\\ui-character-scrollbar" ] = Background;
 		[ "interface\\paperdollinfoframe\\ui-character-statbackground" ] = Foreground;
-		[ "interface\\paperdollinfoframe\\ui-reputationwatchbar" ] = Foreground;
+		[ "interface\\paperdollinfoframe\\ui-reputationwatchbar" ] = WatchBarBubbles;
 		[ "interface\\petpaperdollframe\\ui-petframe-frame" ] = Background;
 		[ "interface\\petpaperdollframe\\ui-petframe-slots" ] = Background;
 		[ "interface\\petpaperdollframe\\ui-petpaperdollframe-botleft" ] = Background;
