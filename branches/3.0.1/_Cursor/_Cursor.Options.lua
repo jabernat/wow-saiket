@@ -391,7 +391,7 @@ end
   * Description: Cycles animation speeds for the model preview.                *
   ****************************************************************************]]
 function CursorsPanel.Preview:OnMouseUp ()
-	self.Rate = ( self.Rate + math.pi ) % ( math.pi * 2 );
+	self.Rate = ( self.Rate + math.pi ) % ( math.pi * 3 );
 	PlaySound( "igMainMenuOption" );
 end
 --[[****************************************************************************
