@@ -20,6 +20,7 @@ SetsPanel.DeleteButton = CreateFrame( "Button", nil, SetsPanel, "UIPanelButtonGr
 
 local CursorsPanel = CreateFrame( "Frame", "_CursorOptionsCursors", me, "OptionsBoxTemplate" );
 me.CursorsPanel = CursorsPanel;
+CursorsPanel.ApplyButton = CreateFrame( "Button", nil, CursorsPanel, "UIPanelButtonGrayTemplate" );
 CursorsPanel.Enabled = CreateFrame( "CheckButton", "_CursorOptionsEnabled", CursorsPanel, "InterfaceOptionsCheckButtonTemplate" );
 CursorsPanel.Preview = CreateFrame( "Frame", nil, CursorsPanel );
 CursorsPanel.X = CreateFrame( "Slider", "_CursorOptionsX", CursorsPanel.Preview, "OptionsSliderTemplate" );
@@ -652,13 +653,10 @@ function me:OnHide ()
 end
 --[[****************************************************************************
   * Function: _Cursor.Options.OnApply                                          *
-  * Description: Updates the actual cursor models when settings are applied.   *
-  *   This only gets called when apply is pressed and _Cursor options are up.  *
+  * Description: Updates the actual cursor models when Apply is pressed.       *
   ****************************************************************************]]
-function me.OnApply ( IsApply )
-	if ( IsApply and me:IsShown() ) then
-		_Cursor.Update();
-	end
+function me.OnApply ()
+	_Cursor.Update();
 end
 --[[****************************************************************************
   * Function: _Cursor.Options.Update                                           *
@@ -707,7 +705,6 @@ do
 	me.name = L.OPTIONS_TITLE;
 	me:Hide();
 	me:SetScript( "OnHide", me.OnHide );
-	hooksecurefunc( "InterfaceOptionsFrameOkay_OnClick", me.OnApply );
 
 	InterfaceOptions_AddCategory( me );
 
@@ -791,6 +788,15 @@ do
 	local Text = _G[ CursorsPanel:GetName().."Title" ];
 	Text:SetText( L.OPTIONS.CURSORS );
 	Text:SetPoint( "BOTTOMLEFT", CursorsPanel, "TOPLEFT", 9, 20 );
+
+
+	-- Apply button
+	local ApplyButton = CursorsPanel.ApplyButton;
+	ApplyButton:SetScript( "OnClick", me.OnApply );
+	ApplyButton:SetPoint( "BOTTOMRIGHT", CursorsPanel, "TOPRIGHT", 0, 2 );
+	ApplyButton:SetWidth( 64 );
+	ApplyButton:SetHeight( 16 );
+	ApplyButton:SetText( L.OPTIONS.APPLY );
 
 
 	-- Enable button

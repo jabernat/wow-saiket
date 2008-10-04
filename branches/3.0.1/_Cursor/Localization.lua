@@ -34,6 +34,7 @@ do
 			DELETE = "Delete"; -- Delete set
 			DELETE_DESC = "Removes this set for all characters.";
 			CURSORS = "Cursor";
+			APPLY = "Apply"; -- Apply current options to cursor
 			ENABLED = "Model Enabled";
 			ENABLED_DESC = "Toggles whether this cursor layer is shown.";
 			PREVIEW_DESC = "A preview of the chosen cursor layer.\n"..HIGHLIGHT_FONT_COLOR_CODE.."Click to cycle animation speeds.";
