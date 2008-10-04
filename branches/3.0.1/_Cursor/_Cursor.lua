@@ -133,6 +133,8 @@ me.Presets = {
 
 me.IsCameraMoving = false;
 me.IsMouselooking = false;
+me.IsCinematicPlaying = false;
+me.IsScreenshotSaving = false;
 
 
 
@@ -308,6 +310,44 @@ end
 
 
 --[[****************************************************************************
+  * Function: _Cursor.ShouldHide                                               *
+  * Description: Returns true if the cursor model should be hidden.            *
+  ****************************************************************************]]
+function me.ShouldHide ()
+	return me.IsCameraMoving or me.IsMouselooking or me.IsCinematicPlaying or me.IsScreenshotSaving;
+end
+
+
+--[[****************************************************************************
+  * Function: _Cursor:SCREENSHOT_SUCCEEDED                                     *
+  ****************************************************************************]]
+function me:SCREENSHOT_SUCCEEDED ()
+	me.IsScreenshotSaving = false;
+	if ( not me.ShouldHide() ) then
+		me:Show();
+	end
+end
+--[[****************************************************************************
+  * Function: _Cursor:SCREENSHOT_FAILED                                        *
+  ****************************************************************************]]
+me.SCREENSHOT_FAILED = me.SCREENSHOT_SUCCEEDED;
+--[[****************************************************************************
+  * Function: _Cursor:CINEMATIC_START                                          *
+  ****************************************************************************]]
+function me:CINEMATIC_START ()
+	me.IsCinematicPlaying = true;
+	me:Hide();
+end
+--[[****************************************************************************
+  * Function: _Cursor:CINEMATIC_STOP                                           *
+  ****************************************************************************]]
+function me:CINEMATIC_STOP ()
+	me.IsCinematicPlaying = false;
+	if ( not me.ShouldHide() ) then
+		me:Show();
+	end
+end
+--[[****************************************************************************
   * Function: _Cursor:ADDON_LOADED                                             *
   ****************************************************************************]]
 function me:ADDON_LOADED ( _, AddOn )
@@ -388,7 +428,17 @@ do
 	me:SetScript( "OnEvent", me.OnEvent );
 	me:SetScript( "OnShow", me.OnShow );
 	me:RegisterEvent( "ADDON_LOADED" );
+	me:RegisterEvent( "SCREENSHOT_SUCCEEDED" );
+	me:RegisterEvent( "SCREENSHOT_FAILED" );
+	me:RegisterEvent( "CINEMATIC_START" );
+	me:RegisterEvent( "CINEMATIC_STOP" );
 
+	-- Hide during screenshots
+	hooksecurefunc( "Screenshot", function ()
+		-- Note: Screenshot() blocks execution /after/ secure hooks.
+		me.IsScreenshotSaving = true;
+		me:Hide();
+	end );
 	-- Hook camera movement to hide cursor effects
 	hooksecurefunc( "CameraOrSelectOrMoveStart", function ()
 		me.IsCameraMoving = true;
@@ -396,7 +446,7 @@ do
 	end );
 	hooksecurefunc( "CameraOrSelectOrMoveStop", function ()
 		me.IsCameraMoving = false;
-		if ( not me.IsMouselooking ) then
+		if ( not me.ShouldHide() ) then
 			me:Show();
 		end
 	end );
@@ -412,7 +462,7 @@ do
 				end
 			elseif ( me.IsMouselooking ) then
 				me.IsMouselooking = false;
-				if ( not me.IsCameraMoving ) then
+				if ( not me.ShouldHide() ) then
 					me:Show();
 				end
 			end
