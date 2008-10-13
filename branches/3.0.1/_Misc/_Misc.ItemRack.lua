@@ -12,6 +12,7 @@ local me = {
 		[ "1.Heal" ]  = 36; -- Champion of the Naaru
 		[ "2.Shock" ] = 39; -- Hand of A'dal
 		[ "3.Tank" ]  =  6; -- Knight
+		[ "Ashbringer" ] = 6; -- Knight
 	};
 };
 _Misc.ItemRack = me;
