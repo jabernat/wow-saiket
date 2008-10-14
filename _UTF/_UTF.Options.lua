@@ -20,6 +20,16 @@ function me.Update ()
 	me.EntityReplaceButton:SetChecked( _UTFOptions.Chat.EntityReferenceReplace );
 	me.TextReplaceButton:SetChecked( _UTFOptions.Chat.TextReplace );
 end
+--[[****************************************************************************
+  * Function: _UTF.Options:OnEvent                                             *
+  * Description: Updates configuration options on load.                        *
+  ****************************************************************************]]
+function me:OnEvent ( _, AddOn )
+	if ( AddOn == "_UTF" ) then
+		self:UnregisterEvent( "ADDON_LOADED" );
+		self.Update();
+	end
+end
 
 
 --[[****************************************************************************
@@ -46,6 +56,9 @@ end
 
 do
 	me.name = L.OPTIONS_TITLE;
+
+	me:RegisterEvent( "ADDON_LOADED" );
+	me:SetScript( "OnEvent", me.OnEvent );
 
 	-- Pane title
 	me.Title = me:CreateFontString( nil, "ARTWORK", "GameFontNormalLarge" );
@@ -80,8 +93,5 @@ do
 	_G[ TextReplaceButton:GetName().."Text" ]:SetText( L.OPTIONS_TEXTREPLACE );
 
 
-	me:RegisterEvent( "VARIABLES_LOADED" );
-	me:SetScript( "OnEvent", me.Update );
-	me.Update();
 	InterfaceOptions_AddCategory( me );
 end

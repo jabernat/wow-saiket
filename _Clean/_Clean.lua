@@ -56,12 +56,9 @@ me.Colors = {
 
 	Foreground = { r = 0.0; g = 0.5; b = 1.0; a = 1.0; };
 	Background = { r = 0.0; g = 0.0; b = 0.0; a = 1.0; };
-	Highlight = { r = 1.0; g = 1.0; b = 0.6; a = 1.0; }; -- Light yellow
-	Gold = { r = 0.8; g = 0.8; b = 8 / 15; a = 1.0; }; -- Gold, same as title
-};
-me.Backdrop = {
-	bgFile = "Interface\\Tooltips\\UI-Tooltip-Background";
-	insets = { left = -4, right = -4, top = -4, bottom = -4 }
+	Highlight = { r = 0.8; g = 0.8; b = 8 / 15; a = 1.0; }; -- Gold, same as title
+	Normal = { r = 0.6; g = 0.85; b = 1.0; a = 1.0; }; -- Frosty blue
+	Dark = { r = 0.4; g = 0.45; b = 0.5; a = 1.0; }; -- Grayish blue
 };
 
 me.MonospaceFont = CreateFont( "_CleanMonospace" );
@@ -283,11 +280,11 @@ do
 	me.RegisterAddOnInitializer( "_Dev",
 		function () _Dev.Font:SetFontObject( me.MonospaceNumberFont ); end );
 
-	local Gold = me.Colors.Gold;
-	GameFontNormal:SetTextColor( Gold.r, Gold.g, Gold.b );
-	GameFontNormalSmall:SetTextColor( Gold.r, Gold.g, Gold.b );
-	GameFontNormalLarge:SetTextColor( Gold.r, Gold.g, Gold.b );
-	GameFontNormalHuge:SetTextColor( Gold.r, Gold.g, Gold.b );
-	NumberFontNormalYellow:SetTextColor( Gold.r, Gold.g, Gold.b );
-	DialogButtonNormalText:SetTextColor( Gold.r, Gold.g, Gold.b );
+	local Normal = me.Colors.Normal;
+	GameFontNormal:SetTextColor( Normal.r, Normal.g, Normal.b );
+	GameFontNormalSmall:SetTextColor( Normal.r, Normal.g, Normal.b );
+	GameFontNormalLarge:SetTextColor( Normal.r, Normal.g, Normal.b );
+	GameFontNormalHuge:SetTextColor( Normal.r, Normal.g, Normal.b );
+	NumberFontNormalYellow:SetTextColor( Normal.r, Normal.g, Normal.b );
+	DialogButtonNormalText:SetTextColor( Normal.r, Normal.g, Normal.b );
 end

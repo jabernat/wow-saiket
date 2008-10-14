@@ -9,9 +9,7 @@
 
 
 local _Misc = _Misc;
-local me = {
-	SetItemRefBackup;
-};
+local me = {};
 _Misc.BlizzardAuctionUI = me;
 
 
@@ -25,7 +23,7 @@ _Misc.BlizzardAuctionUI = me;
 function me.SearchFromLink ( Item )
 	if ( Item and AuctionFrameBrowse:IsVisible() ) then
 		-- Search the item link for its name
-		Item = select( 3, Item:find( "%[(.*)%]" ) );
+		Item = Item:match( "%[(.*)%]" );
 
 		if ( Item ) then
 			BrowseName:SetText( Item );
@@ -41,13 +39,13 @@ end
   * Function: _Misc.BlizzardAuctionUI.SetItemRef                               *
   * Description: Adds and searches for alt+clicked items.                      *
   ****************************************************************************]]
-function me.SetItemRef ( Link, Text, Button )
+function me.SetItemRef ( Link, Text, Button, ... )
 	if ( not (
-		IsAltKeyDown()
+		IsModifiedClick( "_MISC_AUCTION_QUERY" )
 		and Link:sub( 1, 4 ) == "item"
 		and me.SearchFromLink( Text )
 	) ) then
-		me.SetItemRefBackup( Link, Text, Button );
+		return me.SetItemRefBackup( Link, Text, Button, ... );
 	end
 end
 --[[****************************************************************************
@@ -55,7 +53,7 @@ end
   * Description: Adds and searches for alt+clicked items.                      *
   ****************************************************************************]]
 function me.ContainerFrameItemButtonOnModifiedClick ( Button )
-	if ( Button == "LeftButton" and IsAltKeyDown() ) then
+	if ( IsModifiedClick( "_MISC_AUCTION_QUERY" ) ) then
 		if ( AuctionFrameBrowse:IsVisible() ) then
 			me.SearchFromLink( GetContainerItemLink( this:GetParent():GetID(), this:GetID() ) );
 		elseif ( AuctionFrameAuctions:IsVisible() and not CursorHasItem() ) then
@@ -67,22 +65,6 @@ function me.ContainerFrameItemButtonOnModifiedClick ( Button )
 end
 
 
---[[****************************************************************************
-  * Function: _Misc.BlizzardAuctionUI.OnLoad                                   *
-  * Description: Makes modifications just after the addon is loaded.           *
-  ****************************************************************************]]
-function me.OnLoad ()
-	me.SetItemRefBackup = SetItemRef;
-	SetItemRef = me.SetItemRef;
-
-	hooksecurefunc( "ChatEdit_InsertLink", me.SearchFromLink );
-	hooksecurefunc( "ContainerFrameItemButton_OnModifiedClick", me.ContainerFrameItemButtonOnModifiedClick );
-
-	-- Set the default aution length to long
-	AuctionsRadioButton_OnClick( AuctionsLongAuctionButton:GetID() );
-end
-
-
 
 
 --------------------------------------------------------------------------------
@@ -90,5 +72,14 @@ end
 -----------------------------
 
 do
-	_Misc.RegisterAddOnInitializer( "Blizzard_AuctionUI", me.OnLoad );
+	_Misc.RegisterAddOnInitializer( "Blizzard_AuctionUI", function ()
+		me.SetItemRefBackup = SetItemRef;
+		SetItemRef = me.SetItemRef;
+	
+		hooksecurefunc( "ChatEdit_InsertLink", me.SearchFromLink );
+		hooksecurefunc( "ContainerFrameItemButton_OnModifiedClick", me.ContainerFrameItemButtonOnModifiedClick );
+	
+		-- Set the default aution length to long
+		AuctionsRadioButton_OnClick( AuctionsLongAuctionButton:GetID() );
+	end );
 end

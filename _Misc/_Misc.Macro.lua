@@ -112,7 +112,7 @@ function me.Alert ( Message, Color )
 	if ( not Color ) then
 		Color = NORMAL_FONT_COLOR;
 	end
-	RaidNotice_AddMessage( RaidWarningFrame, "[!] "..tostring( Message ), Color );
+	RaidNotice_AddMessage( RaidWarningFrame, "|TInterface\\DialogFrame\\DialogAlertIcon:48|t"..tostring( Message ), Color );
 	PlaySound( "RaidWarning" );
 end
 --[[****************************************************************************
@@ -207,21 +207,6 @@ function me.EnableErrorsSlashCommand ( Input )
 end
 
 
---[[****************************************************************************
-  * Function: _Misc.Macro.UnitHasDebuff                                        *
-  * Description: Returns true if the evaluated unit has a cleansable debuff.   *
-  ****************************************************************************]]
-do
-	local UnitDebuff = UnitDebuff;
-	local SecureCmdOptionParse = SecureCmdOptionParse;
-	local select = select;
-	function me.UnitHasDebuff ( UnitOptions, DefaultUnit )
-		local UnitID = select( 2, SecureCmdOptionParse( UnitOptions ) ) or DefaultUnit;
-		return UnitID and ( UnitID:lower() == "none" or not not UnitDebuff( UnitID, 1, true ) ) or nil;
-	end
-end
-
-
 
 
 --------------------------------------------------------------------------------
@@ -242,6 +227,4 @@ do
 
 	err = me.EnableErrors;
 	SlashCmdList[ "ERR" ] = me.EnableErrorsSlashCommand;
-
-	UnitHasDebuff = me.UnitHasDebuff;
 end

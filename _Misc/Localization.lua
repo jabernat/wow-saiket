@@ -9,13 +9,6 @@ do
 		{
 			RAIDWARNING_FORMAT = "[%s]: %s";
 
-			FACTION_CHANGE_PATTERNS = {
-				-- Complements of the following formats:
-				"^Reputation with (.+) increased by %d+%.$", -- FACTION_STANDING_INCREASED
-				"^Reputation with (.+) decreased by %d+%.$", -- FACTION_STANDING_DECREASED
-				"^You are now .+ with (.+)%.$" -- FACTION_STANDING_CHANGED
-			};
-
 			UNDRESS_LABEL = "Undress";
 
 
@@ -26,34 +19,29 @@ do
 			TIME_VALUE_UNKNOWN = "??";
 
 
-			-- AfkDndStatus
-			AFKDNDSTATUS_AFK_PATTERN = "^You are now AFK: .*$"; -- MARKED_AFK_MESSAGE
-			AFKDNDSTATUS_DND_PATTERN = "^You are now DND: .*%.$"; -- MARKED_DND
-
-
 			-- Blizzard_CombatText
 			BLIZZARDCOMBATTEXT_HEAL_FORMAT = "%s +%d %s";
 			BLIZZARDCOMBATTEXT_OVERHEAL_FORMAT = "%s +%d %s {%d}";
 
 
 			-- FCF
-			FCF_TIMESTAMP_FORMAT = GRAY_FONT_COLOR_CODE.."[%s] "
-				..FONT_COLOR_CODE_CLOSE.."%s"; -- TimeString, Message
-			FCF_TIMESTAMP_PATTERN = "^"..GRAY_FONT_COLOR_CODE.."%[[%d?][%d?]:[%d?][%d?]:[%d?][%d?]%] "..FONT_COLOR_CODE_CLOSE;
-			FCF_URL_FORMAT = " "..LIGHTYELLOW_FONT_COLOR_CODE.."|Hurl:%1|h<%1>|h"
-				..FONT_COLOR_CODE_CLOSE.." "; -- URL
+			FCF_TIMESTAMP_FORMAT = GRAY_FONT_COLOR_CODE.."[%s]|r %s"; -- TimeString, Message
+			FCF_TIMESTAMP_PATTERN = "^"..GRAY_FONT_COLOR_CODE.."%[[%d?][%d?]:[%d?][%d?]:[%d?][%d?]%]|r ";
+			FCF_URL_FORMAT = " "..LIGHTYELLOW_FONT_COLOR_CODE.."|Hurl:%1|h<%1>|h|r "; -- URL
 
 
 			-- QuestLog
 			QUESTLOG_TITLETEXT_FORMAT = "[%d%s] %s"; -- Level, QuestTag, Title
 			QUESTLOG_QUESTTAGS = {
 				[ ELITE ]   = "+";
-				[ LFG_TYPE_DUNGEON ] = "d";
+				[ LFG_TYPE_DUNGEON ] = "d"; -- Dungeon
 				[ GROUP  ]  = "g";
 				[ RAID  ]   = "r";
 				[ PVP ]     = "p";
 				[ DUNGEON_DIFFICULTY2 ] = "h"; -- Heroic
 			};
+			QUESTLOG_DAILY_PATTERN = "^Daily (.*)$"; -- DAILY_QUEST_TAG_TEMPLATE
+			QUESTLOG_DAILY_FORMAT = "%s|cff71d5ff\226\151\138|r";
 			QUESTLOG_ISCOMPLETETAGS = {
 				[ -1 ] = RED_FONT_COLOR_CODE.."("..FAILED..")";
 				[ 1 ] = GREEN_FONT_COLOR_CODE.."("..COMPLETE..")";

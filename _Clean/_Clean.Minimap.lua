@@ -80,12 +80,7 @@ do
 	-- Expand the minimap to a square and replace the artwork with a simple border
 	GetMinimapShape = me.GetMinimapShape;
 	Minimap:SetMaskTexture( "Interface\\Buttons\\WHITE8X8" );
-	Minimap:SetBackdrop( _Clean.Backdrop );
-	Minimap:SetBackdropColor(
-		Background.r,
-		Background.g,
-		Background.b,
-		Background.a );
+	_Clean.Backdrop.Add( Minimap, _Clean.Backdrop.Padding );
 	Minimap:SetBlipTexture( "Interface\\AddOns\\_Clean\\Skin\\ObjectIcons" );
 
 	MinimapCluster:SetWidth( Minimap:GetWidth() );
@@ -93,7 +88,7 @@ do
 	Minimap:SetAllPoints( MinimapCluster );
 	MinimapCluster:SetScale( 0.9 );
 	MinimapCluster:ClearAllPoints();
-	MinimapCluster:SetPoint( "TOPRIGHT", UIParent );
+	MinimapCluster:SetPoint( "TOPRIGHT", UIParent, 0, -16 );
 	MinimapCluster:EnableMouse( false );
 
 	MinimapToggleButton:Hide();
@@ -118,16 +113,19 @@ do
 	MiniMapWorldMapButton:Hide();
 
 	MiniMapTracking:ClearAllPoints();
-	MiniMapTracking:SetPoint( "BOTTOMLEFT", Minimap )
+	MiniMapTracking:SetPoint( "BOTTOMLEFT", Minimap, -1, 0 );
 	MiniMapTracking:SetWidth( 14 );
 	MiniMapTracking:SetHeight( 14 );
-	MiniMapTrackingBorder:Hide();
-	MiniMapTrackingBorder:SetTexture();
+	MiniMapTrackingButton:SetAllPoints( MiniMapTracking );
+	MiniMapTrackingButtonBorder:Hide();
+	MiniMapTrackingButtonBorder:SetTexture();
 	MiniMapTrackingBackground:Hide();
 	MiniMapTrackingBackground:SetTexture();
 	MiniMapTrackingIcon:SetAllPoints( MiniMapTracking );
 	MiniMapTrackingIcon:SetGradientAlpha( "VERTICAL", Background.r, Background.g, Background.b, Background.a, Foreground.r, Foreground.g, Foreground.b, Foreground.a );
 	_Clean.RemoveButtonIconBorder( MiniMapTrackingIcon );
+	MiniMapTrackingButton:SetScript( "OnMouseUp", nil );
+	MiniMapTrackingButton:SetScript( "OnMouseDown", nil );
 
 	-- Voice chat button
 	MiniMapVoiceChatFrame:ClearAllPoints();

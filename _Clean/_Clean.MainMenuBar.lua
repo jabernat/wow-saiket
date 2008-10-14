@@ -32,6 +32,7 @@ function me.ReputationWatchBarUpdate ( NewLevel )
 			ReputationWatchBar:ClearAllPoints();
 			ReputationWatchBar:SetPoint( "BOTTOMLEFT", MainMenuExpBar, RelativePoint );
 			ReputationWatchBar:SetPoint( "RIGHT", MainMenuExpBar );
+			ReputationWatchStatusBar:SetFrameLevel( ReputationWatchBar:GetFrameLevel() + 1 );
 		end, ReputationWatchBar:IsProtected() );
 	end
 
@@ -40,38 +41,6 @@ function me.ReputationWatchBarUpdate ( NewLevel )
 		_G[ "ReputationXPBarTexture"..Index ]:Hide();
 	end
 	ReputationWatchStatusBarText:Show(); -- Keeps it visible even when the exp bar is shown
-end
-
-
---[[****************************************************************************
-  * Function: _Clean.MainMenuBar.ExhaustionTickUpdate                          *
-  * Description: Repositions the exhaustion fill bar. (Hooks                   *
-  *   ExhaustionTick_Update.)                                                  *
-  ****************************************************************************]]
-function me.ExhaustionTickUpdate ()
-	local self = this;
-	if ( self:IsShown() ) then
-		ExhaustionLevelFillBar:SetPoint( "RIGHT", self );
-	end
-end
-
-
---[[****************************************************************************
-  * Function: _Clean.MainMenuBar.MenuBarManager                                *
-  * Description: Manages the menu bar's position.                              *
-  ****************************************************************************]]
-function me.MenuBarManager ()
-	-- Move the whole UI up to accomodate reputation and experience bars
-	local Offset = ( ReputationWatchBar:IsShown() and me.StatusBarHeight or 0 )
-		+ ( MainMenuExpBar:IsShown() and me.StatusBarHeight or 0 );
-	_Clean:RunProtectedFunction( function ()
-		ActionButton1:ClearAllPoints();
-		ActionButton1:SetPoint( "BOTTOMLEFT", UIParent, 0, Offset );
-
-		MainMenuBarBackpackButton:ClearAllPoints();
-		MainMenuBarBackpackButton:SetPoint( "BOTTOM", ActionButton1 );
-		MainMenuBarBackpackButton:SetPoint( "RIGHT", UIParent, 1, 0 );
-	end, ActionButton1:IsProtected() or MainMenuBarBackpackButton:IsProtected() );
 end
 
 
@@ -84,37 +53,11 @@ end
 do
 	MainMenuBar:EnableMouse( false );
 
-	local Background = _Clean.Colors.Background;
-	local Highlight = _Clean.Colors.Highlight;
-
-	-- Bags
-	local LastButton = MainMenuBarBackpackButton;
-	MainMenuBarBackpackButtonIconTexture:SetTexCoord( 0.08, 0.92, 0.08, 0.92 );
-	MainMenuBarBackpackButtonNormalTexture:SetTexture();
-	for Index = 0, 3 do
-		local Button = _G[ "CharacterBag"..Index.."Slot" ];
-		Button:SetPoint( "RIGHT", LastButton, "LEFT", 1, 0 );
-		_G[ "CharacterBag"..Index.."SlotIconTexture" ]:SetTexCoord( 0.08, 0.92, 0.08, 0.92 );
-		_G[ "CharacterBag"..Index.."SlotNormalTexture" ]:SetTexture();
-		LastButton = Button;
-	end
-	-- Keyring
-	KeyRingButton:ClearAllPoints();
-	KeyRingButton:SetPoint( "LEFT", CharacterBag3Slot );
-	KeyRingButton:SetParent( CharacterBag3Slot );
-	KeyRingButton:SetWidth( 12 );
-	KeyRingButton:GetNormalTexture():SetTexCoord( 0.15, 0.45, 0.1, 0.52 );
-
-	-- Lag-o-meter
-	MainMenuBarPerformanceBar:Hide();
-	MainMenuBarPerformanceBarFrameButton:Hide();
-
 	-- Experience and Reputation Bars
 	MainMenuExpBar:EnableMouse( false );
 	MainMenuExpBar:ClearAllPoints();
 	MainMenuExpBar:SetPoint( "BOTTOMLEFT", UIParent );
 	MainMenuExpBar:SetPoint( "RIGHT", UIParent );
-	MainMenuExpBar:SetWidth( 0 );
 	MainMenuExpBar:SetHeight( _Clean.MainMenuBar.StatusBarHeight );
 	MainMenuBarExpText:SetFontObject( NumberFontNormalSmall );
 
@@ -143,8 +86,6 @@ do
 			Texture:ClearAllPoints();
 			Texture:SetPoint( "TOPLEFT", Parent, not Even and "TOP" );
 			Texture:SetPoint( "BOTTOMRIGHT", Parent, Even and "BOTTOM" );
-			Texture:SetBlendMode( "ADD" );
-			Texture:SetVertexColor( Highlight.r, Highlight.g, Highlight.b, 0.25 );
 		end
 	end
 
@@ -159,15 +100,18 @@ do
 		ReputationWatchBarTexture1,
 		ReputationWatchBarTexture2,
 		ReputationWatchBarTexture3 );
-	ReputationWatchStatusBarBackground:SetTexture( _Clean.Backdrop.bgFile );
-	ReputationWatchStatusBarBackground:SetVertexColor( Background.r, Background.g, Background.b, Background.a );
+	ReputationWatchStatusBarBackground:Hide();
 	for _, Region in ipairs( { MainMenuExpBar:GetRegions() } ) do
 		if ( Region:GetObjectType() == "Texture" and Region:GetDrawLayer() == "BACKGROUND" and Region:GetTexture() == "Solid Texture" ) then
-			Region:SetTexture( _Clean.Backdrop.bgFile );
-			Region:SetVertexColor( Background.r, Background.g, Background.b, Background.a );
+			Region:Hide();
 			break;
 		end
 	end
+	local BarBackdrop = _Clean.Backdrop.Create( MainMenuBar );
+	BarBackdrop:SetPoint( "TOPLEFT", ActionButton1, "BOTTOMLEFT" );
+	BarBackdrop:SetPoint( "BOTTOMRIGHT", UIParent );
+	MainMenuExpBar:SetParent( BarBackdrop );
+	ReputationWatchBar:SetParent( BarBackdrop );
 
 	-- Remove artwork
 	for Index = 0, 3 do
@@ -200,7 +144,5 @@ do
 
 
 	-- Hooks
-	_Clean:AddPositionManager( me.MenuBarManager );
-	hooksecurefunc( "ExhaustionTick_Update", me.ExhaustionTickUpdate );
 	hooksecurefunc( "ReputationWatchBar_Update", me.ReputationWatchBarUpdate );
 end

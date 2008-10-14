@@ -252,7 +252,7 @@ function me:CreateDropDown ( Variable )
 	DropDown:EnableMouse( true );
 	DropDown:SetScript( "OnEnter", me.ControlOnEnter );
 	DropDown:SetScript( "OnLeave", me.ControlOnLeave );
-	UIDropDownMenu_JustifyText( "LEFT", DropDown );
+	UIDropDownMenu_JustifyText( DropDown, "LEFT" );
 	_G[ Name.."Middle" ]:SetPoint( "RIGHT", -16, 0 );
 
 	DropDown.tooltipText = L.OPTIONS[ Variable.."_DESC" ];
@@ -286,6 +286,15 @@ function me:OnLoad ()
 end
 
 
+--[[****************************************************************************
+  * Function: _Dev.Options.SlashCommand                                        *
+  * Description: Slash command chat handler to open the options pane.          *
+  ****************************************************************************]]
+function me.SlashCommand ()
+	InterfaceOptionsFrame_OpenToCategory( me );
+end
+
+
 
 
 --------------------------------------------------------------------------------
@@ -295,6 +304,8 @@ end
 do
 	me.name = L.OPTIONS_TITLE;
 	me:Hide();
+
+	InterfaceOptions_AddCategory( me );
 
 
 	-- Pane title
@@ -317,11 +328,11 @@ do
 	me:CreateCheckButton( "PrintLuaErrors" ):SetPoint( "TOPLEFT", SubText, "BOTTOMLEFT", -2, -8 );
 
 	-- Create two columns for Dump and Outline options
-	local Column1 = CreateFrame( "Frame", "_DevOptionsDump", me, "OptionFrameBoxTemplate" );
+	local Column1 = CreateFrame( "Frame", "_DevOptionsDump", me, "OptionsBoxTemplate" );
 	_G[ Column1:GetName().."Title" ]:SetText( L.OPTIONS.DUMP );
 	Column1:SetPoint( "TOPLEFT", Controls[ "PrintLuaErrors" ], "BOTTOMLEFT", 0, -16 );
 	Column1:SetPoint( "BOTTOMRIGHT", me, "BOTTOM", 0, 16 );
-	local Column2 = CreateFrame( "Frame", "_DevOptionsOutline", me, "OptionFrameBoxTemplate" );
+	local Column2 = CreateFrame( "Frame", "_DevOptionsOutline", me, "OptionsBoxTemplate" );
 	_G[ Column2:GetName().."Title" ]:SetText( L.OPTIONS.OUTLINE );
 	Column2:SetPoint( "TOPLEFT", Column1, "TOPRIGHT", 8, 0 );
 	Column2:SetPoint( "BOTTOMRIGHT", -14, 16 );
@@ -344,7 +355,5 @@ do
 
 
 
-	me.Update();
-
-	InterfaceOptions_AddCategory( me );
+	SlashCmdList[ "DEV_OPTIONS" ] = me.SlashCommand;
 end

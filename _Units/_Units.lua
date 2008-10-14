@@ -16,6 +16,8 @@ _Units = me;
 local AddOnInitializers = {};
 me.AddOnInitializers = AddOnInitializers;
 
+me.DropDown = CreateFrame( "Frame", "_UnitsDropDown", UIParent, "UIDropDownMenuTemplate" );
+
 
 
 
@@ -42,32 +44,48 @@ end
 
 
 --[[****************************************************************************
-  * Function: _Units:MouseoverTargetFrameOnUpdate                              *
-  * Description: Updates the mouseover target's tooltip.                       *
+  * Function: _Units.InitializeGenericMenu                                     *
+  * Description: Constructs the unit popup menu.                               *
   ****************************************************************************]]
-function me:MouseoverTargetFrameOnUpdate ( Elapsed )
-	local Tooltip = _G[ self:GetName().."Tooltip" ];
-	if ( GameTooltip:IsUnit( "mouseover" ) and UnitExists( "mouseovertarget" ) ) then
-		Tooltip:SetOwner( GameTooltip, "ANCHOR_BOTTOMRIGHT" );
-		Tooltip:SetUnit( "mouseovertarget" );
-		Tooltip:Show();
-		Tooltip:ClearAllPoints();
-		Tooltip:SetPoint( "BOTTOMLEFT", this );
-		Tooltip:SetScale( 0.8 );
-		_G[ Tooltip:GetName().."TextLeft1" ]:SetTextColor( GameTooltip_UnitColor( "mouseovertarget" ) );
+function me.InitializeGenericMenu ()
+	local UnitID = me.DropDown.unit or "player";
+	local Which, Name, ID;
+
+	if ( UnitIsUnit( UnitID, "player" ) ) then
+		Which = "SELF";
+	elseif ( UnitIsUnit( UnitID, "pet" ) ) then
+		Which = "PET";
+	elseif ( UnitIsPlayer( UnitID ) ) then
+		ID = UnitInRaid( UnitID );
+		if ( ID ) then
+			Which = "RAID_PLAYER";
+		elseif ( UnitInParty( UnitID ) ) then
+			Which = "PARTY";
+		else
+			Which = "PLAYER";
+		end
 	else
-		Tooltip:Hide();
+		Which = "RAID_TARGET_ICON";
+		Name = RAID_TARGET_ICON;
+	end
+	if ( Which ) then
+		UnitPopup_ShowMenu( me.DropDown, Which, UnitID, Name, ID );
 	end
 end
 --[[****************************************************************************
-  * Function: _Units:MouseoverTargetFrameOnLoad                                *
-  * Description: Formats the guild title if _Misc is running.                  *
+  * Function: _Units:ShowGenericMenu                                           *
+  * Description: Adds a unit popup based on the unit.                          *
   ****************************************************************************]]
-function me:MouseoverTargetFrameOnLoad ()
-	if ( IsAddOnLoaded( "_Misc" ) ) then
-		_Misc.HookScript( _G[ self:GetName().."Tooltip" ], "OnTooltipSetUnit", _Misc.GameTooltip.UpdateUnitGuild );
+function me:ShowGenericMenu ( UnitID )
+	HideDropDownMenu( 1 );
+
+	me.DropDown.unit = UnitID or SecureButton_GetUnit( self );
+
+	if ( me.DropDown.unit ) then
+		ToggleDropDownMenu( 1, nil, me.DropDown, "cursor" );
 	end
 end
+
 
 --[[****************************************************************************
   * Function: _Units:BlizzardFrameDisable                                      *
@@ -129,6 +147,9 @@ do
 	me:SetScript( "OnEvent", me.OnEvent );
 	me:RegisterEvent( "PLAYER_LOGIN" );
 	me:RegisterEvent( "ADDON_LOADED" );
+
+	tinsert( UnitPopupFrames, me.DropDown:GetName() );
+	UIDropDownMenu_Initialize( me.DropDown, me.InitializeGenericMenu, "MENU" );
 
 	--[[for Index = 1, MAX_PARTY_MEMBERS do
 		me.BlizzardFrameDisable( _G[ "PartyMemberFrame"..Index ] );
