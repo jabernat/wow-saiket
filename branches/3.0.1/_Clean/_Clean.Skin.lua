@@ -14,6 +14,7 @@ local Replacements = {
 	[ "interface\\buttons\\buttonhilight-square" ] = "Interface\\AddOns\\_Clean\\Skin\\ActionButtonHighlight"; -- Highlight
 	[ "interface\\buttons\\ui-quickslot-depress" ] = "Interface\\AddOns\\_Clean\\Skin\\ActionButtonPushed"; -- Pressed
 
+
 	--[[ Red button template
 	[ "interface\\buttons\\ui-panel-button-up" ] = "Interface\\GLUES\\COMMON\\Glue-Panel-Button-Up-Blue";
 	[ "interface\\buttons\\ui-dialogbox-button-up" ] = "Interface\\GLUES\\COMMON\\Glue-Panel-Button-Up-Blue";
@@ -23,9 +24,15 @@ local Replacements = {
 	[ "interface\\glues\\common\\glue-panel-button-down" ] = "interface\\glues\\common\\glue-panel-button-down-blue";
 	[ "interface\\glues\\common\\glue-panel-button-highlight" ] = "interface\\glues\\common\\glue-panel-button-highlight-blue";
 
+	[ "interface\\buttons\\ui-panel-button-up" ] = "Interface\\AddOns\\_Clean\\Skin\\UI-Panel-Button-Up";
+	[ "interface\\buttons\\ui-panel-button-down" ] = "Interface\\AddOns\\_Clean\\Skin\\UI-Panel-Button-Down";
+	[ "interface\\buttons\\ui-panel-button-highlight" ] = "Interface\\AddOns\\_Clean\\Skin\\UI-Panel-Button-Highlight";
+
+
 	-- Make yellow highlights blue
 	[ "interface\\friendsframe\\ui-friendsframe-highlightbar" ] = "interface\\questframe\\ui-questlogtitlehighlight";
 	[ "interface\\questframe\\ui-questtitlehighlight" ] = "interface\\questframe\\ui-questlogtitlehighlight";
+	[ "interface\\buttons\\ui-listbox-highlight" ] = "interface\\buttons\\ui-listbox-highlight2";
 };
 me.Replacements = Replacements;
 
@@ -38,6 +45,7 @@ do
 		-- Make yellow highlights blue
 		[ "interface\\friendsframe\\ui-friendsframe-highlightbar" ] = _Clean.Colors.Highlight;
 		[ "interface\\questframe\\ui-questtitlehighlight" ] = _Clean.Colors.Highlight;
+		[ "interface\\buttons\\ui-listbox-highlight2" ] = _Clean.Colors.Highlight;
 
 		[ "interface\\achievementframe\\ui-achievement-alert-background" ] = Foreground;
 		[ "interface\\achievementframe\\ui-achievement-header" ] = Background;
