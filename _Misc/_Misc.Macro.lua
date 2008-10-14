@@ -2,15 +2,11 @@
   * _Misc by Saiket                                                            *
   * _Misc.Macro.lua - Changes to make macros easier to manage.                 *
   *                                                                            *
-  * + UnitInGroup(unit) is true for yourself, your pet, and group members.     *
-  * + IsBuffActive(unit,buff) checks to see if the unit is afflicted by buff.  *
   * + Adds /print for executing LUA by command line. It executes its argument  *
   *   and displays the returned value in a chat window formatted with          *
   *   tostring(). The argument should be an RValue.                            *
   *   + Pipes typed into the command will be unescaped to allow manual         *
   *     construction of color and link tags.                                   *
-  *   + The function print(message, [chatframe], [color]) works like the slash *
-  *     command and can optionally specify the color and chat frame to use.    *
   * + /alert will display your message like /print, but in the center of the   *
   *   screen with a warning sound.                                             *
   *   + Pipes typed into the command will be unescaped to allow manual         *
@@ -130,15 +126,6 @@ function me.PrintSlashCommand ( Input )
 	end
 end
 --[[****************************************************************************
-  * Function: _Misc.Macro.PrintShordcut                                        *
-  * Description: _Misc.Print function with shortcuts for macro length.         *
-  ****************************************************************************]]
-function me.PrintShordcut ( Message, Frame, Color )
-	_Misc.Print( Message,
-		type( Frame ) == "number" and _G[ "ChatFrame"..Frame ] or Frame,
-		Color );
-end
---[[****************************************************************************
   * Function: _Misc.Macro.AlertSlashCommand                                    *
   * Description: Slash command chat handler for _Misc.Macro.Alert.             *
   ****************************************************************************]]
@@ -220,7 +207,6 @@ do
 	usable = me.ItemUsable;
 	trunc = me.Truncate;
 
-	print = _Misc.Macro.PrintShordcut;
 	SlashCmdList[ "PRINT" ] = me.PrintSlashCommand;
 	alert = me.Alert;
 	SlashCmdList[ "ALERT" ] = me.AlertSlashCommand;
