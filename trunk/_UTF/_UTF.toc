@@ -1,17 +1,18 @@
-## Interface: 20400
+## Interface: 30000
 ## Title: _|cffCCCC88UTF|r
-## Author: Saiket
-## Version: 2.4.1
-## X-Date: 2008-07-06
-## X-Category: Chat/Communication
-## X-Email: saiket.wow@gmail.com
-## X-Website: http://groups.google.com/group/wow-saiket/web/_utf
-## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:UTF
-## X-Localizations: enUS
 ## Notes: Unicode input dialog and text replacement.
+## Author: Saiket
+## Version: 3.0.2.1
+## X-Date: 2008-09-07
+## X-Category: Chat/Communication
+## X-License: GPLv3
+## X-Email: saiket.wow@gmail.com
+## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons/UTF
+## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:UTF
+## X-RelSite-WoWI: 9336
+## X-Localizations: enUS
 ## SavedVariables: _UTFOptions
 ## OptionalDeps: _Dev
-## DefaultState: enabled
 Localization.lua
 
 _UTF.lua

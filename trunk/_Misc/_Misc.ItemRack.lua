@@ -12,6 +12,7 @@ local me = {
 		[ "1.Heal" ]  = 36; -- Champion of the Naaru
 		[ "2.Shock" ] = 39; -- Hand of A'dal
 		[ "3.Tank" ]  =  6; -- Knight
+		[ "Ashbringer" ] = 6; -- Knight
 	};
 };
 _Misc.ItemRack = me;
@@ -29,15 +30,6 @@ function me.EquipSet ( SetName )
 end
 
 
---[[****************************************************************************
-  * Function: _Misc.ItemRack.OnLoad                                            *
-  * Description: Makes modifications just after the addon is loaded.           *
-  ****************************************************************************]]
-function me.OnLoad ()
-	hooksecurefunc( ItemRack, "EquipSet", me.EquipSet );
-end
-
-
 
 
 --------------------------------------------------------------------------------
@@ -45,5 +37,7 @@ end
 -----------------------------
 
 do
-	_Misc.RegisterAddOnInitializer( "ItemRack", me.OnLoad );
+	_Misc.RegisterAddOnInitializer( "ItemRack", function ()
+		hooksecurefunc( ItemRack, "EquipSet", me.EquipSet );
+	end );
 end

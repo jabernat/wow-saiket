@@ -20,12 +20,10 @@ local L = _MiscLocalization;
 local me = CreateFrame( "Frame" );
 _Misc = me;
 
-me.SetItemRefBackup = SetItemRef;
-
 local AddOnInitializers = {};
 me.AddOnInitializers = AddOnInitializers;
-local ProtectedMethodQueue = {};
-me.ProtectedMethodQueue = ProtectedMethodQueue;
+local ProtectedFunctionQueue = {};
+me.ProtectedFunctionQueue = ProtectedFunctionQueue;
 me.InCombatLockdown = false;
 local Time = {
 	Hour = GetGameTime();
@@ -39,7 +37,6 @@ me.Time = Time;
 local AfkDndStatus = CreateFrame( "Frame", nil, UIParent );
 me.AfkDndStatus = AfkDndStatus;
 AfkDndStatus.Text = AfkDndStatus:CreateFontString( nil, "ARTWORK", "GameFontNormalHuge" );
-AfkDndStatus.Status = nil;
 
 
 
@@ -102,47 +99,18 @@ end
 
 
 --[[****************************************************************************
-  * Function: _Misc:RunProtectedMethod                                         *
-  * Description: Runs an arbitrary method if possible, or after combat ends.   *
+  * Function: _Misc:RunProtectedFunction                                       *
+  * Description: Runs an function, or stores it until after combat ends if it  *
+  *   calls protected functions.                                               *
   ****************************************************************************]]
 do
 	local tinsert = tinsert;
-	function me:RunProtectedMethod ( Method, ... )
-		if ( me.InCombatLockdown and self:IsProtected() ) then -- Store for later
-			tinsert( ProtectedMethodQueue, { Method, self, ... } );
+	function me:RunProtectedFunction ( Function, Protected )
+		if ( self.InCombatLockdown and Protected ) then -- Store for later
+			tinsert( self.ProtectedFunctionQueue, Function );
 		else
-			self[ Method ]( self, ... );
+			Function();
 		end
-	end
-end
---[[****************************************************************************
-  * Function: _Misc:SetPoint                                                   *
-  * Description: RunProtectedMethod shortcut for SetPoint.                     *
-  ****************************************************************************]]
-do
-	local RunProtectedMethod = me.RunProtectedMethod;
-	function me:SetPoint ( ... )
-		RunProtectedMethod( self, "SetPoint", ... );
-	end
-end
---[[****************************************************************************
-  * Function: _Misc:SetAllPoints                                               *
-  * Description: RunProtectedMethod shortcut for SetAllPoints.                 *
-  ****************************************************************************]]
-do
-	local RunProtectedMethod = me.RunProtectedMethod;
-	function me:SetAllPoints ( Frame )
-		RunProtectedMethod( self, "SetAllPoints", Frame );
-	end
-end
---[[****************************************************************************
-  * Function: _Misc:ClearAllPoints                                             *
-  * Description: RunProtectedMethod shortcut for ClearAllPoints.               *
-  ****************************************************************************]]
-do
-	local RunProtectedMethod = me.RunProtectedMethod;
-	function me:ClearAllPoints ()
-		RunProtectedMethod( self, "ClearAllPoints" );
 	end
 end
 --[[****************************************************************************
@@ -166,30 +134,33 @@ function me:RaidWarningFrameOnEvent ( Event, Message, Author, ... )
 	if ( Author ) then
 		Message = L.RAIDWARNING_FORMAT:format( Author, Message );
 	end
-	RaidWarningFrame_OnEvent( self, Event, Message, Author, ... );
+	return RaidWarningFrame_OnEvent( self, Event, Message, Author, ... );
 end
 --[[****************************************************************************
   * Function: _Misc.SetItemRef                                                 *
   * Description: Allows the UI to recognize "|Hurl:" as a hyperlink.           *
   ****************************************************************************]]
-function me.SetItemRef ( Link, Text, Button )
-	if ( Link:sub( 1, 3 ) == "url" ) then
-		Link = Link:sub( 5 );
-		local EditBox = DEFAULT_CHAT_FRAME.editBox;
-		if ( IsShiftKeyDown() and EditBox:IsVisible() ) then
-			EditBox:SetText( EditBox:GetText()..Link );
+do
+	local Backup = SetItemRef;
+	function me.SetItemRef ( Link, Text, Button, ... )
+		if ( Link:sub( 1, 3 ) == "url" ) then
+			Link = Link:sub( 5 );
+			local EditBox = DEFAULT_CHAT_FRAME.editBox;
+			if ( IsModifiedClick( "CHATLINK" ) and EditBox:IsVisible() ) then
+				EditBox:Insert( EditBox:GetText() );
+			end
+		else
+			return Backup( Link, Text, Button, ... );
 		end
-	else
-		me.SetItemRefBackup( Link, Text, Button );
 	end
 end
 
 
 --[[****************************************************************************
-  * Function: _Misc.LOOT_OPENED                                                *
+  * Function: _Misc:LOOT_OPENED                                                *
   * Description: Autoloots all items in fishing loot despite BoP status.       *
   ****************************************************************************]]
-function me:LOOT_OPENED ( Event, AutoLoot )
+function me:LOOT_OPENED ()
 	if ( IsFishingLoot() ) then
 		for Index = 1, GetNumLootItems() do
 			LootSlot( Index );
@@ -198,43 +169,35 @@ function me:LOOT_OPENED ( Event, AutoLoot )
 	end
 end
 --[[****************************************************************************
-  * Function: _Misc.CHAT_MSG_COMBAT_FACTION_CHANGE                             *
+  * Function: _Misc:COMBAT_TEXT_UPDATE                                         *
   ****************************************************************************]]
 do
 	local GetWatchedFactionInfo = GetWatchedFactionInfo;
-	function me:CHAT_MSG_COMBAT_FACTION_CHANGE ( Event, Message )
-		-- Auto-update the reputation bar
-		for _, Pattern in ipairs( L.FACTION_CHANGE_PATTERNS ) do
-			local Faction = select( 3, Message:find( Pattern ) );
-			if ( Faction ) then -- Message recognized
-				if ( Faction ~= GetWatchedFactionInfo() ) then
-					-- Different faction - swap to latest
-					for Index = 1, GetNumFactions() do
-						if ( Faction == GetFactionInfo( Index ) ) then
-							SetWatchedFactionIndex( Index );
-							break;
-						end
-					end
+	function me:COMBAT_TEXT_UPDATE ( Event, Type, Faction, Value )
+		if ( Type == "FACTION" and Faction ~= GetWatchedFactionInfo() ) then
+			for Index = 1, GetNumFactions() do
+				if ( Faction == GetFactionInfo( Index ) ) then
+					SetWatchedFactionIndex( Index );
+					break;
 				end
-				break;
 			end
 		end
 	end
 end
 --[[****************************************************************************
-  * Function: _Misc.TAXIMAP_OPENED                                             *
+  * Function: _Misc:TAXIMAP_OPENED                                             *
   ****************************************************************************]]
 function me:TAXIMAP_OPENED ()
 	Dismount();
 end
 --[[****************************************************************************
-  * Function: _Misc.ADDON_LOADED                                               *
+  * Function: _Misc:ADDON_LOADED                                               *
   ****************************************************************************]]
 function me:ADDON_LOADED ( Event, AddOn )
-	me.InitializeAddOn( AddOn );
+	self.InitializeAddOn( AddOn );
 end
 --[[****************************************************************************
-  * Function: _Misc.PLAYER_LOGIN                                               *
+  * Function: _Misc:PLAYER_LOGIN                                               *
   ****************************************************************************]]
 function me:PLAYER_LOGIN ()
 	me.FCF.UpdateStickyType();
@@ -250,12 +213,11 @@ end
   ****************************************************************************]]
 function me:PLAYER_REGEN_ENABLED ()
 	me.InCombatLockdown = false;
-	-- Combat lockdown over; set all stored points
-	for Index = 1, #ProtectedMethodQueue do
-		local Args = ProtectedMethodQueue[ Index ];
 
-		Args[ 2 ][ Args[ 1 ] ]( select( 2, unpack( Args ) ) );
-		ProtectedMethodQueue[ Index ] = nil;
+	-- Combat lockdown over; run all stored functions
+	for Index = 1, #ProtectedFunctionQueue do
+		ProtectedFunctionQueue[ Index ]();
+		ProtectedFunctionQueue[ Index ] = nil;
 	end
 end
 
@@ -360,35 +322,29 @@ end
   * Description: Updates the display based on the Status flag.                 *
   ****************************************************************************]]
 function AfkDndStatus:Update ()
-	if ( self.Status ) then
-		self.Text:SetText( self.Status );
+	local Status = ( UnitIsAFK( "player" ) and CHAT_FLAG_AFK )
+		or ( UnitIsDND( "player" ) and CHAT_FLAG_DND )
+		or nil;
+
+	if ( Status ) then
+		self.Text:SetText( Status );
 		self:Show();
 	else
 		self:Hide();
 	end
 end
 --[[****************************************************************************
-  * Function: _Misc.AfkDndStatus:CHAT_MSG_SYSTEM                               *
+  * Function: _Misc.AfkDndStatus:PLAYER_FLAGS_CHANGED                          *
   ****************************************************************************]]
-function AfkDndStatus:CHAT_MSG_SYSTEM ( Event, Message )
-	if ( Message:find( L.AFKDNDSTATUS_AFK_PATTERN ) ) then
-		self.Status = CHAT_FLAG_AFK;
-	elseif ( Message:find( L.AFKDNDSTATUS_DND_PATTERN ) ) then
-		self.Status = CHAT_FLAG_DND;
-	elseif ( Message == CLEARED_AFK or Message == CLEARED_DND ) then
-		self.Status = nil;
+function AfkDndStatus:PLAYER_FLAGS_CHANGED ( Event, UnitID )
+	if ( UnitID == "player" ) then
+		self:Update();
 	end
-
-	self:Update();
 end
 --[[****************************************************************************
   * Function: _Misc.AfkDndStatus:PLAYER_ENTERING_WORLD                         *
   ****************************************************************************]]
-function AfkDndStatus:PLAYER_ENTERING_WORLD ( Event, ... )
-	self.Status = ( UnitIsAFK( "player" ) and CHAT_FLAG_AFK )
-		or ( UnitIsDND( "player" ) and CHAT_FLAG_DND )
-		or nil;
-
+function AfkDndStatus:PLAYER_ENTERING_WORLD ()
 	self:Update();
 end
 --[[****************************************************************************
@@ -412,7 +368,7 @@ do
 	me:SetScript( "OnEvent", me.OnEvent );
 	me:SetScript( "OnUpdate", me.OnUpdate );
 
-	me:RegisterEvent( "CHAT_MSG_COMBAT_FACTION_CHANGE" );
+	me:RegisterEvent( "COMBAT_TEXT_UPDATE" );
 	me:RegisterEvent( "TAXIMAP_OPENED" );
 	me:RegisterEvent( "ADDON_LOADED" );
 	me:RegisterEvent( "PLAYER_LOGIN" );
@@ -423,14 +379,13 @@ do
 	AfkDndStatus:Hide();
 	AfkDndStatus:SetFrameStrata( "BACKGROUND" );
 	AfkDndStatus:SetScript( "OnEvent", AfkDndStatus.OnEvent );
-	AfkDndStatus:RegisterEvent( "CHAT_MSG_SYSTEM" );
+	AfkDndStatus:RegisterEvent( "PLAYER_FLAGS_CHANGED" );
 	AfkDndStatus:RegisterEvent( "PLAYER_ENTERING_WORLD" );
 	AfkDndStatus.Text:SetPoint( "BOTTOM", AutoFollowStatusText, "TOP" );
 
 	-- Create the time display
 	local TimeText = UIParent:CreateFontString( nil, "OVERLAY" );
 	TimeText:SetPoint( "TOPLEFT", UIParent );
-	TimeText:SetAlpha( 0.5 );
 	if ( IsAddOnLoaded( "_Dev" ) ) then
 		_Dev.Stats:SetPoint( "TOPLEFT", TimeText, "TOPRIGHT" );
 	end
@@ -439,6 +394,7 @@ do
 	else
 		TimeText:SetFontObject( NumberFontNormalSmall );
 	end
+	TimeText:SetAlpha( 0.5 );
 	Time.Text = TimeText;
 
 	-- Add undress button to dressupframe
@@ -458,20 +414,19 @@ do
 	local Button = CreateFrame( "Button", "_MiscFocusMouseoverButton", nil, "SecureActionButtonTemplate" );
 	Button:SetAttribute( "type", "macro" );
 	Button:SetAttribute( "macrotext", "/focus mouseover" ); -- Allow clearing focus when no mouseover
-	Button:SetScript( "OnEvent",
-		function ( self )
-			if ( not InCombatLockdown() ) then
-				self:UnregisterEvent( "UPDATE_BINDINGS" );
-				SetBindingClick( "CTRL-BUTTON1", "_MiscFocusMouseoverButton" );
-				SetOverrideBinding( self, true, "CTRL-SHIFT-BUTTON1", "CAMERAORSELECTORMOVE" );
-				SetOverrideBinding( self, true, "ALT-CTRL-BUTTON1", "CAMERAORSELECTORMOVE" );
-				self:RegisterEvent( "UPDATE_BINDINGS" );
-			end
-		end );
+	Button:SetScript( "OnEvent", function ( self )
+		if ( not InCombatLockdown() ) then
+			self:UnregisterEvent( "UPDATE_BINDINGS" );
+			SetBindingClick( "CTRL-BUTTON1", "_MiscFocusMouseoverButton" );
+			SetOverrideBinding( self, true, "CTRL-SHIFT-BUTTON1", "CAMERAORSELECTORMOVE" );
+			SetOverrideBinding( self, true, "ALT-CTRL-BUTTON1", "CAMERAORSELECTORMOVE" );
+			self:RegisterEvent( "UPDATE_BINDINGS" );
+		end
+	end );
 	Button:RegisterEvent( "UPDATE_BINDINGS" );
 
 
 	-- Hooks
-	SetItemRef = me.SetItemRef; -- Necessary hook; unknown link types cause errors
+	SetItemRef = me.SetItemRef;
 	RaidWarningFrame:SetScript( "OnEvent", me.RaidWarningFrameOnEvent );
 end

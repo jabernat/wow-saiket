@@ -100,7 +100,7 @@ function me.UpdateCombatLogPosition ()
 	_Clean:RunProtectedFunction( function ()
 		ChatFrame2:ClearAllPoints();
 		ChatFrame2:SetPoint( "BOTTOMLEFT", ChatFrame1, "BOTTOMRIGHT", 4, 0 );
-		ChatFrame2:SetPoint( "RIGHT", MultiBarLeft, "LEFT" );
+		ChatFrame2:SetPoint( "RIGHT", _Clean.ActionBar.BackdropRight, "LEFT", -2, 0 );
 	end, ChatFrame2:IsProtected() );
 end
 --[[****************************************************************************
@@ -110,8 +110,8 @@ end
 function me.UpdateDockPosition ()
 	_Clean:RunProtectedFunction( function ()
 		ChatFrame1:ClearAllPoints();
-		ChatFrame1:SetPoint( "BOTTOMLEFT", MultiBarBottomLeft, "TOPLEFT", 0, 4 );
-		ChatFrame1:SetPoint( "RIGHT", MultiBarBottomRight, "LEFT" );
+		ChatFrame1:SetPoint( "BOTTOMLEFT", _Clean.ActionBar.BackdropBottomLeft, "TOPLEFT", 0, 6 );
+		ChatFrame1:SetPoint( "RIGHT", _Clean.ActionBar.BackdropBottomRight, "LEFT" );
 	end, ChatFrame1:IsProtected() );
 end
 --[[****************************************************************************
@@ -206,7 +206,7 @@ function me:OnEvent ()
 	FCF_SetWindowName( ChatFrame1, GENERAL );
 	FCF_SetWindowColor( ChatFrame1, DEFAULT_CHATFRAME_COLOR.r, DEFAULT_CHATFRAME_COLOR.g, DEFAULT_CHATFRAME_COLOR.b );
 	FCF_SetWindowAlpha( ChatFrame1, DEFAULT_CHATFRAME_ALPHA );
-	FCF_SetChatWindowFontSize( ChatFrame2, 12 );
+	FCF_SetChatWindowFontSize( nil, ChatFrame2, 12 );
 	me.UpdateDockPosition();
 	me.Expand( ChatFrame1, false );
 	_Clean:RunProtectedFunction( function ()
@@ -222,7 +222,7 @@ function me:OnEvent ()
 	if ( not InCombatLockdown() ) then
 		FCF_UnDockFrame( ChatFrame2 );
 	end
-	FCF_SetChatWindowFontSize( ChatFrame2, 8 );
+	FCF_SetChatWindowFontSize( nil, ChatFrame2, 8 );
 	me.UpdateCombatLogPosition();
 	me.Expand( ChatFrame2, false );
 	_Clean:RunProtectedFunction( function ()
@@ -230,9 +230,13 @@ function me:OnEvent ()
 	end, ChatFrame2:IsProtected() );
 	FCF_SetLocked( ChatFrame2, 1 );
 
-	me:UnregisterEvent( "UPDATE_CHAT_WINDOWS" );
-	me.OnEvent = nil;
-	me:SetScript( "OnEvent", nil );
+	-- Move frames and tabs front of lowest-level frames
+	for _, ChatFrame in ipairs( ChatFrames ) do
+		ChatFrame:SetFrameStrata( "LOW" );
+	end
+	for _, TabFrame in ipairs( TabFrames ) do
+		TabFrame:SetFrameStrata( "LOW" );
+	end
 end
 
 
@@ -319,15 +323,15 @@ do
 		local Name = "ChatFrame"..Index;
 		local ChatFrame = _G[ Name ];
 		local TabFrame = _G[ Name.."Tab" ];
-		tinsert( ChatFrames, Index, ChatFrame );
-		tinsert( TabFrames, Index, TabFrame );
+		ChatFrames[ Index ] = ChatFrame;
+		TabFrames[ Index ] = TabFrame;
 
 		_Clean.HookScript( ChatFrame, "OnShow", me.ChatFrameOnShow );
 
 		-- Modify chat message frame
 		ChatFrame:SetMaxLines( me.MaxLines );
 		ChatFrame:SetFading( false );
-		FCF_SetChatWindowFontSize( ChatFrame, 12 );
+		FCF_SetChatWindowFontSize( nil, ChatFrame, 12 );
 
 
 		-- Save borders
@@ -372,20 +376,12 @@ do
 		ShrinkTabBorder( Name.."TabRight" );
 
 		-- Disable some chat frame functions
-		hooksecurefunc( _G[ Name.."TabDropDown" ], "initialize",
-			Tab.DropDownInitialize );
+		hooksecurefunc( _G[ Name.."TabDropDown" ], "initialize", Tab.DropDownInitialize );
 		DisabledMenuButtons[ TabFrame ]
 			= Index <= 2 and DisabledMenuButtonsLocked or DisabledMenuButtonsNormal;
 	end
 	ChatFrame1TabLeft:SetTexCoord( ChatFrame1TabMiddle:GetTexCoord() );
 	ChatFrame2TabRight:SetTexCoord( ChatFrame2TabMiddle:GetTexCoord() );
-
-
-	for _, Region in ipairs( { ChatFrameEditBox:GetRegions() } ) do
-		if ( Region:GetObjectType() == "Texture" ) then
-			Region:SetVertexColor( 0.5, 0.5, 0.5 );
-		end
-	end
 
 
 	-- Hooks

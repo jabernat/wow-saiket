@@ -20,4 +20,6 @@
 	<Binding name="_MISC_CAMERA_FLIP" runOnUp="true">
 		_Misc.Camera.FlipView();
 	</Binding>
+
+	<ModifiedClick action="_MISC_AUCTION_QUERY" default="ALT-BUTTON1"/>
 </Bindings>

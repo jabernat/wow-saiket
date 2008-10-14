@@ -219,9 +219,7 @@ do
 
 		if ( Depth == 0 ) then -- Clean up
 			Depth = nil;
-			for Type in pairs( Temp ) do
-				Temp[ Type ] = nil;
-			end
+			wipe( Temp );
 			if ( OverTime ) then
 				return L.DUMP_TIME_EXCEEDED;
 			end

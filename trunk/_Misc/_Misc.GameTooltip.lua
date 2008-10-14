@@ -1,14 +1,19 @@
 --[[****************************************************************************
   * _Misc by Saiket                                                            *
-  * _Misc.GameTooltip.lua - Modifies the main tooltip frame.                   *
+  * _Misc.GameTooltip.lua - Modifies the tooltip frames.                       *
   *                                                                            *
   * + Adds players' guild names to their unit tooltips.                        *
+  * + Adds the icon of items and spells to the left of ItemRefTooltip.         *
   ****************************************************************************]]
 
 
 local _Misc = _Misc;
 local L = _MiscLocalization;
-local me = {};
+local me = {
+	ItemRefTooltip = {
+		Icon = ItemRefTooltip:CreateTexture( nil, "ARTWORK" );
+	};
+};
 _Misc.GameTooltip = me;
 
 
@@ -26,9 +31,36 @@ function me:UpdateUnitGuild ()
 			local Text = _G[ self:GetName().."TextLeft2" ];
 			Text:SetFormattedText( L.GAMETOOLTIP_GUILD_FORMAT, GuildName );
 			Text:SetTextColor( GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b );
-			_Misc.RunProtectedMethod( self, "Show" ); -- Automatically resize
+			self:Show(); -- Automatically resize
 		end
 	end
+end
+--[[****************************************************************************
+  * Function: _Misc.GameTooltip.RegisterTooltip                                *
+  * Description: Hooks a tooltip to update its contents when set.              *
+  ****************************************************************************]]
+function me:RegisterTooltip ()
+	_Misc.HookScript( self, "OnTooltipSetUnit", me.UpdateUnitGuild );
+end
+
+
+--[[****************************************************************************
+  * Function: _Misc.GameTooltip.ItemRefTooltip.SetHyperlink                    *
+  * Description: Updates the new item icon texture to match the tooltip.       *
+  ****************************************************************************]]
+function me.ItemRefTooltip:SetHyperlink ( Link )
+	local Texture = nil;
+	if ( self:IsShown() ) then
+		if ( Link:match( "^item:" ) ) then
+			Texture = GetItemIcon( Link );
+		else
+			local ID = Link:match( "^spell:(%d+)" );
+			if ( ID ) then
+				Texture = select( 3, GetSpellInfo( ID ) );
+			end
+		end
+	end
+	me.ItemRefTooltip.Icon:SetTexture( Texture );
 end
 
 
@@ -39,6 +71,13 @@ end
 -----------------------------
 
 do
-	_Misc.HookScript( GameTooltip, "OnTooltipSetUnit", me.UpdateUnitGuild );
-	_Misc.HookScript( ItemRefTooltip, "OnTooltipSetUnit", me.UpdateUnitGuild );
+	me.RegisterTooltip( GameTooltip );
+	me.RegisterTooltip( ItemRefTooltip );
+
+	-- Generate the new ItemRefTooltip icon texture
+	me.ItemRefTooltip.Icon:SetWidth( 36 );
+	me.ItemRefTooltip.Icon:SetHeight( 36 );
+	me.ItemRefTooltip.Icon:SetPoint( "TOPRIGHT", ItemRefTooltip, "TOPLEFT", 2, -2 );
+
+	hooksecurefunc( ItemRefTooltip, "SetHyperlink", me.ItemRefTooltip.SetHyperlink );
 end

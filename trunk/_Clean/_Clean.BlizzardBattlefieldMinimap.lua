@@ -42,6 +42,21 @@ do
 	end
 end
 --[[****************************************************************************
+  * Function: _Clean.BlizzardBattlefieldMinimap:SetPoint                       *
+  * Description: Blocks unauthorized SetPoint calls.                           *
+  ****************************************************************************]]
+do
+	local Disabled = false;
+	function me:SetPoint ( ... )
+		if ( not Disabled ) then -- Restore alpha
+			Disabled = true;
+			self:ClearAllPoints();
+			self:SetPoint( "BOTTOMRIGHT", ChatFrame2Tab, "BOTTOMLEFT", 2, 0 );
+			Disabled = false;
+		end
+	end
+end
+--[[****************************************************************************
   * Function: _Clean.BlizzardBattlefieldMinimap.DropDownUpdate                 *
   * Description: Hooks zone map view selection to only allow in battlegrounds. *
   ****************************************************************************]]
@@ -50,18 +65,15 @@ function me.DropDownUpdate ()
 
 	UIDropDownMenu_SetSelectedValue( WorldMapZoneMinimapDropDown,
 		SHOW_BATTLEFIELD_MINIMAP );
-	UIDropDownMenu_SetText(
-		WorldMapZoneMinimapDropDown_GetText( SHOW_BATTLEFIELD_MINIMAP ),
-		WorldMapZoneMinimapDropDown );
+	UIDropDownMenu_SetText( WorldMapZoneMinimapDropDown,
+		WorldMapZoneMinimapDropDown_GetText( SHOW_BATTLEFIELD_MINIMAP ) );
 end
-
 --[[****************************************************************************
-  * Function: _Clean.BlizzardBattlefieldMinimap.TabManager                     *
-  * Description: Repositions the battlefield minimap tab.                      *
+  * Function: _Clean.BlizzardBattlefieldMinimap.SetOpacity                     *
+  * Description: Undoes custom alpha changes to the close button.              *
   ****************************************************************************]]
-function me.TabManager ()
-	BattlefieldMinimapTab:ClearAllPoints();
-	BattlefieldMinimapTab:SetPoint( "RIGHT", ChatFrame2Tab, "LEFT", 2, 0 );
+function me.SetOpacity ()
+	BattlefieldMinimapCloseButton:SetAlpha( 0.5 );
 end
 
 
@@ -83,13 +95,16 @@ do
 		BattlefieldMinimap:ClearAllPoints();
 		BattlefieldMinimap:SetPoint( "BOTTOMRIGHT", ChatFrame2, "TOPRIGHT", 6, -1 );
 
-		_Clean:AddPositionManager( me.TabManager );
-		me.TabManager();
-		BattlefieldMinimap:UnregisterEvent( "ADDON_LOADED" );
-		BattlefieldMinimapTab:SetUserPlaced( true );
+		local function ShrinkTabBorder ( Texture )
+			local Left, Top, _, _, Right = Texture:GetTexCoord();
+			Texture:SetTexCoord( Left, Right, Top, 0.9 );
+		end
+		ShrinkTabBorder( BattlefieldMinimapTabLeft );
+		ShrinkTabBorder( BattlefieldMinimapTabMiddle );
+		ShrinkTabBorder( BattlefieldMinimapTabRight );
 
 		BattlefieldMinimapCloseButton:ClearAllPoints();
-		BattlefieldMinimapCloseButton:SetPoint( "RIGHT", BattlefieldMinimapTabText, "LEFT", 8, 0 );
+		BattlefieldMinimapCloseButton:SetPoint( "RIGHT", BattlefieldMinimapTabText, "LEFT", 8, -2 );
 		BattlefieldMinimapCloseButton:SetFrameStrata( "MEDIUM" ); -- Just higher than tab
 		BattlefieldMinimapCloseButton:SetScale( 0.6 );
 		_Clean.AddLockedButton( BattlefieldMinimapCloseButton );
@@ -100,11 +115,13 @@ do
 		_Clean.AddLockedButton( BattlefieldMinimapTab );
 		hooksecurefunc( "BattlefieldMinimapDropDown_Initialize",
 			me.DropDownInitialize );
+		hooksecurefunc( BattlefieldMinimapTab, "SetPoint", me.SetPoint );
 
 		-- Lock the tab's alpha
 		DEFAULT_BATTLEFIELD_TAB_ALPHA = 0.5;
 		BattlefieldMinimapTab:SetAlpha( DEFAULT_BATTLEFIELD_TAB_ALPHA );
 		hooksecurefunc( BattlefieldMinimapTab, "SetAlpha", me.SetAlpha );
+		hooksecurefunc( "BattlefieldMinimap_SetOpacity", me.SetOpacity );
 
 		-- Lock show in battlegrounds setting
 		me.DropDownUpdate();

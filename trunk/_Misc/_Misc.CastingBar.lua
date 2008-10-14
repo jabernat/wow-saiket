@@ -31,23 +31,23 @@ end
 --[[****************************************************************************
   * Function: _Misc.CastingBar:PLAYER_ENTERING_WORLD                           *
   ****************************************************************************]]
-function me:PLAYER_ENTERING_WORLD ( _, ... )
+function me:PLAYER_ENTERING_WORLD ()
 	if ( UnitChannelInfo( "player" ) ) then
-		self:UNIT_SPELLCAST_CHANNEL_START( "UNIT_SPELLCAST_CHANNEL_START", ... );
+		self:UNIT_SPELLCAST_CHANNEL_START();
 	elseif ( UnitCastingInfo( "player" ) ) then
-		self:UNIT_SPELLCAST_START( "UNIT_SPELLCAST_START", ... );
+		self:UNIT_SPELLCAST_START();
 	end
 end
 --[[****************************************************************************
   * Function: _Misc.CastingBar:UNIT_SPELLCAST_START                            *
   ****************************************************************************]]
-function me:UNIT_SPELLCAST_START ( _, ... )
+function me:UNIT_SPELLCAST_START ()
 	me.SetIcon( select( 4, UnitCastingInfo( "player" ) ) );
 end
 --[[****************************************************************************
   * Function: _Misc.CastingBar:UNIT_SPELLCAST_CHANNEL_START                    *
   ****************************************************************************]]
-function me:UNIT_SPELLCAST_CHANNEL_START ( _, ... )
+function me:UNIT_SPELLCAST_CHANNEL_START ()
 	me.SetIcon( select( 4, UnitChannelInfo( "player" ) ) );
 end
 
@@ -73,16 +73,17 @@ do
 	local GetTime = GetTime;
 	local max = max;
 	function me:OnUpdate ()
-		local Time;
+		local SpellFunction;
 		local Parent = self:GetParent();
 		if ( Parent.casting ) then
-			Time = Parent.maxValue;
+			SpellFunction = UnitCastingInfo;
 		elseif ( Parent.channeling ) then
-			Time = Parent.endTime;
+			SpellFunction = UnitChannelInfo;
 		end
 
-		if ( Time ) then
-			self.TimeText:SetFormattedText( L.CASTINGBAR_TIMETEXT_FORMAT, max( 0, Time - GetTime() ) );
+		if ( SpellFunction ) then
+			self.TimeText:SetFormattedText( L.CASTINGBAR_TIMETEXT_FORMAT,
+				max( 0, select( 6, SpellFunction( "player" ) ) / 1000 - GetTime() ) );
 		end
 	end
 end

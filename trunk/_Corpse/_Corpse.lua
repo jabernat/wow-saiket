@@ -27,10 +27,6 @@ me.AddFriendSwapLast = nil;
 me.UIErrorsFrameOnEventBackup = UIErrorsFrame_OnEvent;
 
 
--- Commonly used functions
-local select = select;
-
-
 
 
 --[[****************************************************************************
@@ -72,7 +68,7 @@ function me.GetCorpseName ()
 	if ( GameTooltip:IsVisible() and GameTooltip:NumLines() <= 2 ) then
 		local Text = GameTooltipTextLeft1:GetText();
 		if ( Text ) then
-			Text = select( 3, Text:find( L.CORPSE_PATTERN ) );
+			Text = Text:match( L.CORPSE_PATTERN );
 			if ( Text ) then
 				return L.SERVER_DELIMITER:split( Text );
 			end
@@ -263,20 +259,20 @@ function me.MessageEventHandler ( Message )
 		if ( Message == L.FRIEND_IS_ENEMY ) then
 			return true;
 		else
-			Name = select( 3, Message:find( L.FRIEND_ADDED_PATTERN ) );
+			Name = Message:match( L.FRIEND_ADDED_PATTERN );
 			if ( Name and ( Name == me.AddFriendLast or Name == me.AddFriendSwapLast ) ) then
 				return true;
 			end
 		end
 	end
 	if ( me.InviteUnitLast ) then
-		Name = select( 3, Message:find( L.ENEMY_OFFLINE_PATTERN ) );
+		Name = Message:match( L.ENEMY_OFFLINE_PATTERN );
 		if ( Name and Name == me.InviteUnitLast ) then
 			return true;
 		end
 	end
 	if ( me.RemoveFriendLast or me.RemoveFriendSwapLast ) then
-		Name = select( 3, Message:find( L.FRIEND_REMOVED_PATTERN ) );
+		Name = Message:match( L.FRIEND_REMOVED_PATTERN );
 		if ( Name and ( Name == me.RemoveFriendLast or Name == me.RemoveFriendSwapLast ) ) then
 			return true;
 		end
@@ -302,7 +298,7 @@ function me:CHAT_MSG_SYSTEM ( _, Message )
 			me.SafelyUnregisterChatMsgSystem();
 			return;
 		else
-			local Name = select( 3, Message:find( L.FRIEND_ADDED_PATTERN ) );
+			local Name = Message:match( L.FRIEND_ADDED_PATTERN );
 			if ( Name ) then
 				-- Added successfully
 				if ( Name == me.AddFriendLast ) then
@@ -321,7 +317,7 @@ function me:CHAT_MSG_SYSTEM ( _, Message )
 	end
 
 	if ( me.InviteUnitLast ) then
-		local Name = select( 3, Message:find( L.ENEMY_OFFLINE_PATTERN ) );
+		local Name = Message:match( L.ENEMY_OFFLINE_PATTERN );
 		if ( Name ) then
 			if ( Name == me.InviteUnitLast ) then
 				-- Horde player is offline
@@ -339,7 +335,7 @@ function me:CHAT_MSG_SYSTEM ( _, Message )
 	end
 
 	if ( me.RemoveFriendLast ) then
-		local Name = select( 3, Message:find( L.FRIEND_REMOVED_PATTERN ) );
+		local Name = Message:match( L.FRIEND_REMOVED_PATTERN );
 		if ( Name ) then
 			if ( Name == me.RemoveFriendLast ) then
 				-- Temporary friend removed successfully

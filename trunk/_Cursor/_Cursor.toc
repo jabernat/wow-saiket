@@ -1,16 +1,19 @@
-## Interface: 20400
+## Interface: 30000
 ## Title: _|cffCCCC88Cursor|r
-## Author: Saiket
-## Version: 2.4.3.1
-## X-Date: 2008-08-04
-## X-Category: Interface Enhancements
-## X-Email: saiket.wow@gmail.com
-## X-Website: http://groups.google.com/group/wow-saiket/web/_cursor
-## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Cursor
 ## Notes: Adds custom effects to your cursor.
+## Author: Saiket
+## Version: 3.0.2.3
+## X-Date: 2008-10-04
+## X-Category: Interface Enhancements
+## X-License: GPLv3
+## X-Email: saiket.wow@gmail.com
+## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons/Cursor
+## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Cursor
+## X-RelSite-WoWI: 10531
+## X-Localizations: enUS
+## SavedVariables: _CursorOptions
 ## SavedVariablesPerCharacter: _CursorOptionsCharacter
 ## OptionalDeps: _Dev
-## DefaultState: enabled
 Localization.lua
 
 _Cursor.lua

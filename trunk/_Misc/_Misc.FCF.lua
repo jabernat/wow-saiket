@@ -7,8 +7,7 @@
   * + Enables the mousewheel for chat frames.                                  *
   *   + Support for keyboard speed modifiers. Use <Ctrl> to jump a full page   *
   *     up or down, and <Alt> to jump to the top or bottom.                    *
-  *   + If the scrollwheel is bound to an action with a modifier - such as     *
-  *     <Ctrl+MouseWheelDown>, that action will override scrolling.            *
+  *   + <Shift+MouseWheel> overrides scrolling.                                *
   *   + While mouselooking, <MouseWheelUp/Down> bindings will always override  *
   *     scrolling to support the default zooming binds.                        *
   * + The yell, channel and officer chat modes stick between messages.         *
@@ -45,26 +44,25 @@ local URLChatTypes = {
 };
 me.URLChatTypes = URLChatTypes;
 local URLFormats = {
-	' ([-_%w]+%.[-_%w]+%.[-_%w][^ <>"|]+) ?', -- Address with subdomain ("www")
-	' ?"([-_%w]+%.[-_%w]+%.[-_%w][^<>"|]+)" ?',
-	' ?<([-_%w]+%.[-_%w]+%.[-_%w][^<>"|]+)> ?',
+	" (%a[-_%w.]*%.%a%a+/?[^ <>\"{}|\\^~%[%]]*) ?", -- Address with domain name
+	" ?\"(%a[-_%w.]*%.%a%a+/?[^ <>\"{}|\\^~%[%]]*)\" ?",
+	" ?<(%a[-_%w.]*%.%a%a+/?[^ <>\"{}|\\^~%[%]]*)> ?",
 
-	' (%a+://[^ <>"|]+) ?', -- Address with protocol
-	' ?"(%a+://[^<>"|]+)" ?',
-	' ?<(%a+://[^<>"|]+)> ?',
+	" (%a+://[^ <>\"{}|\\^~%[%]]+) ?", -- Address with protocol
+	" ?\"(%a+://[^ <>\"{}|\\^~%[%]]+)\" ?",
+	" ?<(%a+://[^ <>\"{}|\\^~%[%]]+)> ?",
 
-	' ([-_%w][-_%w%.]+[-_%w]@[-_%w][-_%w%.]+[-_%w]) ?', -- Email address
-	' ?"([-_%w][-_%w%.]+[-_%w]@[-_%w][-_%w%.]+[-_%w])" ?',
-	' ?<([-_%w][-_%w%.]+[-_%w]@[-_%w][-_%w%.]+[-_%w])> ?',
+	" (%a[-_%w%.]*@%a[-_%w.]*%.%a%a+) ?", -- Email address
+	" ?\"(%a[-_%w%.]*@%a[-_%w.]*%.%a%a+)\" ?",
+	" ?<(%a[-_%w%.]*@%a[-_%w.]*%.%a%a+)> ?",
 
-	' (%d+%.%d+%.%d+%.%d+:%d+) ?', -- IP address with port
-	' (%d+%.%d+%.%d+%.%d+) ?' -- IP address
+	" (%d+%.%d+%.%d+%.%d+:?%d*) ?" -- IP address with optional port
 };
 me.URLFormats = URLFormats;
+local ChatFrames = {};
+me.ChatFrames = ChatFrames;
 local AddMessageMethods = {};
 me.AddMessageMethods = AddMessageMethods;
-me.MessageEventHandlerBackup = ChatFrame_MessageEventHandler;
-me.SystemEventHandlerBackup = ChatFrame_SystemEventHandler;
 me.IsCameraMoving = false;
 me.IsMouseLooking = false;
 me.IsShiftKeyDown = false;
@@ -102,7 +100,7 @@ do
 		Text = " "..Text;
 
 		for _, Format in ipairs( URLFormats ) do
-			if ( Text:find( Format ) ) then
+			if ( Text:match( Format ) ) then
 				Text = Text:gsub( Format, L.FCF_URL_FORMAT );
 			end
 		end
@@ -114,31 +112,33 @@ end
 
 
 --[[****************************************************************************
-  * Function: _Misc.FCF.MessageEventHandler                                    *
+  * Function: _Misc.FCF:MessageEventHandler                                    *
   * Description: Catches chat events (hooks ChatFrame_MessageEventHandler).    *
   ****************************************************************************]]
 do
 	local ParseMessageURLs = me.ParseMessageURLs;
-	function me.MessageEventHandler ( Event )
+	local Backup = ChatFrame_MessageEventHandler;
+	function me:MessageEventHandler ( Event, Message, ... )
 		if ( URLChatTypes[ Event ] ) then
-			arg1 = ParseMessageURLs( arg1 );
+			Message = ParseMessageURLs( Message );
 		end
 
-		me.MessageEventHandlerBackup( Event );
+		return Backup( self, Event, Message, ... );
 	end
 end
 --[[****************************************************************************
-  * Function: _Misc.FCF.SystemEventHandler                                     *
+  * Function: _Misc.FCF:SystemEventHandler                                     *
   * Description: Catches chat events (hooks ChatFrame_SystemEventHandler).     *
   ****************************************************************************]]
 do
 	local ParseMessageURLs = me.ParseMessageURLs;
-	function me.SystemEventHandler ( Event )
+	local Backup = ChatFrame_SystemEventHandler;
+	function me:SystemEventHandler ( Event, Message, ... )
 		if ( URLChatTypes[ Event ] ) then
-			arg1 = ParseMessageURLs( arg1 );
+			Message = ParseMessageURLs( Message );
 		end
 
-		me.SystemEventHandlerBackup( Event );
+		return Backup( self, Event, Message, ... );
 	end
 end
 --[[****************************************************************************
@@ -148,8 +148,9 @@ end
 do
 	local GetSpellInfo = GetSpellInfo;
 	local select = select;
+	local Texture;
 	function me.AddMessageSpellGsub ( Match )
-		local Texture = select( 3, GetSpellInfo( Match ) );
+		Texture = select( 3, GetSpellInfo( Match ) );
 		return Texture and "|T"..Texture..":0|t|Hspell:"..Match;
 	end
 end
@@ -159,8 +160,9 @@ end
   ****************************************************************************]]
 do
 	local GetItemIcon = GetItemIcon;
+	local Texture;
 	function me.AddMessageItemGsub ( Match )
-		local Texture = GetItemIcon( Match );
+		Texture = GetItemIcon( Match );
 		return Texture and "|T"..Texture..":0|t|H"..Match.."|h[";
 	end
 end
@@ -183,7 +185,7 @@ do
 			end
 			-- Add item and spell icons
 			Text = Text:gsub( "|Hspell:(%d+)", AddMessageSpellGsub ):gsub( "|H(item:[^|]+)|h%[", AddMessageItemGsub );
-			if ( not Text:find( L.FCF_TIMESTAMP_PATTERN ) and TimeIsKnown() ) then
+			if ( not Text:match( L.FCF_TIMESTAMP_PATTERN ) and TimeIsKnown() ) then
 				Text = L.FCF_TIMESTAMP_FORMAT:format( GetGameTimeString(), Text );
 			end
 			AddMessageMethods[ self ]( self, Text, ... );
@@ -198,11 +200,9 @@ end
   ****************************************************************************]]
 function me.UpdateScrolling ()
 	local Enable = not me.IsCameraMoving and not me.IsMouseLooking and not me.IsShiftKeyDown;
-	for Index = 1, NUM_CHAT_WINDOWS do
-		local ChatFrame = _G[ "ChatFrame"..Index ];
-		
+
+	for ChatFrame in pairs( ChatFrames ) do
 		ChatFrame:SetScript( "OnMouseWheel", Enable and me.OnMouseWheel or nil );
-		_Misc.RunProtectedMethod( ChatFrame, "EnableMouseWheel", Enable );
 	end
 end
 --[[****************************************************************************
@@ -299,8 +299,10 @@ do
 	for Index = 1, NUM_CHAT_WINDOWS do
 		local ChatFrame = _G[ "ChatFrame"..Index ];
 
+		ChatFrames[ ChatFrame ] = true;
 		AddMessageMethods[ ChatFrame ] = ChatFrame.AddMessage;
 		ChatFrame.AddMessage = me.AddMessage;
+		ChatFrame:EnableMouseWheel( true );
 	end
 	me.UpdateScrolling();
 
