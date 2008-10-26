@@ -72,9 +72,9 @@ end
 do
 	local GetTime = GetTime;
 	local max = max;
+	local SpellFunction, Parent, Time;
 	function me:OnUpdate ()
-		local SpellFunction;
-		local Parent = self:GetParent();
+		Parent = self:GetParent();
 		if ( Parent.casting ) then
 			SpellFunction = UnitCastingInfo;
 		elseif ( Parent.channeling ) then
@@ -82,8 +82,9 @@ do
 		end
 
 		if ( SpellFunction ) then
+			Time = select( 6, SpellFunction( "player" ) );
 			self.TimeText:SetFormattedText( L.CASTINGBAR_TIMETEXT_FORMAT,
-				max( 0, select( 6, SpellFunction( "player" ) ) / 1000 - GetTime() ) );
+				Time and max( 0, Time / 1000 - GetTime() ) or 0 );
 		end
 	end
 end

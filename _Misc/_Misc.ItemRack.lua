@@ -9,7 +9,7 @@
 local _Misc = _Misc;
 local me = {
 	SetTitles = {
-		[ "1.Heal" ]  = 36; -- Champion of the Naaru
+		[ "1.Heal" ]  = 98; -- Ambassador
 		[ "2.Shock" ] = 39; -- Hand of A'dal
 		[ "3.Tank" ]  =  6; -- Knight
 		[ "Ashbringer" ] = 6; -- Knight
