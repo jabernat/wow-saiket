@@ -156,7 +156,7 @@ do
 	QualityMenu:SetPoint( "LEFT", -16, 0 );
 	QualityMenu:SetPoint( "RIGHT" );
 	_G[ QualityMenu:GetName().."Middle" ]:SetPoint( "RIGHT", -16, 0 );
-	UIDropDownMenu_JustifyText( "LEFT", QualityMenu );
+	UIDropDownMenu_JustifyText( QualityMenu, "LEFT" );
 	UIDropDownMenu_Initialize( QualityMenu, QualityMenu.Initialize );
 	UIDropDownMenu_SetSelectedValue( QualityMenu, -1 );
 	Label = QualityMenu:CreateFontString( nil, "OVERLAY", "GameFontHighlightSmall" );
@@ -245,7 +245,7 @@ do
 	Label:SetPoint( "RIGHT", ReqLevelMaxEditBox, "LEFT", -6, 0 );
 	Label:SetText( "-" );
 
-	local CategorySection = CreateFrame( "Frame", "GBSCategorySection", Pane, "OptionFrameBoxTemplate" );
+	local CategorySection = CreateFrame( "Frame", "GBSCategorySection", Pane, "OptionsBoxTemplate" );
 	_G[ CategorySection:GetName().."Title" ]:SetText( "Item Category" );
 	CategorySection:SetPoint( "TOP", ItemLevelMinEditBox, "BOTTOM", 0, -38 );
 	CategorySection:SetPoint( "LEFT" );
@@ -288,7 +288,7 @@ do
 	TypeMenu:SetPoint( "LEFT", CategorySection, -8, 0 );
 	TypeMenu:SetPoint( "RIGHT", CategorySection, -8, 0 );
 	_G[ TypeMenu:GetName().."Middle" ]:SetPoint( "RIGHT", -16, 0 );
-	UIDropDownMenu_JustifyText( "LEFT", TypeMenu );
+	UIDropDownMenu_JustifyText( TypeMenu, "LEFT" );
 	UIDropDownMenu_Initialize( TypeMenu, TypeMenu.Initialize );
 	UIDropDownMenu_SetSelectedValue( TypeMenu, -1 );
 	Label = TypeMenu:CreateFontString( nil, "OVERLAY", "GameFontHighlightSmall" );
@@ -327,7 +327,7 @@ do
 	SubTypeMenu:SetPoint( "LEFT", CategorySection, -8, 0 );
 	SubTypeMenu:SetPoint( "RIGHT", CategorySection, -8, 0 );
 	_G[ SubTypeMenu:GetName().."Middle" ]:SetPoint( "RIGHT", -16, 0 );
-	UIDropDownMenu_JustifyText( "LEFT", SubTypeMenu );
+	UIDropDownMenu_JustifyText( SubTypeMenu, "LEFT" );
 	UIDropDownMenu_Initialize( SubTypeMenu, SubTypeMenu.Initialize );
 	UIDropDownMenu_SetSelectedValue( SubTypeMenu, -1 );
 	Label = SubTypeMenu:CreateFontString( nil, "OVERLAY", "GameFontHighlightSmall" );
@@ -364,7 +364,7 @@ do
 	SlotMenu:SetPoint( "LEFT", CategorySection, -8, 0 );
 	SlotMenu:SetPoint( "RIGHT", CategorySection, -8, 0 );
 	_G[ SlotMenu:GetName().."Middle" ]:SetPoint( "RIGHT", -16, 0 );
-	UIDropDownMenu_JustifyText( "LEFT", SlotMenu );
+	UIDropDownMenu_JustifyText( SlotMenu, "LEFT" );
 	UIDropDownMenu_Initialize( SlotMenu, SlotMenu.Initialize );
 	UIDropDownMenu_SetSelectedValue( SlotMenu, -1 );
 	Label = SlotMenu:CreateFontString( nil, "OVERLAY", "GameFontHighlightSmall" );
