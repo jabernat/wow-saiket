@@ -1,0 +1,8 @@
+## Interface: 20400
+## Title: GuildBank|cffccccccSearch|r
+## Author: Harros
+## Version: 2.4.3
+## Notes: Adds a search filter to the guild bank.
+## LoadOnDemand: 1
+## LoadWith: Blizzard_GuildBankUI
+GuildBankSearch.lua
