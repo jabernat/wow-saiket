@@ -4,6 +4,9 @@
   ****************************************************************************]]
 
 
+do --NOTE(Comment out file.)
+	return;
+end
 local _Clean = _Clean;
 local me = CreateFrame( "Frame" );
 _Clean.Skin = me;
