@@ -141,6 +141,8 @@ do
 	HelpMicroButton:ClearAllPoints();
 	HelpMicroButton:SetPoint( "TOPLEFT", GameMenuFrameHeader, "TOPRIGHT", -GameMenuFrameHeader:GetWidth() / 4, 19 );
 	HelpMicroButton:SetAlpha( 1.0 );
+	--NOTE(Temporary fix to keep the button out of the way.)
+	HelpMicroButton:EnableMouse( false );
 
 
 	-- Hooks

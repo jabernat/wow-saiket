@@ -280,4 +280,9 @@ do
 	hooksecurefunc( "ActionButton_OnUpdate", me.ActionButtonOnUpdate );
 	hooksecurefunc( "ActionButton_UpdateUsable", me.ActionButtonUpdateUsable );
 	_Clean:AddPositionManager( me.ActionBarManager );
+
+	--NOTE(Temporary hook to catch what moves the bar.)
+	hooksecurefunc( MultiBarRight, "SetPoint", function ( self, ... )
+		error( "Something moved MultiBarRight!" );
+	end );
 end
