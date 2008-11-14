@@ -65,7 +65,7 @@ end
   * Description: Gets the name from a corpse's tooltip, or nil of no corpse.   *
   ****************************************************************************]]
 function me.GetCorpseName ()
-	if ( GameTooltip:IsVisible() and GameTooltip:NumLines() <= 2 ) then
+	if ( not UnitExists( "mouseover" ) and GameTooltip:IsVisible() and GameTooltip:NumLines() <= 2 ) then
 		local Text = GameTooltipTextLeft1:GetText();
 		if ( Text ) then
 			Text = Text:match( L.CORPSE_PATTERN );
