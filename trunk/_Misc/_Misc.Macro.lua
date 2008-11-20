@@ -194,6 +194,53 @@ function me.EnableErrorsSlashCommand ( Input )
 end
 
 
+--[[****************************************************************************
+  * Function: _Misc.Macro.Mount                                                *
+  * Description: Uses the mount with the given name depending on location.     *
+  ****************************************************************************]]
+do
+	local GetCompanionInfo = GetCompanionInfo;
+	local select = select;
+	function me.Mount ( NameGround, NameFlying )
+		if ( IsMounted() ) then
+			Dismount();
+		elseif ( NameGround and IsOutdoors() ) then -- Can probably mount up
+			-- Determine if flying is enabled
+			local Flyable;
+			if ( GetCurrentMapContinent() == 4 ) then -- Northrend
+				if ( GetSpellInfo( "Cold Weather Flying" ) ) then
+					if ( GetMapInfo() == "Dalaran" and GetSubZoneText() ~= "Krasus' Landing" ) then
+						Flyable = false; -- Mounting disallowed in Dalaran
+					end
+				else -- Not trained
+					Flyable = false;
+				end
+			end
+
+			if ( Flyable == nil ) then -- Normal rules
+				Flyable = SecureCmdOptionParse( "[flyable]1" ); -- No direct API for this information
+			end
+
+			-- Find and use mount
+			local Name = ( Flyable and NameFlying or NameGround ):trim():lower();
+			for Index = 1, GetNumCompanions( "MOUNT" ) do
+				if ( select( 2, GetCompanionInfo( "MOUNT", Index ) ):lower() == Name ) then
+					CallCompanion( "MOUNT", Index );
+					return true;
+				end
+			end
+		end
+	end
+end
+--[[****************************************************************************
+  * Function: _Misc.Macro.MountSlashCommand                                    *
+  * Description: Slash command chat handler for _Misc.Macro.Mount.             *
+  ****************************************************************************]]
+function me.MountSlashCommand ( Input )
+	me.Mount( ( ";" ):split( Input ) );
+end
+
+
 
 
 --------------------------------------------------------------------------------
@@ -213,4 +260,6 @@ do
 
 	err = me.EnableErrors;
 	SlashCmdList[ "ERR" ] = me.EnableErrorsSlashCommand;
+
+	SlashCmdList[ "MOUNT" ] = me.MountSlashCommand;
 end

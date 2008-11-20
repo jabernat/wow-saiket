@@ -87,4 +87,5 @@ do
 	SLASH_PRINT1 = "/print";
 	SLASH_ALERT1 = "/alert";
 	SLASH_ERR1 = "/err";
+	SLASH_MOUNT1 = "/mount";
 end
