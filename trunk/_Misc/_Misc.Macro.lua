@@ -209,8 +209,14 @@ do
 			local Flyable;
 			if ( GetCurrentMapContinent() == 4 ) then -- Northrend
 				if ( GetSpellInfo( "Cold Weather Flying" ) ) then
-					if ( GetMapInfo() == "Dalaran" and GetSubZoneText() ~= "Krasus' Landing" ) then
-						Flyable = false; -- Mounting disallowed in Dalaran
+					local Map = GetZoneText();
+					if ( Map == "Dalaran" and GetSubZoneText() ~= "Krasus' Landing" ) then
+						SetMapToCurrentZone();
+						if ( GetCurrentMapDungeonLevel() == 1 ) then
+							Flyable = false; -- Mounting disallowed in upper Dalaran
+						end
+					elseif ( Map == "Wintergrasp" ) then
+						Flyable = false; -- Mounting disallowed in Wintergrasp
 					end
 				else -- Not trained
 					Flyable = false;
@@ -218,7 +224,7 @@ do
 			end
 
 			if ( Flyable == nil ) then -- Normal rules
-				Flyable = SecureCmdOptionParse( "[flyable]1" ); -- No direct API for this information
+				Flyable = IsFlyableArea();
 			end
 
 			-- Find and use mount
