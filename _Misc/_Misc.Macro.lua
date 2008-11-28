@@ -204,6 +204,8 @@ do
 	function me.Mount ( NameGround, NameFlying )
 		if ( IsMounted() ) then
 			Dismount();
+		elseif ( CanExitVehicle() ) then
+			VehicleExit();
 		elseif ( NameGround and IsOutdoors() ) then -- Can probably mount up
 			-- Determine if flying is enabled
 			local Flyable;
