@@ -2,8 +2,8 @@
 ## Title: _|cffCCCC88Misc|r
 ## Notes: Compilation of small changes.
 ## Author: Saiket
-## Version: 3.0.3.1
-## X-Date: 2008-11-28
+## Version: 3.0.3.2
+## X-Date: 2008-12-06
 ## X-Category: Miscellaneous, Interface Enhancements
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
@@ -26,8 +26,6 @@ _Misc.QuestLog.lua
 _Misc.PushToTalk.lua
 _Misc.WorldMapFrame.lua
 _Misc.ColorPickerFrame.xml
-
-_Misc.ItemRack.lua
 
 _Misc.BlizzardAuctionUI.lua
 _Misc.BlizzardCombatText.lua
