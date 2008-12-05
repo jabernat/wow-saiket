@@ -56,7 +56,7 @@ function me:LibDBIconRegister ( Name, Object, DB )
 		local Highlight = _Clean.Colors.Highlight;
 		Frame.icon:SetGradientAlpha( "VERTICAL", Highlight.r, Highlight.g, Highlight.b, Highlight.a, Background.r, Background.g, Background.b, Background.a );
 
-		--me.OnTextUpdate();
+		me.OnUpdate();
 		Frame.SetPoint = _Clean.NilFunction;
 	end
 end
