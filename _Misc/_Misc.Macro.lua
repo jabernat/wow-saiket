@@ -205,7 +205,9 @@ do
 		if ( IsMounted() ) then
 			Dismount();
 		elseif ( CanExitVehicle() ) then
-			VehicleExit();
+			if ( IsControlKeyDown() ) then
+				VehicleExit();
+			end
 		elseif ( NameGround and IsOutdoors() ) then -- Can probably mount up
 			-- Determine if flying is enabled
 			local Flyable;
