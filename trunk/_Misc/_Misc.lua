@@ -6,7 +6,6 @@
   *   the messages similarly to /rs.                                           *
   * + The faction watch bar will automatically show the most recently active   *
   *   faction.                                                                 *
-  * + Dismounts you automatically when the taxi map is opened.                 *
   * + Adds a status label to the middle of the screen indicating when the      *
   *   player goes AFK or DND.                                                  *
   * + Autoloots all quality fishing loot.                                      *
@@ -183,12 +182,6 @@ do
 			end
 		end
 	end
-end
---[[****************************************************************************
-  * Function: _Misc:TAXIMAP_OPENED                                             *
-  ****************************************************************************]]
-function me:TAXIMAP_OPENED ()
-	Dismount();
 end
 --[[****************************************************************************
   * Function: _Misc:ADDON_LOADED                                               *
@@ -369,7 +362,6 @@ do
 	me:SetScript( "OnUpdate", me.OnUpdate );
 
 	me:RegisterEvent( "COMBAT_TEXT_UPDATE" );
-	me:RegisterEvent( "TAXIMAP_OPENED" );
 	me:RegisterEvent( "ADDON_LOADED" );
 	me:RegisterEvent( "PLAYER_LOGIN" );
 	me:RegisterEvent( "LOOT_OPENED" );
