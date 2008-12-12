@@ -2,8 +2,8 @@
 ## Title: _|cffCCCC88Misc|r
 ## Notes: Compilation of small changes.
 ## Author: Saiket
-## Version: 3.0.3.2
-## X-Date: 2008-12-06
+## Version: 3.0.3.3
+## X-Date: 2008-12-11
 ## X-Category: Miscellaneous, Interface Enhancements
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
