@@ -1,28 +1,14 @@
 --[[****************************************************************************
   * _Clean by Saiket                                                           *
-  * _Clean.ActionBar.lua - Slide the action bars along the corners of the      *
-  *   screen so that they still align when the scaling changes. Also, the      *
-  *   backgrounds are removed to free more screen real-estate.                 *
+  * _Clean.ActionBar.lua - Modifies the action bars and their buttons.         *
   *                                                                            *
-  * + Removes spacing between the action button grids.                         *
-  * + Shrinks all action bars and makes them slightly transparent.             *
-  * + Gets rid of backgrounds on action bars.                                  *
-  * + Moves the aura bar to where the cluster of UI panel buttons was, and     *
-  *   removes those panel buttons from view.                                   *
-  * + Repositions the pet action bar to just below the center of the screen.   *
-  * + Only shows the backgrounds of buttons when actions are being dragged.    *
   * + Colors action buttons red when out of range.                             *
   ****************************************************************************]]
 
 
 local _Clean = _Clean;
-local me = {};
+local me = CreateFrame( "Frame", nil, _Clean );
 _Clean.ActionBar = me;
-
-local ActionBarLeft = CreateFrame( "Frame" );
-me.ActionBarLeft = ActionBarLeft;
-local ActionBarRight = CreateFrame( "Frame" );
-me.ActionBarRight = ActionBarRight;
 
 local BackdropBottomLeft = _Clean.Backdrop.Create( UIParent );
 me.BackdropBottomLeft = BackdropBottomLeft;
@@ -30,16 +16,6 @@ local BackdropBottomRight = _Clean.Backdrop.Create( UIParent );
 me.BackdropBottomRight = BackdropBottomRight;
 local BackdropRight = _Clean.Backdrop.Create( UIParent );
 me.BackdropRight = BackdropRight;
-
-local Bars = {
-	ActionBarLeft,
-	ActionBarRight,
-	MultiBarBottomLeft,
-	MultiBarBottomRight,
-	MultiBarLeft,
-	MultiBarRight
-};
-me.Bars = Bars;
 
 local Icons = {};
 
@@ -102,22 +78,40 @@ do
 end
 
 
+
+
 --[[****************************************************************************
-  * Function: _Clean.ActionBar.ActionBarManager                                *
-  * Description: Manages the left and right action bars' positions.            *
+  * Function: _Clean.ActionBar:OnEvent                                         *
+  * Description: Positions parts of the UI around bars once they are created.  *
   ****************************************************************************]]
-function me.ActionBarManager ()
-	-- Move the whole UI up to accomodate reputation and experience bars
-	local Offset = ( ( ReputationWatchBar:IsShown() or 0 ) + ( MainMenuExpBar:IsShown() or 0 ) ) * _Clean.MainMenuBar.StatusBarHeight;
+function me:OnEvent ()
+	me:UnregisterEvent( "PLAYER_LOGIN" );
+	me:SetScript( "OnEvent", nil );
+	me.OnEvent = nil;
 
-	_Clean:RunProtectedFunction( function ()
-		ActionButton1:ClearAllPoints();
-		ActionButton1:SetPoint( "BOTTOMLEFT", UIParent, 0, Offset );
+	-- Add backdrops
+	local Backdrop = _Clean.ActionBar.BackdropBottomLeft;
+	Backdrop:SetPoint( "BOTTOMLEFT", Dominos.Frame:Get( 1 ) );
+	Backdrop:SetPoint( "TOPRIGHT", Dominos.Frame:Get( 6 ), _Clean.Backdrop.Padding, _Clean.Backdrop.Padding );
 
-		MainMenuBarBackpackButton:ClearAllPoints();
-		MainMenuBarBackpackButton:SetPoint( "BOTTOM", ActionButton1 );
-		MainMenuBarBackpackButton:SetPoint( "RIGHT", UIParent );
-	end, ActionButton1:IsProtected() or MainMenuBarBackpackButton:IsProtected() );
+	local Backdrop = _Clean.ActionBar.BackdropBottomRight;
+	Backdrop:SetPoint( "BOTTOMRIGHT", Dominos.Frame:Get( "bags" ) );
+	Backdrop:SetPoint( "TOPLEFT", Dominos.Frame:Get( 5 ), -_Clean.Backdrop.Padding, _Clean.Backdrop.Padding );
+
+	local Backdrop = _Clean.ActionBar.BackdropRight;
+	Backdrop:SetPoint( "BOTTOMRIGHT", BackdropBottomRight, "TOPRIGHT" );
+	Backdrop:SetPoint( "TOPLEFT", MultiBarLeftButton4, -_Clean.Backdrop.Padding, _Clean.Backdrop.Padding );
+
+	-- Fix for Dominos to allow paging only between bar one and unshown bars.
+	for Index in pairs( VIEWABLE_ACTION_BAR_PAGES ) do
+		VIEWABLE_ACTION_BAR_PAGES[ Index ] = nil;
+	end
+	VIEWABLE_ACTION_BAR_PAGES[ 1 ] = 1;
+	for Index = 2, Dominos:NumBars() do
+		if ( Dominos.Frame:Get( Index ).sets.hidden ) then
+			VIEWABLE_ACTION_BAR_PAGES[ Index ] = 1;
+		end
+	end
 end
 
 
@@ -128,32 +122,10 @@ end
 -----------------------------
 
 do
-	local ButtonSize = ActionButton1:GetWidth();
-	local BarSize = ButtonSize * NUM_MULTIBAR_BUTTONS;
-
-	-- Make the bars less obtrusive
-	MainMenuBarArtFrame:SetAlpha( 0.75 );
-	for _, Frame in ipairs( Bars ) do
-		Frame:SetAlpha( 0.75 );
-	end
-	MainMenuBar:SetScale( 0.75 );
-	for _, Frame in ipairs( Bars ) do
-		Frame:SetScale( 0.75 );
-	end
+	me:SetScript( "OnEvent", me.OnEvent );
+	me:RegisterEvent( "PLAYER_LOGIN" );
 
 
-	-- Remove spacing between buttons
-	ActionButton1:SetParent( ActionBarLeft );
-	for Index = 2, NUM_MULTIBAR_BUTTONS do
-		local Last = Index - 1;
-		local ActionButton = _G[ "ActionButton"..Index ];
-		ActionButton:SetParent( ActionBarLeft );
-		ActionButton:SetPoint( "LEFT", "ActionButton"..Last, "RIGHT" );
-		_G[ "MultiBarBottomLeftButton"..Index ]:SetPoint( "LEFT", "MultiBarBottomLeftButton"..Last, "RIGHT" );
-		_G[ "MultiBarBottomRightButton"..Index ]:SetPoint( "LEFT", "MultiBarBottomRightButton"..Last, "RIGHT" );
-		_G[ "MultiBarLeftButton"..Index ]:SetPoint( "TOP", "MultiBarLeftButton"..Last, "BOTTOM" );
-		_G[ "MultiBarRightButton"..Index ]:SetPoint( "TOP", "MultiBarRightButton"..Last, "BOTTOM" );
-	end
 	-- Remove icon borders on buttons
 	for Index = 1, NUM_MULTIBAR_BUTTONS do
 		me.ActionButtonModify( "ActionButton", Index );
@@ -164,125 +136,31 @@ do
 	end
 
 	-- Shapeshift bar
-	ShapeshiftBarFrame:SetScript( "OnShow", nil ); -- Note: Prevents managed frames handling on SetParent
-	ShapeshiftBarFrame:SetScript( "OnHide", nil );
-	ShapeshiftBarFrame:SetParent( ActionBarRight );
-	ShapeshiftBarFrame:EnableMouse( false );
-	ShapeshiftBarFrame:ClearAllPoints();
-	ShapeshiftBarFrame:SetPoint( "TOPLEFT", ActionBarRight );
-	ShapeshiftBarFrame:SetPoint( "BOTTOM", ActionBarRight );
-	ShapeshiftButton1:SetPoint( "LEFT", ShapeshiftBarFrame );
-	for Index = NUM_SHAPESHIFT_SLOTS, 1, -1 do
-		local Button = _G[ "ShapeshiftButton"..Index ];
-		Button:SetWidth( ButtonSize );
-		Button:SetHeight( ButtonSize );
-		Button:SetScale( 0.75 );
+	for Index = 1, NUM_SHAPESHIFT_SLOTS do
 		_Clean.RemoveButtonIconBorder( _G[ "ShapeshiftButton"..Index.."Icon" ] );
 		_G[ "ShapeshiftButton"..Index.."NormalTexture" ]:SetTexture();
-		if ( Index > 1 ) then
-			Button:SetPoint( "LEFT", "ShapeshiftButton"..( Index - 1 ), "RIGHT", 4, 0 );
-		end
 	end
 
 	-- Bag buttons
 	local LastButton = MainMenuBarBackpackButton;
-	LastButton:SetParent( ActionBarRight );
-	LastButton:SetWidth( ButtonSize );
-	LastButton:SetHeight( ButtonSize );
 	_Clean.RemoveButtonIconBorder( MainMenuBarBackpackButtonIconTexture );
 	MainMenuBarBackpackButtonNormalTexture:SetTexture();
 	for Index = 0, NUM_BAG_SLOTS - 1 do
-		local Button = _G[ "CharacterBag"..Index.."Slot" ];
-		Button:SetParent( ActionBarRight );
-		Button:SetPoint( "RIGHT", LastButton, "LEFT" );
-		Button:SetWidth( ButtonSize );
-		Button:SetHeight( ButtonSize );
 		_Clean.RemoveButtonIconBorder( _G[ "CharacterBag"..Index.."SlotIconTexture" ] );
 		_G[ "CharacterBag"..Index.."SlotNormalTexture" ]:SetTexture();
-		LastButton = Button;
 	end
+
 	-- Keyring
+	local LastBag = _G[ "CharacterBag"..( NUM_BAG_SLOTS - 1 ).."Slot" ];
 	KeyRingButton:ClearAllPoints();
-	KeyRingButton:SetPoint( "LEFT", LastButton );
-	KeyRingButton:SetParent( LastButton );
-	KeyRingButton:SetWidth( 12 );
+	KeyRingButton:SetPoint( "TOPLEFT", LastBag );
+	KeyRingButton:SetPoint( "BOTTOM", LastBag );
+	KeyRingButton:SetParent( LastBag );
+	KeyRingButton:SetWidth( 8 );
 	KeyRingButton:GetNormalTexture():SetTexCoord( 0.15, 0.45, 0.1, 0.52 );
-
-
-	-- Resize bar frames
-	ActionBarLeft:SetWidth( BarSize );
-	ActionBarLeft:SetHeight( ButtonSize );
-	ActionBarRight:SetWidth( BarSize );
-	ActionBarRight:SetHeight( ButtonSize );
-	MultiBarBottomLeft:SetWidth( BarSize );
-	MultiBarBottomLeft:SetHeight( ButtonSize );
-	MultiBarBottomRight:SetWidth( BarSize );
-	MultiBarBottomRight:SetHeight( ButtonSize );
-	MultiBarLeft:SetHeight( BarSize );
-	MultiBarLeft:SetWidth( ButtonSize );
-	MultiBarRight:SetHeight( BarSize );
-	MultiBarRight:SetWidth( ButtonSize );
-
-	-- Anchor bars together
-	ActionBarLeft:SetPoint( "BOTTOMLEFT", ActionButton1 );
-	ActionBarRight:SetPoint( "BOTTOMRIGHT", MainMenuBarBackpackButton );
-
-	MultiBarBottomLeft:ClearAllPoints();
-	MultiBarBottomLeft:SetPoint( "BOTTOMLEFT", ActionBarLeft, "TOPLEFT" );
-
-	MultiBarBottomRight:ClearAllPoints();
-	MultiBarBottomRight:SetPoint( "BOTTOMRIGHT", ActionBarRight, "TOPRIGHT" );
-
-	MultiBarRight:ClearAllPoints();
-	MultiBarRight:SetPoint( "BOTTOMRIGHT", MultiBarBottomRight, "TOPRIGHT" );
-
-	MultiBarLeft:ClearAllPoints();
-	MultiBarLeft:SetPoint( "BOTTOMRIGHT", MultiBarRight, "BOTTOMLEFT" );
-
-
-	-- Add backdrops
-	ActionBarLeft:SetParent( BackdropBottomLeft );
-	MultiBarBottomLeft:SetParent( BackdropBottomLeft );
-	BackdropBottomLeft:SetPoint( "BOTTOMLEFT", ActionBarLeft );
-	BackdropBottomLeft:SetPoint( "TOPRIGHT", MultiBarBottomLeft, _Clean.Backdrop.Padding, _Clean.Backdrop.Padding );
-
-	ActionBarRight:SetParent( BackdropBottomRight );
-	MultiBarBottomRight:SetParent( BackdropBottomRight );
-	BackdropBottomRight:SetPoint( "BOTTOMRIGHT", ActionBarRight );
-	BackdropBottomRight:SetPoint( "TOPLEFT", MultiBarBottomRight, -_Clean.Backdrop.Padding, _Clean.Backdrop.Padding );
-
-	MultiBarRight:SetParent( BackdropRight );
-	MultiBarLeft:SetParent( BackdropRight );
-	BackdropRight:SetPoint( "BOTTOMRIGHT", BackdropBottomRight, "TOPRIGHT" );
-	BackdropRight:SetPoint( "TOPLEFT", MultiBarLeftButton4, -_Clean.Backdrop.Padding, _Clean.Backdrop.Padding );
-
-
-	-- Remove art
-	ShapeshiftBarLeft:SetTexture();
-	ShapeshiftBarLeft:Hide();
-	ShapeshiftBarRight:SetTexture();
-	ShapeshiftBarRight:Hide();
-	ShapeshiftBarMiddle:SetTexture();
-	ShapeshiftBarMiddle:Hide();
-
-	PetActionBarFrame:EnableMouse( false );
-	for Index = 0, 1 do
-		local Texture = _G[ "SlidingActionBarTexture"..Index ];
-		Texture:SetTexture();
-		Texture:Hide();
-	end
-
+	KeyRingButton:Show();
 
 	-- Hooks
-	UIPARENT_MANAGED_FRAME_POSITIONS[ "MultiBarBottomLeft" ] = nil;
-	UIPARENT_MANAGED_FRAME_POSITIONS[ "MultiBarRight" ] = nil;
-	UIPARENT_MANAGED_FRAME_POSITIONS[ "ShapeshiftBarFrame" ] = nil;
 	hooksecurefunc( "ActionButton_OnUpdate", me.ActionButtonOnUpdate );
 	hooksecurefunc( "ActionButton_UpdateUsable", me.ActionButtonUpdateUsable );
-	_Clean:AddPositionManager( me.ActionBarManager );
-
-	--NOTE(Temporary hook to catch what moves the bar.)
-	hooksecurefunc( MultiBarRight, "SetPoint", function ( self, ... )
-		error( "Something moved MultiBarRight!" );
-	end );
 end

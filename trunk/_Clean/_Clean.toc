@@ -2,8 +2,8 @@
 ## Title: _|cffCCCC88Clean|r
 ## Notes: Change the UI's look and feel.
 ## Author: Saiket
-## Version: 3.0.3.1
-## X-Date: 2008-12-05
+## Version: 3.0.3.2
+## X-Date: 2008-12-12
 ## X-Category: Frame Modification
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
@@ -11,7 +11,8 @@
 ## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Clean
 ## X-Localizations: enUS
 ## SavedVariables: _CleanOptions
-## OptionalDeps: _Dev, DBM_API, ItemRack, BugSack
+## RequiredDeps: Dominos
+## OptionalDeps: _Dev, DBM_API, ItemRack, BugSack, LibSharedMedia-3.0
 Localization.lua
 
 _Clean.lua
@@ -22,7 +23,6 @@ _Clean.CastingBar.lua
 _Clean.Crosshairs.lua
 _Clean.FCF.lua
 _Clean.General.lua
-_Clean.MainMenuBar.lua
 _Clean.Minimap.lua
 _Clean.Skin.lua
 _Clean.WorldStateFrame.lua

@@ -4,7 +4,6 @@
   ****************************************************************************]]
 
 
-local L;
 local _Clean = _Clean;
 local me = CreateFrame( "Frame", nil, _Clean );
 _Clean.LibSharedMedia = me;
@@ -14,7 +13,7 @@ _Clean.LibSharedMedia = me;
 
 --[[****************************************************************************
   * Function: _Clean.LibSharedMedia:OnEvent                                    *
-  * Description: Adds an addon's initializer function to the initializer list. *
+  * Description: Adds new media to LibSharedMedia when it's loaded.            *
   ****************************************************************************]]
 function me:OnEvent ()
 	local LibSharedMedia = LibStub( "LibSharedMedia-3.0", true );

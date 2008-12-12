@@ -62,6 +62,15 @@ do
 	TicketStatusFrame:SetScale( 0.85 );
 	TicketStatusFrame:SetAlpha( 0.75 );
 
+	-- Add a button to open the help window to the main menu
+	local Button = CreateFrame( "Button", "_CleanHelpButton", GameMenuFrame, "MainMenuBarMicroButton" );
+	Button:SetPoint( "TOPRIGHT", GameMenuFrame, -50, 28 );
+	Button:SetScale( 0.7 );
+	Button:SetScript( "OnClick", ToggleHelpFrame );
+	LoadMicroButtonTextures( Button, "Help" );
+	Button.tooltipText = HELP_BUTTON;
+	Button.newbieText = NEWBIE_TOOLTIP_HELP;
+
 	UIPARENT_MANAGED_FRAME_POSITIONS[ "PossessBarFrame" ] = nil;
 	_Clean:AddPositionManager( me.PetBarManager );
 	hooksecurefunc( "GameTooltip_SetDefaultAnchor", me.GameTooltipSetDefaultAnchor );
