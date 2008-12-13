@@ -123,6 +123,7 @@ do
 	MiniMapTrackingBackground:SetTexture();
 	MiniMapTrackingIcon:SetAllPoints( MiniMapTracking );
 	MiniMapTrackingIcon:SetGradientAlpha( "VERTICAL", Background.r, Background.g, Background.b, Background.a, Foreground.r, Foreground.g, Foreground.b, Foreground.a );
+	MiniMapTrackingButtonShine:SetAllPoints();
 	_Clean.RemoveButtonIconBorder( MiniMapTrackingIcon );
 	MiniMapTrackingButton:SetScript( "OnMouseUp", nil );
 	MiniMapTrackingButton:SetScript( "OnMouseDown", nil );
