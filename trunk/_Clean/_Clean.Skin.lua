@@ -7,6 +7,8 @@
 do --NOTE(Comment out file.)
 	return;
 end
+message( "WARNING! Skin module active!" );
+
 local _Clean = _Clean;
 local me = CreateFrame( "Frame" );
 _Clean.Skin = me;
