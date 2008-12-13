@@ -187,6 +187,19 @@ do
 	end
 end
 --[[****************************************************************************
+  * Function: _Misc.FCF.AddMessageAchievementGsub                              *
+  * Description: Callback for gsub to add achievement icons.                   *
+  ****************************************************************************]]
+do
+	local GetAchievementInfo = GetAchievementInfo;
+	local select = select;
+	local Texture;
+	function me.AddMessageAchievementGsub ( ID, Data )
+		Texture = select( 10, GetAchievementInfo( ID ) );
+		return Texture and "|T"..Texture..":0|t|Hachievement:"..ID..Data.."|h[";
+	end
+end
+--[[****************************************************************************
   * Function: _Misc.FCF.AddMessage                                             *
   * Description: Hook to catch links in messages added by the UI and not by    *
 	*   normal chat messages.                                                    *
@@ -194,6 +207,7 @@ end
 do
 	local AddMessageSpellGsub = me.AddMessageSpellGsub;
 	local AddMessageItemGsub = me.AddMessageItemGsub;
+	local AddMessageAchievementGsub = me.AddMessageAchievementGsub;
 	local ParseMessageURLs = me.ParseMessageURLs;
 	local TimeIsKnown = _Misc.Time.IsKnown;
 	local GetGameTimeString = _Misc.Time.GetGameTimeString;
@@ -205,6 +219,8 @@ do
 			end
 			-- Add item and spell icons
 			Text = Text:gsub( "|Hspell:(%d+)", AddMessageSpellGsub ):gsub( "|H(item:[^|]+)|h%[", AddMessageItemGsub );
+			-- Add achievement icons
+			Text = Text:gsub( "|Hachievement:(%d+)([^|]*)|h%[", AddMessageAchievementGsub );
 			if ( not Text:match( L.FCF_TIMESTAMP_PATTERN ) and TimeIsKnown() ) then
 				Text = L.FCF_TIMESTAMP_FORMAT:format( GetGameTimeString(), Text );
 			end

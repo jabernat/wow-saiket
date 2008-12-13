@@ -57,6 +57,11 @@ function me.ItemRefTooltip:SetHyperlink ( Link )
 			local ID = Link:match( "^spell:(%d+)" );
 			if ( ID ) then
 				Texture = select( 3, GetSpellInfo( ID ) );
+			else
+				ID = Link:match( "^achievement:(%d+)" );
+				if ( ID ) then
+					Texture = select( 10, GetAchievementInfo( ID ) );
+				end
 			end
 		end
 	end
