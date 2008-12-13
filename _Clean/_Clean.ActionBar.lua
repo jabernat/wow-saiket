@@ -17,6 +17,8 @@ me.BackdropBottomRight = BackdropBottomRight;
 local BackdropRight = _Clean.Backdrop.Create( UIParent );
 me.BackdropRight = BackdropRight;
 
+me.DominosProfile = "_Clean";
+
 local Icons = {};
 
 
@@ -93,17 +95,36 @@ function me:OnEvent ()
 	me.OnEvent = nil;
 
 	-- Add backdrops
-	local Backdrop = _Clean.ActionBar.BackdropBottomLeft;
-	Backdrop:SetPoint( "BOTTOMLEFT", Dominos.Frame:Get( 1 ) );
-	Backdrop:SetPoint( "TOPRIGHT", Dominos.Frame:Get( 6 ), _Clean.Backdrop.Padding, _Clean.Backdrop.Padding );
+	if ( Dominos:MatchProfile( me.DominosProfile ) ) then
+		if ( Dominos.db:GetCurrentProfile() ~= me.DominosProfile ) then
+			Dominos:SetProfile( me.DominosProfile );
+		end
 
-	local Backdrop = _Clean.ActionBar.BackdropBottomRight;
-	Backdrop:SetPoint( "BOTTOMRIGHT", Dominos.Frame:Get( "bags" ) );
-	Backdrop:SetPoint( "TOPLEFT", Dominos.Frame:Get( 5 ), -_Clean.Backdrop.Padding, _Clean.Backdrop.Padding );
+		local Backdrop = _Clean.ActionBar.BackdropBottomLeft;
+		Backdrop:SetPoint( "BOTTOMLEFT", Dominos.Frame:Get( 1 ) );
+		Backdrop:SetPoint( "TOPRIGHT", Dominos.Frame:Get( 6 ), _Clean.Backdrop.Padding, _Clean.Backdrop.Padding );
 
-	local Backdrop = _Clean.ActionBar.BackdropRight;
-	Backdrop:SetPoint( "BOTTOMRIGHT", BackdropBottomRight, "TOPRIGHT" );
-	Backdrop:SetPoint( "TOPLEFT", MultiBarLeftButton4, -_Clean.Backdrop.Padding, _Clean.Backdrop.Padding );
+		Backdrop = _Clean.ActionBar.BackdropBottomRight;
+		Backdrop:SetPoint( "BOTTOMRIGHT", Dominos.Frame:Get( "bags" ) );
+		Backdrop:SetPoint( "TOPLEFT", Dominos.Frame:Get( 5 ), -_Clean.Backdrop.Padding, _Clean.Backdrop.Padding );
+
+		Backdrop = _Clean.ActionBar.BackdropRight;
+		Backdrop:SetPoint( "BOTTOMRIGHT", BackdropBottomRight, "TOPRIGHT" );
+		Backdrop:SetPoint( "TOPLEFT", MultiBarLeftButton4, -_Clean.Backdrop.Padding, _Clean.Backdrop.Padding );
+	else -- Temporary setup so the game doesn't crash
+		local Backdrop = _Clean.ActionBar.BackdropBottomLeft;
+		Backdrop:SetPoint( "BOTTOMLEFT", UIParent );
+		Backdrop:SetPoint( "TOPRIGHT", UIParent, "BOTTOMLEFT", 1, 72 );
+
+		Backdrop = _Clean.ActionBar.BackdropBottomRight;
+		Backdrop:SetPoint( "BOTTOMRIGHT", UIParent );
+		Backdrop:SetPoint( "TOPLEFT", UIParent, "BOTTOMRIGHT", -1, 72 );
+
+		Backdrop = _Clean.ActionBar.BackdropRight;
+		Backdrop:SetPoint( "BOTTOMRIGHT", BackdropBottomRight, "TOPRIGHT" );
+		Backdrop:SetWidth( 1 );
+		Backdrop:SetHeight( 120 );
+	end
 end
 
 
