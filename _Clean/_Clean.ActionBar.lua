@@ -55,6 +55,9 @@ do
 	function me.ActionButtonUpdateUsable ()
 		self = this;
 		Action = self.action;
+		if ( not Action ) then -- Note: Prevents error when saving sets in Dominos
+			return;
+		end
 		Icon = Icons[ self ];
 		if ( not Icon ) then
 			Icon = _G[ self:GetName().."Icon" ];
@@ -101,17 +104,6 @@ function me:OnEvent ()
 	local Backdrop = _Clean.ActionBar.BackdropRight;
 	Backdrop:SetPoint( "BOTTOMRIGHT", BackdropBottomRight, "TOPRIGHT" );
 	Backdrop:SetPoint( "TOPLEFT", MultiBarLeftButton4, -_Clean.Backdrop.Padding, _Clean.Backdrop.Padding );
-
-	-- Fix for Dominos to allow paging only between bar one and unshown bars.
-	for Index in pairs( VIEWABLE_ACTION_BAR_PAGES ) do
-		VIEWABLE_ACTION_BAR_PAGES[ Index ] = nil;
-	end
-	VIEWABLE_ACTION_BAR_PAGES[ 1 ] = 1;
-	for Index = 2, Dominos:NumBars() do
-		if ( Dominos.Frame:Get( Index ).sets.hidden ) then
-			VIEWABLE_ACTION_BAR_PAGES[ Index ] = 1;
-		end
-	end
 end
 
 
@@ -124,7 +116,6 @@ end
 do
 	me:SetScript( "OnEvent", me.OnEvent );
 	me:RegisterEvent( "PLAYER_LOGIN" );
-
 
 	-- Remove icon borders on buttons
 	for Index = 1, NUM_MULTIBAR_BUTTONS do
