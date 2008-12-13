@@ -44,19 +44,29 @@ local URLChatTypes = {
 };
 me.URLChatTypes = URLChatTypes;
 local URLFormats = {
-	" (%a[-_%w.]*%.%a%a+/?[^ <>\"{}|\\^~%[%]]*) ?", -- Address with domain name
-	" ?\"(%a[-_%w.]*%.%a%a+/?[^ <>\"{}|\\^~%[%]]*)\" ?",
-	" ?<(%a[-_%w.]*%.%a%a+/?[^ <>\"{}|\\^~%[%]]*)> ?",
+	-- Address with domain name
+	" (%a[-_%w.]*%.%a%a+)(/[^ <>\"{}|\\^~%[%]]*) ?",
+	" ?\"(%a[-_%w.]*%.%a%a+)(/[^ <>\"{}|\\^~%[%]]*)\" ?",
+	" ?<(%a[-_%w.]*%.%a%a+)(/[^ <>\"{}|\\^~%[%]]*)> ?",
+	" (%a[-_%w]*%.%a[-_%w]*%.%a%a+) ?", -- Require a subdomain if path ommited
+	" ?\"(%a[-_%w]*%.%a[-_%w]*%.%a%a+)\" ?",
+	" ?<(%a[-_%w]*%.%a[-_%w]*%.%a%a+)> ?",
 
-	" (%a+://[^ <>\"{}|\\^~%[%]]+) ?", -- Address with protocol
-	" ?\"(%a+://[^ <>\"{}|\\^~%[%]]+)\" ?",
-	" ?<(%a+://[^ <>\"{}|\\^~%[%]]+)> ?",
+	-- Address with protocol
+	" (%a+://)([^ <>\"{}|\\^~%[%]]+) ?",
+	" ?\"(%a+://)([^ <>\"{}|\\^~%[%]]+)\" ?",
+	" ?<(%a+://)([^ <>\"{}|\\^~%[%]]+)> ?",
 
-	" (%a[-_%w%.]*@%a[-_%w.]*%.%a%a+) ?", -- Email address
+	-- Email address
+	" (%a[-_%w%.]*@%a[-_%w.]*%.%a%a+) ?",
 	" ?\"(%a[-_%w%.]*@%a[-_%w.]*%.%a%a+)\" ?",
 	" ?<(%a[-_%w%.]*@%a[-_%w.]*%.%a%a+)> ?",
 
-	" (%d+%.%d+%.%d+%.%d+:?%d*) ?" -- IP address with optional port
+	-- IP address with optional port
+	" (%d%d?%d?%.%d%d?%d?%.%d%d?%d?%.%d%d?%d?:?%d*)(/[^ <>\"{}|\\^~%[%]]*) ?", -- Path
+	" ?<(%d%d?%d?%.%d%d?%d?%.%d%d?%d?%.%d%d?%d?:?%d*)(/[^ <>\"{}|\\^~%[%]]*)> ?",
+	" (%d%d?%d?%.%d%d?%d?%.%d%d?%d?%.%d%d?%d?:?%d*) ?", -- No path
+	" ?<(%d%d?%d?%.%d%d?%d?%.%d%d?%d?%.%d%d?%d?:?%d*)> ?"
 };
 me.URLFormats = URLFormats;
 local ChatFrames = {};
@@ -95,13 +105,23 @@ end
   ****************************************************************************]]
 do
 	local ipairs = ipairs;
+	local function GsubReplace ( Domain, Path )
+		-- Note: Prevent elipses from matching the subdomain patterns
+		if ( not Domain:find( "..", 1, true ) ) then
+			if ( Path ) then
+				return L.FCF_URL_FORMAT:format( Domain..Path );
+			else
+				return L.FCF_URL_FORMAT:format( Domain );
+			end
+		end
+	end
 	function me.ParseMessageURLs ( Text )
 		-- Ensure that links at the start of the message are recognized
 		Text = " "..Text;
 
 		for _, Format in ipairs( URLFormats ) do
 			if ( Text:match( Format ) ) then
-				Text = Text:gsub( Format, L.FCF_URL_FORMAT );
+				Text = Text:gsub( Format, GsubReplace );
 			end
 		end
 

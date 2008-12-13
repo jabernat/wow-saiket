@@ -145,8 +145,12 @@ do
 		if ( Link:sub( 1, 3 ) == "url" ) then
 			Link = Link:sub( 5 );
 			local EditBox = DEFAULT_CHAT_FRAME.editBox;
-			if ( IsModifiedClick( "CHATLINK" ) and EditBox:IsVisible() ) then
-				EditBox:Insert( EditBox:GetText() );
+			if ( IsModifiedClick( "CHATLINK" ) ) then
+				if ( EditBox:IsShown() ) then
+					EditBox:Insert( Link );
+				else
+					ChatFrame_OpenChat( Link );
+				end
 			end
 		else
 			return Backup( Link, Text, Button, ... );

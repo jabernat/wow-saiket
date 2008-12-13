@@ -27,7 +27,7 @@ do
 			-- FCF
 			FCF_TIMESTAMP_FORMAT = GRAY_FONT_COLOR_CODE.."[%s]|r %s"; -- TimeString, Message
 			FCF_TIMESTAMP_PATTERN = "^"..GRAY_FONT_COLOR_CODE.."%[[%d?][%d?]:[%d?][%d?]:[%d?][%d?]%]|r ";
-			FCF_URL_FORMAT = " "..LIGHTYELLOW_FONT_COLOR_CODE.."|Hurl:%1|h<%1>|h|r "; -- URL
+			FCF_URL_FORMAT = " "..LIGHTYELLOW_FONT_COLOR_CODE.."|Hurl:%1$s|h<%1$s>|h|r "; -- URL
 
 
 			-- QuestLog
