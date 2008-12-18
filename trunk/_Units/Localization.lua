@@ -5,6 +5,10 @@
 
 
 do
+
+	local Title = "_|cffcccc88Units"..FONT_COLOR_CODE_CLOSE;
+
+
 	_UnitsLocalization = setmetatable(
 		{
 			STATUSMONITOR_MANA_NOT_AVAILABLE = "N/A";
@@ -19,6 +23,9 @@ do
 				[ 4 ] = ""; -- "Good";
 				[ 5 ] = ""; -- "Excellent";
 			};
+
+			GRID_LAYOUT_GROUP = Title..": Groups";
+			GRID_LAYOUT_CLASS = Title..": Classes";
 		}, {
 			__index = function ( self, Key )
 				rawset( self, Key, Key );

@@ -27,7 +27,7 @@ me.DropDown = CreateFrame( "Frame", "_UnitsDropDown", UIParent, "UIDropDownMenuT
   *   removes it from the initializer list.                                    *
   ****************************************************************************]]
 function me.InitializeAddOn ( Name )
-	Name = strupper( Name ); -- For case insensitive file systems (Windows')
+	Name = Name:upper(); -- For case insensitive file systems (Windows')
 	if ( AddOnInitializers[ Name ] and IsAddOnLoaded( Name ) ) then
 		AddOnInitializers[ Name ]();
 		AddOnInitializers[ Name ] = nil;
@@ -39,7 +39,12 @@ end
   * Description: Adds an addon's initializer function to the initializer list. *
   ****************************************************************************]]
 function me.RegisterAddOnInitializer ( Name, Initializer )
-	AddOnInitializers[ strupper( Name ) ] = Initializer;
+	if ( IsAddOnLoaded( Name ) ) then
+		Initializer();
+		return true;
+	else
+		AddOnInitializers[ Name:upper() ] = Initializer;
+	end
 end
 
 
