@@ -28,27 +28,6 @@ do
 end
 
 
---[[****************************************************************************
-  * Function: _Units.PitBull.OnLoad                                            *
-  * Description: Makes modifications just after the addon is loaded.           *
-  ****************************************************************************]]
-function me.OnLoad ()
-	-- Hook PitBull frame creation
-	me.CreateUnitFrameBackup = PitBull.CreateUnitFrame;
-	PitBull.CreateUnitFrame = me.CreateUnitFrame;
-
-	-- Add hook to all existing frames
-	local Index = 1;
-	local Frame = PitBullUnitFrame1;
-	while ( Frame ) do
-		Frame.menu = _Units.ShowGenericMenu;
-
-		Index = Index + 1;
-		Frame = _G[ "PitBullUnitFrame"..Index ];
-	end
-end
-
-
 
 
 --------------------------------------------------------------------------------
@@ -56,5 +35,19 @@ end
 -----------------------------
 
 do
-	_Units.RegisterAddOnInitializer( "PitBull", me.OnLoad );
+	_Units.RegisterAddOnInitializer( "PitBull", function ()
+		-- Hook PitBull frame creation
+		me.CreateUnitFrameBackup = PitBull.CreateUnitFrame;
+		PitBull.CreateUnitFrame = me.CreateUnitFrame;
+
+		-- Add hook to all existing frames
+		local Index = 1;
+		local Frame = PitBullUnitFrame1;
+		while ( Frame ) do
+			Frame.menu = _Units.ShowGenericMenu;
+	
+			Index = Index + 1;
+			Frame = _G[ "PitBullUnitFrame"..Index ];
+		end
+	end );
 end

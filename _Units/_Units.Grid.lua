@@ -6,6 +6,7 @@
   ****************************************************************************]]
 
 
+local L = _UnitsLocalization;
 local _Units = _Units;
 local me = {};
 _Units.Grid = me;
@@ -22,19 +23,6 @@ function me:GridFrameInitialize ()
 end
 
 
---[[****************************************************************************
-  * Function: _Units.Grid.OnLoad                                               *
-  * Description: Makes modifications just after the addon is loaded.           *
-  ****************************************************************************]]
-function me.OnLoad ()
-	-- Hook Grid frames
-	hooksecurefunc( GridFrame, "InitialConfigFunction", me.GridFrameInitialize );
-
-	-- Add hook to all existing frames
-	GridFrame:WithAllFrames( function ( self ) me.GridFrameInitialize( self.frame ); end );
-end
-
-
 
 
 --------------------------------------------------------------------------------
@@ -42,5 +30,45 @@ end
 -----------------------------
 
 do
-	_Units.RegisterAddOnInitializer( "Grid", me.OnLoad );
+	_Units.RegisterAddOnInitializer( "Grid", function ()
+		-- Hook Grid frame creation
+		hooksecurefunc( GridFrame, "InitialConfigFunction", me.GridFrameInitialize );
+
+		-- Add hook to all existing frames
+		GridFrame:WithAllFrames( function ( self ) me.GridFrameInitialize( self.frame ); end );
+
+		-- Add better layouts that include pets from all classes
+		GridLayout:AddLayout( L.GRID_LAYOUT_CLASS, {
+			{
+				--groupFilter = "WARLOCK,HUNTER",
+				isPetGroup = true,
+				filterOnPet = true,
+			},
+			{ groupFilter = "WARRIOR"; },
+			{ groupFilter = "PRIEST"; },
+			{ groupFilter = "DRUID"; },
+			{ groupFilter = "PALADIN"; },
+			{ groupFilter = "SHAMAN"; },
+			{ groupFilter = "MAGE"; },
+			{ groupFilter = "WARLOCK"; },
+			{ groupFilter = "HUNTER"; },
+			{ groupFilter = "ROGUE"; },
+			{ groupFilter = "DEATHKNIGHT"; },
+		} );
+		GridLayout:AddLayout( L.GRID_LAYOUT_GROUP, {
+			{
+				--groupFilter = "WARLOCK,HUNTER",
+				isPetGroup = true,
+				filterOnPet = true,
+			},
+			{ groupFilter = "1"; },
+			{ groupFilter = "2"; },
+			{ groupFilter = "3"; },
+			{ groupFilter = "4"; },
+			{ groupFilter = "5"; },
+			{ groupFilter = "6"; },
+			{ groupFilter = "7"; },
+			{ groupFilter = "8"; },
+		} );
+	end );
 end

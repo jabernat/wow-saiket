@@ -24,6 +24,11 @@ function me:OnUpdate ()
 			Tooltip:SetOwner( GameTooltip, "ANCHOR_PRESERVE" );
 			Tooltip:SetUnit( "mouseovertarget" ); -- Shows the tooltip
 			Tooltip.Text:SetTextColor( GameTooltip_UnitColor( "mouseovertarget" ) );
+			-- NOTE(Is there a pattern to missing guild info?)
+			if ( UnitIsPlayer( "mouseovertarget" ) and not GetGuildInfo( "mouseovertarget" ) ) then
+				Tooltip:AddLine( "|TInterface\\DialogFrame\\DialogAlertIcon:28|t UNGUILDED", 1, 1, 0.1 );
+				Tooltip:Show();
+			end
 		end
 	else
 		Tooltip:Hide();
