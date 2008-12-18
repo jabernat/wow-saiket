@@ -1,0 +1,18 @@
+## Interface: 30000
+## Title: ItemRack|cffccccccTitles|r
+## Notes: Swap titles with your gear sets.
+## Author: Saiket
+## Version: 3.0.3.1
+## X-Date: 2008-12-18
+## X-Category: Inventory
+## X-License: GPLv3
+## X-Email: saiket.wow@gmail.com
+## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons/ItemRackTitles
+## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:ItemRackTitles
+## X-RelSite-WoWI: 
+## X-Localizations: enUS
+## RequiredDeps: ItemRack
+## OptionalDeps: _Dev
+Localization.lua
+
+ItemRackTitles.lua
