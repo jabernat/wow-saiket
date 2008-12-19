@@ -212,8 +212,10 @@ do
 	local TimeIsKnown = _Misc.Time.IsKnown;
 	local GetGameTimeString = _Misc.Time.GetGameTimeString;
 	local select = select;
+	local Type;
 	function me:AddMessage ( Text, ... )
-		if ( Text ) then
+		Type = type( Text );
+		if ( Type == "number" or ( Type == "string" and Text ~= "" ) ) then
 			if ( select( 4, ... ) == nil ) then -- Most likely a message added by another addon which won't be caught by the event handler
 				Text = ParseMessageURLs( Text );
 			end
@@ -224,8 +226,8 @@ do
 			if ( not Text:match( L.FCF_TIMESTAMP_PATTERN ) and TimeIsKnown() ) then
 				Text = L.FCF_TIMESTAMP_FORMAT:format( GetGameTimeString(), Text );
 			end
-			AddMessageMethods[ self ]( self, Text, ... );
 		end
+		AddMessageMethods[ self ]( self, Text, ... );
 	end
 end
 
