@@ -23,25 +23,48 @@ _Misc.GameTooltip = me;
   * Function: _Misc.GameTooltip.UpdateUnitGuild                                *
   * Description: Add guild names to the right of the character's name.         *
   ****************************************************************************]]
-function me:UpdateUnitGuild ()
-	local Unit = select( 2, self:GetUnit() );
-	if ( Unit and UnitExists( Unit ) and UnitIsPlayer( Unit ) ) then
-		local GuildName = GetGuildInfo( Unit );
+function me:UpdateUnitGuild ( UnitID )
+	if ( UnitExists( UnitID ) and UnitIsPlayer( UnitID ) ) then
+		local GuildName = GetGuildInfo( UnitID );
 		if ( GuildName ) then
 			local Text = _G[ self:GetName().."TextLeft2" ];
 			Text:SetFormattedText( L.GAMETOOLTIP_GUILD_FORMAT, GuildName );
 			Text:SetTextColor( GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b );
-			self:Show(); -- Automatically resize
+			self:AppendText( "" ); -- Automatically resize
 		end
 	end
 end
+
 --[[****************************************************************************
-  * Function: _Misc.GameTooltip.RegisterTooltip                                *
+  * Function: _Misc.GameTooltip:OnTooltipSetUnit                               *
+  * Description: Hooks a tooltip to update its contents when set.              *
+  ****************************************************************************]]
+function me:OnTooltipSetUnit ()
+	local UnitID = select( 2, self:GetUnit() );
+	if ( UnitID ) then
+		me.UpdateUnitGuild( self, UnitID );
+	end
+end
+--[[****************************************************************************
+  * Function: _Misc.GameTooltip:SetUnit                                        *
+  * Description: Updates the tooltip's guild info if the unit isn't IDed.      *
+  ****************************************************************************]]
+function me:SetUnit ( ActualUnitID )
+	local UnitID = select( 2, self:GetUnit() );
+	if ( not UnitID ) then
+		me.UpdateUnitGuild( self, ActualUnitID );
+	end
+end
+--[[****************************************************************************
+  * Function: _Misc.GameTooltip:RegisterTooltip                                *
   * Description: Hooks a tooltip to update its contents when set.              *
   ****************************************************************************]]
 function me:RegisterTooltip ()
-	_Misc.HookScript( self, "OnTooltipSetUnit", me.UpdateUnitGuild );
+	_Misc.HookScript( self, "OnTooltipSetUnit", me.OnTooltipSetUnit );
+	hooksecurefunc( self, "SetUnit", me.SetUnit );
 end
+
+
 
 
 --[[****************************************************************************
