@@ -15,7 +15,7 @@ do
 
 
 	ItemRackTitlesLocalization = setmetatable( {
-		INVALID_VERSION = "ItemRackTitles: Unrecognized version of ItemRack.  Please update ItemRackTitles.";
+		INVALID_VERSION = "ItemRackTitles: Unrecognized version of ItemRack/ItemRackOptions.  Please update ItemRackTitles.";
 		INVALID_TITLE = GRAY_FONT_COLOR_CODE.."N/A"..FONT_COLOR_CODE_CLOSE;
 		MISSING_TITLE_FORMAT = "Title "..LDQuo.."%s"..RDQuo.." unavailable."; -- Title name from GetTitleName
 		CLEAR_TITLE = GRAY_FONT_COLOR_CODE.."(No Title)"..FONT_COLOR_CODE_CLOSE;

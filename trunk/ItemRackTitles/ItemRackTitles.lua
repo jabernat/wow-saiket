@@ -10,6 +10,8 @@ local me = CreateFrame( "Frame", "ItemRackTitles" );
 local Options = {};
 me.Options = Options;
 
+me.DebugErrors = false; -- Note: Change "false" to "true" here to enable debug error messages!
+
 local CLEAR_TITLE = -1; -- Clears title when passed to SetCurrentTitle
 
 
@@ -24,11 +26,31 @@ do
 	function me.InvalidVersionError ()
 		if ( not Printed ) then
 			Printed = true;
-			( ItemRack and ItemRack.Print or print )( L.INVALID_VERSION );
+			local Color = RED_FONT_COLOR;
+			DEFAULT_CHAT_FRAME:AddMessage( L.INVALID_VERSION, Color.r, Color.g, Color.b );
 			message( L.INVALID_VERSION );
 		end
 	end
 end
+--[[****************************************************************************
+  * Function: ItemRackTitles.SafeCall                                          *
+  * Description: Runs a function with version mismatch-prone code and replaces *
+  *   error messages with a version notice popup.  Returns true on no errors.  *
+  * Note: Set ItemRackTitles.DebugErrors flag to throw errors (blocking call!) *
+  ****************************************************************************]]
+function me.SafeCall ( Function )
+	local Success, ErrorMessage = pcall( Function );
+	if ( not Success ) then
+		if ( me.DebugErrors or IsAddOnLoaded( "_Dev" ) ) then
+			error( ErrorMessage ); -- Blocking call!
+		else -- Show user friendly upgrade prompt
+			me.InvalidVersionError();
+		end
+	end
+	return Success;
+end
+
+
 --[[****************************************************************************
   * Function: ItemRackTitles.IsTitleKnown                                      *
   * Description: Returns true if a title ID is known.                          *
@@ -91,7 +113,9 @@ function me:OnEvent ( Event, AddOn )
 	if ( Event == "ADDON_LOADED" ) then
 		if ( AddOn == "ItemRackOptions" ) then
 			me:UnregisterEvent( Event );
-			Options.OnLoad();
+			if ( me.SafeCall( Options.OnLoad ) ) then
+				Options.OnLoad = nil; -- Garbage collect and cause Options.IsLoaded to return true
+			end
 		end
 	elseif ( Event == "OLD_TITLE_LOST" ) then
 		me.ValidateSets();
@@ -111,8 +135,6 @@ end
   * Description: Makes modifications to the configuration GUI.                 *
   ****************************************************************************]]
 function Options.OnLoad ()
-	Options.OnLoad = nil; -- Garbage collect this function
-
 	-- Make room for the dropdown menu
 	local IconSelect = ItemRackOptSetsIconFrame;
 	IconSelect:SetHeight( 152 );
@@ -210,7 +232,12 @@ end
   * Description: Hook to save title data along with the rest of the set.       *
   ****************************************************************************]]
 function Options.SaveSet ()
-	Options.GetCurrentSet().Title = Options.Enabled and Options.Selected or nil;
+	local Set = Options.GetCurrentSet();
+	if ( not Set ) then -- Shouldn't happen here
+		me.InvalidVersionError();
+	else
+		Set.Title = Options.Enabled and Options.Selected or nil;
+	end
 end
 --[[****************************************************************************
   * Function: ItemRackTitles.Options.LoadSet                                   *
@@ -242,7 +269,11 @@ end
   * Description: Returns the currently displayed set table or nil.             *
   ****************************************************************************]]
 function Options.GetCurrentSet ()
-	return ItemRackUser.Sets[ ItemRackOptSetsName:GetText() ];
+	if ( not ItemRackOptSetsName ) then
+		me.InvalidVersionError();
+	else
+		return ItemRackUser.Sets[ ItemRackOptSetsName:GetText() ];
+	end
 end
 --[[****************************************************************************
   * Function: ItemRackTitles.Options.SetEnabled                                *
@@ -348,19 +379,10 @@ end
 -- Function Hooks / Execution
 -----------------------------
 
-if ( not ( ItemRack and ItemRack.EquipSet and ItemRack.SetTooltip and ItemRack.Print and ItemRackUser and ItemRackUser.Sets ) ) then
+if ( not ItemRackUser or not ItemRackUser.Sets ) then
 	me.InvalidVersionError();
-else
-	me:SetScript( "OnEvent", me.OnEvent );
-	me:RegisterEvent( "ADDON_LOADED" );
-	me:RegisterEvent( "PLAYER_LOGIN" );
-	me:RegisterEvent( "OLD_TITLE_LOST" );
-	me:RegisterEvent( "NEW_TITLE_EARNED" );
-
-	hooksecurefunc( ItemRack, "EquipSet", me.EquipSet );
-	hooksecurefunc( ItemRack, "SetTooltip", me.SetTooltip );
-
-
+elseif ( me.SafeCall( function ()
+	-- Run code prone to version mismatch errors first, and hooks last
 	tinsert( ItemRack.TooltipInfo, {
 		"ItemRackTitlesCheckbox",
 		L.OPTIONS_ENABLE,
@@ -371,4 +393,14 @@ else
 		L.OPTIONS_DROPDOWN,
 		L.OPTIONS_DROPDOWN_DESC
 	} );
+
+	hooksecurefunc( ItemRack, "EquipSet", me.EquipSet );
+	hooksecurefunc( ItemRack, "SetTooltip", me.SetTooltip );
+end ) ) then
+	-- Hooking succeeded; assume compatible version
+	me:SetScript( "OnEvent", me.OnEvent );
+	me:RegisterEvent( "ADDON_LOADED" );
+	me:RegisterEvent( "PLAYER_LOGIN" );
+	me:RegisterEvent( "OLD_TITLE_LOST" );
+	me:RegisterEvent( "NEW_TITLE_EARNED" );
 end
