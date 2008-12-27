@@ -37,6 +37,14 @@ function me.IsTitleKnown ( ID )
 	return ID == CLEAR_TITLE or IsTitleKnown( ID ) == 1; -- Note: IsTitleKnown(-1) crashes the client
 end
 --[[****************************************************************************
+  * Function: ItemRackTitles.GetTitleName                                      *
+  * Description: Returns the title's name, or a string representing no title.  *
+  ****************************************************************************]]
+function me.GetTitleName ( ID )
+	local Title = GetTitleName( ID );
+	return Title and Title:trim() or L.CLEAR_TITLE;
+end
+--[[****************************************************************************
   * Function: ItemRackTitles.ValidateSets                                      *
   * Description: Removes any unknown titles from saved sets.                   *
   ****************************************************************************]]
@@ -55,6 +63,22 @@ function me.EquipSet ( Name )
 	local Set = ItemRackUser.Sets[ Name ];
 	if ( Set and Set.Title and Set.Title ~= GetCurrentTitle() ) then
 		SetCurrentTitle( Set.Title );
+	end
+end
+--[[****************************************************************************
+  * Function: ItemRackTitles.SetTooltip                                        *
+  * Description: Hook to add titles to set tooltips.                           *
+  ****************************************************************************]]
+function me.SetTooltip ( Name )
+	if ( ItemRackSettings.TinyTooltips ~= "ON" ) then
+		local Set = ItemRackUser.Sets[ Name ];
+		if ( Set and Set.equip and Set.Title ) then
+			local Text, Color = GameTooltipTextRight1, HIGHLIGHT_FONT_COLOR;
+			Text:SetFormattedText( L.TOOLTIP_TITLE_FORMAT, me.GetTitleName( Set.Title ) );
+			Text:SetTextColor( Color.r, Color.g, Color.b );
+			Text:Show();
+			GameTooltip:Show();
+		end
 	end
 end
 
@@ -244,7 +268,7 @@ end
   ****************************************************************************]]
 function Options.SetTitle ( Index )
 	Options.Selected = Index;
-	UIDropDownMenu_SetText( Options.Dropdown, GetTitleName( Index ) or L.CLEAR_TITLE );
+	UIDropDownMenu_SetText( Options.Dropdown, me.GetTitleName( Index ) );
 end
 --[[****************************************************************************
   * Function: ItemRackTitles.Options.UpdateTitleDropdown                       *
@@ -289,18 +313,18 @@ do
 			if ( IsTitleKnown( Index ) == 1 ) then
 				Sorted[ #Sorted + 1 ] = Index;
 				-- Cache the string used in comparisons
-				Lookup[ Index ] = GetTitleName( Index ):trim():lower();
+				Lookup[ Index ] = me.GetTitleName( Index ):lower();
 			end
 		end
 		table.sort( Sorted, SortFunc );
 		local Info = UIDropDownMenu_CreateInfo();
-		Info.text = L.CLEAR_TITLE; -- Add no title option
+		Info.text = me.GetTitleName( CLEAR_TITLE ); -- Add no title option
 		Info.arg1 = CLEAR_TITLE;
 		Info.checked = CLEAR_TITLE == Options.Selected;
 		Info.func = Options.DropdownOnSelect;
 		UIDropDownMenu_AddButton( Info );
 		for _, Index in ipairs( Sorted ) do
-			Info.text = GetTitleName( Index );
+			Info.text = me.GetTitleName( Index );
 			Info.arg1 = Index;
 			Info.checked = Index == Options.Selected;
 			UIDropDownMenu_AddButton( Info );
@@ -324,7 +348,7 @@ end
 -- Function Hooks / Execution
 -----------------------------
 
-if ( not ( ItemRack and ItemRack.EquipSet and ItemRack.Print and ItemRackUser and ItemRackUser.Sets ) ) then
+if ( not ( ItemRack and ItemRack.EquipSet and ItemRack.SetTooltip and ItemRack.Print and ItemRackUser and ItemRackUser.Sets ) ) then
 	me.InvalidVersionError();
 else
 	me:SetScript( "OnEvent", me.OnEvent );
@@ -334,6 +358,7 @@ else
 	me:RegisterEvent( "NEW_TITLE_EARNED" );
 
 	hooksecurefunc( ItemRack, "EquipSet", me.EquipSet );
+	hooksecurefunc( ItemRack, "SetTooltip", me.SetTooltip );
 
 
 	tinsert( ItemRack.TooltipInfo, {

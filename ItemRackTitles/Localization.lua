@@ -20,6 +20,8 @@ do
 		MISSING_TITLE_FORMAT = "Title "..LDQuo.."%s"..RDQuo.." unavailable."; -- Title name from GetTitleName
 		CLEAR_TITLE = GRAY_FONT_COLOR_CODE.."(No Title)"..FONT_COLOR_CODE_CLOSE;
 
+		TOOLTIP_TITLE_FORMAT = "<%s>"; -- Title name from GetTitleName
+
 		OPTIONS_ENABLE = "Title";
 		OPTIONS_ENABLE_DESC = "This determines if the title is changed when equipping the set.";
 		OPTIONS_DROPDOWN = "Title";
