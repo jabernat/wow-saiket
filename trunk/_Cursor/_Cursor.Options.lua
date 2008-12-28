@@ -592,7 +592,8 @@ end
   ****************************************************************************]]
 function CursorsPanel.Path:OnEnterPressed ()
 	local Cursor = TabsUsed[ CursorsPanel.Selected ];
-	local Value = self:GetText();
+	-- Remove pipes (they'd break the packed data format), and normalize slashes
+	local Value = self:GetText():gsub( "|", "" ):gsub( "[/\\]+", "\\" );
 	local Extension = Value:match( "%.[^.]+$" );
 	if ( Extension ) then
 		Extension = Extension:upper();
