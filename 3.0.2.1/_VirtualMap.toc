@@ -1,0 +1,20 @@
+## Interface: 30000
+## Title: _|cffCCCC88VirtualMap|r
+## Notes: Virtual 3D map overlay for GatherMate.
+## Author: Saiket. Original GatherHud by Grum and Xinhuan
+## Version: 3.0.2.1
+## X-Date: 2008-09-07
+## X-Category: Map
+## X-License: GPLv3
+## X-Email: saiket.wow@gmail.com
+## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons
+## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:VirtualMap
+## X-Localizations: enUS
+## X-Embeds: LibCamera-1.0
+## SavedVariables: _VirtualMapDB
+## RequiredDeps: GatherMate
+## OptionalDeps: _Dev, Ace3, LibCamera-1.0
+embeds.xml
+Locales.xml
+
+_VirtualMap.lua
