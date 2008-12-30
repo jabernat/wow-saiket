@@ -66,6 +66,7 @@ do
 	local Button = CreateFrame( "Button", "_CleanHelpButton", GameMenuFrame, "MainMenuBarMicroButton" );
 	Button:SetPoint( "TOPRIGHT", GameMenuFrame, -50, 28 );
 	Button:SetScale( 0.7 );
+	Button:SetFrameLevel( Button:GetFrameLevel() + 1 ); -- Raise above other buttons in the menu
 	Button:SetScript( "OnClick", ToggleHelpFrame );
 	LoadMicroButtonTextures( Button, "Help" );
 	Button.tooltipText = HELP_BUTTON;
