@@ -23,6 +23,7 @@ me.ModelsUsed = ModelsUsed;
 me.ScaleDefault = 0.01; -- Baseline scaling factor applied before presets and custom scales
 
 
+me.DefaultType, me.DefaultValue = "", "spells\\errorcube"; -- Used when cursor preset not found
 -- Set strings formatted as follows:
 -- "Name|[Enabled]|Strata|[Type]|Value[|Scale][|Facing][|X][|Y]"
 me.DefaultSets = {
@@ -40,7 +41,7 @@ me.DefaultSets = {
 		L.CURSORS[ "Laser" ].."|1|LOW||spells\\cthuneeyeattack|1.5|.4|32|13",
 		L.CURSORS[ "Heat" ].."|1|BACKGROUND||spells\\deathanddecay_area_base",
 		L.CURSORS[ "Smoke" ].."|1|BACKGROUND||spells\\sandvortex_state_base",
-		L.CURSORS[ "Nova" ].."||LOW||spells\\aimedshot_impact_chest",
+		L.CURSORS[ "Explosion" ].."|1|LOW|Indicator|Explosion|4",
 	};
 };
 me.DefaultModelSet = L.SETS[ "Energy beam" ];
@@ -63,11 +64,14 @@ me.Presets = {
 		[ "Cloud, fire" ] = "spells\\enchantments\\sunfireglow_high|5||10|-8";
 		[ "Cloud, frost" ] = "spells\\icyenchant_high|8||8|-8";
 		[ "Ring, bloodlust" ] = "spells\\bloodlust_state_hand|2.6||9|-8";
+		[ "Ring, bones" ] = "spells\\bonearmor_state_chest|.8||12|-9";
+		[ "Ring, holy" ] = "spells\\holy_precast_high_base|.8||9|-9";
 		[ "Ring, pulse blue" ] = "spells\\brillianceaura|.8||8|-8";
 		[ "Ring, frost" ] = "spells\\ice_precast_high_hand|1.9||11|-9";
 		[ "Ring, swirl" ] = "particles\\stunswirl_state_head|||9|-8";
 		[ "Ring, vengeance" ] = "spells\\vengeance_state_hand|2||9|-8";
 		[ "Simple, black" ] = "spells\\shadowmissile|2||5|-6";
+		[ "Simple, green" ] = "spells\\nature_precast_chest|||8|-8";
 		[ "Simple, white" ] = "spells\\enchantments\\whiteflame_low|4|5.3|10|-8";
 		[ "Weather, lightning" ] = "spells\\goblin_weather_machine_lightning|1.3||10|-11";
 		[ "Weather, sun" ] = "spells\\goblin_weather_machine_sunny|1.5|2.1|11|-9";
@@ -75,10 +79,22 @@ me.Presets = {
 		[ "Weather, cloudy" ] = "spells\\goblin_weather_machine_cloudy|1.5|2.1|11|-9";
 	};
 	[ "Indicator" ] = {
+		[ "Arcane torrent" ] = "spells\\arcanetorrent|.5||7|-7";
 		[ "Blood cloud" ] = "spells\\beastwithin_state_base|.5";
+		[ "Death knight impact" ] = "spells\\warlock_shadowflame|.8||8|-8";
+		[ "Explosion" ] = "spells\\canon_impact_dust|.5|4";
+		[ "Explosion, dust" ] = "spells\\xplosion_dust_impact|.25";
+		[ "Explosion, fel" ] = "spells\\xplosion_fel_impact|.7";
+		[ "Explosion, huge comic" ] = "particles\\bloodspurts\\bloodspurtblack";
+		[ "Glow, white" ] = "spells\\druid_flourish|.5||8|-7";
 		[ "Light blue pulse" ] = "spells\\stoneform_state_base|||9|-8";
 		[ "Periodic glint" ] = "spells\\enchantments\\sparkle_a|4";
-		[ "Shockwave red" ] = "spells\\lacerate_impact|1.3";
+		[ "Shockwave, orange" ] = "spells\\challengingshout_cast_base||2.4";
+		[ "Shockwave, red" ] = "spells\\lacerate_impact|1.3";
+		[ "Shockwave, yellow" ] = "spells\\cleave_impact_chest|.5|2.4";
+		[ "Short trail, holy" ] = "spells\\holy_impactdd_high_chest|.5";
+		[ "Short trail, lava" ] = "spells\\lavaelemental_impact_base";
+		[ "Short trail, plague" ] = "spells\\deathknight_ghoul_explode_simple";
 		[ "Snowball hit" ] = "spells\\snowball_impact_chest|||5|-6";
 	};
 	[ "Particle" ] = {
@@ -87,13 +103,16 @@ me.Presets = {
 		[ "Dust, holy" ] = "spells\\holy_form_precast|1.1|.7|9|-11";
 		[ "Dust, ice shards" ] = "spells\\frost_form_precast|1.1|.7|9|-11";
 		[ "Dust, shadow" ] = "spells\\shadow_form_precast|1.1|.7|9|-11";
+		[ "Fire" ] = "spells\\demolisher_missile||2.2|11|-11";
 		[ "Fire, blue" ] = "spells\\fire_blue_precast_uber_hand|||6|-8";
 		[ "Fire, fel" ] = "spells\\fel_fire_precast_hand|||6|-8";
 		[ "Fire, orange" ] = "spells\\fire_precast_uber_hand|1.5||4|-6";
 		[ "Fire, periodic red & blue" ] = "spells\\incinerate_impact_base|.8||11|-10";
 		[ "Fire, wavy purple" ] = "spells\\incinerateblue_low_base|.25|2.3|11|-10";
 		[ "Frost" ] = "spells\\ice_precast_low_hand|2.5||8|-7";
+		[ "Lava burst" ] = "spells\\shaman_lavaburst_missile|.8||9|-7";
 		[ "Leaves" ] = "spells\\nature_form_precast|2.5|1|13|-11";
+		[ "Plague cloud" ] = "spells\\forsakencatapult_missile|1.5|2.3|10|-10";
 		[ "Shadow cloud" ] = "spells\\cripple_state_chest|.5||8|-8";
 		[ "Spark, small white" ] = "spells\\dispel_low_recursive|4";
 		[ "Spark, small blue" ] = "spells\\detectmagic_recursive|4";
@@ -101,6 +120,7 @@ me.Presets = {
 		[ "Sparks, red" ] = "spells\\immolationtrap_recursive|4";
 	};
 	[ "Trail" ] = {
+		[ "Blue" ] = "spells\\beartrap|.9||5|-6";
 		[ "Electric, blue long" ] = "spells\\lightningboltivus_missile|.1||4|-6";
 		[ "Electric, blue" ] = "spells\\lightning_precast_low_hand|||4|-6";
 		[ "Electric, green" ] = "spells\\lightning_fel_precast_low_hand|||4|-6";
@@ -127,6 +147,16 @@ me.Presets = {
 		[ "Swirling, shadow" ] = "spells\\banish_chest_dark|.5||11|-9";
 		[ "Swirling, white" ] = "spells\\banish_chest_white|.5||11|-9";
 		[ "Swirling, yellow" ] = "spells\\banish_chest_yellow|.5||11|-9";
+	};
+	[ "Breath" ] = {
+		[ "Arcane" ] = "spells\\dragonbreath_arcane|.25|5.4";
+		[ "Fire. blue" ] = "spells\\dragonbreath_frost|.25|5.4";
+		[ "Fire, fel" ] = "spells\\fel_flamebreath|.5|5.5";
+		[ "Fire, purple" ] = "spells\\dragonbreath_shadow|.25|5.4";
+		[ "Fire, red" ] = "spells\\dragonbreath_fire|.25|5.4";
+		[ "Frost" ] = "spells\\flamebreath_blue|.5|5.5";
+		[ "Frostfire" ] = "spells\\flamebreathmff|.5|5.5";
+		[ "Smoke" ] = "spells\\corrosivesandbreath|.5|5.5";
 	};
 };
 
@@ -193,7 +223,7 @@ end
   * Description: Synchronizes a model with its settings table.                 *
   ****************************************************************************]]
 do
-	local Cursor, Scale, Facing;
+	local Cursor, Scale, Facing, PresetType;
 	local Path, ScalePreset, FacingPreset, X, Y;
 
 	function me:ModelUpdate ()
@@ -204,10 +234,20 @@ do
 		Scale = ( Cursor.Scale or 1.0 ) * me.ScaleDefault;
 		Facing = Cursor.Facing or 0;
 
+		-- Validate presets
+		if ( #Cursor.Type ~= 0 ) then
+			PresetType = me.Presets[ Cursor.Type ];
+			if ( not PresetType or not PresetType[ Cursor.Value ] ) then
+				Cursor.Type = me.DefaultType;
+				Cursor.Value = me.DefaultValue;
+				PresetType = me.Presets[ Cursor.Type ];
+			end
+		end
+
 		if ( #Cursor.Type == 0 ) then -- Custom
 			self:SetModel( Cursor.Value..".mdx" );
 		else
-			Path, ScalePreset, FacingPreset, X, Y = ( "|" ):split( me.Presets[ Cursor.Type ][ Cursor.Value ] );
+			Path, ScalePreset, FacingPreset, X, Y = ( "|" ):split( PresetType[ Cursor.Value ] );
 			self:SetModel( Path..".mdx" );
 			self.X = self.X + ( tonumber( X ) or 0 );
 			self.Y = self.Y + ( tonumber( Y ) or 0 );
