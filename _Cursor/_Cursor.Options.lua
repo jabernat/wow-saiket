@@ -356,7 +356,9 @@ end
   * Description: Shows the control's tooltip.                                  *
   ****************************************************************************]]
 function me:ControlOnEnter ()
-	GameTooltip:SetOwner( self, "ANCHOR_TOPLEFT" );
+	GameTooltip:ClearAllPoints();
+	GameTooltip:SetPoint( "TOPLEFT", self, "BOTTOMLEFT" );
+	GameTooltip:SetOwner( self, "ANCHOR_PRESERVE" );
 	GameTooltip:SetText( self.tooltipText, nil, nil, nil, nil, 1 );
 end
 --[[****************************************************************************
@@ -848,6 +850,8 @@ do
 	X:SetScale( 0.8 );
 	X:SetMinMaxValues( -32, 32 );
 	X:SetScript( "OnValueChanged", X.OnValueChanged );
+	X:SetScript( "OnEnter", me.ControlOnEnter );
+	X:SetScript( "OnLeave", me.ControlOnLeave );
 	X.tooltipText = L.OPTIONS[ "X_DESC" ];
 	Text = _G[ X:GetName().."Low" ];
 	Text:SetText( -32 );
@@ -868,6 +872,8 @@ do
 	Y:SetThumbTexture( "Interface\\Buttons\\UI-SliderBar-Button-Vertical" );
 	Y:SetMinMaxValues( -32, 32 );
 	Y:SetScript( "OnValueChanged", Y.OnValueChanged );
+	Y:SetScript( "OnEnter", me.ControlOnEnter );
+	Y:SetScript( "OnLeave", me.ControlOnLeave );
 	Y.tooltipText = L.OPTIONS[ "Y_DESC" ];
 	Text = _G[ Y:GetName().."Low" ];
 	Text:SetText( -32 );
@@ -885,6 +891,8 @@ do
 	Scale:SetPoint( "TOP", X, "BOTTOM", 0, -8 );
 	Scale:SetMinMaxValues( 1 / 2, 4 );
 	Scale:SetScript( "OnValueChanged", Scale.OnValueChanged );
+	Scale:SetScript( "OnEnter", me.ControlOnEnter );
+	Scale:SetScript( "OnLeave", me.ControlOnLeave );
 	Scale.tooltipText = L.OPTIONS[ "SCALE_DESC" ];
 	_G[ Scale:GetName().."Low" ]:SetText( 0.5 );
 	_G[ Scale:GetName().."High" ]:SetText( 4 );
@@ -898,6 +906,8 @@ do
 	Facing:SetPoint( "RIGHT", Scale );
 	Facing:SetMinMaxValues( 0, math.pi * 2 );
 	Facing:SetScript( "OnValueChanged", Facing.OnValueChanged );
+	Facing:SetScript( "OnEnter", me.ControlOnEnter );
+	Facing:SetScript( "OnLeave", me.ControlOnLeave );
 	Facing.tooltipText = L.OPTIONS[ "FACING_DESC" ];
 	_G[ Facing:GetName().."Low" ]:SetText( L.OPTIONS.FACING_LOW );
 	_G[ Facing:GetName().."High" ]:SetText( L.OPTIONS.FACING_HIGH );
