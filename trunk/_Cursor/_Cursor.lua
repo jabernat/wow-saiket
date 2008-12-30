@@ -475,7 +475,6 @@ do
 
 	-- Hide during screenshots
 	hooksecurefunc( "Screenshot", function ()
-		-- Note: Screenshot() blocks execution /after/ secure hooks.
 		me.IsScreenshotSaving = true;
 		me:Hide();
 	end );
