@@ -2,8 +2,8 @@
 ## Title: _|cffCCCC88Corpse|r
 ## Notes: Adds online/offline status and other info to corpse tooltips.
 ## Author: Saiket
-## Version: 3.0.3.1
-## X-Date: 2008-11-14
+## Version: 3.0.3.2
+## X-Date: 2009-01-01
 ## X-Category: Tooltips, Interface Enhancements
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
