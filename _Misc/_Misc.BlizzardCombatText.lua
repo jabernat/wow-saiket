@@ -52,8 +52,13 @@ do
 	local MeFlag = COMBATLOG_OBJECT_AFFILIATION_MINE;
 	local band = bit.band;
 	local ByMe, OnMe;
-	function me:COMBAT_LOG_EVENT_UNFILTERED ( Event, _, Type, _, Caster, CasterFlags, _, Target, TargetFlags, _, _, _, Amount, Overhealing, Critical )
-		if ( Type:match( "_HEAL$" ) ) then
+	local IgnoredSpells = {
+		[ 20267 ] = true; -- Judgement of Light
+		[ 20167 ] = true; -- Seal of Light
+		[ 54968 ] = true; -- Glyph of Holy Light
+	};
+	function me:COMBAT_LOG_EVENT_UNFILTERED ( Event, _, Type, _, Caster, CasterFlags, _, Target, TargetFlags, SpellID, _, _, Amount, Overhealing, Critical )
+		if ( Type:match( "_HEAL$" ) and not ( Type:match( "^ENVIRONMENTAL" ) or IgnoredSpells[ SpellID ] ) ) then
 			OnMe = band( TargetFlags, MeFlag ) ~= 0;
 			ByMe = band( CasterFlags, MeFlag ) ~= 0;
 			if ( OnMe or ByMe ) then
