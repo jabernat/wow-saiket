@@ -19,33 +19,52 @@ me.BackdropRight = BackdropRight;
 
 me.DominosProfile = "_Clean";
 
-local Icons = {};
+me.ButtonNormalTexture = "";
 
 
 
 
 --[[****************************************************************************
-  * Function: _Clean.ActionBar.ActionButtonModify                              *
+  * Function: _Clean.ActionBar:ActionButtonModify                              *
   * Description: Modifies textures on an action button.                        *
   ****************************************************************************]]
-function me.ActionButtonModify ( Prefix, Index )
-	_G[ Prefix..Index ]:GetNormalTexture():SetAlpha( 1.0 );
-	_Clean.RemoveButtonIconBorder( _G[ Prefix..Index.."Icon" ] );
-	_G[ Prefix..Index.."Border" ]:SetAlpha( 0.8 );
+do
+	local Disabled = false;
+	local function SetNormalTexture ( self, Texture )
+		if ( not Disabled and type( Texture ) == "string" ) then
+			if ( Texture:lower() == "interface\\buttons\\ui-quickslot" ) then
+				-- Empty button texture
+				self:GetNormalTexture():SetTexCoord( 0.2, 0.8, 0.2, 0.8 );
+			else
+				self:GetNormalTexture():SetTexCoord( 0, 1, 0, 1 );
+				Disabled = true;
+				self:SetNormalTexture( me.ButtonNormalTexture );
+				Disabled = false;
+			end
+		end
+	end
+	function me:ActionButtonModify ()
+		local NormalTexture = self:GetNormalTexture();
+		NormalTexture:SetAllPoints( self );
+		NormalTexture:SetAlpha( 1.0 );
+		_Clean.RemoveButtonIconBorder( self:GetRegions() ); -- Note: Icon texture must be first!
+		self:SetNormalTexture( me.ButtonNormalTexture );
+		hooksecurefunc( self, "SetNormalTexture", SetNormalTexture );
+	end
 end
 
 
 --[[****************************************************************************
-  * Function: _Clean.ActionBar.ActionButtonOnUpdate                            *
+  * Function: _Clean.ActionBar:ActionButtonOnUpdate                            *
   * Description: Tints action buttons red when out of range.                   *
   ****************************************************************************]]
-function me.ActionButtonOnUpdate ()
-	if ( this.rangeTimer == TOOLTIP_UPDATE_TIME ) then -- Just updated
-		me.ActionButtonUpdateUsable();
+function me:ActionButtonOnUpdate ( Elapsed )
+	if ( self.rangeTimer == TOOLTIP_UPDATE_TIME ) then -- Just updated
+		me.ActionButtonUpdateUsable( self );
 	end
 end
 --[[****************************************************************************
-  * Function: _Clean.ActionBar.ActionButtonUpdateUsable                        *
+  * Function: _Clean.ActionBar:ActionButtonUpdateUsable                        *
   * Description: Tints action buttons red when out of range.                   *
   ****************************************************************************]]
 do
@@ -53,9 +72,9 @@ do
 	local IsActionInRange = IsActionInRange;
 	local IsUsableAction = IsUsableAction;
 	local _G = _G;
-	local self, Action, Icon, Usable, NotEnoughMana;
-	function me.ActionButtonUpdateUsable ()
-		self = this;
+	local Action, Icon, Usable, NotEnoughMana;
+	local Icons = {};
+	function me:ActionButtonUpdateUsable ()
 		Action = self.action;
 		if ( not Action ) then -- Note: Prevents error when saving sets in Dominos
 			return;
@@ -125,6 +144,11 @@ function me:OnEvent ()
 		Backdrop:SetWidth( 1 );
 		Backdrop:SetHeight( 120 );
 	end
+
+	-- Skin Dominos' "class" buttons
+	for _, Button in ipairs( Dominos.Frame:Get( "class" ).buttons ) do
+		me.ActionButtonModify( Button );
+	end
 end
 
 
@@ -140,30 +164,27 @@ do
 
 	-- Remove icon borders on buttons
 	for Index = 1, NUM_MULTIBAR_BUTTONS do
-		me.ActionButtonModify( "ActionButton", Index );
-		me.ActionButtonModify( "MultiBarBottomLeftButton", Index );
-		me.ActionButtonModify( "MultiBarBottomRightButton", Index );
-		me.ActionButtonModify( "MultiBarLeftButton", Index );
-		me.ActionButtonModify( "MultiBarRightButton", Index );
+		me.ActionButtonModify( _G[ "ActionButton"..Index ] );
+		me.ActionButtonModify( _G[ "MultiBarBottomLeftButton"..Index ] );
+		me.ActionButtonModify( _G[ "MultiBarBottomRightButton"..Index ] );
+		me.ActionButtonModify( _G[ "MultiBarLeftButton"..Index ] );
+		me.ActionButtonModify( _G[ "MultiBarRightButton"..Index ] );
 	end
 
-	-- Shapeshift bar
+	-- Shapeshift bar (These get replaced by Dominos later)
 	for Index = 1, NUM_SHAPESHIFT_SLOTS do
-		_Clean.RemoveButtonIconBorder( _G[ "ShapeshiftButton"..Index.."Icon" ] );
-		_G[ "ShapeshiftButton"..Index.."NormalTexture" ]:SetTexture();
+		me.ActionButtonModify( _G[ "ShapeshiftButton"..Index ] );
 	end
 
 	-- Bag buttons
-	local LastButton = MainMenuBarBackpackButton;
-	_Clean.RemoveButtonIconBorder( MainMenuBarBackpackButtonIconTexture );
-	MainMenuBarBackpackButtonNormalTexture:SetTexture();
+	local LastBag = MainMenuBarBackpackButton;
+	me.ActionButtonModify( LastBag );
 	for Index = 0, NUM_BAG_SLOTS - 1 do
-		_Clean.RemoveButtonIconBorder( _G[ "CharacterBag"..Index.."SlotIconTexture" ] );
-		_G[ "CharacterBag"..Index.."SlotNormalTexture" ]:SetTexture();
+		LastBag = _G[ "CharacterBag"..Index.."Slot" ];
+		me.ActionButtonModify( LastBag );
 	end
 
 	-- Keyring
-	local LastBag = _G[ "CharacterBag"..( NUM_BAG_SLOTS - 1 ).."Slot" ];
 	KeyRingButton:ClearAllPoints();
 	KeyRingButton:SetPoint( "TOPLEFT", LastBag );
 	KeyRingButton:SetPoint( "BOTTOM", LastBag );
