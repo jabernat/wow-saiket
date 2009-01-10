@@ -146,8 +146,11 @@ function me:OnEvent ()
 	end
 
 	-- Skin Dominos' "class" buttons
-	for _, Button in ipairs( Dominos.Frame:Get( "class" ).buttons ) do
-		me.ActionButtonModify( Button );
+	local ClassBar = Dominos.Frame:Get( "class" );
+	if ( ClassBar ) then
+		for _, Button in ipairs( ClassBar.buttons ) do
+			me.ActionButtonModify( Button );
+		end
 	end
 end
 
