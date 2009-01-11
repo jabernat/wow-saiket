@@ -3,7 +3,7 @@
 ## Notes: Change the UI's look and feel.
 ## Author: Saiket
 ## Version: 3.0.3.3
-## X-Date: 2009-01-10
+## X-Date: 2009-01-11
 ## X-Category: Frame Modification
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com

@@ -1,8 +1,6 @@
 --[[****************************************************************************
   * _Clean by Saiket                                                           *
   * _Clean.ActionBar.lua - Modifies the action bars and their buttons.         *
-  *                                                                            *
-  * + Colors action buttons red when out of range.                             *
   ****************************************************************************]]
 
 
@@ -113,41 +111,64 @@ function me:OnEvent ()
 	me:SetScript( "OnEvent", nil );
 	me.OnEvent = nil;
 
-	-- Add backdrops
-	if ( Dominos:MatchProfile( me.DominosProfile ) ) then
-		local OldProfile = Dominos.db:GetCurrentProfile();
-		if ( OldProfile ~= me.DominosProfile ) then
+	local OldProfile = Dominos.db:GetCurrentProfile();
+	if ( OldProfile ~= me.DominosProfile ) then
+		-- Create _Clean bar profile if necessary
+		if ( Dominos:MatchProfile( me.DominosProfile ) ) then
 			Dominos:SetProfile( me.DominosProfile );
-			if ( OldProfile == UnitClass( "player" ) ) then -- Default created on initialization
-				Dominos:DeleteProfile( OldProfile );
+		else
+			Dominos:ResetProfile();
+			-- Configure new profile
+			Dominos:SetShowMinimap( false );
+			Dominos:SetSticky( true );
+
+			local NilFunction = _Dev and _Dev.NilFunction or function () end;
+			local function InitializeBar ( Bar, AnchorString, Point, Scale, VariableButtons, Spacing, Padding )
+				Bar = type( Bar ) == "table" and Bar or Dominos.Frame:Get( Bar );
+				Bar.sets.anchor = AnchorString;
+				if ( Point ) then
+					Bar:SetFramePoint( Point );
+				else
+					Bar:SavePosition();
+				end
+				Bar.sets.scale = Scale or 0.75; -- Note: Must occur after SavePosition call.
+				Bar.Layout = NilFunction; -- Prevent full updates on each call
+				if ( not VariableButtons ) then
+					Bar:SetNumButtons( NUM_ACTIONBAR_BUTTONS );
+				end
+				Bar:SetSpacing( Spacing or 0 );
+				Bar:SetPadding( Padding or 0 );
+				Bar.Layout = nil; -- Remove override
+				Bar:ShowFrame();
+				return Bar;
 			end
+
+			-- Left corner
+			InitializeBar( 1, nil, "BOTTOMLEFT" ); -- Main action bar
+			InitializeBar( 6, "1TL" ); -- MultiBarBottomLeft
+
+			-- Right corner
+			InitializeBar( "bags", nil, "BOTTOMRIGHT", 0.9, true ):SetShowKeyring( false ); -- Bags
+			InitializeBar( 5, "bagsTR" ); -- MultiBarBottomRight
+			InitializeBar( Dominos.Frame:Get( "class" ) or Dominos.ClassBar:New(), "5BL", nil, 0.65, true, 8, 6 ); -- Class bar
+			InitializeBar( 3, "5TR" ):SetColumns( 1 ); -- MultiBarRight
+			InitializeBar( 4, "3LB" ):SetColumns( 1 ); -- MultiBarLeft
+
+			InitializeBar( "pet", nil, "CENTER", 1.5, true, 6 ); -- Pet bar (temporary position)
+
+			-- Hide unused bars
+			Dominos.Frame:Get( 2 ):HideFrame();
+			for Index = 7, Dominos:NumBars() do
+				Dominos.Frame:Get( Index ):HideFrame();
+			end
+			Dominos.Frame:Get( "menu" ):HideFrame();
+			Dominos.Frame:Get( "vehicle" ):HideFrame();
+
+			Dominos:SaveProfile( me.DominosProfile );
 		end
-
-		local Padding = _Clean.Backdrop.Padding;
-		local Backdrop = _Clean.ActionBar.BackdropBottomLeft;
-		Backdrop:SetPoint( "BOTTOMLEFT", Dominos.Frame:Get( 1 ) );
-		Backdrop:SetPoint( "TOPRIGHT", Dominos.Frame:Get( 6 ), Padding, Padding );
-
-		Backdrop = _Clean.ActionBar.BackdropBottomRight;
-		Backdrop:SetPoint( "BOTTOMRIGHT", Dominos.Frame:Get( "bags" ) );
-		Backdrop:SetPoint( "TOPLEFT", Dominos.Frame:Get( 5 ), -Padding, Padding );
-
-		Backdrop = _Clean.ActionBar.BackdropRight;
-		Backdrop:SetPoint( "BOTTOMRIGHT", BackdropBottomRight, "TOPRIGHT" );
-		Backdrop:SetPoint( "TOPLEFT", MultiBarLeftButton4, -Padding, Padding );
-	else -- Temporary setup so the game doesn't crash
-		local Backdrop = _Clean.ActionBar.BackdropBottomLeft;
-		Backdrop:SetPoint( "BOTTOMLEFT", UIParent );
-		Backdrop:SetPoint( "TOPRIGHT", UIParent, "BOTTOMLEFT", 1, 72 );
-
-		Backdrop = _Clean.ActionBar.BackdropBottomRight;
-		Backdrop:SetPoint( "BOTTOMRIGHT", UIParent );
-		Backdrop:SetPoint( "TOPLEFT", UIParent, "BOTTOMRIGHT", -1, 72 );
-
-		Backdrop = _Clean.ActionBar.BackdropRight;
-		Backdrop:SetPoint( "BOTTOMRIGHT", BackdropBottomRight, "TOPRIGHT" );
-		Backdrop:SetWidth( 1 );
-		Backdrop:SetHeight( 120 );
+		if ( OldProfile == UnitClass( "player" ) ) then -- Default created on initialization
+			Dominos:DeleteProfile( OldProfile );
+		end
 	end
 
 	-- Skin Dominos' "class" buttons
@@ -157,6 +178,24 @@ function me:OnEvent ()
 			me.ActionButtonModify( Button );
 		end
 	end
+
+	-- Add backdrops
+	local Padding = _Clean.Backdrop.Padding;
+	local Backdrop = _Clean.ActionBar.BackdropBottomLeft;
+	Backdrop:SetPoint( "BOTTOMLEFT", Dominos.Frame:Get( 1 ) );
+	Backdrop:SetPoint( "TOPRIGHT", Dominos.Frame:Get( 6 ), Padding, Padding );
+
+	Backdrop = _Clean.ActionBar.BackdropBottomRight;
+	Backdrop:SetPoint( "BOTTOMRIGHT", Dominos.Frame:Get( "bags" ) );
+	Backdrop:SetPoint( "TOPLEFT", Dominos.Frame:Get( 5 ), -Padding, Padding );
+
+	Backdrop = _Clean.ActionBar.BackdropRight;
+	Backdrop:SetPoint( "BOTTOMRIGHT", BackdropBottomRight, "TOPRIGHT" );
+	Backdrop:SetPoint( "TOPLEFT", MultiBarLeftButton4, -Padding, Padding );
+
+	-- Move pet bar to middle of screen
+	local PetBar = Dominos.Frame:Get( "pet" );
+	PetBar:SetFramePoint( "BOTTOM", UIParent, 0, Backdrop:GetTop() * Backdrop:GetEffectiveScale() / PetBar:GetEffectiveScale() );
 end
 
 
