@@ -237,7 +237,7 @@ end
   * Function: _Dev:ADDON_LOADED                                                *
   ****************************************************************************]]
 function me:ADDON_LOADED ( _, AddOn )
-	if ( AddOn == "_Dev" ) then
+	if ( AddOn:lower() == "_dev" ) then
 		me:UnregisterEvent( "ADDON_LOADED" );
 		me.ADDON_LOADED = nil;
 
