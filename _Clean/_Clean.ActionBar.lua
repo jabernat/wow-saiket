@@ -145,6 +145,7 @@ function me:OnEvent ()
 				Bar:SetSpacing( Spacing or 0 );
 				Bar:SetPadding( Padding or 0 );
 				Bar.Layout = nil; -- Remove override
+				Bar:SetFrameAlpha( 0.8 );
 				Bar:ShowFrame();
 				return Bar;
 			end
