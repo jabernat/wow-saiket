@@ -111,7 +111,7 @@ end
   ****************************************************************************]]
 function me:OnEvent ( Event, AddOn )
 	if ( Event == "ADDON_LOADED" ) then
-		if ( AddOn == "ItemRackOptions" ) then
+		if ( AddOn:lower() == "itemrackoptions" ) then
 			me:UnregisterEvent( Event );
 			if ( me.SafeCall( Options.OnLoad ) ) then
 				Options.OnLoad = nil; -- Garbage collect and cause Options.IsLoaded to return true
