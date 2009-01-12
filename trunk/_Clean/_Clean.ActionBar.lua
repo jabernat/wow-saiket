@@ -110,6 +110,7 @@ function me:OnEvent ()
 	me:UnregisterEvent( "PLAYER_LOGIN" );
 	me:SetScript( "OnEvent", nil );
 	me.OnEvent = nil;
+	local NilFunction = _Dev and _Dev.NilFunction or function () end;
 
 	local OldProfile = Dominos.db:GetCurrentProfile();
 	if ( OldProfile ~= me.DominosProfile ) then
@@ -122,7 +123,6 @@ function me:OnEvent ()
 			Dominos:SetShowMinimap( false );
 			Dominos:SetSticky( true );
 
-			local NilFunction = _Dev and _Dev.NilFunction or function () end;
 			local function InitializeBar ( Bar, AnchorString, Point, Scale, VariableButtons, Spacing, Padding )
 				Bar = type( Bar ) == "table" and Bar or Dominos.Frame:Get( Bar );
 				Bar.sets.anchor = AnchorString;
@@ -196,6 +196,13 @@ function me:OnEvent ()
 	-- Move pet bar to middle of screen
 	local PetBar = Dominos.Frame:Get( "pet" );
 	PetBar:SetFramePoint( "BOTTOM", UIParent, 0, Backdrop:GetTop() * Backdrop:GetEffectiveScale() / PetBar:GetEffectiveScale() );
+
+	-- Prevent any profile changes in Dominos
+	Dominos.SaveProfile = NilFunction;
+	Dominos.SetProfile = NilFunction;
+	Dominos.DeleteProfile = NilFunction;
+	Dominos.CopyProfile = NilFunction;
+	Dominos.ResetProfile = NilFunction;
 end
 
 
