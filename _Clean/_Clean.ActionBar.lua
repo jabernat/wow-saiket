@@ -41,13 +41,19 @@ do
 			end
 		end
 	end
+	local Modified = {};
 	function me:ActionButtonModify ()
-		local NormalTexture = self:GetNormalTexture();
-		NormalTexture:SetAllPoints( self );
-		NormalTexture:SetAlpha( 1.0 );
-		_Clean.RemoveButtonIconBorder( self:GetRegions() ); -- Note: Icon texture must be first!
-		self:SetNormalTexture( me.ButtonNormalTexture );
-		hooksecurefunc( self, "SetNormalTexture", SetNormalTexture );
+		if ( not Modified[ self ] ) then
+			Modified[ self ] = true;
+
+			local NormalTexture = self:GetNormalTexture();
+			NormalTexture:SetAllPoints( self );
+			NormalTexture:SetAlpha( 1.0 );
+			_Clean.RemoveButtonIconBorder( self:GetRegions() ); -- Note: Icon texture must be first!
+			self:SetNormalTexture( me.ButtonNormalTexture );
+			hooksecurefunc( self, "SetNormalTexture", SetNormalTexture );
+			return true;
+		end
 	end
 end
 
@@ -178,6 +184,9 @@ function me:OnEvent ()
 			me.ActionButtonModify( Button );
 		end
 	end
+	hooksecurefunc( Dominos.ClassBar, "AddButton", function ( self, ID )
+		me.ActionButtonModify( _G[ "DominosClassButton"..ID ] );
+	end );
 
 	-- Add backdrops
 	local Padding = _Clean.Backdrop.Padding;
