@@ -25,7 +25,7 @@ end
   * Description: Updates configuration options on load.                        *
   ****************************************************************************]]
 function me:OnEvent ( _, AddOn )
-	if ( AddOn == "_UTF" ) then
+	if ( AddOn:upper() == "_UTF" ) then
 		self:UnregisterEvent( "ADDON_LOADED" );
 		self.Update();
 	end
