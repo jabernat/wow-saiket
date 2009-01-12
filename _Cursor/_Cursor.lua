@@ -391,7 +391,7 @@ end
   * Function: _Cursor:ADDON_LOADED                                             *
   ****************************************************************************]]
 function me:ADDON_LOADED ( _, AddOn )
-	if ( AddOn == "_Cursor" ) then
+	if ( AddOn:lower() == "_cursor" ) then
 		me:UnregisterEvent( "ADDON_LOADED" );
 		me.ADDON_LOADED = nil;
 
