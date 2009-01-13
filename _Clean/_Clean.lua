@@ -64,6 +64,8 @@ me.Colors = {
 me.MonospaceFont = CreateFont( "_CleanMonospace" );
 me.MonospaceNumberFont = CreateFont( "_CleanMonospaceNumber" );
 
+me.BottomPane = CreateFrame( "Frame", nil, UIParent );
+
 
 
 
@@ -268,6 +270,11 @@ do
 	me:RegisterEvent( "MODIFIER_STATE_CHANGED" );
 
 	hooksecurefunc( "UIParent_ManageFramePositions", me.ManagePositions );
+
+	-- Place the bottom pane
+	me.BottomPane:SetPoint( "BOTTOMLEFT" );
+	me.BottomPane:SetPoint( "RIGHT" );
+	me.BottomPane:SetPoint( "TOP", MultiBarLeftButton4, 0, -17 );
 
 
 	-- Set up font replacement

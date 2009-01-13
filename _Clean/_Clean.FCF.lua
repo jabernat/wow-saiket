@@ -68,7 +68,7 @@ function me:Expand ( Expand )
 
 		if ( ID == 1 or ID == 2 ) then
 			_Clean:RunProtectedFunction( function ()
-				self:SetPoint( "TOP", MultiBarLeftButton4, 0, -20 );
+				self:SetPoint( "TOP", _Clean.BottomPane, 0, -3 );
 			end, self:IsProtected() );
 		end
 	end
