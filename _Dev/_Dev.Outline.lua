@@ -223,7 +223,7 @@ end
 function me.Toggle ( Region, DefaultName )
 	if ( me.Targets[ Region ] ) then
 		if ( me:Remove( Region ) ) then
-			_Dev.Print( L.OUTLINE_MESSAGE_FORMAT:format( L.OUTLINE_REMOVE_FORMAT:format( Region:GetName() or DefaultName ) ) );
+			_Dev.Print( L.OUTLINE_MESSAGE_FORMAT:format( L.OUTLINE_REMOVE_FORMAT:format( Region:GetName() or tostring( DefaultName ) ) ) );
 			return true;
 		end
 	else -- Not already outlined
@@ -234,7 +234,7 @@ function me.Toggle ( Region, DefaultName )
 				_Dev.Round( Color.r * 255 ),
 				_Dev.Round( Color.g * 255 ),
 				_Dev.Round( Color.b * 255 ),
-				Region:GetName() or DefaultName ) ) );
+				Region:GetName() or tostring( DefaultName ) ) ) );
 			if ( Region:GetWidth() == 0 or Region:GetHeight() == 0 ) then
 				_Dev.Error( L.OUTLINE_MESSAGE_FORMAT:format( L.OUTLINE_INVALID_DIMENSIONS ), true );
 			elseif ( not Region:GetLeft() or not Region:GetBottom() ) then
