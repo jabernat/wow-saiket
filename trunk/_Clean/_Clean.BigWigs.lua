@@ -24,12 +24,10 @@ do
 			Anchor:SetUserPlaced( false );
 			Anchor:ClearAllPoints();
 			if ( Emphasize ) then
-				Anchor:SetPoint( "TOP", ChatFrame1Background );
+				Anchor:SetPoint( "TOP", _Clean.BottomPane );
 			else
-				Anchor:SetPoint( "BOTTOM", ChatFrame1Background, "TOP" );
+				Anchor:SetPoint( "BOTTOM", _Clean.BottomPane, "TOP" );
 			end
-			Anchor:SetPoint( "LEFT", UIParent, "CENTER" );
-			Anchor:SetPoint( "RIGHT", UIParent, "CENTER" );
 
 			local NilFunction = _Dev and _Dev.NilFunction or function () end;
 			Anchor.ClearAllPoints = NilFunction;
