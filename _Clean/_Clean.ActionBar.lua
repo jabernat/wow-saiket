@@ -17,7 +17,7 @@ me.BackdropRight = BackdropRight;
 
 me.DominosProfile = "_Clean";
 
-me.ButtonNormalTexture = "";
+me.ButtonNormalTexture = "Interface\\AddOns\\_Clean\\Skin\\ButtonNormalTexture";
 
 
 
@@ -28,30 +28,46 @@ me.ButtonNormalTexture = "";
   ****************************************************************************]]
 do
 	local Disabled = false;
+	local Modified = {};
+	local RotateTexture;
+	do
+		local Root2, Angle45 = 2 ^ 0.5, math.pi / 4;
+		local cos, sin = math.cos, math.sin;
+		local function CalculateCorner ( Angle )
+			return 0.5 + cos( Angle ) / Root2, 0.5 + sin( Angle ) / Root2;
+		end
+		RotateTexture = function ( self, Angle )
+			local LRx, LRy = CalculateCorner( Angle + Angle45 );
+			local LLx, LLy = CalculateCorner( Angle + Angle45 * 3 );
+			local ULx, ULy = CalculateCorner( Angle - Angle45 * 3 );
+			local URx, URy = CalculateCorner( Angle - Angle45 );
+			
+			self:SetTexCoord( ULx, ULy, LLx, LLy, URx, URy, LRx, LRy );
+		end
+	end
 	local function SetNormalTexture ( self, Texture )
 		if ( not Disabled and type( Texture ) == "string" ) then
 			if ( Texture:lower() == "interface\\buttons\\ui-quickslot" ) then
 				-- Empty button texture
 				self:GetNormalTexture():SetTexCoord( 0.2, 0.8, 0.2, 0.8 );
 			else
-				self:GetNormalTexture():SetTexCoord( 0, 1, 0, 1 );
+				RotateTexture( self:GetNormalTexture(), Modified[ self ] );
 				Disabled = true;
 				self:SetNormalTexture( me.ButtonNormalTexture );
 				Disabled = false;
 			end
 		end
 	end
-	local Modified = {};
-	function me:ActionButtonModify ()
+	function me:ActionButtonModify ( Angle )
 		if ( not Modified[ self ] ) then
-			Modified[ self ] = true;
+			Modified[ self ] = Angle;
 
 			local NormalTexture = self:GetNormalTexture();
 			NormalTexture:SetAllPoints( self );
 			NormalTexture:SetAlpha( 1.0 );
 			_Clean.RemoveButtonIconBorder( self:GetRegions() ); -- Note: Icon texture must be first!
-			self:SetNormalTexture( me.ButtonNormalTexture );
 			hooksecurefunc( self, "SetNormalTexture", SetNormalTexture );
+			SetNormalTexture( self, "" ); -- Set texture and angle
 			return true;
 		end
 	end
@@ -182,11 +198,11 @@ function me:OnEvent ()
 	local ClassBar = Dominos.Frame:Get( "class" );
 	if ( ClassBar ) then
 		for _, Button in ipairs( ClassBar.buttons ) do
-			me.ActionButtonModify( Button );
+			me.ActionButtonModify( Button, math.pi );
 		end
 	end
 	hooksecurefunc( Dominos.ClassBar, "AddButton", function ( self, ID )
-		me.ActionButtonModify( _G[ "DominosClassButton"..ID ] );
+		me.ActionButtonModify( _G[ "DominosClassButton"..ID ], math.pi );
 	end );
 
 	-- Add backdrops
@@ -228,24 +244,24 @@ do
 
 	-- Remove icon borders on buttons
 	for Index = 1, NUM_MULTIBAR_BUTTONS do
-		me.ActionButtonModify( _G[ "ActionButton"..Index ] );
-		me.ActionButtonModify( _G[ "MultiBarBottomLeftButton"..Index ] );
-		me.ActionButtonModify( _G[ "MultiBarBottomRightButton"..Index ] );
-		me.ActionButtonModify( _G[ "MultiBarLeftButton"..Index ] );
-		me.ActionButtonModify( _G[ "MultiBarRightButton"..Index ] );
+		me.ActionButtonModify( _G[ "ActionButton"..Index ], math.pi );
+		me.ActionButtonModify( _G[ "MultiBarBottomLeftButton"..Index ], 0 );
+		me.ActionButtonModify( _G[ "MultiBarBottomRightButton"..Index ], 0 );
+		me.ActionButtonModify( _G[ "MultiBarLeftButton"..Index ], math.pi / 2 );
+		me.ActionButtonModify( _G[ "MultiBarRightButton"..Index ], -math.pi / 2 );
 	end
 
 	-- Shapeshift bar (These get replaced by Dominos later)
 	for Index = 1, NUM_SHAPESHIFT_SLOTS do
-		me.ActionButtonModify( _G[ "ShapeshiftButton"..Index ] );
+		me.ActionButtonModify( _G[ "ShapeshiftButton"..Index ], math.pi );
 	end
 
 	-- Bag buttons
 	local LastBag = MainMenuBarBackpackButton;
-	me.ActionButtonModify( LastBag );
+	me.ActionButtonModify( LastBag, math.pi );
 	for Index = 0, NUM_BAG_SLOTS - 1 do
 		LastBag = _G[ "CharacterBag"..Index.."Slot" ];
-		me.ActionButtonModify( LastBag );
+		me.ActionButtonModify( LastBag, math.pi );
 	end
 
 	-- Keyring
