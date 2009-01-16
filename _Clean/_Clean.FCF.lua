@@ -169,13 +169,12 @@ do
 	local GetChatWindowInfo = GetChatWindowInfo;
 	local select = select;
 	local ipairs = ipairs;
-	local BottomButton, IsShown, Shown, Docked, TabFrame, _;
+	local BottomButton, Shown, Docked, TabFrame, _;
 	function me.OnUpdate ()
 		for Index, ChatFrame in ipairs( ChatFrames ) do
 			if ( ChatFrame:IsVisible() ) then
 				-- Show bottom button when necessary
 				BottomButton = Buttons[ ChatFrame ].Bottom;
-				IsShown = BottomButton:IsShown();
 				if ( ChatFrame:AtBottom() ) then
 					BottomButton:Hide();
 				else
