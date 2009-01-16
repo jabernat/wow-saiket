@@ -15,8 +15,6 @@ me.AddOnInitializers = AddOnInitializers;
 local ProtectedFunctionQueue = {};
 me.ProtectedFunctionQueue = ProtectedFunctionQueue;
 me.InCombatLockdown = false;
-local PositionManagers = {};
-me.PositionManagers = PositionManagers;
 local LockedButtons = {};
 me.LockedButtons = LockedButtons;
 
@@ -143,24 +141,6 @@ end
 
 
 --[[****************************************************************************
-  * Function: _Clean.ManagePositions                                           *
-  * Description: Calls all frame position manager overrides.                   *
-  ****************************************************************************]]
-function me.ManagePositions ()
-	for _, Manager in ipairs( PositionManagers ) do
-		Manager();
-	end
-end
---[[****************************************************************************
-  * Function: _Clean:AddPositionManager                                        *
-  * Description: Adds a position manager override.                             *
-  ****************************************************************************]]
-function me:AddPositionManager ( Manager )
-	tinsert( self.PositionManagers, Manager );
-end
-
-
---[[****************************************************************************
   * Function: _Clean.AddLockedButton                                           *
   * Description: Registers a button to only accept mouse clicks when the       *
   *   control modifier is held.                                                *
@@ -269,12 +249,11 @@ do
 	me:RegisterEvent( "PLAYER_REGEN_DISABLED" );
 	me:RegisterEvent( "MODIFIER_STATE_CHANGED" );
 
-	hooksecurefunc( "UIParent_ManageFramePositions", me.ManagePositions );
-
 	-- Place the bottom pane
-	me.BottomPane:SetPoint( "BOTTOMLEFT" );
+	me.BottomPane:SetPoint( "LEFT" );
 	me.BottomPane:SetPoint( "RIGHT" );
 	me.BottomPane:SetPoint( "TOP", MultiBarLeftButton4, 0, -17 );
+	me.BottomPane:SetPoint( "BOTTOM" );
 
 
 	-- Set up font replacement

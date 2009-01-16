@@ -219,6 +219,9 @@ function me:OnEvent ()
 	Backdrop:SetPoint( "BOTTOMRIGHT", BackdropBottomRight, "TOPRIGHT" );
 	Backdrop:SetPoint( "TOPLEFT", MultiBarLeftButton4, -Padding, Padding );
 
+	-- Adjust bottom pane to match bar positions
+	_Clean.BottomPane:SetPoint( "BOTTOM", Backdrop );
+
 	-- Move pet bar to middle of screen
 	local PetBar = Dominos.Frame:Get( "pet" );
 	PetBar:SetFramePoint( "BOTTOM", UIParent, 0, Backdrop:GetTop() * Backdrop:GetEffectiveScale() / PetBar:GetEffectiveScale() );
