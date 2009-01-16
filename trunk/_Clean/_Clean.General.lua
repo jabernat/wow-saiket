@@ -26,21 +26,6 @@ function me:GameTooltipSetDefaultAnchor ( Parent )
 end
 
 
---[[****************************************************************************
-  * Function: _Clean.General.PetBarManager                                     *
-  * Description: Manages the pet bar's position.                               *
-  ****************************************************************************]]
-function me.PetBarManager ()
-	if ( PetActionBarFrame:IsShown() ) then
-		_Clean:RunProtectedFunction( function ()
-			PetActionBarFrame:ClearAllPoints();
-			PetActionBarFrame:SetPoint( "CENTER", UIParent );
-			PetActionBarFrame:SetPoint( "BOTTOM", ChatFrame1, "TOP" );
-		end, PetActionBarFrame:IsProtected() );
-	end
-end
-
-
 
 
 --------------------------------------------------------------------------------
@@ -48,9 +33,6 @@ end
 -----------------------------
 
 do
-	PossessBarFrame:ClearAllPoints();
-	PossessBarFrame:SetPoint( "BOTTOMLEFT", MultiBarBottomLeftButton1, "TOPLEFT" );
-
 	-- Fix the small number font to use antialiasing
 	local Path, Height, Flags = NumberFontNormalSmall:GetFont();
 	Flags = Flags:gsub( ", ([A-Z]+)", { [ "MONOCHROME" ] = ""; [ "THICKOUTLINE" ] = ""; } );
@@ -72,7 +54,5 @@ do
 	Button.tooltipText = HELP_BUTTON;
 	Button.newbieText = NEWBIE_TOOLTIP_HELP;
 
-	UIPARENT_MANAGED_FRAME_POSITIONS[ "PossessBarFrame" ] = nil;
-	_Clean:AddPositionManager( me.PetBarManager );
 	hooksecurefunc( "GameTooltip_SetDefaultAnchor", me.GameTooltipSetDefaultAnchor );
 end
