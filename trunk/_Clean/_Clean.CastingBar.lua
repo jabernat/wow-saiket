@@ -8,9 +8,6 @@ local _Clean = _Clean;
 local me = {};
 _Clean.CastingBar = me;
 
-local Bars = {};
-me.Bars = Bars;
-
 
 
 
@@ -56,37 +53,36 @@ end
   * Description: Skins a casting bar frame and positions it.                   *
   ****************************************************************************]]
 function me:SkinCastingBar ()
-	if ( not Bars[ self ] ) then
-		Bars[ self ] = true;
+	-- Position the bar between the left and right action bar grids
+	self:ClearAllPoints();
+	self:SetPoint( "TOPRIGHT", _Clean.ActionBar.BackdropBottomRight, "TOPLEFT", -10, -10 );
+	self:SetPoint( "BOTTOMLEFT", _Clean.ActionBar.BackdropBottomLeft, "BOTTOMRIGHT", 10, 10 );
 
-		-- Position the bar between the left and right action bar grids
-		self:ClearAllPoints();
-		self:SetPoint( "TOPRIGHT", _Clean.ActionBar.BackdropBottomRight, "TOPLEFT", -10, -10 );
-		self:SetPoint( "BOTTOMLEFT", _Clean.ActionBar.BackdropBottomLeft, "BOTTOMRIGHT", 10, 10 );
+	local Text = _G[ self:GetName().."Text" ];
+	Text:ClearAllPoints();
+	Text:SetPoint( "CENTER", CastingBarFrame );
+	Text:SetWidth( 0 ); -- Allow variable width
+	Text:SetFontObject( GameFontHighlightLarge );
 
-		local Text = _G[ self:GetName().."Text" ];
-		Text:ClearAllPoints();
-		Text:SetPoint( "CENTER", CastingBarFrame );
-		Text:SetWidth( 0 ); -- Allow variable width
-		Text:SetFontObject( GameFontHighlightLarge );
-
-		local Background = _Clean.Colors.Background;
-		for _, Region in ipairs( { self:GetRegions() } ) do
-			if ( Region:GetObjectType() == "Texture" and Region:GetDrawLayer() == "BACKGROUND" and Region:GetTexture() == "Solid Texture" ) then
-				Region:Hide();
-				break;
-			end
+	local Background = _Clean.Colors.Background;
+	for _, Region in ipairs( { self:GetRegions() } ) do
+		if ( Region:GetObjectType() == "Texture" and Region:GetDrawLayer() == "BACKGROUND" and Region:GetTexture() == "Solid Texture" ) then
+			Region:Hide();
+			break;
 		end
-		_Clean.Backdrop.Add( self );
-
-		-- Hooks
-		self.Border = _G[ self:GetName().."Border" ];
-		self.Flash = _G[ self:GetName().."Flash" ];
-		self.Spark = _G[ self:GetName().."Spark" ];
-		self:HookScript( "OnEvent", me.HideArtwork );
-		self:HookScript( "OnUpdate", me.HideArtwork );
-		hooksecurefunc( self, "SetStatusBarColor", me.SetStatusBarColor );
 	end
+	_Clean.Backdrop.Add( self );
+
+	-- Change the bar texture
+	self:SetStatusBarTexture( "Interface\\AddOns\\_Clean\\Skin\\Glaze" );
+
+	-- Hooks
+	self.Border = _G[ self:GetName().."Border" ];
+	self.Flash = _G[ self:GetName().."Flash" ];
+	self.Spark = _G[ self:GetName().."Spark" ];
+	self:HookScript( "OnEvent", me.HideArtwork );
+	self:HookScript( "OnUpdate", me.HideArtwork );
+	hooksecurefunc( self, "SetStatusBarColor", me.SetStatusBarColor );
 end
 
 

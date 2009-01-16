@@ -23,6 +23,7 @@ function me:OnEvent ()
 		me.OnEvent = nil;
 
 		LibSharedMedia:Register( LibSharedMedia.MediaType.FONT, "DejaVu Sans Mono", "Interface\\AddOns\\_Clean\\Skin\\DejaVuSansMono.ttf" );
+		LibSharedMedia:Register( LibSharedMedia.MediaType.STATUSBAR, "_Clean", "Interface\\AddOns\\_Clean\\Skin\\Glaze" );
 
 		local Sound = LibSharedMedia.MediaType.SOUND;
 		LibSharedMedia:Register( Sound, "Mac Ping", "Interface\\AddOns\\_Clean\\Skin\\ErrorSound.mp3" );
