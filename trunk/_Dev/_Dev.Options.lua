@@ -142,7 +142,7 @@ end
   * Description: Puts together a control's dropdown menu.                      *
   ****************************************************************************]]
 function me.DropDownInitialize ()
-	local Variable = _G[ UIDROPDOWNMENU_INIT_MENU ].Variable;
+	local Variable = UIDROPDOWNMENU_INIT_MENU.Variable;
 	local Info = UIDropDownMenu_CreateInfo();
 	local Args = L.OPTIONS[ Variable.."_ARGS" ];
 	local Table, Key = me.GetVariableVararg( ( "." ):split( Variable ) );
