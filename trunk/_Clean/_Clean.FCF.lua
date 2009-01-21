@@ -252,7 +252,7 @@ end
 function Tab.DropDownInitialize ()
 	if ( UIDROPDOWNMENU_MENU_LEVEL == 1 ) then
 		local Disabled =
-			DisabledMenuButtons[ _G[ UIDROPDOWNMENU_OPEN_MENU ]:GetParent() ];
+			DisabledMenuButtons[ UIDROPDOWNMENU_INIT_MENU:GetParent() ];
 		for ButtonIndex = 1, DropDownList1.numButtons do
 			local Button = _G[ "DropDownList1Button"..ButtonIndex ];
 			if ( Disabled[ Button.value ] ) then
