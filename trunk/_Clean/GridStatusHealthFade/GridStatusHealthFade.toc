@@ -1,0 +1,9 @@
+## Interface: 20000
+## Title: GridStatusHealthFade |cff7fff7f -Ace2-|r
+## Notes: Allows you to set 2 colors and a threshold, max theshold 1st color as current theshold decreases color will fade into the 2nd color.
+## Author: North101
+## Version: 0.32
+## Dependencies: Grid
+## X-GridStatusModule: GridStatusHealthFade
+
+GridStatusHealthFade.lua
