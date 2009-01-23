@@ -87,11 +87,7 @@ end
   ****************************************************************************]]
 function me:OnStatusDisable ( Status )
 	if ( Status == STATUS_ID ) then
-		self:UnregisterEvent( "Grid_UnitJoined" );
-		self:UnregisterEvent( "Grid_UnitLeft" );
-		self:UnregisterEvent( "Grid_UnitChanged" );
-		self:UnregisterEvent( "UNIT_HEALTH" );
-		self:UnregisterEvent( "UNIT_MAXHEALTH" );
+		self:UnregisterAllEvents();
 		self.core:SendStatusLostAllUnits( STATUS_ID );
 		wipe( ColorTables );
 	end

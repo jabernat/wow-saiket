@@ -3,7 +3,7 @@
 ## Notes: A status that fadess between two colors based on health.
 ## Author: Saiket (Originally by North101)
 ## Version: 3.0.8.1
-## X-Date: 2009-01-20
+## X-Date: 2009-01-22
 ## X-Category: UnitFrame
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
