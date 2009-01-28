@@ -14,7 +14,7 @@ do
 			[ "Color to blend for units at max health" ] = true;
 			[ "Color Low" ] = true;
 			[ "Color to blend for units at no health" ] = true;
-			[ "%.f%%" ] = true; -- Format for health percentage labels
+			[ "%d%%" ] = true; -- Format for health percentage labels
 		};
 	end );
 end

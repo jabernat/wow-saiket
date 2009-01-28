@@ -149,18 +149,20 @@ do
 	local UnitHealth = UnitHealth;
 	local UnitHealthMax = UnitHealthMax;
 	local UnitIsDeadOrGhost = UnitIsDeadOrGhost;
+	local ceil = ceil;
 	function me:UpdateUnit( GUID, UnitID )
 		local HealthMax = UnitHealthMax( UnitID );
 		if ( HealthMax == 0 ) then -- Unit info is bogus
 			return;
 		end
-		local Percentage = UnitHealth( UnitID ) / HealthMax;
-		local Settings = self.db.profile[ STATUS_ID ];
-		local High, Low = Settings.ColorHigh, Settings.ColorLow;
 
 		if ( UnitIsDeadOrGhost( UnitID ) ) then
 			self.core:SendStatusLost( GUID, STATUS_ID );
 		else
+			local Percentage = UnitHealth( UnitID ) / HealthMax;
+			local Settings = self.db.profile[ STATUS_ID ];
+			local High, Low = Settings.ColorHigh, Settings.ColorLow;
+
 			local Color = ColorTables[ GUID ] or {};
 			ColorTables[ GUID ] = Color;
 			Color.r = High.r * Percentage + Low.r * ( 1 - Percentage );
@@ -177,7 +179,7 @@ do
 				Settings.priority,
 				( Settings.range and 40 ),
 				Color,
-				L[ "%.f%%" ]:format( Percentage * 100 ),
+				L[ "%d%%" ]:format( ceil( Percentage * 100 ) ),
 				Percentage,
 				1,
 				Settings.icon );
