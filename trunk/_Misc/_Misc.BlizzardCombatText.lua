@@ -56,6 +56,7 @@ do
 		[ 20267 ] = true; -- Judgement of Light
 		[ 20167 ] = true; -- Seal of Light
 		[ 54968 ] = true; -- Glyph of Holy Light
+		[ 15290 ] = true; -- Vampiric Embrace
 	};
 	function me:COMBAT_LOG_EVENT_UNFILTERED ( Event, _, Type, _, Caster, CasterFlags, _, Target, TargetFlags, SpellID, _, _, Amount, Overhealing, Critical )
 		if ( Type:match( "_HEAL$" ) and not ( Type:match( "^ENVIRONMENTAL" ) or IgnoredSpells[ SpellID ] ) ) then
