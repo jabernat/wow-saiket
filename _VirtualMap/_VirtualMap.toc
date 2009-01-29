@@ -2,8 +2,8 @@
 ## Title: _|cffCCCC88VirtualMap|r
 ## Notes: Virtual 3D map overlay for GatherMate.
 ## Author: Saiket. Original GatherHud by Grum and Xinhuan
-## Version: 3.0.2.1
-## X-Date: 2008-09-07
+## Version: 3.0.8.1
+## X-Date: 2009-01-29
 ## X-Category: Map
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
