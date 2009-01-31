@@ -188,6 +188,7 @@ end
 function me:PLAYER_ENTERING_WORLD ()
 	-- Prevent pings from before zoning from being read after loading
 	me.PingCutoff = GetTime();
+	me.NumPings = 0; -- Prevent issue with losing messages when entering/leaving BGs.
 end
 --[[****************************************************************************
   * Function: _Latency:CHAT_MSG_ADDON                                          *
