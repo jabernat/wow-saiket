@@ -2,8 +2,8 @@
 ## Title: _|cffCCCC88Latency|r
 ## Notes: Graphs a more accurate latency measurement.
 ## Author: Saiket
-## Version: 3.0.8.1
-## X-Date: 2009-01-29
+## Version: 3.0.8.2
+## X-Date: 2009-01-31
 ## X-Category: Chat/Communication
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
