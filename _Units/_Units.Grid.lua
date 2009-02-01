@@ -39,11 +39,7 @@ do
 
 		-- Add better layouts that include pets from all classes
 		GridLayout:AddLayout( L.GRID_LAYOUT_CLASS, {
-			{
-				--groupFilter = "WARLOCK,HUNTER",
-				isPetGroup = true,
-				filterOnPet = true,
-			},
+			{ isPetGroup = true; unitsPerColumn = 5; maxColumns = 8; },
 			{ groupFilter = "WARRIOR"; },
 			{ groupFilter = "PRIEST"; },
 			{ groupFilter = "DRUID"; },
@@ -56,11 +52,7 @@ do
 			{ groupFilter = "DEATHKNIGHT"; },
 		} );
 		GridLayout:AddLayout( L.GRID_LAYOUT_GROUP, {
-			{
-				--groupFilter = "WARLOCK,HUNTER",
-				isPetGroup = true,
-				filterOnPet = true,
-			},
+			{ isPetGroup = true; unitsPerColumn = 5; maxColumns = 8; },
 			{ groupFilter = "1"; },
 			{ groupFilter = "2"; },
 			{ groupFilter = "3"; },
