@@ -57,11 +57,7 @@ end
   * Function: _Misc.PushToTalk:OnEvent                                         *
   * Description: Keeps track of whether voice is transmitting or not.          *
   ****************************************************************************]]
-function me:OnEvent ( Event, ... )
-	if ( type( me[ Event ] ) == "function" ) then
-		me[ Event ]( self, Event, ... );
-	end
-end
+me.OnEvent = _Misc.OnEvent;
 
 
 
