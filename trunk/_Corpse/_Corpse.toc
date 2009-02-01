@@ -3,7 +3,7 @@
 ## Notes: Adds online/offline status and other info to corpse tooltips.
 ## Author: Saiket
 ## Version: 3.0.3.2
-## X-Date: 2009-01-01
+## X-Date: 2009-01-31
 ## X-Category: Tooltips, Interface Enhancements
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com

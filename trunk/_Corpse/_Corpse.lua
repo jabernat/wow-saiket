@@ -397,8 +397,8 @@ end
 do
 	local type = type;
 	function me:OnEvent ( Event, ... )
-		if ( type( me[ Event ] ) == "function" ) then
-			me[ Event ]( me, Event, ... );
+		if ( type( self[ Event ] ) == "function" ) then
+			self[ Event ]( self, Event, ... );
 		end
 	end
 end
