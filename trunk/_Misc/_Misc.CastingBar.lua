@@ -55,14 +55,7 @@ end
   * Function: _Misc.CastingBar:OnEvent                                         *
   * Description: Global event handler.                                         *
   ****************************************************************************]]
-do
-	local type = type;
-	function me:OnEvent ( Event, ... )
-		if ( type( self[ Event ] ) == "function" ) then
-			self[ Event ]( self, Event, ... );
-		end
-	end
-end
+me.OnEvent = _Misc.OnEvent;
 
 
 --[[****************************************************************************
