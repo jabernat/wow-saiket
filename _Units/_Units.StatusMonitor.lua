@@ -284,11 +284,7 @@ end
   * Function: _Units.StatusMonitor:OnEvent                                     *
   * Description: Updates unit visibility and stat values.                      *
   ****************************************************************************]]
-function me:OnEvent ( Event, ... )
-	if ( type( self[ Event ] ) == "function" ) then
-		self[ Event ]( self, Event, ... );
-	end
-end
+me.OnEvent = _Units.OnEvent;
 --[[****************************************************************************
   * Function: _Units.StatusMonitor:OnUpdate                                    *
   * Description: Autosizes all columns that need it on frame draw and then     *
