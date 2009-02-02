@@ -1,17 +1,19 @@
 ## Interface: 30000
 ## Title: _|cffCCCC88Corpse|r
 ## Notes: Adds online/offline status and other info to corpse tooltips.
+## Notes-koKR: 온라인/오프라인 상태와 기타 정보를 시체 툴팁에 추가합니다.
 ## Author: Saiket
-## Version: 3.0.3.2
-## X-Date: 2009-01-31
+## Version: 3.0.8.1
+## X-Date: 2009-02-02
 ## X-Category: Tooltips, Interface Enhancements
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
 ## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons/Corpse
 ## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Corpse
-## X-Localizations: enUS
+## X-Localizations: enUS, koKR
 ## OptionalDeps: _Dev
 Localization.lua
+Localization.koKR.lua
 
 _Corpse.lua
 _Corpse.Battlegrounds.lua
