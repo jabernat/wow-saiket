@@ -11,6 +11,7 @@
 ## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons/Corpse
 ## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Corpse
 ## X-Localizations: enUS, koKR
+## X-CompatibleLocales: enUS, koKR
 ## OptionalDeps: _Dev
 Localization.lua
 Localization.koKR.lua
