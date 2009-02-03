@@ -1,5 +1,11 @@
-GBS = CreateFrame( "Frame", nil, GuildBankFrame );
-local GBS = GBS;
+--[[****************************************************************************
+  * GuildBankSearch by Saiket, originally by Harros                            *
+  * GuildBankSearch.lua - Adds a search filter to the guild bank.              *
+  ****************************************************************************]]
+
+
+local L = GuildBankSearchLocalization;
+local GBS = CreateFrame( "Frame", "GuildBankSearch", GuildBankFrame );
 
 GBS.NamePattern = false;
 GBS.Quality = false;
@@ -59,7 +65,7 @@ do
 	FilterButton:SetWidth( 100 );
 	FilterButton:SetHeight( 21 );
 	FilterButton:SetPoint( "TOPRIGHT", -11, -40 );
-	FilterButton:SetText( "Filter" );
+	FilterButton:SetText( L.FILTER );
 	FilterButton:SetScript( "OnClick", function () GBS.Toggle() end );
 end
 do
@@ -89,7 +95,7 @@ do
 
 	local Label = Pane:CreateFontString( nil, "ARTWORK", "GameFontNormal" );
 	Label:SetPoint( "TOPLEFT", -4, 6 );
-	Label:SetText( "GuildBank|cffccccccSearch|r" );
+	Label:SetText( L.TITLE );
 
 	local CloseButton = CreateFrame( "Button", nil, Pane, "UIPanelCloseButton" );
 	Pane.CloseButton = CloseButton;
@@ -106,7 +112,7 @@ do
 	ClearButton:SetWidth( 45 );
 	ClearButton:SetHeight( 18 );
 	ClearButton:SetPoint( "TOPRIGHT", -15, 8 );
-	ClearButton:SetText( "Clear" );
+	ClearButton:SetText( L.CLEAR );
 	ClearButton:SetScript( "OnClick", function () GBS.ClearFilter(); end );
 
 	local NameEditBox = CreateFrame( "EditBox", "GBSNameEditBox", Pane, "InputBoxTemplate" );
@@ -124,7 +130,7 @@ do
 	NameEditBox:SetScript( "OnTextChanged", NameEditBox.OnTextChanged );
 	Label = NameEditBox:CreateFontString( nil, "OVERLAY", "GameFontHighlightSmall" );
 	Label:SetPoint( "BOTTOMLEFT", NameEditBox, "TOPLEFT", 3, -2 );
-	Label:SetText( "Name:" );
+	Label:SetText( L.NAME );
 
 	local QualityMenu = CreateFrame( "Frame", "GBSQualityMenu", Pane, "UIDropDownMenuTemplate" );
 	Pane.QualityMenu = QualityMenu;
@@ -137,7 +143,7 @@ do
 	end
 	function QualityMenu.Initialize ()
 		local Info = UIDropDownMenu_CreateInfo();
-		Info.text = "|cffcccccc(All)"..FONT_COLOR_CODE_CLOSE;
+		Info.text = L.ALL;
 		Info.value = -1;
 		Info.arg1 = false;
 		Info.func = QualityMenu.OnSelect;
@@ -160,7 +166,7 @@ do
 	UIDropDownMenu_Initialize( QualityMenu, QualityMenu.Initialize );
 	UIDropDownMenu_SetSelectedValue( QualityMenu, -1 );
 	Label = QualityMenu:CreateFontString( nil, "OVERLAY", "GameFontHighlightSmall" );
-	Label:SetText( "Quality:" );
+	Label:SetText( L.QUALITY );
 	Label:SetPoint( "BOTTOMLEFT", QualityMenu, "TOPLEFT", 24, 0 );
 
 	local ItemLevelMinEditBox = CreateFrame( "EditBox", "GBSItemLevelMinEditBox", Pane, "InputBoxTemplate" );
@@ -182,7 +188,7 @@ do
 	ItemLevelMinEditBox:SetScript( "OnTextChanged", ItemLevelMinEditBox.OnTextChanged );
 	Label = ItemLevelMinEditBox:CreateFontString( nil, "OVERLAY", "GameFontHighlightSmall" );
 	Label:SetPoint( "BOTTOM", ItemLevelMinEditBox, "TOPRIGHT", 5, 0 );
-	Label:SetText( "Item Level:" );
+	Label:SetText( L.ITEM_LEVEL );
 
 	local ItemLevelMaxEditBox = CreateFrame( "EditBox", "GBSItemLevelMaxEditBox", Pane, "InputBoxTemplate" );
 	Pane.ItemLevelMaxEditBox = ItemLevelMaxEditBox;
@@ -223,7 +229,7 @@ do
 	ReqLevelMaxEditBox:SetScript( "OnTextChanged", ReqLevelMaxEditBox.OnTextChanged );
 	Label = ReqLevelMaxEditBox:CreateFontString( nil, "OVERLAY", "GameFontHighlightSmall" );
 	Label:SetPoint( "BOTTOM", ReqLevelMaxEditBox, "TOPLEFT", -8, 0 );
-	Label:SetText( "Required Level:" );
+	Label:SetText( L.REQUIRED_LEVEL );
 
 	local ReqLevelMinEditBox = CreateFrame( "EditBox", "GBSReqLevelMinEditBox", Pane, "InputBoxTemplate" );
 	Pane.ReqLevelMinEditBox = ReqLevelMinEditBox;
@@ -246,7 +252,7 @@ do
 	Label:SetText( "-" );
 
 	local CategorySection = CreateFrame( "Frame", "GBSCategorySection", Pane, "OptionsBoxTemplate" );
-	_G[ CategorySection:GetName().."Title" ]:SetText( "Item Category" );
+	_G[ CategorySection:GetName().."Title" ]:SetText( L.ITEM_CATEGORY );
 	CategorySection:SetPoint( "TOP", ItemLevelMinEditBox, "BOTTOM", 0, -38 );
 	CategorySection:SetPoint( "LEFT" );
 	CategorySection:SetPoint( "BOTTOMRIGHT", 0, 8 );
@@ -269,7 +275,7 @@ do
 	end
 	function TypeMenu.Initialize ()
 		local Info = UIDropDownMenu_CreateInfo();
-		Info.text = "|cffcccccc(All)"..FONT_COLOR_CODE_CLOSE;
+		Info.text = L.ALL;
 		Info.value = -1;
 		Info.arg1 = false;
 		Info.func = TypeMenu.OnSelect;
@@ -292,7 +298,7 @@ do
 	UIDropDownMenu_Initialize( TypeMenu, TypeMenu.Initialize );
 	UIDropDownMenu_SetSelectedValue( TypeMenu, -1 );
 	Label = TypeMenu:CreateFontString( nil, "OVERLAY", "GameFontHighlightSmall" );
-	Label:SetText( "Type:" );
+	Label:SetText( L.TYPE );
 	Label:SetPoint( "BOTTOMLEFT", TypeMenu, "TOPLEFT", 24, 0 );
 
 	local SubTypeMenu = CreateFrame( "Frame", "GBSSubTypeMenu", Pane, "UIDropDownMenuTemplate" );
@@ -306,7 +312,7 @@ do
 	end
 	function SubTypeMenu.Initialize ()
 		local Info = UIDropDownMenu_CreateInfo();
-		Info.text = "|cffcccccc(All)"..FONT_COLOR_CODE_CLOSE;
+		Info.text = L.ALL;
 		Info.value = -1;
 		Info.arg1 = false;
 		Info.func = SubTypeMenu.OnSelect;
@@ -331,7 +337,7 @@ do
 	UIDropDownMenu_Initialize( SubTypeMenu, SubTypeMenu.Initialize );
 	UIDropDownMenu_SetSelectedValue( SubTypeMenu, -1 );
 	Label = SubTypeMenu:CreateFontString( nil, "OVERLAY", "GameFontHighlightSmall" );
-	Label:SetText( "Sub-Type:" );
+	Label:SetText( L.SUB_TYPE );
 	Label:SetPoint( "BOTTOMLEFT", SubTypeMenu, "TOPLEFT", 24, 0 );
 
 	local SlotMenu = CreateFrame( "Frame", "GBSSlotMenu", Pane, "UIDropDownMenuTemplate" );
@@ -345,7 +351,7 @@ do
 	end
 	function SlotMenu.Initialize ()
 		local Info = UIDropDownMenu_CreateInfo();
-		Info.text = "|cffcccccc(All)"..FONT_COLOR_CODE_CLOSE;
+		Info.text = L.ALL;
 		Info.value = -1;
 		Info.arg1 = false;
 		Info.func = SlotMenu.OnSelect;
@@ -368,7 +374,7 @@ do
 	UIDropDownMenu_Initialize( SlotMenu, SlotMenu.Initialize );
 	UIDropDownMenu_SetSelectedValue( SlotMenu, -1 );
 	Label = SlotMenu:CreateFontString( nil, "OVERLAY", "GameFontHighlightSmall" );
-	Label:SetText( "Slot:" );
+	Label:SetText( L.SLOT );
 	Label:SetPoint( "BOTTOMLEFT", SlotMenu, "TOPLEFT", 24, 0 );
 end
 
