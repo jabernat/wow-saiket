@@ -13,21 +13,21 @@ local Pane = CreateFrame( "Frame", nil, me );
 me.Pane = Pane;
 
 Pane.ClearButton = CreateFrame( "Button", nil, me, "UIPanelButtonTemplate" );
-Pane.NameEditBox = CreateFrame( "EditBox", "GuildBankSearchNameEditBox", me, "InputBoxTemplate" );
-Pane.QualityMenu = CreateFrame( "Frame", "GuildBankSearchQualityMenu", me, "UIDropDownMenuTemplate" );
-Pane.ItemLevelMinEditBox = CreateFrame( "EditBox", "GuildBankSearchItemLevelMinEditBox", me, "InputBoxTemplate" );
-Pane.ItemLevelMaxEditBox = CreateFrame( "EditBox", "GuildBankSearchItemLevelMaxEditBox", me, "InputBoxTemplate" );
-Pane.ReqLevelMinEditBox = CreateFrame( "EditBox", "GuildBankSearchReqLevelMinEditBox", me, "InputBoxTemplate" );
-Pane.ReqLevelMaxEditBox = CreateFrame( "EditBox", "GuildBankSearchReqLevelMaxEditBox", me, "InputBoxTemplate" );
+Pane.NameEditBox = CreateFrame( "EditBox", "$parentNameEditBox", me, "InputBoxTemplate" );
+Pane.QualityMenu = CreateFrame( "Frame", "$parentQualityMenu", me, "UIDropDownMenuTemplate" );
+Pane.ItemLevelMinEditBox = CreateFrame( "EditBox", "$parentItemLevelMinEditBox", me, "InputBoxTemplate" );
+Pane.ItemLevelMaxEditBox = CreateFrame( "EditBox", "$parentItemLevelMaxEditBox", me, "InputBoxTemplate" );
+Pane.ReqLevelMinEditBox = CreateFrame( "EditBox", "$parentReqLevelMinEditBox", me, "InputBoxTemplate" );
+Pane.ReqLevelMaxEditBox = CreateFrame( "EditBox", "$parentReqLevelMaxEditBox", me, "InputBoxTemplate" );
 
-Pane.CategorySection = CreateFrame( "Frame", "GuildBankSearchCategorySection", Pane, "OptionsBoxTemplate" );
-Pane.TypeMenu = CreateFrame( "Frame", "GuildBankSearchTypeMenu", Pane.CategorySection, "UIDropDownMenuTemplate" );
-Pane.SubTypeMenu = CreateFrame( "Frame", "GuildBankSearchSubTypeMenu", Pane.CategorySection, "UIDropDownMenuTemplate" );
-Pane.SlotMenu = CreateFrame( "Frame", "GuildBankSearchSlotMenu", Pane.CategorySection, "UIDropDownMenuTemplate" );
+Pane.CategorySection = CreateFrame( "Frame", "$parentCategory", me, "OptionsBoxTemplate" );
+Pane.TypeMenu = CreateFrame( "Frame", "$parentTypeMenu", Pane.CategorySection, "UIDropDownMenuTemplate" );
+Pane.SubTypeMenu = CreateFrame( "Frame", "$parentSubTypeMenu", Pane.CategorySection, "UIDropDownMenuTemplate" );
+Pane.SlotMenu = CreateFrame( "Frame", "$parentSlotMenu", Pane.CategorySection, "UIDropDownMenuTemplate" );
 
 
 -- Initially false so Clear() will update all fields to nil
-me.NamePattern = false;
+me.Name = false;
 me.Quality = false;
 me.Type = false;
 me.SubType = false;
@@ -90,7 +90,7 @@ end
   ****************************************************************************]]
 function Pane.NameEditBox:OnTextChanged ()
 	local Text = self:GetText();
-	me.NamePattern = #Text ~= 0 and Text:lower() or false;
+	me.Name = #Text ~= 0 and Text:lower() or false;
 	me.Filter();
 end
 --[[****************************************************************************
@@ -98,50 +98,6 @@ end
   ****************************************************************************]]
 function Pane.QualityMenu.IterateOptions ()
 	return ipairs( me.Qualities );
-end
---[[****************************************************************************
-  * Function: GuildBankSearch.Pane.ItemLevelMinEditBox:OnTextChanged           *
-  * Description: Updates the filter when the min item level changes.           *
-  ****************************************************************************]]
-function Pane.ItemLevelMinEditBox:OnTextChanged ()
-	local NewLevel = #self:GetText() ~= 0 and self:GetNumber() or false;
-	if ( NewLevel ~= me.ItemLevelMin ) then
-		me.ItemLevelMin = NewLevel;
-		me.Filter();
-	end
-end
---[[****************************************************************************
-  * Function: GuildBankSearch.Pane.ItemLevelMinEditBox:OnTextChanged           *
-  * Description: Updates the filter when the max item level changes.           *
-  ****************************************************************************]]
-function Pane.ItemLevelMaxEditBox:OnTextChanged ()
-	local NewLevel = #self:GetText() ~= 0 and self:GetNumber() or false;
-	if ( NewLevel ~= me.ItemLevelMax ) then
-		me.ItemLevelMax = NewLevel;
-		me.Filter();
-	end
-end
---[[****************************************************************************
-  * Function: GuildBankSearch.Pane.ReqLevelMinEditBox:OnTextChanged            *
-  * Description: Updates the filter when the min required level changes.       *
-  ****************************************************************************]]
-function Pane.ReqLevelMinEditBox:OnTextChanged ()
-	local NewLevel = #self:GetText() ~= 0 and self:GetNumber() or false;
-	if ( NewLevel ~= me.ReqLevelMin ) then
-		me.ReqLevelMin = NewLevel;
-		me.Filter();
-	end
-end
---[[****************************************************************************
-  * Function: GuildBankSearch.Pane.ReqLevelMaxEditBox:OnTextChanged            *
-  * Description: Updates the filter when the max required level changes.       *
-  ****************************************************************************]]
-function Pane.ReqLevelMaxEditBox:OnTextChanged ()
-	local NewLevel = #self:GetText() ~= 0 and self:GetNumber() or false;
-	if ( NewLevel ~= me.ReqLevelMax ) then
-		me.ReqLevelMax = NewLevel;
-		me.Filter();
-	end
 end
 
 --[[****************************************************************************
@@ -197,6 +153,16 @@ function Pane.SlotMenu.IterateOptions ()
 	end;
 end
 
+--[[****************************************************************************
+  * Function: GuildBankSearch:LevelEditBoxOnTextChanged                        *
+  ****************************************************************************]]
+function me:LevelEditBoxOnTextChanged ()
+	local NewLevel = self:GetText() ~= "" and self:GetNumber() or false;
+	if ( NewLevel ~= me[ self.Parameter ] ) then
+		me[ self.Parameter ] = NewLevel;
+		me.Filter();
+	end
+end
 --[[****************************************************************************
   * Function: GuildBankSearch:DropdownOnSelect                                 *
   ****************************************************************************]]
@@ -265,7 +231,7 @@ end
   * Description: Returns true if any filter parameters are set.                *
   ****************************************************************************]]
 function me.IsFilterDefined ()
-	return me.NamePattern or me.Quality or me.Type or me.SubType or me.Slot or me.ItemLevelMin or me.ItemLevelMax or me.ReqLevelMin or me.ReqLevelMax;
+	return me.Name or me.Quality or me.Type or me.SubType or me.Slot or me.ItemLevelMin or me.ItemLevelMax or me.ReqLevelMin or me.ReqLevelMax;
 end
 
 --[[****************************************************************************
@@ -280,7 +246,7 @@ do
 		end
 
 		Name, Link, Rarity, ItemLevel, ReqLevel, Type, SubType, StackCount, Slot = GetItemInfo( ItemLink );
-		if ( me.NamePattern and not Name:lower():find( me.NamePattern, 1, true ) ) then
+		if ( me.Name and not Name:lower():find( me.Name, 1, true ) ) then
 			return false;
 		elseif ( me.Quality and me.Quality ~= Rarity ) then
 			return false;
@@ -539,91 +505,70 @@ do
 		end
 		self.initialize = me.DropdownInitialize;
 		self.Parameter = Parameter;
-		local Label = self:CreateFontString( nil, "OVERLAY", "GameFontHighlightSmall" );
-		Label:SetText( Label );
-		Label:SetPoint( "BOTTOMLEFT", self, "TOPLEFT", 24, 0 );
+		self.Label = self:CreateFontString( nil, "OVERLAY", "GameFontHighlightSmall" );
+		self.Label:SetText( Label );
+		self.Label:SetPoint( "BOTTOMLEFT", self, "TOPLEFT", 24, 0 );
+		return self;
+	end
+	local function InitializeLevelEditBox ( self, Parameter, Label )
+		self:SetWidth( 25 );
+		self:SetHeight( 16 );
+		self:SetNumeric( true );
+		self:SetMaxLetters( 3 );
+		self:SetAutoFocus( false );
+		self:SetScript( "OnTextChanged", me.LevelEditBoxOnTextChanged );
+		self.Parameter = Parameter;
+		self.Label = self:CreateFontString( nil, "OVERLAY", "GameFontHighlightSmall" );
+		self.Label:SetText( Label );
 	end
 
 	local NameEditBox = Pane.NameEditBox;
 	NameEditBox:SetHeight( 16 );
 	NameEditBox:SetAutoFocus( false );
 	NameEditBox:SetPoint( "TOP", ClearButton, "BOTTOM", 0, -20 );
-	NameEditBox:SetPoint( "LEFT", 8, 0 );
-	NameEditBox:SetPoint( "RIGHT", -8, 0 );
+	NameEditBox:SetPoint( "LEFT", 16, 0 );
+	NameEditBox:SetPoint( "RIGHT", -16, 0 );
 	NameEditBox:SetScript( "OnTextChanged", NameEditBox.OnTextChanged );
 	Label = NameEditBox:CreateFontString( nil, "OVERLAY", "GameFontHighlightSmall" );
 	Label:SetPoint( "BOTTOMLEFT", NameEditBox, "TOPLEFT", 1, 0 );
 	Label:SetText( L.NAME );
 
-	InitializeDropdown( Pane.QualityMenu, "Quality", L.QUALITY );
-	Pane.QualityMenu:SetPoint( "TOP", NameEditBox, "BOTTOM", 0, -12 );
+	InitializeDropdown( Pane.QualityMenu, "Quality", L.QUALITY ):SetPoint( "TOP", NameEditBox, "BOTTOM", 0, -12 );
 
-	local ItemLevelMinEditBox = Pane.ItemLevelMinEditBox;
-	ItemLevelMinEditBox:SetWidth( 25 );
-	ItemLevelMinEditBox:SetHeight( 16 );
-	ItemLevelMinEditBox:SetNumeric( true );
-	ItemLevelMinEditBox:SetMaxLetters( 3 );
-	ItemLevelMinEditBox:SetAutoFocus( false );
-	ItemLevelMinEditBox:SetPoint( "TOP", Pane.QualityMenu, "BOTTOM", 0, -16 );
-	ItemLevelMinEditBox:SetPoint( "LEFT", 8, 0 );
-	ItemLevelMinEditBox:SetScript( "OnTextChanged", ItemLevelMinEditBox.OnTextChanged );
-	Label = ItemLevelMinEditBox:CreateFontString( nil, "OVERLAY", "GameFontHighlightSmall" );
-	Label:SetPoint( "BOTTOM", ItemLevelMinEditBox, "TOPRIGHT", 5, 0 );
-	Label:SetText( L.ITEM_LEVEL );
+	-- Item level range
+	local Min = Pane.ItemLevelMinEditBox;
+	InitializeLevelEditBox( Min, "ItemLevelMin", L.ITEM_LEVEL );
+	Min:SetPoint( "TOP", Pane.QualityMenu, "BOTTOM", 0, -16 );
+	Min:SetPoint( "LEFT", 16, 0 );
+	local Max = Pane.ItemLevelMaxEditBox;
+	InitializeLevelEditBox( Max, "ItemLevelMax", L.LEVELRANGE_SEPARATOR );
+	Max.Label:SetPoint( "LEFT", Min, "RIGHT", 2, 0 );
+	Max:SetPoint( "LEFT", Max.Label, "RIGHT", 8, 0 );
+	Min.Label:SetPoint( "CENTER", Max.Label ); -- Center above dash between edit boxes
+	Min.Label:SetPoint( "BOTTOM", Min, "TOP" );
 
-	local ItemLevelMaxEditBox = Pane.ItemLevelMaxEditBox;
-	ItemLevelMaxEditBox:SetWidth( 25 );
-	ItemLevelMaxEditBox:SetHeight( 16 );
-	ItemLevelMaxEditBox:SetNumeric( true );
-	ItemLevelMaxEditBox:SetMaxLetters( 3 );
-	ItemLevelMaxEditBox:SetAutoFocus( false );
-	ItemLevelMaxEditBox:SetPoint( "LEFT", ItemLevelMinEditBox, "RIGHT", 12, 0 );
-	ItemLevelMaxEditBox:SetScript( "OnTextChanged", ItemLevelMaxEditBox.OnTextChanged );
-	Label = ItemLevelMaxEditBox:CreateFontString( nil, "OVERLAY", "GameFontHighlightSmall" );
-	Label:SetPoint( "LEFT", ItemLevelMinEditBox, "RIGHT" );
-	Label:SetText( "-" );
-
-	local ReqLevelMaxEditBox = Pane.ReqLevelMaxEditBox;
-	ReqLevelMaxEditBox:SetWidth( 25 );
-	ReqLevelMaxEditBox:SetHeight( 16 );
-	ReqLevelMaxEditBox:SetNumeric( true );
-	ReqLevelMaxEditBox:SetMaxLetters( 3 );
-	ReqLevelMaxEditBox:SetAutoFocus( false );
-	ReqLevelMaxEditBox:SetPoint( "TOP", Pane.QualityMenu, "BOTTOM", 0, -16 );
-	ReqLevelMaxEditBox:SetPoint( "RIGHT", -8, 0 );
-	ReqLevelMaxEditBox:SetScript( "OnTextChanged", ReqLevelMaxEditBox.OnTextChanged );
-	Label = ReqLevelMaxEditBox:CreateFontString( nil, "OVERLAY", "GameFontHighlightSmall" );
-	Label:SetPoint( "BOTTOM", ReqLevelMaxEditBox, "TOPLEFT", -8, 0 );
-	Label:SetText( L.REQUIRED_LEVEL );
-
-	local ReqLevelMinEditBox = Pane.ReqLevelMinEditBox;
-	ReqLevelMinEditBox:SetWidth( 25 );
-	ReqLevelMinEditBox:SetHeight( 16 );
-	ReqLevelMinEditBox:SetNumeric( true );
-	ReqLevelMinEditBox:SetMaxLetters( 3 );
-	ReqLevelMinEditBox:SetAutoFocus( false );
-	ReqLevelMinEditBox:SetPoint( "RIGHT", ReqLevelMaxEditBox, "LEFT", -12, 0 );
-	ReqLevelMinEditBox:SetScript( "OnTextChanged", ReqLevelMinEditBox.OnTextChanged );
-	Label = ReqLevelMinEditBox:CreateFontString( nil, "OVERLAY", "GameFontHighlightSmall" );
-	Label:SetPoint( "RIGHT", ReqLevelMaxEditBox, "LEFT", -6, 0 );
-	Label:SetText( "-" );
-
+	-- Required level range
+	Max = Pane.ReqLevelMaxEditBox;
+	InitializeLevelEditBox( Max, "ReqLevelMax", L.REQUIRED_LEVEL );
+	Max:SetPoint( "TOP", Pane.ItemLevelMinEditBox );
+	Max:SetPoint( "RIGHT", -24, 0 );
+	Min = Pane.ReqLevelMinEditBox;
+	InitializeLevelEditBox( Min, "ReqLevelMin", L.LEVELRANGE_SEPARATOR );
+	Min.Label:SetPoint( "RIGHT", Max, "LEFT", -8, 0 );
+	Min:SetPoint( "RIGHT", Min.Label, "LEFT", -2, 0 );
+	Max.Label:SetPoint( "CENTER", Min.Label );
+	Max.Label:SetPoint( "BOTTOM", Max, "TOP" );
 
 	-- Item category section
 	local CategorySection = Pane.CategorySection;
 	_G[ CategorySection:GetName().."Title" ]:SetText( L.ITEM_CATEGORY );
-	CategorySection:SetPoint( "TOP", ItemLevelMinEditBox, "BOTTOM", 0, -38 );
-	CategorySection:SetPoint( "LEFT" );
-	CategorySection:SetPoint( "BOTTOMRIGHT", 0, 8 );
+	CategorySection:SetPoint( "TOP", Pane.ItemLevelMinEditBox, "BOTTOM", 0, -38 );
+	CategorySection:SetPoint( "LEFT", 8, 0 );
+	CategorySection:SetPoint( "BOTTOMRIGHT", -16, 16 );
 
-	InitializeDropdown( Pane.TypeMenu, "Type", L.TYPE );
-	Pane.TypeMenu:SetPoint( "TOP", 0, -16 );
-
-	InitializeDropdown( Pane.SubTypeMenu, "SubType", L.SUB_TYPE );
-	Pane.SubTypeMenu:SetPoint( "TOP", Pane.TypeMenu, "BOTTOM", 0, -6 );
-
-	InitializeDropdown( Pane.SlotMenu, "Slot", L.SLOT );
-	Pane.SlotMenu:SetPoint( "TOP", Pane.SubTypeMenu, "BOTTOM", 0, -16 );
+	InitializeDropdown( Pane.TypeMenu, "Type", L.TYPE ):SetPoint( "TOP", 0, -16 );
+	InitializeDropdown( Pane.SubTypeMenu, "SubType", L.SUB_TYPE ):SetPoint( "TOP", Pane.TypeMenu, "BOTTOM", 0, -6 );
+	InitializeDropdown( Pane.SlotMenu, "Slot", L.SLOT ):SetPoint( "TOP", Pane.SubTypeMenu, "BOTTOM", 0, -16 );
 
 
 	-- Hooks

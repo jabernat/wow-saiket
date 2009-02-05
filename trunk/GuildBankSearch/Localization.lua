@@ -17,6 +17,7 @@ do
 			QUALITY = "Quality:";
 			ITEM_LEVEL = "Item Level:";
 			REQUIRED_LEVEL = "Required Level:";
+			LEVELRANGE_SEPARATOR = "-";
 
 			ITEM_CATEGORY = "Item Category";
 			TYPE = "Type:";

@@ -17,6 +17,7 @@ if ( GetLocale() == "koKR" ) then
 			QUALITY = "품질:";
 			ITEM_LEVEL = "아이템 레벨:";
 			REQUIRED_LEVEL = "필요 레벨:";
+			LEVELRANGE_SEPARATOR = "-";
 
 			ITEM_CATEGORY = "아이템 분류";
 			TYPE = "종류:";
