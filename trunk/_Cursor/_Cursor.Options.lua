@@ -63,11 +63,11 @@ function SetsPanel.Set:OnTextChanged ()
 	end
 end
 --[[****************************************************************************
-  * Function: _Cursor.Options.SetsPanel.Set.initialize                         *
+  * Function: _Cursor.Options.SetsPanel.Set:initialize                         *
   ****************************************************************************]]
 do
 	local Sorted = {};
-	function SetsPanel.Set.initialize ()
+	function SetsPanel.Set:initialize ()
 		for Name in pairs( _CursorOptions.Sets ) do
 			Sorted[ #Sorted + 1 ] = Name;
 		end
@@ -75,8 +75,8 @@ do
 		local Info = UIDropDownMenu_CreateInfo();
 		for _, Name in ipairs( Sorted ) do
 			Info.text = Name;
-			Info.value = Name;
-			Info.func = SetsPanel.Set.OnSelect;
+			Info.arg1 = Name;
+			Info.func = self.OnSelect;
 			UIDropDownMenu_AddButton( Info );
 		end
 
@@ -84,11 +84,11 @@ do
 	end
 end
 --[[****************************************************************************
-  * Function: _Cursor.Options.SetsPanel.Set.OnSelect                           *
+  * Function: _Cursor.Options.SetsPanel.Set:OnSelect                           *
   ****************************************************************************]]
-function SetsPanel.Set.OnSelect ()
+function SetsPanel.Set:OnSelect ( Name )
 	SetsPanel.Set:OnEnterPressed();
-	SetsPanel.Set:SetText( this.value );
+	SetsPanel.Set:SetText( Name );
 end
 --[[****************************************************************************
   * Function: _Cursor.Options.SetsPanel.Set.Button:OnClick                     *
@@ -485,7 +485,7 @@ function CursorsPanel.Facing:OnValueChanged ( Value )
 	CursorsPanel.Preview.Update();
 end
 --[[****************************************************************************
-  * Function: _Cursor.Options.CursorsPanel.Type.initialize                     *
+  * Function: _Cursor.Options.CursorsPanel.Type:initialize                     *
   * Description: Builds the type dropdown menu.                                *
   ****************************************************************************]]
 do
@@ -493,7 +493,7 @@ do
 	local function SortFunc ( Name1, Name2 )
 		return L.TYPES[ Name1 ] < L.TYPES[ Name2 ];
 	end
-	function CursorsPanel.Type.initialize ()
+	function CursorsPanel.Type:initialize ()
 		local Selected = TabsUsed[ CursorsPanel.Selected ].Type;
 
 		for Name in pairs( _Cursor.Presets ) do
@@ -503,8 +503,8 @@ do
 		local Info = UIDropDownMenu_CreateInfo();
 		for _, Name in ipairs( Sorted ) do
 			Info.text = L.TYPES[ Name ];
-			Info.value = Name;
-			Info.func = CursorsPanel.Type.OnSelect;
+			Info.arg1 = Name;
+			Info.func = self.OnSelect;
 			Info.checked = Name == Selected;
 			UIDropDownMenu_AddButton( Info );
 		end
@@ -516,8 +516,8 @@ do
 		-- Custom
 		Info.disabled = nil;
 		Info.text = L.TYPES[ "" ];
-		Info.value = "";
-		Info.func = CursorsPanel.Type.OnSelect;
+		Info.arg1 = "";
+		Info.func = self.OnSelect;
 		Info.checked = #Selected == 0;
 		UIDropDownMenu_AddButton( Info );
 
@@ -525,12 +525,11 @@ do
 	end
 end
 --[[****************************************************************************
-  * Function: _Cursor.Options.CursorsPanel.Type.OnSelect                       *
+  * Function: _Cursor.Options.CursorsPanel.Type:OnSelect                       *
   ****************************************************************************]]
-function CursorsPanel.Type.OnSelect ()
+function CursorsPanel.Type:OnSelect ( Type )
 	local Cursor = TabsUsed[ CursorsPanel.Selected ];
 
-	local Type = this.value;
 	if ( Type ~= Cursor.Type ) then
 		Cursor.Type = Type;
 		if ( #Type == 0 ) then -- Custom
@@ -547,7 +546,7 @@ function CursorsPanel.Type.OnSelect ()
 	end
 end
 --[[****************************************************************************
-  * Function: _Cursor.Options.CursorsPanel.Value.initialize                    *
+  * Function: _Cursor.Options.CursorsPanel.Value:initialize                    *
   * Description: Builds the value dropdown menu.                               *
   ****************************************************************************]]
 do
@@ -555,7 +554,7 @@ do
 	local function SortFunc ( Name1, Name2 )
 		return L.VALUES[ Name1 ] < L.VALUES[ Name2 ];
 	end
-	function CursorsPanel.Value.initialize ()
+	function CursorsPanel.Value:initialize ()
 		local Cursor = TabsUsed[ CursorsPanel.Selected ];
 		local Selected = Cursor.Value;
 		local Values = _Cursor.Presets[ Cursor.Type ];
@@ -567,8 +566,8 @@ do
 		local Info = UIDropDownMenu_CreateInfo();
 		for _, Name in ipairs( Sorted ) do
 			Info.text = L.VALUES[ Name ];
-			Info.value = Name;
-			Info.func = CursorsPanel.Value.OnSelect;
+			Info.arg1 = Name;
+			Info.func = self.OnSelect;
 			Info.checked = Name == Selected;
 			UIDropDownMenu_AddButton( Info );
 		end
@@ -577,12 +576,11 @@ do
 	end
 end
 --[[****************************************************************************
-  * Function: _Cursor.Options.CursorsPanel.Value.OnSelect                      *
+  * Function: _Cursor.Options.CursorsPanel.Value:OnSelect                      *
   ****************************************************************************]]
-function CursorsPanel.Value.OnSelect ()
+function CursorsPanel.Value:OnSelect ( Value )
 	local Cursor = TabsUsed[ CursorsPanel.Selected ];
 
-	local Value = this.value;
 	if ( Value ~= Cursor.Value ) then
 		Cursor.Value = Value;
 		CursorsPanel.UpdatePreset( Cursor );
