@@ -12,13 +12,13 @@ me.FilterButton = FilterButton;
 local Pane = CreateFrame( "Frame", nil, me );
 me.Pane = Pane;
 
-Pane.ClearButton = CreateFrame( "Button", nil, Pane, "UIPanelButtonTemplate" );
-Pane.NameEditBox = CreateFrame( "EditBox", "GuildBankSearchNameEditBox", Pane, "InputBoxTemplate" );
-Pane.QualityMenu = CreateFrame( "Frame", "GuildBankSearchQualityMenu", Pane, "UIDropDownMenuTemplate" );
-Pane.ItemLevelMinEditBox = CreateFrame( "EditBox", "GuildBankSearchItemLevelMinEditBox", Pane, "InputBoxTemplate" );
-Pane.ItemLevelMaxEditBox = CreateFrame( "EditBox", "GuildBankSearchItemLevelMaxEditBox", Pane, "InputBoxTemplate" );
-Pane.ReqLevelMinEditBox = CreateFrame( "EditBox", "GuildBankSearchReqLevelMinEditBox", Pane, "InputBoxTemplate" );
-Pane.ReqLevelMaxEditBox = CreateFrame( "EditBox", "GuildBankSearchReqLevelMaxEditBox", Pane, "InputBoxTemplate" );
+Pane.ClearButton = CreateFrame( "Button", nil, me, "UIPanelButtonTemplate" );
+Pane.NameEditBox = CreateFrame( "EditBox", "GuildBankSearchNameEditBox", me, "InputBoxTemplate" );
+Pane.QualityMenu = CreateFrame( "Frame", "GuildBankSearchQualityMenu", me, "UIDropDownMenuTemplate" );
+Pane.ItemLevelMinEditBox = CreateFrame( "EditBox", "GuildBankSearchItemLevelMinEditBox", me, "InputBoxTemplate" );
+Pane.ItemLevelMaxEditBox = CreateFrame( "EditBox", "GuildBankSearchItemLevelMaxEditBox", me, "InputBoxTemplate" );
+Pane.ReqLevelMinEditBox = CreateFrame( "EditBox", "GuildBankSearchReqLevelMinEditBox", me, "InputBoxTemplate" );
+Pane.ReqLevelMaxEditBox = CreateFrame( "EditBox", "GuildBankSearchReqLevelMaxEditBox", me, "InputBoxTemplate" );
 
 Pane.CategorySection = CreateFrame( "Frame", "GuildBankSearchCategorySection", Pane, "OptionsBoxTemplate" );
 Pane.TypeMenu = CreateFrame( "Frame", "GuildBankSearchTypeMenu", Pane.CategorySection, "UIDropDownMenuTemplate" );
@@ -26,6 +26,7 @@ Pane.SubTypeMenu = CreateFrame( "Frame", "GuildBankSearchSubTypeMenu", Pane.Cate
 Pane.SlotMenu = CreateFrame( "Frame", "GuildBankSearchSlotMenu", Pane.CategorySection, "UIDropDownMenuTemplate" );
 
 
+-- Initially false so Clear() will update all fields to nil
 me.NamePattern = false;
 me.Quality = false;
 me.Type = false;
@@ -36,6 +37,7 @@ me.ItemLevelMax = false;
 me.ReqLevelMin = false;
 me.ReqLevelMax = false;
 
+me.Qualities = {};
 me.Types = { GetAuctionItemClasses() };
 me.SubTypes = {};
 me.Slots = {}; -- Sorted list of inventory types that can be searched for
@@ -92,35 +94,10 @@ function Pane.NameEditBox:OnTextChanged ()
 	me.Filter();
 end
 --[[****************************************************************************
-  * Function: GuildBankSearch.Pane.QualityMenu:OnSelect                        *
-  * Description: Updates the filter when a quality is chosen.                  *
+  * Function: GuildBankSearch.Pane.QualityMenu.IterateOptions                  *
   ****************************************************************************]]
-function Pane.QualityMenu:OnSelect ( Quality )
-	if ( Quality ~= me.Quality ) then
-		UIDropDownMenu_SetSelectedValue( Pane.QualityMenu, self.value );
-		me.Quality = Quality;
-		me.Filter();
-	end
-end
---[[****************************************************************************
-  * Function: GuildBankSearch.Pane.QualityMenu:Initialize                      *
-  * Description: Constructs the item quality dropdown.                         *
-  ****************************************************************************]]
-function Pane.QualityMenu:Initialize ()
-	local Info = UIDropDownMenu_CreateInfo();
-	Info.text = L.ALL;
-	Info.value = -1;
-	Info.arg1 = false;
-	Info.func = self.OnSelect;
-	UIDropDownMenu_AddButton( Info );
-	for Index = 0, #ITEM_QUALITY_COLORS do
-		Info.text = ITEM_QUALITY_COLORS[ Index ].hex.._G[ "ITEM_QUALITY"..Index.."_DESC" ]..FONT_COLOR_CODE_CLOSE;
-		Info.value = Index;
-		Info.arg1 = Index;
-		Info.func = self.OnSelect;
-		Info.checked = nil;
-		UIDropDownMenu_AddButton( Info );
-	end
+function Pane.QualityMenu.IterateOptions ()
+	return ipairs( me.Qualities );
 end
 --[[****************************************************************************
   * Function: GuildBankSearch.Pane.ItemLevelMinEditBox:OnTextChanged           *
@@ -169,103 +146,84 @@ end
 
 --[[****************************************************************************
   * Function: GuildBankSearch.Pane.TypeMenu:OnSelect                           *
-  * Description: Updates the filter when an item type is chosen.               *
+  * Description: Updates the subtype dropdown when a type is chosen.           *
   ****************************************************************************]]
-function Pane.TypeMenu:OnSelect ( Type )
+function Pane.TypeMenu:OnSelect ( Dropdown, Type )
 	if ( me.Type ~= Type ) then
-		UIDropDownMenu_SetSelectedValue( Pane.TypeMenu, self.value );
-		me.Type = Type;
-		UIDropDownMenu_SetSelectedValue( Pane.SubTypeMenu, -1 );
-		me.SubType = false;
-		if ( not me.Type ) then
+		Pane.SubTypeMenu.OnSelect( nil, Pane.SubTypeMenu ); -- Remove subtype filter
+		if ( not Type ) then
 			UIDropDownMenu_DisableDropDown( Pane.SubTypeMenu );
 		else
 			UIDropDownMenu_EnableDropDown( Pane.SubTypeMenu );
 		end
+		me.DropdownOnSelect( self, Dropdown, Type );
+	end
+end
+--[[****************************************************************************
+  * Function: GuildBankSearch.Pane.TypeMenu.IterateOptions                     *
+  ****************************************************************************]]
+do
+	local Index;
+	local function Iterator ()
+		Index = Index + 1;
+		local Label = me.Types[ Index ];
+		return Label, Label;
+	end
+	function Pane.TypeMenu.IterateOptions ()
+		Index = 0;
+		return Iterator;
+	end
+end
+--[[****************************************************************************
+  * Function: GuildBankSearch.Pane.SubTypeMenu.IterateOptions                  *
+  ****************************************************************************]]
+function Pane.SubTypeMenu.IterateOptions ()
+	local Index = 0;
+	return function ()
+		Index = Index + 1;
+		local Label = me.SubTypes[ me.Type ][ Index ];
+		return Label, Label;
+	end;
+end
+--[[****************************************************************************
+  * Function: GuildBankSearch.Pane.SlotMenu.IterateOptions                     *
+  ****************************************************************************]]
+function Pane.SlotMenu.IterateOptions ()
+	local Index = 0;
+	return function ()
+		Index = Index + 1;
+		local Slot = me.Slots[ Index ];
+		return Slot, _G[ Slot ];
+	end;
+end
+
+--[[****************************************************************************
+  * Function: GuildBankSearch:DropdownOnSelect                                 *
+  ****************************************************************************]]
+function me:DropdownOnSelect ( Dropdown, Value )
+	if ( Value ~= me[ Dropdown.Parameter ] ) then
+		UIDropDownMenu_SetText( Dropdown, self and self.value or L.ALL );
+		me[ Dropdown.Parameter ] = Value;
 		me.Filter();
 	end
 end
 --[[****************************************************************************
-  * Function: GuildBankSearch.Pane.TypeMenu:Initialize                         *
-  * Description: Constructs the item type dropdown.                            *
+  * Function: GuildBankSearch:DropdownInitialize                               *
+  * Description: Constructs a dropdown menu.                                   *
   ****************************************************************************]]
-function Pane.TypeMenu:Initialize ()
+function me:DropdownInitialize ()
+	local CurrentValue = me[ self.Parameter ];
 	local Info = UIDropDownMenu_CreateInfo();
+	Info.arg1 = self;
 	Info.text = L.ALL;
-	Info.value = -1;
-	Info.arg1 = false;
+	Info.checked = CurrentValue == nil;
 	Info.func = self.OnSelect;
 	UIDropDownMenu_AddButton( Info );
-	for Index, Type in ipairs( me.Types )  do
-		Info.text = Type;
-		Info.value = Index;
-		Info.arg1 = Type;
+	for Value, Label in self.IterateOptions() do
+		Info.text = Label;
+		Info.arg2 = Value;
+		Info.checked = CurrentValue == Value;
 		Info.func = self.OnSelect;
-		Info.checked = nil;
-		UIDropDownMenu_AddButton( Info );
-	end
-end
---[[****************************************************************************
-  * Function: GuildBankSearch.Pane.SubTypeMenu:OnSelect                        *
-  * Description: Updates the filter when an item subtype is chosen.            *
-  ****************************************************************************]]
-function Pane.SubTypeMenu:OnSelect ( SubType )
-	if ( me.SubType ~= SubType ) then
-		UIDropDownMenu_SetSelectedValue( Pane.SubTypeMenu, self.value );
-		me.SubType = SubType;
-		me.Filter();
-	end
-end
---[[****************************************************************************
-  * Function: GuildBankSearch.Pane.SubTypeMenu:Initialize                      *
-  * Description: Constructs the item subtype dropdown.                         *
-  ****************************************************************************]]
-function Pane.SubTypeMenu:Initialize ()
-	local Info = UIDropDownMenu_CreateInfo();
-	Info.text = L.ALL;
-	Info.value = -1;
-	Info.arg1 = false;
-	Info.func = self.OnSelect;
-	UIDropDownMenu_AddButton( Info );
-	if ( me.Type ) then
-		for Index, SubType in ipairs( me.SubTypes[ me.Type ] ) do
-			Info.text = SubType;
-			Info.value = Index;
-			Info.arg1 = SubType;
-			Info.func = self.OnSelect;
-			Info.checked = nil;
-			UIDropDownMenu_AddButton( Info );
-		end
-	end
-end
---[[****************************************************************************
-  * Function: GuildBankSearch.Pane.SlotMenu:OnSelect                           *
-  * Description: Updates the filter when an item slot is chosen.               *
-  ****************************************************************************]]
-function Pane.SlotMenu:OnSelect ( Slot )
-	if ( me.Slot ~= Slot ) then
-		UIDropDownMenu_SetSelectedValue( Pane.SlotMenu, self.value );
-		me.Slot = Slot;
-		me.Filter();
-	end
-end
---[[****************************************************************************
-  * Function: GuildBankSearch.Pane.SlotMenu:Initialize                         *
-  * Description: Constructs the item slot dropdown.                            *
-  ****************************************************************************]]
-function Pane.SlotMenu:Initialize ()
-	local Info = UIDropDownMenu_CreateInfo();
-	Info.text = L.ALL;
-	Info.value = -1;
-	Info.arg1 = false;
-	Info.func = self.OnSelect;
-	UIDropDownMenu_AddButton( Info );
-	for Index, Slot in ipairs( me.Slots )  do
-		Info.text = _G[ Slot ];
-		Info.value = Index;
-		Info.arg1 = Slot;
-		Info.func = self.OnSelect;
-		Info.checked = nil;
 		UIDropDownMenu_AddButton( Info );
 	end
 end
@@ -275,34 +233,18 @@ end
   * Description: Resets all filter parameters to not filter anything.          *
   ****************************************************************************]]
 function Pane.Clear ()
+	CloseDropDownMenus(); -- Close dropdown if open
+
 	Pane.NameEditBox:SetText( "" );
-	if ( me.Quality ) then
-		UIDropDownMenu_SetSelectedValue( Pane.QualityMenu, -1 );
-		me.Quality = false;
-		me.Filter();
-	end
+	Pane.QualityMenu.OnSelect( nil, Pane.QualityMenu );
 	Pane.ItemLevelMinEditBox:SetText( "" );
 	Pane.ItemLevelMaxEditBox:SetText( "" );
 	Pane.ReqLevelMinEditBox:SetText( "" );
 	Pane.ReqLevelMaxEditBox:SetText( "" );
 
 	-- Item category fields
-	if ( me.Type ) then
-		UIDropDownMenu_SetSelectedValue( Pane.TypeMenu, -1 );
-		me.Type = false;
-		me.Filter();
-	end
-	if ( me.SubType ) then
-		UIDropDownMenu_SetSelectedValue( Pane.SubTypeMenu, -1 );
-		me.SubType = false;
-		me.Filter();
-	end
-	UIDropDownMenu_DisableDropDown( Pane.SubTypeMenu );
-	if ( me.Slot ) then
-		UIDropDownMenu_SetSelectedValue( Pane.SlotMenu, -1 );
-		me.Slot = false;
-		me.Filter();
-	end
+	Pane.TypeMenu.OnSelect( nil, Pane.TypeMenu ); -- Also clears SubTypeMenu
+	Pane.SlotMenu.OnSelect( nil, Pane.SlotMenu );
 end
 
 
@@ -499,10 +441,17 @@ end
 -----------------------------
 
 do
-	-- Fill in subtypes
+	-- Fill in quality labels
+	for Index = 0, #ITEM_QUALITY_COLORS do
+		me.Qualities[ Index ] = ITEM_QUALITY_COLORS[ Index ].hex.._G[ "ITEM_QUALITY"..Index.."_DESC" ]..FONT_COLOR_CODE_CLOSE;
+	end
+	-- Fill in and sort subtypes
 	for Index, Type in ipairs( me.Types ) do
 		me.SubTypes[ Type ] = { GetAuctionItemSubClasses( Index ) };
+		sort( me.SubTypes[ Type ] );
 	end
+	-- Sort types
+	sort( me.Types ); -- Note: Use after subtypes are populated so indices don't get mixed up
 	-- Fill in and sort slots table
 	for InvType in pairs( me.SlotGroups ) do
 		tinsert( me.Slots, InvType );
@@ -571,14 +520,29 @@ do
 	-- Close button
 	CreateFrame( "Button", nil, me, "UIPanelCloseButton" ):SetPoint( "TOPRIGHT", 1, 0 );
 
-
-	-- Pane controls
 	local ClearButton = Pane.ClearButton;
 	ClearButton:SetWidth( 45 );
 	ClearButton:SetHeight( 18 );
-	ClearButton:SetPoint( "TOPRIGHT", -15, 8 );
+	ClearButton:SetPoint( "TOPRIGHT", -31, -8 );
 	ClearButton:SetText( L.CLEAR );
 	ClearButton:SetScript( "OnClick", ClearButton.OnClick );
+
+
+	-- Pane controls
+	local function InitializeDropdown ( self, Parameter, Label )
+		self:SetPoint( "LEFT", -8, 0 );
+		self:SetPoint( "RIGHT", -8, 0 );
+		_G[ self:GetName().."Middle" ]:SetPoint( "RIGHT", -16, 0 );
+		UIDropDownMenu_JustifyText( self, "LEFT" );
+		if ( not self.OnSelect ) then
+			self.OnSelect = me.DropdownOnSelect;
+		end
+		self.initialize = me.DropdownInitialize;
+		self.Parameter = Parameter;
+		local Label = self:CreateFontString( nil, "OVERLAY", "GameFontHighlightSmall" );
+		Label:SetText( Label );
+		Label:SetPoint( "BOTTOMLEFT", self, "TOPLEFT", 24, 0 );
+	end
 
 	local NameEditBox = Pane.NameEditBox;
 	NameEditBox:SetHeight( 16 );
@@ -591,18 +555,8 @@ do
 	Label:SetPoint( "BOTTOMLEFT", NameEditBox, "TOPLEFT", 1, 0 );
 	Label:SetText( L.NAME );
 
-	local QualityMenu = Pane.QualityMenu;
-	QualityMenu:EnableMouse( true );
-	QualityMenu:SetPoint( "TOP", NameEditBox, "BOTTOM", 0, -12 );
-	QualityMenu:SetPoint( "LEFT", -16, 0 );
-	QualityMenu:SetPoint( "RIGHT" );
-	_G[ QualityMenu:GetName().."Middle" ]:SetPoint( "RIGHT", -16, 0 );
-	UIDropDownMenu_JustifyText( QualityMenu, "LEFT" );
-	UIDropDownMenu_Initialize( QualityMenu, QualityMenu.Initialize );
-	UIDropDownMenu_SetSelectedValue( QualityMenu, -1 );
-	Label = QualityMenu:CreateFontString( nil, "OVERLAY", "GameFontHighlightSmall" );
-	Label:SetText( L.QUALITY );
-	Label:SetPoint( "BOTTOMLEFT", QualityMenu, "TOPLEFT", 24, 0 );
+	InitializeDropdown( Pane.QualityMenu, "Quality", L.QUALITY );
+	Pane.QualityMenu:SetPoint( "TOP", NameEditBox, "BOTTOM", 0, -12 );
 
 	local ItemLevelMinEditBox = Pane.ItemLevelMinEditBox;
 	ItemLevelMinEditBox:SetWidth( 25 );
@@ -610,7 +564,7 @@ do
 	ItemLevelMinEditBox:SetNumeric( true );
 	ItemLevelMinEditBox:SetMaxLetters( 3 );
 	ItemLevelMinEditBox:SetAutoFocus( false );
-	ItemLevelMinEditBox:SetPoint( "TOP", QualityMenu, "BOTTOM", 0, -16 );
+	ItemLevelMinEditBox:SetPoint( "TOP", Pane.QualityMenu, "BOTTOM", 0, -16 );
 	ItemLevelMinEditBox:SetPoint( "LEFT", 8, 0 );
 	ItemLevelMinEditBox:SetScript( "OnTextChanged", ItemLevelMinEditBox.OnTextChanged );
 	Label = ItemLevelMinEditBox:CreateFontString( nil, "OVERLAY", "GameFontHighlightSmall" );
@@ -635,7 +589,7 @@ do
 	ReqLevelMaxEditBox:SetNumeric( true );
 	ReqLevelMaxEditBox:SetMaxLetters( 3 );
 	ReqLevelMaxEditBox:SetAutoFocus( false );
-	ReqLevelMaxEditBox:SetPoint( "TOP", QualityMenu, "BOTTOM", 0, -16 );
+	ReqLevelMaxEditBox:SetPoint( "TOP", Pane.QualityMenu, "BOTTOM", 0, -16 );
 	ReqLevelMaxEditBox:SetPoint( "RIGHT", -8, 0 );
 	ReqLevelMaxEditBox:SetScript( "OnTextChanged", ReqLevelMaxEditBox.OnTextChanged );
 	Label = ReqLevelMaxEditBox:CreateFontString( nil, "OVERLAY", "GameFontHighlightSmall" );
@@ -662,43 +616,14 @@ do
 	CategorySection:SetPoint( "LEFT" );
 	CategorySection:SetPoint( "BOTTOMRIGHT", 0, 8 );
 
-	local TypeMenu = Pane.TypeMenu;
-	TypeMenu:EnableMouse( true );
-	TypeMenu:SetPoint( "TOPLEFT", -8, -16 );
-	TypeMenu:SetPoint( "RIGHT", -8, 0 );
-	_G[ TypeMenu:GetName().."Middle" ]:SetPoint( "RIGHT", -16, 0 );
-	UIDropDownMenu_JustifyText( TypeMenu, "LEFT" );
-	UIDropDownMenu_Initialize( TypeMenu, TypeMenu.Initialize );
-	UIDropDownMenu_SetSelectedValue( TypeMenu, -1 );
-	Label = TypeMenu:CreateFontString( nil, "OVERLAY", "GameFontHighlightSmall" );
-	Label:SetText( L.TYPE );
-	Label:SetPoint( "BOTTOMLEFT", TypeMenu, "TOPLEFT", 24, 0 );
+	InitializeDropdown( Pane.TypeMenu, "Type", L.TYPE );
+	Pane.TypeMenu:SetPoint( "TOP", 0, -16 );
 
-	local SubTypeMenu = Pane.SubTypeMenu;
-	SubTypeMenu:EnableMouse( true );
-	SubTypeMenu:SetPoint( "TOP", TypeMenu, "BOTTOM", 0, -6 );
-	SubTypeMenu:SetPoint( "LEFT", -8, 0 );
-	SubTypeMenu:SetPoint( "RIGHT", -8, 0 );
-	_G[ SubTypeMenu:GetName().."Middle" ]:SetPoint( "RIGHT", -16, 0 );
-	UIDropDownMenu_JustifyText( SubTypeMenu, "LEFT" );
-	UIDropDownMenu_Initialize( SubTypeMenu, SubTypeMenu.Initialize );
-	UIDropDownMenu_SetSelectedValue( SubTypeMenu, -1 );
-	Label = SubTypeMenu:CreateFontString( nil, "OVERLAY", "GameFontHighlightSmall" );
-	Label:SetText( L.SUB_TYPE );
-	Label:SetPoint( "BOTTOMLEFT", SubTypeMenu, "TOPLEFT", 24, 0 );
+	InitializeDropdown( Pane.SubTypeMenu, "SubType", L.SUB_TYPE );
+	Pane.SubTypeMenu:SetPoint( "TOP", Pane.TypeMenu, "BOTTOM", 0, -6 );
 
-	local SlotMenu = Pane.SlotMenu;
-	SlotMenu:EnableMouse( true );
-	SlotMenu:SetPoint( "TOP", SubTypeMenu, "BOTTOM", 0, -16 );
-	SlotMenu:SetPoint( "LEFT", -8, 0 );
-	SlotMenu:SetPoint( "RIGHT", -8, 0 );
-	_G[ SlotMenu:GetName().."Middle" ]:SetPoint( "RIGHT", -16, 0 );
-	UIDropDownMenu_JustifyText( SlotMenu, "LEFT" );
-	UIDropDownMenu_Initialize( SlotMenu, SlotMenu.Initialize );
-	UIDropDownMenu_SetSelectedValue( SlotMenu, -1 );
-	Label = SlotMenu:CreateFontString( nil, "OVERLAY", "GameFontHighlightSmall" );
-	Label:SetText( L.SLOT );
-	Label:SetPoint( "BOTTOMLEFT", SlotMenu, "TOPLEFT", 24, 0 );
+	InitializeDropdown( Pane.SlotMenu, "Slot", L.SLOT );
+	Pane.SlotMenu:SetPoint( "TOP", Pane.SubTypeMenu, "BOTTOM", 0, -16 );
 
 
 	-- Hooks
