@@ -176,7 +176,7 @@ do
 
 		if ( AddHistory( Input ) and type( Input ) == "table" ) then -- New table
 			local TableString = IndentString..LValueString.." = "..ToString( Input );
-			if ( not next( Input ) ) then -- Empty array
+			if ( next( Input ) == nil ) then -- Empty array
 				Print( TableString.." {};" );
 			else -- Display the table's contents
 				local MaxDepth = _DevOptions.Dump.MaxDepth;
