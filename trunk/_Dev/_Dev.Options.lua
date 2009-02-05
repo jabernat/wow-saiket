@@ -129,20 +129,20 @@ function me:SliderUpdate ( Value )
 	self:SetValue( Value );
 end
 --[[****************************************************************************
-  * Function: _Dev.Options.DropDownOnSelect                                    *
+  * Function: _Dev.Options:DropDownOnSelect                                    *
   * Description: Called when a new value is chosen from the dropdown.          *
   ****************************************************************************]]
-function me.DropDownOnSelect ()
-	local Variable, Value = this.arg1, this.value;
-	UIDropDownMenu_SetSelectedValue( Controls[ Variable ], Value );
-	me.SetVariable( Variable, Value );
+function me:DropDownOnSelect ( Variable )
+	local Index = self.value;
+	UIDropDownMenu_SetSelectedValue( Controls[ Variable ], Index );
+	me.SetVariable( Variable, Index );
 end
 --[[****************************************************************************
-  * Function: _Dev.Options.DropDownInitialize                                  *
+  * Function: _Dev.Options:DropDownInitialize                                  *
   * Description: Puts together a control's dropdown menu.                      *
   ****************************************************************************]]
-function me.DropDownInitialize ()
-	local Variable = UIDROPDOWNMENU_INIT_MENU.Variable;
+function me:DropDownInitialize ()
+	local Variable = self.Variable;
 	local Info = UIDropDownMenu_CreateInfo();
 	local Args = L.OPTIONS[ Variable.."_ARGS" ];
 	local Table, Key = me.GetVariableVararg( ( "." ):split( Variable ) );
