@@ -16,10 +16,10 @@ _Clean.BlizzardBattlefieldMinimap = me;
 
 
 --[[****************************************************************************
-  * Function: _Clean.BlizzardBattlefieldMinimap.DropDownInitialize             *
+  * Function: _Clean.BlizzardBattlefieldMinimap:DropDownInitialize             *
   * Description: Disables obsolete buttons from dropdown menus.                *
   ****************************************************************************]]
-function me.DropDownInitialize ()
+function me:DropDownInitialize ()
 	for ButtonIndex = 1, DropDownList1.numButtons do
 		local Button = _G[ "DropDownList1Button"..ButtonIndex ];
 		if ( Button.value == LOCK_BATTLEFIELDMINIMAP ) then

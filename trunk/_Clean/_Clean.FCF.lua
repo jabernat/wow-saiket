@@ -246,13 +246,12 @@ end
 -----------------
 
 --[[****************************************************************************
-  * Function: _Clean.FCF.Tab.DropDownInitialize                                *
+  * Function: _Clean.FCF.Tab:DropDownInitialize                                *
   * Description: Disables obsolete buttons from dropdown menus.                *
   ****************************************************************************]]
-function Tab.DropDownInitialize ()
-	if ( UIDROPDOWNMENU_MENU_LEVEL == 1 ) then
-		local Disabled =
-			DisabledMenuButtons[ UIDROPDOWNMENU_INIT_MENU:GetParent() ];
+function Tab:DropDownInitialize ( Level )
+	if ( Level == 1 ) then
+		local Disabled = DisabledMenuButtons[ self:GetParent() ];
 		for ButtonIndex = 1, DropDownList1.numButtons do
 			local Button = _G[ "DropDownList1Button"..ButtonIndex ];
 			if ( Disabled[ Button.value ] ) then
