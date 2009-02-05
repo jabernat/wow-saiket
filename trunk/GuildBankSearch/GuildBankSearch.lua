@@ -40,7 +40,7 @@ me.Qualities = {};
 me.Types = { GetAuctionItemClasses() };
 me.SubTypes = {};
 me.Slots = {}; -- Sorted list of inventory types that can be searched for
-me.SlotGroups = {
+me.SlotGroups = { -- Categories paired with the inventory types that can match them (can be multiple)
 	[ "INVTYPE_AMMO" ] = { [ "INVTYPE_AMMO" ] = true; };
 	[ "INVTYPE_HEAD" ] = { [ "INVTYPE_HEAD" ] = true; };
 	[ "INVTYPE_NECK" ] = { [ "INVTYPE_NECK" ] = true; };
@@ -64,6 +64,7 @@ me.SlotGroups = {
 
 me.Buttons = {}; -- Cache of all item buttons in bank view
 me.NextUpdate = 0;
+me.NeedUpdate = false;
 
 
 
@@ -309,6 +310,25 @@ do
 		return AddMessageBackup( self, Message, ... );
 	end
 end
+--[[****************************************************************************
+  * Function: GuildBankSearch.ChatEditInsertLink                               *
+  * Description: Hook to add linked items to the name filter edit box.         *
+  ****************************************************************************]]
+do
+	local InsertLinkBackup = ChatEdit_InsertLink;
+	function me.ChatEditInsertLink ( Link, ... )
+		if ( InsertLinkBackup( Link, ... ) ) then
+			return true;
+		elseif ( Link and me.NameEditBox:IsVisible() ) then
+			local Name = GetItemInfo( Link );
+			if ( Name ) then
+				me.NameEditBox:SetText( Name );
+				return true;
+			end
+		end
+		return false;
+	end
+end
 
 
 
@@ -543,6 +563,7 @@ do
 	hooksecurefunc( "GuildBankFrameTab_OnClick", me.GuildBankFrameTabOnClick );
 	hooksecurefunc( "GuildBankFrame_Update", me.GuildBankFrameUpdate );
 	GuildBankMessageFrame.AddMessage = me.GuildBankMessageFrameAddMessage;
+	ChatEdit_InsertLink = me.ChatEditInsertLink;
 
 	me.FilterClear();
 end
