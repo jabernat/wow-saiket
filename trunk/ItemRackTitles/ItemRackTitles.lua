@@ -329,7 +329,7 @@ function Options:CheckboxOnClick ()
 	PlaySound( Checked and "igMainMenuOptionCheckBoxOn" or "igMainMenuOptionCheckBoxOff" );
 end
 --[[****************************************************************************
-  * Function: ItemRackTitles.Options.DropdownInitialize                        *
+  * Function: ItemRackTitles.Options:DropdownInitialize                        *
   * Description: Constructs a sorted list of known titles for the dropdown.    *
   ****************************************************************************]]
 do
@@ -339,7 +339,7 @@ do
 	local function SortFunc ( ID1, ID2 )
 		return Lookup[ ID1 ] < Lookup[ ID2 ];
 	end
-	function Options.DropdownInitialize ()
+	function Options:DropdownInitialize ()
 		for Index = 1, GetNumTitles() - 1 do
 			if ( IsTitleKnown( Index ) == 1 ) then
 				Sorted[ #Sorted + 1 ] = Index;
