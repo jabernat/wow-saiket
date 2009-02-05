@@ -251,38 +251,38 @@ end
 
 
 --[[****************************************************************************
-  * Function: _Dev.Events.AddOnChat.DropDownButtonHandler                      *
+  * Function: _Dev.Events.AddOnChat:DropDownOnSelect                           *
   * Description: Enables or disables chat types when clicked in the drop down. *
   ****************************************************************************]]
-function AddOnChat.DropDownButtonHandler ()
-	AddOnChat.EnableChatType( FCF_GetCurrentChatFrame(), this.value, not not this.checked );
+function AddOnChat:DropDownOnSelect ( Type, _, Checked )
+	AddOnChat.EnableChatType( FCF_GetCurrentChatFrame(), Type, not not Checked );
 end
 --[[****************************************************************************
   * Function: _Dev.Events.AddOnChat.DropDownAddChatType                        *
   * Description: Hooks setup routines for chat frame drop down menus to add    *
   *   addon chat message options.                                              *
   ****************************************************************************]]
-function AddOnChat.DropDownAddChatType ( Type )
+function AddOnChat.DropDownAddChatType ( Type, Level )
 	local Info = UIDropDownMenu_CreateInfo(); -- Common blank table
 	local Color = ChatTypeInfo[ Type ];
 	local TypeList = ChatFrames[ FCF_GetCurrentChatFrame() ];
 
-	Info.func = AddOnChat.DropDownButtonHandler;
+	Info.func = AddOnChat.DropDownOnSelect;
 	Info.keepShownOnClick = 1;
 	Info.text = ( "|cff%02x%02x%02x" ):format( Color.r * 255 + 0.5, Color.g * 255 + 0.5, Color.b * 255 + 0.5 )..L.ADDONCHAT_TYPES[ Type ];
-	Info.value = Type;
+	Info.arg1 = Type;
 	Info.checked = ( TypeList and TypeList[ Type ] ) and 1 or nil;
-	UIDropDownMenu_AddButton( Info, UIDROPDOWNMENU_MENU_LEVEL );
+	UIDropDownMenu_AddButton( Info, Level );
 end
 --[[****************************************************************************
-  * Function: _Dev.Events.AddOnChat.DropDownInitialize                         *
+  * Function: _Dev.Events.AddOnChat:DropDownInitialize                         *
   * Description: Hooks setup routines for chat frame drop down menus to add    *
   *   addon chat message options.                                              *
   ****************************************************************************]]
 do
 	local DropDownAddChatType = AddOnChat.DropDownAddChatType;
-	function AddOnChat.DropDownInitialize ()
-		if ( UIDROPDOWNMENU_MENU_LEVEL == 1 ) then
+	function AddOnChat:DropDownInitialize ( Level )
+		if ( Level == 1 ) then
 			local Info = UIDropDownMenu_CreateInfo(); -- Common blank table
 			-- Spacer
 			Info.disabled = 1;
@@ -293,14 +293,12 @@ do
 			Info.notCheckable = 1;
 			Info.disabled = nil;
 			UIDropDownMenu_AddButton( Info );
-		elseif ( UIDROPDOWNMENU_MENU_LEVEL == 2
-			and UIDROPDOWNMENU_MENU_VALUE == L.ADDONCHAT_MESSAGES
-		) then -- Addon Chat sub-menu
-			DropDownAddChatType( "GUILD" );
-			DropDownAddChatType( "RAID" );
-			DropDownAddChatType( "PARTY" );
-			DropDownAddChatType( "BATTLEGROUND" );
-			DropDownAddChatType( "WHISPER" );
+		elseif ( Level == 2 and UIDROPDOWNMENU_MENU_VALUE == L.ADDONCHAT_MESSAGES ) then -- Addon Chat sub-menu
+			DropDownAddChatType( "GUILD", Level );
+			DropDownAddChatType( "RAID", Level );
+			DropDownAddChatType( "PARTY", Level );
+			DropDownAddChatType( "BATTLEGROUND", Level );
+			DropDownAddChatType( "WHISPER", Level );
 		end
 	end
 end
