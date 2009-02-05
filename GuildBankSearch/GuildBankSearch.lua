@@ -92,32 +92,32 @@ function Pane.NameEditBox:OnTextChanged ()
 	me.Filter();
 end
 --[[****************************************************************************
-  * Function: GuildBankSearch.Pane.QualityMenu.OnSelect                        *
+  * Function: GuildBankSearch.Pane.QualityMenu:OnSelect                        *
   * Description: Updates the filter when a quality is chosen.                  *
   ****************************************************************************]]
-function Pane.QualityMenu.OnSelect ()
-	if ( this.arg1 ~= me.Quality ) then
-		UIDropDownMenu_SetSelectedValue( Pane.QualityMenu, this.value );
-		me.Quality = this.arg1;
+function Pane.QualityMenu:OnSelect ( Quality )
+	if ( Quality ~= me.Quality ) then
+		UIDropDownMenu_SetSelectedValue( Pane.QualityMenu, self.value );
+		me.Quality = Quality;
 		me.Filter();
 	end
 end
 --[[****************************************************************************
-  * Function: GuildBankSearch.Pane.QualityMenu.Initialize                      *
+  * Function: GuildBankSearch.Pane.QualityMenu:Initialize                      *
   * Description: Constructs the item quality dropdown.                         *
   ****************************************************************************]]
-function Pane.QualityMenu.Initialize ()
+function Pane.QualityMenu:Initialize ()
 	local Info = UIDropDownMenu_CreateInfo();
 	Info.text = L.ALL;
 	Info.value = -1;
 	Info.arg1 = false;
-	Info.func = Pane.QualityMenu.OnSelect;
+	Info.func = self.OnSelect;
 	UIDropDownMenu_AddButton( Info );
 	for Index = 0, #ITEM_QUALITY_COLORS do
 		Info.text = ITEM_QUALITY_COLORS[ Index ].hex.._G[ "ITEM_QUALITY"..Index.."_DESC" ]..FONT_COLOR_CODE_CLOSE;
 		Info.value = Index;
 		Info.arg1 = Index;
-		Info.func = Pane.QualityMenu.OnSelect;
+		Info.func = self.OnSelect;
 		Info.checked = nil;
 		UIDropDownMenu_AddButton( Info );
 	end
@@ -168,13 +168,13 @@ function Pane.ReqLevelMaxEditBox:OnTextChanged ()
 end
 
 --[[****************************************************************************
-  * Function: GuildBankSearch.Pane.TypeMenu.OnSelect                           *
+  * Function: GuildBankSearch.Pane.TypeMenu:OnSelect                           *
   * Description: Updates the filter when an item type is chosen.               *
   ****************************************************************************]]
-function Pane.TypeMenu.OnSelect ()
-	if ( me.Type ~= this.arg1 ) then
-		UIDropDownMenu_SetSelectedValue( Pane.TypeMenu, this.value );
-		me.Type = this.arg1;
+function Pane.TypeMenu:OnSelect ( Type )
+	if ( me.Type ~= Type ) then
+		UIDropDownMenu_SetSelectedValue( Pane.TypeMenu, self.value );
+		me.Type = Type;
 		UIDropDownMenu_SetSelectedValue( Pane.SubTypeMenu, -1 );
 		me.SubType = false;
 		if ( not me.Type ) then
@@ -186,85 +186,85 @@ function Pane.TypeMenu.OnSelect ()
 	end
 end
 --[[****************************************************************************
-  * Function: GuildBankSearch.Pane.TypeMenu.Initialize                         *
+  * Function: GuildBankSearch.Pane.TypeMenu:Initialize                         *
   * Description: Constructs the item type dropdown.                            *
   ****************************************************************************]]
-function Pane.TypeMenu.Initialize ()
+function Pane.TypeMenu:Initialize ()
 	local Info = UIDropDownMenu_CreateInfo();
 	Info.text = L.ALL;
 	Info.value = -1;
 	Info.arg1 = false;
-	Info.func = Pane.TypeMenu.OnSelect;
+	Info.func = self.OnSelect;
 	UIDropDownMenu_AddButton( Info );
 	for Index, Type in ipairs( me.Types )  do
 		Info.text = Type;
 		Info.value = Index;
 		Info.arg1 = Type;
-		Info.func = Pane.TypeMenu.OnSelect;
+		Info.func = self.OnSelect;
 		Info.checked = nil;
 		UIDropDownMenu_AddButton( Info );
 	end
 end
 --[[****************************************************************************
-  * Function: GuildBankSearch.Pane.SubTypeMenu.OnSelect                        *
+  * Function: GuildBankSearch.Pane.SubTypeMenu:OnSelect                        *
   * Description: Updates the filter when an item subtype is chosen.            *
   ****************************************************************************]]
-function Pane.SubTypeMenu.OnSelect ()
-	if ( me.SubType ~= this.arg1 ) then
-		UIDropDownMenu_SetSelectedValue( Pane.SubTypeMenu, this.value );
-		me.SubType = this.arg1;
+function Pane.SubTypeMenu:OnSelect ( SubType )
+	if ( me.SubType ~= SubType ) then
+		UIDropDownMenu_SetSelectedValue( Pane.SubTypeMenu, self.value );
+		me.SubType = SubType;
 		me.Filter();
 	end
 end
 --[[****************************************************************************
-  * Function: GuildBankSearch.Pane.SubTypeMenu.Initialize                      *
+  * Function: GuildBankSearch.Pane.SubTypeMenu:Initialize                      *
   * Description: Constructs the item subtype dropdown.                         *
   ****************************************************************************]]
-function Pane.SubTypeMenu.Initialize ()
+function Pane.SubTypeMenu:Initialize ()
 	local Info = UIDropDownMenu_CreateInfo();
 	Info.text = L.ALL;
 	Info.value = -1;
 	Info.arg1 = false;
-	Info.func = Pane.SubTypeMenu.OnSelect;
+	Info.func = self.OnSelect;
 	UIDropDownMenu_AddButton( Info );
 	if ( me.Type ) then
 		for Index, SubType in ipairs( me.SubTypes[ me.Type ] ) do
 			Info.text = SubType;
 			Info.value = Index;
 			Info.arg1 = SubType;
-			Info.func = Pane.SubTypeMenu.OnSelect;
+			Info.func = self.OnSelect;
 			Info.checked = nil;
 			UIDropDownMenu_AddButton( Info );
 		end
 	end
 end
 --[[****************************************************************************
-  * Function: GuildBankSearch.Pane.SlotMenu.OnSelect                           *
+  * Function: GuildBankSearch.Pane.SlotMenu:OnSelect                           *
   * Description: Updates the filter when an item slot is chosen.               *
   ****************************************************************************]]
-function Pane.SlotMenu.OnSelect ()
-	if ( me.Slot ~= this.arg1 ) then
-		UIDropDownMenu_SetSelectedValue( Pane.SlotMenu, this.value );
-		me.Slot = this.arg1;
+function Pane.SlotMenu:OnSelect ( Slot )
+	if ( me.Slot ~= Slot ) then
+		UIDropDownMenu_SetSelectedValue( Pane.SlotMenu, self.value );
+		me.Slot = Slot;
 		me.Filter();
 	end
 end
 --[[****************************************************************************
-  * Function: GuildBankSearch.Pane.SlotMenu.Initialize                         *
+  * Function: GuildBankSearch.Pane.SlotMenu:Initialize                         *
   * Description: Constructs the item slot dropdown.                            *
   ****************************************************************************]]
-function Pane.SlotMenu.Initialize ()
+function Pane.SlotMenu:Initialize ()
 	local Info = UIDropDownMenu_CreateInfo();
 	Info.text = L.ALL;
 	Info.value = -1;
 	Info.arg1 = false;
-	Info.func = Pane.SlotMenu.OnSelect;
+	Info.func = self.OnSelect;
 	UIDropDownMenu_AddButton( Info );
 	for Index, Slot in ipairs( me.Slots )  do
 		Info.text = _G[ Slot ];
 		Info.value = Index;
 		Info.arg1 = Slot;
-		Info.func = Pane.SlotMenu.OnSelect;
+		Info.func = self.OnSelect;
 		Info.checked = nil;
 		UIDropDownMenu_AddButton( Info );
 	end
