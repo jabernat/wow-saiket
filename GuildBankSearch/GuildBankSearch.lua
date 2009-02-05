@@ -7,8 +7,7 @@
 local L = GuildBankSearchLocalization;
 local me = CreateFrame( "Frame", "GuildBankSearch", GuildBankFrame );
 
-local FilterButton = CreateFrame( "Button", nil, GuildBankFrame, "UIPanelButtonTemplate" );
-me.FilterButton = FilterButton;
+me.FilterButton = CreateFrame( "Button", nil, GuildBankFrame, "UIPanelButtonTemplate" );
 
 me.ClearButton = CreateFrame( "Button", nil, me, "UIPanelButtonTemplate" );
 me.NameEditBox = CreateFrame( "EditBox", "$parentNameEditBox", me, "InputBoxTemplate" );
@@ -24,16 +23,18 @@ me.SubTypeMenu = CreateFrame( "Frame", "$parentSubTypeMenu", me.CategorySection,
 me.SlotMenu = CreateFrame( "Frame", "$parentSlotMenu", me.CategorySection, "UIDropDownMenuTemplate" );
 
 
--- Initially false so Clear() will update all fields to nil
-me.Name = false;
-me.Quality = false;
-me.Type = false;
-me.SubType = false;
-me.Slot = false;
-me.ItemLevelMin = false;
-me.ItemLevelMax = false;
-me.ReqLevelMin = false;
-me.ReqLevelMax = false;
+local Filter = { -- Initially false so FilterClear() will update all fields to nil
+	Name = false;
+	Quality = false;
+	Type = false;
+	SubType = false;
+	Slot = false;
+	ItemLevelMin = false;
+	ItemLevelMax = false;
+	ReqLevelMin = false;
+	ReqLevelMax = false;
+};
+me.Filter = Filter;
 
 me.Qualities = {};
 me.Types = { GetAuctionItemClasses() };
@@ -68,28 +69,12 @@ me.NextUpdate = 0;
 
 
 --[[****************************************************************************
-  * Function: GuildBankSearch.FilterButton:OnClick                             *
-  * Description: Toggles the filter pane when clicked.                         *
-  ****************************************************************************]]
-function FilterButton:OnClick ()
-	me.Toggle();
-end
-
---[[****************************************************************************
-  * Function: GuildBankSearch.ClearButton:OnClick                              *
-  * Description: Clears the filter when clicked.                               *
-  ****************************************************************************]]
-function me.ClearButton:OnClick ()
-	me.Clear();
-end
---[[****************************************************************************
   * Function: GuildBankSearch.NameEditBox:OnTextChanged                        *
-  * Description: Updates the name filter when the field's contents change.     *
   ****************************************************************************]]
 function me.NameEditBox:OnTextChanged ()
 	local Text = self:GetText();
-	me.Name = #Text ~= 0 and Text:lower() or false;
-	me.Filter();
+	Filter.Name = Text ~= "" and Text:lower() or nil;
+	me.FilterUpdate();
 end
 --[[****************************************************************************
   * Function: GuildBankSearch.QualityMenu.IterateOptions                       *
@@ -103,7 +88,7 @@ end
   * Description: Updates the subtype dropdown when a type is chosen.           *
   ****************************************************************************]]
 function me.TypeMenu:OnSelect ( Dropdown, Type )
-	if ( me.Type ~= Type ) then
+	if ( Filter.Type ~= Type ) then
 		me.SubTypeMenu.OnSelect( nil, me.SubTypeMenu ); -- Remove subtype filter
 		if ( not Type ) then
 			UIDropDownMenu_DisableDropDown( me.SubTypeMenu );
@@ -131,7 +116,7 @@ function me.SubTypeMenu.IterateOptions ()
 	local Index = 0;
 	return function ()
 		Index = Index + 1;
-		local Label = me.SubTypes[ me.Type ][ Index ];
+		local Label = me.SubTypes[ Filter.Type ][ Index ];
 		return Label, Label;
 	end;
 end
@@ -151,20 +136,20 @@ end
   * Function: GuildBankSearch:LevelEditBoxOnTextChanged                        *
   ****************************************************************************]]
 function me:LevelEditBoxOnTextChanged ()
-	local NewLevel = self:GetText() ~= "" and self:GetNumber() or false;
-	if ( NewLevel ~= me[ self.Parameter ] ) then
-		me[ self.Parameter ] = NewLevel;
-		me.Filter();
+	local NewLevel = self:GetText() ~= "" and self:GetNumber() or nil;
+	if ( NewLevel ~= Filter[ self.Parameter ] ) then
+		Filter[ self.Parameter ] = NewLevel;
+		me.FilterUpdate();
 	end
 end
 --[[****************************************************************************
   * Function: GuildBankSearch:DropdownOnSelect                                 *
   ****************************************************************************]]
 function me:DropdownOnSelect ( Dropdown, Value )
-	if ( Value ~= me[ Dropdown.Parameter ] ) then
+	if ( Value ~= Filter[ Dropdown.Parameter ] ) then
 		UIDropDownMenu_SetText( Dropdown, self and self.value or L.ALL );
-		me[ Dropdown.Parameter ] = Value;
-		me.Filter();
+		Filter[ Dropdown.Parameter ] = Value;
+		me.FilterUpdate();
 	end
 end
 --[[****************************************************************************
@@ -172,7 +157,7 @@ end
   * Description: Constructs a dropdown menu.                                   *
   ****************************************************************************]]
 function me:DropdownInitialize ()
-	local CurrentValue = me[ self.Parameter ];
+	local CurrentValue = Filter[ self.Parameter ];
 	local Info = UIDropDownMenu_CreateInfo();
 	Info.arg1 = self;
 	Info.text = L.ALL;
@@ -188,11 +173,14 @@ function me:DropdownInitialize ()
 	end
 end
 
+
+
+
 --[[****************************************************************************
-  * Function: GuildBankSearch.Clear                                            *
+  * Function: GuildBankSearch.FilterClear                                      *
   * Description: Resets all filter parameters to not filter anything.          *
   ****************************************************************************]]
-function me.Clear ()
+function me.FilterClear ()
 	CloseDropDownMenus(); -- Close dropdown if open
 
 	me.NameEditBox:SetText( "" );
@@ -207,14 +195,11 @@ function me.Clear ()
 	me.SlotMenu.OnSelect( nil, me.SlotMenu );
 end
 
-
-
-
 --[[****************************************************************************
-  * Function: GuildBankSearch.Filter                                           *
+  * Function: GuildBankSearch.FilterUpdate                                     *
   * Description: Requests an update to the bank or log display.                *
   ****************************************************************************]]
-function me.Filter ( Force )
+function me.FilterUpdate ( Force )
 	me.NeedUpdate = true;
 	if ( Force ) then
 		me.NextUpdate = 0;
@@ -225,7 +210,7 @@ end
   * Description: Returns true if any filter parameters are set.                *
   ****************************************************************************]]
 function me.IsFilterDefined ()
-	return me.Name or me.Quality or me.Type or me.SubType or me.Slot or me.ItemLevelMin or me.ItemLevelMax or me.ReqLevelMin or me.ReqLevelMax;
+	return next( Filter ) ~= nil;
 end
 
 --[[****************************************************************************
@@ -235,39 +220,30 @@ end
 do
 	local Name, Link, Rarity, ItemLevel, ReqLevel, Type, SubType, StackCount, Slot;
 	function me.MatchItem ( ItemLink )
-		if ( not ItemLink ) then
-			return false;
+		if ( ItemLink ) then
+			Name, Link, Rarity, ItemLevel, ReqLevel, Type, SubType, StackCount, Slot = GetItemInfo( ItemLink );
+			if ( ( Filter.Name and not Name:lower():find( Filter.Name, 1, true ) )
+				or ( Filter.Quality and Filter.Quality ~= Rarity )
+				or ( Filter.Type and Filter.Type ~= Type )
+				or ( Filter.SubType and Filter.SubType ~= SubType )
+				or ( Filter.Slot and not me.SlotGroups[ Filter.Slot ][ Slot ] )
+				or ( Filter.ItemLevelMin and Filter.ItemLevelMin > ItemLevel )
+				or ( Filter.ItemLevelMax and Filter.ItemLevelMax < ItemLevel )
+				or ( Filter.ReqLevelMin and Filter.ReqLevelMin > ReqLevel )
+				or ( Filter.ReqLevelMax and Filter.ReqLevelMax < ReqLevel )
+			) then
+			else
+				return true;
+			end
 		end
-
-		Name, Link, Rarity, ItemLevel, ReqLevel, Type, SubType, StackCount, Slot = GetItemInfo( ItemLink );
-		if ( me.Name and not Name:lower():find( me.Name, 1, true ) ) then
-			return false;
-		elseif ( me.Quality and me.Quality ~= Rarity ) then
-			return false;
-		elseif ( me.Type and me.Type ~= Type ) then
-			return false;
-		elseif ( me.SubType and me.SubType ~= SubType ) then
-			return false;
-		elseif ( me.Slot and not me.SlotGroups[ me.Slot ][ Slot ] ) then
-			return false;
-		elseif ( me.ItemLevelMin and me.ItemLevelMin > ItemLevel ) then
-			return false;
-		elseif ( me.ItemLevelMax and me.ItemLevelMax < ItemLevel ) then
-			return false;
-		elseif ( me.ReqLevelMin and me.ReqLevelMin > ReqLevel ) then
-			return false;
-		elseif ( me.ReqLevelMax and me.ReqLevelMax < ReqLevel ) then
-			return false;
-		end
-		return true;
 	end
 end
 
 --[[****************************************************************************
-  * Function: GuildBankSearch.HideFilter                                       *
+  * Function: GuildBankSearch.FilterSuspend                                    *
   * Description: Restores an unfiltered view of the bank and log.              *
   ****************************************************************************]]
-function me.HideFilter ()
+function me.FilterSuspend ()
 	for Index, Button in ipairs( me.Buttons ) do
 		Button:SetAlpha( 1 );
 	end
@@ -276,12 +252,12 @@ function me.HideFilter ()
 	end
 end
 --[[****************************************************************************
-  * Function: GuildBankSearch.ShowFilter                                       *
+  * Function: GuildBankSearch.FilterResume                                     *
   * Description: Applies the current filter to the bank or log view.           *
   ****************************************************************************]]
-function me.ShowFilter ()
+function me.FilterResume ()
 	if ( not me.IsFilterDefined() ) then
-		return me.HideFilter();
+		return me.FilterSuspend();
 	end
 
 	if ( GuildBankFrame.mode == "bank" ) then
@@ -305,10 +281,10 @@ end
   ****************************************************************************]]
 function me.GuildBankFrameTabOnClick ()
 	if ( GuildBankFrame.mode == "log" or GuildBankFrame.mode == "bank" ) then
-		FilterButton:Enable();
+		me.FilterButton:Enable();
 	else
 		me:Hide();
-		FilterButton:Disable();
+		me.FilterButton:Disable();
 	end
 end
 --[[****************************************************************************
@@ -316,7 +292,7 @@ end
   * Description: Updates the filter display when the bank view type changes.   *
   ****************************************************************************]]
 function me.GuildBankFrameUpdate ()
-	me.Filter( true );
+	me.FilterUpdate( true );
 end
 --[[****************************************************************************
   * Function: GuildBankSearch:GuildBankMessageFrameAddMessage                  *
@@ -343,11 +319,11 @@ end
   ****************************************************************************]]
 function me:OnShow ()
 	PlaySound( "igCharacterInfoOpen" );
-	FilterButton:SetButtonState( "PUSHED", true );
+	me.FilterButton:SetButtonState( "PUSHED", true );
 	GuildBankTab1:ClearAllPoints();
 	GuildBankTab1:SetPoint( "TOPLEFT", me, "TOPRIGHT", -8, -16 );
 
-	me.Filter( true );
+	me.FilterUpdate( true );
 end
 --[[****************************************************************************
   * Function: GuildBankSearch:OnHide                                           *
@@ -355,10 +331,10 @@ end
   ****************************************************************************]]
 function me:OnHide ()
 	PlaySound( "igCharacterInfoClose" );
-	FilterButton:SetButtonState( "NORMAL" );
+	me.FilterButton:SetButtonState( "NORMAL" );
 	GuildBankTab1:ClearAllPoints();
 	GuildBankTab1:SetPoint( "TOPLEFT", GuildBankFrame, "TOPRIGHT", -1, -32 );
-	me.HideFilter();
+	me.FilterSuspend();
 end
 --[[****************************************************************************
   * Function: GuildBankSearch:OnUpdate                                         *
@@ -370,7 +346,7 @@ function me:OnUpdate ( Elapsed )
 		me.NeedUpdate = false;
 		me.NextUpdate = 0.5;
 
-		me:ShowFilter();
+		me.FilterResume();
 	end
 end
 --[[****************************************************************************
@@ -378,7 +354,7 @@ end
   * Description: Forces an instant display update when bank contents change.   *
   ****************************************************************************]]
 function me:OnEvent ()
-	me.Filter( true );
+	me.FilterUpdate( true );
 end
 
 --[[****************************************************************************
@@ -428,11 +404,11 @@ do
 
 
 	-- Set up filter button
-	FilterButton:SetWidth( 100 );
-	FilterButton:SetHeight( 21 );
-	FilterButton:SetPoint( "TOPRIGHT", -11, -40 );
-	FilterButton:SetText( L.FILTER );
-	FilterButton:SetScript( "OnClick", FilterButton.OnClick );
+	me.FilterButton:SetWidth( 100 );
+	me.FilterButton:SetHeight( 21 );
+	me.FilterButton:SetPoint( "TOPRIGHT", -11, -40 );
+	me.FilterButton:SetText( L.FILTER );
+	me.FilterButton:SetScript( "OnClick", me.Toggle );
 
 
 	-- Set up filter pane
@@ -483,7 +459,7 @@ do
 	ClearButton:SetHeight( 18 );
 	ClearButton:SetPoint( "TOPRIGHT", -31, -8 );
 	ClearButton:SetText( L.CLEAR );
-	ClearButton:SetScript( "OnClick", ClearButton.OnClick );
+	ClearButton:SetScript( "OnClick", me.FilterClear );
 
 
 	-- Filter controls
@@ -568,5 +544,5 @@ do
 	hooksecurefunc( "GuildBankFrame_Update", me.GuildBankFrameUpdate );
 	GuildBankMessageFrame.AddMessage = me.GuildBankMessageFrameAddMessage;
 
-	me.Clear();
+	me.FilterClear();
 end
