@@ -49,11 +49,11 @@ end
 
 
 --[[****************************************************************************
-  * Function: _Units.InitializeGenericMenu                                     *
+  * Function: _Units:InitializeGenericMenu                                     *
   * Description: Constructs the unit popup menu.                               *
   ****************************************************************************]]
-function me.InitializeGenericMenu ()
-	local UnitID = me.DropDown.unit or "player";
+function me:InitializeGenericMenu ()
+	local UnitID = self.unit or "player";
 	local Which, Name, ID;
 
 	if ( UnitIsUnit( UnitID, "player" ) ) then
@@ -74,7 +74,7 @@ function me.InitializeGenericMenu ()
 		Name = RAID_TARGET_ICON;
 	end
 	if ( Which ) then
-		UnitPopup_ShowMenu( me.DropDown, Which, UnitID, Name, ID );
+		UnitPopup_ShowMenu( self, Which, UnitID, Name, ID );
 	end
 end
 --[[****************************************************************************
