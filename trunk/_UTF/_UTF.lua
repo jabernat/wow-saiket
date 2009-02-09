@@ -28,22 +28,6 @@ _UTF = me;
 
 
 --[[****************************************************************************
-  * Function: _UTF.Print                                                       *
-  * Description: Write a string to the specified frame, or to the default chat *
-  *   frame when unspecified. Output color defaults to yellow.                 *
-  ****************************************************************************]]
-do
-	local tostring = tostring;
-	me.Print = _Dev and _Dev.Print or function ( Message, ChatFrame, Color )
-		if ( not Color ) then
-			Color = NORMAL_FONT_COLOR;
-		end
-		( ChatFrame or DEFAULT_CHAT_FRAME ):AddMessage( tostring( Message ), Color.r, Color.g, Color.b, Color.id );
-	end;
-end
-
-
---[[****************************************************************************
   * Function: _UTF.HexToDec                                                    *
   * Description: Parses a string representation of a hexadecimal number.       *
   ****************************************************************************]]
