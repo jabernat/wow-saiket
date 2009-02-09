@@ -1,23 +1,6 @@
 --[[****************************************************************************
   * _Dev by Saiket                                                             *
   * _Dev.Frames.lua - Allows point and click frame identification.             *
-  *                                                                            *
-TODO(
-Add informational tooltip to outline frame {not GameTooltip}.
-
-...
-
-Scrollwheel creates auxiliary focus for frames below the current.
-	If no aux focus, dim real focus and outline frame below it.
-	If at frame just below and moving up, restore real focus and hide aux focus.
-	When real focus changes, remove aux focus.
-	Store only reference to aux frame {no "depth", etc.} and dynamically find the next lowest frame by EnumerateFrames on mousewheel.
-
-...
-
-Use alt modifier event to add mouse-enabled outline frames over regions in the current focus.
-	On mousing over region outlines, add tooltip.
-)
   ****************************************************************************]]
 
 
