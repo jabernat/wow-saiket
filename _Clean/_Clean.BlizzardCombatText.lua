@@ -1,12 +1,6 @@
 --[[****************************************************************************
   * _Clean by Saiket                                                           *
   * _Clean.BlizzardCombatText.lua - Modifies the Blizzard_CombatText addon.    *
-  *                                                                            *
-  * + Changes the colors used to match the combat log.                         *
-  * + Shrinks and compacts messages, as well as makes them transparent.        *
-  * + Keeps messages on screen for a full 3 seconds.                           *
-  * + Adds an outline to messages.                                             *
-  * + Staggers crit messages, and increases the stagger range to 100 pixels.   *
   ****************************************************************************]]
 
 

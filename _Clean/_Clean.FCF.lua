@@ -1,11 +1,6 @@
 --[[****************************************************************************
   * _Clean by Saiket                                                           *
   * _Clean.FCF.lua - Modifies the chat frames.                                 *
-  *                                                                            *
-  * + Allows chat windows to expand to fill more of the screen.                *
-  * + Locks the first two chat logs in place and disables old functionality.   *
-  * + Removes borders from chat windows.                                       *
-  * + Chat tabs can only be clicked when control is held.                      *
   ****************************************************************************]]
 
 

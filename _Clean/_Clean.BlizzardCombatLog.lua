@@ -1,8 +1,6 @@
 --[[****************************************************************************
   * _Clean by Saiket                                                           *
   * _Clean.BlizzardCombatLog.lua - Modifies the Blizzard_CombatLog addon.      *
-  *                                                                            *
-  * + Repositions the custom bar and progress bar.                             *
   ****************************************************************************]]
 
 
