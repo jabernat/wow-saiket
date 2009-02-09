@@ -213,5 +213,5 @@ do
 		Region:SetVertexColor( L.COLOR.r, L.COLOR.g, L.COLOR.b );
 	end
 
-	SlashCmdList[ "DEV_FRAMESTOGGLE" ] = me.ToggleSlashCommand;
+	SlashCmdList[ "_DEV_FRAMESTOGGLE" ] = me.ToggleSlashCommand;
 end

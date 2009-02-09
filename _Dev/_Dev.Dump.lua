@@ -272,7 +272,7 @@ do
 
 	dump = me.Explore;
 
-	SlashCmdList[ "DEV_DUMP" ] = me.SlashCommand;
+	SlashCmdList[ "_DEV_DUMP" ] = me.SlashCommand;
 
 	local Forbidden = {
 		[ "PRINT" ] = true;

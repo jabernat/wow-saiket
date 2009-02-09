@@ -135,8 +135,8 @@ do
 -- Globals
 ----------
 
-	SLASH_DEV_OPTIONS1 = "/dev";
-	SLASH_DEV_OPTIONS2 = "/devoptions";
+	SLASH__DEV_OPTIONS1 = "/dev";
+	SLASH__DEV_OPTIONS2 = "/devoptions";
 
 	-- Bindings
 	BINDING_HEADER__DEV = Title;
@@ -149,19 +149,19 @@ do
 
 
 	-- ToggleMod
-	SLASH_DEV_TOGGLEADDON1 = "/toggleaddon";
-	SLASH_DEV_TOGGLEADDON2 = "/togglemod";
+	SLASH__DEV_TOGGLEADDON1 = "/toggleaddon";
+	SLASH__DEV_TOGGLEADDON2 = "/togglemod";
 
 
 	-- Dump
-	SLASH_DEV_DUMP1 = "/dump";
-	SLASH_DEV_DUMP2 = "/d";
+	SLASH__DEV_DUMP1 = "/dump";
+	SLASH__DEV_DUMP2 = "/d";
 
 
 	-- Outline
-	SLASH_DEV_OUTLINE1 = "/outline";
+	SLASH__DEV_OUTLINE1 = "/outline";
 
 	-- Frames
-	SLASH_DEV_FRAMESTOGGLE1 = "/frames";
+	SLASH__DEV_FRAMESTOGGLE1 = "/frames";
 	BINDING_NAME__DEV_FRAMESTOGGLE = "Toggle Frames Browsing";
 end

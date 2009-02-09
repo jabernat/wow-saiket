@@ -321,7 +321,7 @@ do
 	table.count = me.Count;
 
 	SlashCmdList[ "SCRIPT" ] = me.ScriptSlashCommand;
-	SlashCmdList[ "DEV_TOGGLEADDON" ] = me.ToggleAddOnSlashCommand;
+	SlashCmdList[ "_DEV_TOGGLEADDON" ] = me.ToggleAddOnSlashCommand;
 
 	-- Fix to speed up printing many lines to scrolling message frames, by Drundia
 	hooksecurefunc( getmetatable( ChatFrame1 ).__index, "AddMessage", me.AddMessage );
