@@ -1,10 +1,7 @@
 --[[****************************************************************************
   * _UTF by Saiket                                                             *
   * _UTF.Browse.lua - Frame for finding individual characters by ID or by      *
-  *   automatically scanning for ones that exist in the current font.          *
-  *                                                                            *
-  * + Using the mouse wheel over the frame will initiate a scan in the given   *
-  *   direction that will stop when the next character is found in the font.   *
+  *   automatically scanning for glyphs that exist in the current font.        *
   ****************************************************************************]]
 
 
@@ -38,7 +35,7 @@ do
 end
 --[[****************************************************************************
   * Function: _UTF.Browse:NextChar                                             *
-  * Description: TODO()                                                        *
+  * Description: Increments the current code point in the scan's direction.    *
   ****************************************************************************]]
 function me:NextChar ()
 	if ( not self.Direction ) then
@@ -95,7 +92,7 @@ function me:OnMouseWheel ( Delta )
 end
 --[[****************************************************************************
   * Function: _UTF.Browse:OnUpdateCheck                                        *
-  * Description: TODO()                                                        *
+  * Description: Checks the previously set glyph's display state.              *
   ****************************************************************************]]
 function me:OnUpdateCheck ()
 	-- Skip the first frame
@@ -119,7 +116,7 @@ function me:OnUpdateCheck ()
 end
 --[[****************************************************************************
   * Function: _UTF.Browse:OnUpdateSeek                                         *
-  * Description: TODO()                                                        *
+  * Description: Increments or stops the current seek each frame.              *
   ****************************************************************************]]
 function me:OnUpdateSeek ()
 	-- Skip the first frame
