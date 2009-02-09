@@ -1,10 +1,8 @@
 --[[****************************************************************************
   * _Clean by Saiket                                                           *
   * _Clean.BlizzardBattlefieldMinimap.lua - Modifies the                       *
-  *   Blizzard_BattlefieldMinimap addon.                                       *
-  *                                                                            *
-  * + Removes the border and close button from the map.                        *
-  * + Anchors map near chat frame and lowers overall opacity.                  *
+  *   Blizzard_BattlefieldMinimap addon by anchoring it near the combat log    *
+  *   tab and removing its close button.                                       *
   ****************************************************************************]]
 
 

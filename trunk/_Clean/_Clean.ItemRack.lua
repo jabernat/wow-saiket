@@ -1,8 +1,6 @@
 --[[****************************************************************************
   * _Clean by Saiket                                                           *
-  * _Clean.ItemRack.lua - Modifies the ItemRack addon.                         *
-  *                                                                            *
-  * + Repositions the minimap icon.                                            *
+  * _Clean.ItemRack.lua - Modifies the ItemRack addon's minimap icon.          *
   ****************************************************************************]]
 
 

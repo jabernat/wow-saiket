@@ -1,10 +1,6 @@
 --[[****************************************************************************
   * _Clean by Saiket                                                           *
   * _Clean.General.lua - General or minor modifications to the UI.             *
-  *                                                                            *
-  * + Moves the default tooltip position to the top center of the screen.      *
-  * + Moves the GM ticket frame.                                               *
-  * + Moves the pet bar and posession bar.                                     *
   ****************************************************************************]]
 
 

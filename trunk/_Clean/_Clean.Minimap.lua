@@ -1,17 +1,7 @@
 --[[****************************************************************************
   * _Clean by Saiket                                                           *
   * _Clean.Minimap.lua - Square the minimap and clean it up.                   *
-  *                                                                            *
-  * + Makes the minimap square and allows pinging outside of the default       *
-  *   circular area.                                                           *
-  * + Removes the title above the minimap and relocates the zone name to the   *
-  *   top inside of the frame. The toggle button is removed.                   *
-  * + Shrinks many of the small indicators that floated around the default     *
-  *   minimap and lines them up along the bottom edge of the new one. The      *
-  *   tracking frame appears at the bottom left, and the mail/BG/meeting stone *
-  *   icons line up in the bottom right. The game time frame is removed.       *
   ****************************************************************************]]
--- NOTE(Add model "Spells\\Sunwell_beamfx.mdx" behind minimap.)
 
 
 local _Clean = _Clean;

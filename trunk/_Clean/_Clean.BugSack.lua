@@ -1,9 +1,6 @@
 --[[****************************************************************************
   * _Clean by Saiket                                                           *
-  * _Clean.BugSack.lua - Modifies the BugSack addon.                           *
-  *                                                                            *
-  * + Repositions the minimap icon.                                            *
-  * + Reskins the error viewer.                                                *
+  * _Clean.BugSack.lua - Reskins the BugSack addon's viewer and toggle button. *
   ****************************************************************************]]
 
 
