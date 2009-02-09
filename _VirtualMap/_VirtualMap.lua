@@ -603,25 +603,5 @@ do
 
 	HUD.NorthIndicator.Text:SetText( L.NORTH_INDICATOR );
 
-	SlashCmdList[ "VIRTUALMAP" ] = function () me.Toggle(); end;
-
-	--[[ NOTE(PitchLimit behavior changed: When the camera would normally turn
-	over and be upside down, it "rights" itself instead.  The transition is
-	extremely disorienting, and shouldn't be included.)
-
-	ConsoleExec( "pitchLimit 10000" );
-	do
-		local IsFlying = IsFlying;
-		local IsSwimming = IsSwimming;
-		local SetCVar = SetCVar;
-		local cos = math.cos;
-		CreateFrame( "Frame" ):SetScript( "OnUpdate", function ()
-			if ( ( IsFlying() or IsSwimming() ) and cos( me.Pitch ) < 0 ) then
-				SetCVar( "mouseinvertyaw", "1" );
-			else
-				SetCVar( "mouseinvertyaw", "0" );
-			end
-		end );
-	end
-	]]
+	SlashCmdList[ "_VIRTUALMAP" ] = function () me.Toggle(); end;
 end
