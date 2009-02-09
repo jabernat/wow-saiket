@@ -12,9 +12,6 @@
   *     the character's code point.                                            *
   *   + &#x<HexCodePoint>;, where <HexCodePoint> is a hexadecimal              *
   *     representation of the character's code point.                          *
-NOTE(
-1. Add list displays to the GUI's Custom editors.
-)
   ****************************************************************************]]
 
 
