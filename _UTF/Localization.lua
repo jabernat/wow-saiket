@@ -44,7 +44,7 @@ do
 -- Globals
 ----------
 
-	SLASH_UTFTOGGLE1 = "/utf";
+	SLASH__UTFTOGGLE1 = "/utf";
 
 	-- Bindings
 	BINDING_HEADER__UTF = Title;

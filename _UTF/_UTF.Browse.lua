@@ -334,5 +334,5 @@ do
 	-- Initialize to character 0
 	EditBox:SetNumber( _UTF.Min );
 
-	SlashCmdList[ "UTFTOGGLE" ] = me.ToggleSlashCommand;
+	SlashCmdList[ "_UTFTOGGLE" ] = me.ToggleSlashCommand;
 end
