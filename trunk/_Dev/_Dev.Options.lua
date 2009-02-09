@@ -355,5 +355,5 @@ do
 
 
 
-	SlashCmdList[ "DEV_OPTIONS" ] = me.SlashCommand;
+	SlashCmdList[ "_DEV_OPTIONS" ] = me.SlashCommand;
 end

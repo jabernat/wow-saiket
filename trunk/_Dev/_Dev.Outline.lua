@@ -279,5 +279,5 @@ do
 	-- Hooks
 	outline = me.Toggle;
 
-	SlashCmdList[ "DEV_OUTLINE" ] = me.SlashCommand;
+	SlashCmdList[ "_DEV_OUTLINE" ] = me.SlashCommand;
 end
