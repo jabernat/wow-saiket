@@ -46,8 +46,8 @@ L.NORTH_INDICATOR = "N";
 
 
 -- Slash commands
-SLASH_VIRTUALMAP1 = "/virtualmap";
-SLASH_VIRTUALMAP2 = "/vmap";
+SLASH__VIRTUALMAP1 = "/virtualmap";
+SLASH__VIRTUALMAP2 = "/vmap";
 
 -- Keybinds
 BINDING_HEADER__VIRTUALMAP    = Title;
