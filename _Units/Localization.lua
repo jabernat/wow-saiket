@@ -5,9 +5,7 @@
 
 
 do
-
 	local Title = "_|cffcccc88Units"..FONT_COLOR_CODE_CLOSE;
-
 
 	_UnitsLocalization = setmetatable(
 		{
@@ -17,11 +15,6 @@ do
 				[ "GHOST" ]  = "Ghost";
 				[ "ABSENT" ] = "Absent";
 				[ "FEIGN" ] = "Feign Death";
-				[ 1 ] = "CRITICAL";
-				[ 2 ] = "Poor";
-				[ 3 ] = "Fair";
-				[ 4 ] = ""; -- "Good";
-				[ 5 ] = ""; -- "Excellent";
 			};
 
 			GRID_LAYOUT_GROUP = Title..": Groups";

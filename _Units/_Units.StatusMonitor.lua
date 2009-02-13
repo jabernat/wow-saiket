@@ -47,17 +47,9 @@ local Units = {
 	  which point to those specific frames for the row.
 	]]
 	[ "target" ]    = { Position = "TOP"; Offset = 8; }; -- Only one Top unit at a time!
-	[ "player" ]    = { Position =  1;                            PetID = "pet"; };
-	[ "pet" ]       = { Position =  2; Margin = -4;               Scale = 0.8; };
-	[ "party1" ]    = { Position =  3; Margin =  4; Party = true; PetID = "party1pet"; };
-	[ "partypet1" ] = { Position =  4; Margin = -4; Party = true; Scale = 0.8; };
-	[ "party2" ]    = { Position =  5;              Party = true; PetID = "party2pet"; };
-	[ "partypet2" ] = { Position =  6; Margin = -4; Party = true; Scale = 0.8; };
-	[ "party3" ]    = { Position =  7;              Party = true; PetID = "party3pet"; };
-	[ "partypet3" ] = { Position =  8; Margin = -4; Party = true; Scale = 0.8; };
-	[ "party4" ]    = { Position =  9;              Party = true; PetID = "party4pet"; };
-	[ "partypet4" ] = { Position = 10; Margin = -4; Party = true; Scale = 0.8; };
-	[ "focus" ]     = { Position = 11; Margin =  8; };
+	[ "player" ]    = { Position = 1; };
+	[ "playerpet" ] = { Position = 2; Margin = -4; Scale = 0.8; };
+	[ "focus" ]     = { Position = 3; Margin =  8; };
 };
 me.Units = Units;
 local UnitsParty = {}; -- Compiled automatically based on Party flag
@@ -84,7 +76,7 @@ function me.ColumnAutosize ( Column )
 	local Max = 0;
 	for _, UnitData in pairs( Units ) do
 		if ( UnitData:IsShown() ) then
-			Max = max( Max, UnitData[ Column ]:GetWidth() );
+			Max = max( Max, UnitData[ Column ]:GetStringWidth() );
 		end
 	end
 
@@ -212,11 +204,9 @@ end
   * Description: Fired when a unit's pet changes.                              *
   ****************************************************************************]]
 function me:UNIT_PET ( _, UnitID )
+	UnitID = UnitID.."pet";
 	if ( Units[ UnitID ] ) then
-		UnitID = Units[ UnitID ].PetID;
-		if ( Units[ UnitID ] ) then -- Pet is relevant
-			UnitFrame.Update( UnitID );
-		end
+		UnitFrame.Update( UnitID );
 	end
 end
 --[[****************************************************************************
@@ -236,7 +226,6 @@ end
   * Description: Refreshes whole party.                                        *
   ****************************************************************************]]
 function me:PARTY_MEMBERS_CHANGED ()
-	-- NOTE(Fired very often; possibly create flag handled in OnUpdate.)
 	for UnitID, UnitData in pairs( UnitsParty ) do
 		UnitFrame.Update( UnitID );
 	end
@@ -345,9 +334,10 @@ function UnitFrame.Create ( UnitID )
 
 	-- Create all column fields
 	for Column, ColumnFrame in pairs( Columns ) do
-		UnitData[ Column ]
-			= UnitData:CreateFontString( nil, "ARTWORK", "NumberFontNormalLarge" );
+		UnitData[ Column ] = UnitData:CreateFontString( nil, "ARTWORK", "NumberFontNormalLarge" );
 	end
+	local Color = GRAY_FONT_COLOR;
+	UnitData.Condition:SetTextColor( Color.r, Color.g, Color.b );
 end
 
 --[[****************************************************************************
@@ -369,7 +359,6 @@ end
   ****************************************************************************]]
 function UnitFrame.UpdateHealth ( UnitID )
 	local HealthString = Units[ UnitID ].Health;
-	local ConditionString = Units[ UnitID ].Condition;
 
 	-- Update health percentage
 	local Health = ( UnitIsDisconnected( UnitID ) or UnitIsDeadOrGhost( UnitID ) )
@@ -395,15 +384,13 @@ function UnitFrame.UpdateHealth ( UnitID )
 		end
 	end
 	HealthString:SetTextColor( R, G, B );
-	ConditionString:SetTextColor( R, G, B );
 
 	-- Determine condition text
 	local Condition = ( UnitIsDisconnected( UnitID ) and "ABSENT" )
 		or ( UnitIsFeignDeath( UnitID ) and "FEIGN" )
 		or ( UnitIsGhost( UnitID ) and "GHOST" )
-		or ( UnitIsDead( UnitID ) and "CORPSE" )
-		or ceil( Health * #L.STATUSMONITOR_CONDITION_LABELS );
-	ConditionString:SetText( L.STATUSMONITOR_CONDITION_LABELS[ Condition ] );
+		or ( UnitIsDead( UnitID ) and "CORPSE" );
+	Units[ UnitID ].Condition:SetText( L.STATUSMONITOR_CONDITION_LABELS[ Condition ] );
 end
 --[[****************************************************************************
   * Function: _Units.StatusMonitor.UnitFrame.UpdateMana                        *
@@ -442,7 +429,7 @@ end
   * Description: Updates every stat for the given unit.                        *
   ****************************************************************************]]
 function UnitFrame.Update ( UnitID )
-	if ( UnitExists( UnitID ) ) then
+	if ( UnitExists( UnitID ) and UnitName( UnitID ) ) then
 		UnitFrame.Show( UnitID );
 		UnitFrame.UpdateName( UnitID );
 		UnitFrame.UpdateHealth( UnitID );
@@ -495,8 +482,8 @@ do
 		me:RegisterEvent( "PARTY_MEMBER_ENABLE" );  -- Connected
 		me:RegisterEvent( "PARTY_MEMBER_DISABLE" ); -- Offline/dead
 	end
-	for _, UnitData in pairs( Units ) do
-		if ( Units[ UnitData.PetID ] ) then -- Has a pet
+	for UnitID in pairs( Units ) do
+		if ( UnitID:match( "pet$" ) ) then -- Has a pet
 			me:RegisterEvent( "UNIT_PET" );
 			break;
 		end
