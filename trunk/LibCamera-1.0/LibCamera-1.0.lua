@@ -22,11 +22,14 @@ local YawOffset = 0;
 
 local IsCameraMoving = false;
 
+local EventsUsed = 0; -- Number of events registered for by addons
+
 
 local AngleMinDelta = 1e-5; -- Minimum angle change to trigger an OnChanged event
 local ArrowModel = PlayerArrowFrame;
 local PI = math.pi;
 local DegreesToRadians = PI / 180;
+local EVENT_UPDATE, EVENT_UPDATEDISTANCE = "LibCamera_Update", "LibCamera_UpdateDistance";
 
 
 
@@ -76,6 +79,7 @@ do
 		if ( NewDistance ~= Distance ) then
 			Distance = NewDistance;
 			Changed = true;
+			lib:OnChangedDistance();
 		end
 
 		-- Restore original camera data
@@ -96,9 +100,12 @@ end
   * Description: Begins updating camera positions.                             *
   ****************************************************************************]]
 function lib.Events:OnUsed ( Target, Event )
-	if ( Event == "LibCamera_Update" ) then
-		Target.Updater:Show();
-		Target.Updater:OnUpdate( math.huge ); -- Force instant update
+	if ( Event == EVENT_UPDATE or Event == EVENT_UPDATEDISTANCE ) then
+		if ( EventsUsed == 0 ) then
+			Target.Updater:Show();
+			Target.Updater:OnUpdate( math.huge ); -- Force instant update
+		end
+		EventsUsed = EventsUsed + 1;
 	end
 end
 --[[****************************************************************************
@@ -106,13 +113,25 @@ end
   * Description: Stops updating camera positions.                              *
   ****************************************************************************]]
 function lib.Events:OnUnused ( Target, Event )
-	if ( Event == "LibCamera_Update" ) then
-		Target.Updater:Hide();
-		Pitch, Yaw, Distance = nil; -- Clear cache
+	if ( Event == EVENT_UPDATE or Event == EVENT_UPDATEDISTANCE ) then
+		EventsUsed = EventsUsed - 1;
+		if ( EventsUsed == 0 ) then
+			Target.Updater:Hide();
+			Pitch, Yaw, Distance = nil; -- Clear cache
+		end
 	end
 end
 
 
+--[[****************************************************************************
+  * Function: lib.GetCameraDistance                                            *
+  * Description: Returns the camera's distance from the player in yards, or    *
+  *   nil if unknown.  At lease one callback must be registered for this       *
+  *   function to update.                                                      *
+  ****************************************************************************]]
+function lib.GetCameraDistance ()
+	return Distance;
+end
 --[[****************************************************************************
   * Function: lib.GetCameraPosition                                            *
   * Description: Returns the camera pitch and yaw in radians and distance from *
@@ -120,14 +139,21 @@ end
   *   registered for this function to update.                                  *
   ****************************************************************************]]
 function lib.GetCameraPosition ()
-	return Pitch, Yaw, Distance;
+	return Pitch, Yaw, lib.GetCameraDistance();
+end
+--[[****************************************************************************
+  * Function: lib:OnChangedDistance                                            *
+  * Description: Fired when the player's camera zoom changes.                  *
+  ****************************************************************************]]
+function lib:OnChangedDistance ()
+	self.Events:Fire( EVENT_UPDATEDISTANCE, self.GetCameraDistance() );
 end
 --[[****************************************************************************
   * Function: lib:OnChanged                                                    *
   * Description: Fired when the player's camera moves.                         *
   ****************************************************************************]]
 function lib:OnChanged ()
-	self.Events:Fire( "LibCamera_Update", self.GetCameraPosition() );
+	self.Events:Fire( EVENT_UPDATE, self.GetCameraPosition() );
 end
 
 
