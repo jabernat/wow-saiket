@@ -4,7 +4,7 @@
   ****************************************************************************]]
 
 
-local MAJOR, MINOR = "LibCamera-1.0", 2;
+local MAJOR, MINOR = "LibCamera-1.0", 3;
 
 local lib = LibStub:NewLibrary( MAJOR, MINOR );
 if ( not lib ) then
@@ -23,7 +23,10 @@ local YawOffset = 0;
 local IsCameraMoving = false;
 
 
+local AngleMinDelta = 1e-5; -- Minimum angle change to trigger an OnChanged event
 local ArrowModel = PlayerArrowFrame;
+local PI = math.pi;
+local DegreesToRadians = PI / 180;
 
 
 
@@ -35,11 +38,11 @@ local ArrowModel = PlayerArrowFrame;
 do
 	local SaveView = SaveView;
 	local IsMouselooking = IsMouselooking;
+	local UpdateWorldMapArrowFrames = UpdateWorldMapArrowFrames;
 	local GetCVar = GetCVar;
 	local SetCVar = SetCVar;
 	local tonumber = tonumber;
-
-	local DegreesToRadians = math.pi / 180;
+	local abs = abs;
 
 	local Changed, NewPitch, NewYaw, NewDistance;
 	local OriginalPitch, OriginalYaw, OriginalDistance;
@@ -55,7 +58,7 @@ do
 		-- Cache current camera information
 		SaveView( 5 );
 		NewPitch = DegreesToRadians * GetCVar( "cameraPitchD" );
-		if ( NewPitch ~= Pitch ) then
+		if ( not Pitch or abs( NewPitch - Pitch ) >= AngleMinDelta ) then
 			Pitch = NewPitch;
 			Changed = true;
 		end
@@ -64,7 +67,8 @@ do
 			UpdateWorldMapArrowFrames();
 			NewYaw = NewYaw + ArrowModel:GetFacing();
 		end
-		if ( NewYaw ~= Yaw ) then
+		NewYaw = NewYaw % ( PI * 2 );
+		if ( not Yaw or abs( NewYaw - Yaw ) >= AngleMinDelta ) then
 			Yaw = NewYaw;
 			Changed = true;
 		end
@@ -144,10 +148,7 @@ do
 	hooksecurefunc( "CameraOrSelectOrMoveStop", function ()
 		IsCameraMoving = false;
 	end );
-	do
-		local DegreesToRadians = math.pi / 180;
-		hooksecurefunc( "FlipCameraYaw", function ( Offset )
-			YawOffset = YawOffset + Offset * DegreesToRadians;
-		end );
-	end
+	hooksecurefunc( "FlipCameraYaw", function ( Offset )
+		YawOffset = ( YawOffset + Offset * DegreesToRadians ) % ( PI * 2 );
+	end );
 end
