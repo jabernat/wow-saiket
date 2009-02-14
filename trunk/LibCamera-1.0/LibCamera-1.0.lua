@@ -61,7 +61,8 @@ do
 		-- Cache current camera information
 		SaveView( 5 );
 		NewPitch = DegreesToRadians * GetCVar( "cameraPitchD" );
-		if ( not Pitch or abs( NewPitch - Pitch ) >= AngleMinDelta ) then
+		-- Note: A pitch of zero (exactly) indicates an error related to pitchLimit CVar, so disregard
+		if ( not Pitch or ( NewPitch ~= 0 and abs( NewPitch - Pitch ) >= AngleMinDelta ) ) then
 			Pitch = NewPitch;
 			Changed = true;
 		end
