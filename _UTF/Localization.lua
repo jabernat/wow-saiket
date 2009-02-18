@@ -20,9 +20,11 @@ do
 			CUSTOMIZE_ENTITIES_TITLE = "Entities";
 			CUSTOMIZE_ENTITIES_NAME = "Reference Name:";
 			CUSTOMIZE_ENTITIES_VALUE = "Codepoint:";
+			CUSTOMIZE_ENTITIES_GLYPH = "Glyph";
 			CUSTOMIZE_TEXTREPLACE_TITLE = "Text Replace";
 			CUSTOMIZE_TEXTREPLACE_FIND = "Find:";
 			CUSTOMIZE_TEXTREPLACE_REPLACE = "Replace:";
+			CUSTOMIZE_TEXTREPLACE_INDEX = "Index";
 
 			OPTIONS_TITLE = Title;
 			OPTIONS_DESC = "These options control the general text-replacement behaviors of _UTF.  The character browsing dialog can be brought up with \226\128\156/utf\226\128\157 or by keybinding.";

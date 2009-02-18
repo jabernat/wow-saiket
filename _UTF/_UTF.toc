@@ -2,8 +2,8 @@
 ## Title: _|cffCCCC88UTF|r
 ## Notes: Unicode input dialog and text replacement.
 ## Author: Saiket
-## Version: 3.0.2.1
-## X-Date: 2009-02-09
+## Version: 3.0.8.1
+## X-Date: 2009-02-17
 ## X-Category: Chat/Communication
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
@@ -21,6 +21,7 @@ _UTF.Chat.lua
 
 _UTF.Browse.lua
 
+_UTF.Table.lua
 _UTF.Options.lua
 _UTF.Customize.lua
 _UTF.Customize.Entities.lua
