@@ -19,9 +19,30 @@ me.Label2 = L.CUSTOMIZE_ENTITIES_VALUE;
   * Function: _UTF.Customize.Entities.Update                                   *
   * Description: Updates the data display.                                     *
   ****************************************************************************]]
-function me.Update ()
-	print( "Updated Entities." );
+do
+	local Table = _UTF.Customize.Table;
+	local SortOrder = {};
+	function me.Update ()
+		Table:SetHeader( L.CUSTOMIZE_ENTITIES_GLYPH, nil, L.CUSTOMIZE_ENTITIES_NAME, nil, L.CUSTOMIZE_ENTITIES_VALUE, nil );
+		for Name in pairs( _UTFOptions.CharacterEntities ) do
+			SortOrder[ #SortOrder + 1 ] = Name;
+		end
+		sort( SortOrder );
+		for _, Name in ipairs( SortOrder ) do
+			local ID = _UTFOptions.CharacterEntities[ Name ];
+			Table:AddRow( Name, _UTF.DecToUTF( ID ), Name, ID );
+		end
+		wipe( SortOrder );
+	end
 end
+--[[****************************************************************************
+  * Function: _UTF.Customize.Entities.OnSelect                                 *
+  * Description: Updates the edit boxes to match the table selection.          *
+  ****************************************************************************]]
+function me.OnSelect ( Name )
+	return Name, _UTFOptions.CharacterEntities[ Name ];
+end
+
 --[[****************************************************************************
   * Function: _UTF.Customize.Entities.Add                                      *
   * Description: Adds a pair of values to the data set.                        *
@@ -47,22 +68,22 @@ end
 
 --[[****************************************************************************
   * Function: _UTF.Customize.Entities.CanRemove                                *
-  * Description: True if a key is present and can be removed.                  *
+  * Description: Returns the input's key if it is present and can be removed.  *
   ****************************************************************************]]
 function me.CanRemove ( Key )
 	if ( Key ~= "" and _UTFOptions.CharacterEntities[ Key ] ) then
-		return true;
+		return Key;
 	end
 end
 --[[****************************************************************************
   * Function: _UTF.Customize.Entities.CanAdd                                   *
-  * Description: True if a key can be added.                                   *
+  * Description: Returns the input's key if it can be added.                   *
   ****************************************************************************]]
 function me.CanAdd ( Key, ValueEditBox )
-	if ( strfind( Key, "^%w+$" ) and ValueEditBox:GetText() ~= "" ) then
+	if ( Key:match( "^%w+$" ) and ValueEditBox:GetText() ~= "" ) then
 		local Value = ValueEditBox:GetNumber();
 		if ( _UTFOptions.CharacterEntities[ Key ] ~= Value and Value <= _UTF.Max and Value >= _UTF.Min ) then
-			return true;
+			return Key;
 		end
 	end
 end
