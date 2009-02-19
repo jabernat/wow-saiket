@@ -112,7 +112,7 @@ function me.ValidateButtons ()
 	local Pane = Panes[ me.PaneID ];
 
 	local CanRemove = Pane and Pane.CanRemove( me.EditBox1:GetText() ) or nil;
-	Table:SetSelection( CanRemove );
+	Table:SetSelectionByKey( CanRemove );
 
 	me.AddButton[ ( Pane and Pane.CanAdd( me.EditBox1:GetText(), me.EditBox2 ) )
 		and "Enable" or "Disable" ]( me.AddButton );

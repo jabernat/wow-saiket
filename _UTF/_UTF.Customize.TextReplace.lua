@@ -35,7 +35,7 @@ end
 do
 	local Table = _UTF.Customize.Table;
 	function me.Update ()
-		Table:SetHeader( L.CUSTOMIZE_TEXTREPLACE_INDEX, nil, L.CUSTOMIZE_TEXTREPLACE_FIND, nil, L.CUSTOMIZE_TEXTREPLACE_REPLACE, nil );
+		Table:SetHeader( L.CUSTOMIZE_TEXTREPLACE_INDEX, L.CUSTOMIZE_TEXTREPLACE_FIND, L.CUSTOMIZE_TEXTREPLACE_REPLACE );
 		for Index, Data in ipairs( _UTFOptions.Chat.TextReplacements ) do
 			Table:AddRow( Index, Index, Data[ 1 ]:gsub( "|", "||" ), Data[ 2 ]:gsub( "|", "||" ) );
 		end
