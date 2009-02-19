@@ -66,7 +66,6 @@ function me.AddPane ( Pane, Title )
 
 	if ( ID == 1 ) then
 		Tab:SetPoint( "BOTTOMLEFT", me.ScrollFrame, "TOPLEFT" );
-		me.SetPane( ID );
 	else
 		Pane:Hide();
 		PanelTemplates_DeselectTab( Tab );
@@ -165,6 +164,12 @@ end
 do
 	me.name = L.CUSTOMIZE_TITLE;
 	me.parent = L.OPTIONS_TITLE;
+	me:SetScript( "OnShow", function ( self )
+		self:SetScript( "OnShow", nil );
+		if ( #Panes > 0 ) then
+			me.SetPane( 1 );
+		end
+	end );
 
 	-- Pane title
 	me.Title = me:CreateFontString( nil, "ARTWORK", "GameFontNormalLarge" );
