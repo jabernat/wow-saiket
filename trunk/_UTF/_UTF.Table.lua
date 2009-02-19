@@ -8,7 +8,10 @@ local _UTF = _UTF;
 local me = {};
 _UTF.Table = me;
 
-me.Methods = {};
+me.RowMeta = { __index = {}; };
+local RowMethods = me.RowMeta.__index;
+me.TableMeta = { __index = {}; };
+local TableMethods = me.TableMeta.__index;
 
 local RowHeight = 14;
 local ColumnPadding = 6;
@@ -29,74 +32,95 @@ end
   ****************************************************************************]]
 local function RowAddElements ( self, Row )
 	local Columns = self.Header;
-	for Index = #Row + 1, #Columns do
+	for Index = Row:GetNumRegions() + 1, self.NumColumns do
 		local Element = Row:CreateFontString( nil, "ARTWORK", self.ElementFont or "GameFontNormalSmall" );
-		Element:SetJustifyH( "LEFT" );
 		Element:SetPoint( "TOP" );
 		Element:SetPoint( "BOTTOM" );
 		Element:SetPoint( "LEFT", Columns[ Index ], ColumnPadding, 0 );
 		Element:SetPoint( "RIGHT", Columns[ Index ], -ColumnPadding, 0 );
-		Row[ Index ] = Element;
 	end
 end
 --[[****************************************************************************
-  * Function: local RowCreate                                                  *
+  * Function: local RowInsert                                                  *
   * Description: Creates a new row button for the table.                       *
   ****************************************************************************]]
-local function RowCreate ( self )
-	local Rows = self;
-	local ID = #Rows + 1;
-
+local function RowInsert ( self, Index )
+	Index = Index or #self + 1;
 	local Row = next( self.UnusedRows );
 	if ( Row ) then
 		self.UnusedRows[ Row ] = nil;
 		Row:Show();
 	else
-		Row = CreateFrame( "Button", nil, Rows );
+		Row = CreateFrame( "Button", nil, self );
 		Row:SetScript( "OnClick", RowOnClick );
 		Row:RegisterForClicks( "LeftButtonUp" );
 		Row:SetHeight( RowHeight );
 		Row:SetPoint( "LEFT" );
 		Row:SetPoint( "RIGHT" );
 		Row:SetHighlightTexture( "Interface\\FriendsFrame\\UI-FriendsFrame-HighlightBar", "ADD" );
+		-- Apply row methods
+		if ( not getmetatable( RowMethods ) ) then
+			setmetatable( RowMethods, getmetatable( Row ) );
+		end
+		setmetatable( Row, me.RowMeta );
 	end
-	Row:SetPoint( "TOP", ID == 1 and self.Header or Rows[ ID - 1 ], "BOTTOM" );
 
-	RowAddElements( self, Row );
+	if ( self[ Index ] ) then -- Move old row below new one
+		self[ Index ]:SetPoint( "TOP", Row, "BOTTOM" );
+	end
+	Row:SetPoint( "TOP", Index == 1 and self.Header or self[ Index - 1 ], "BOTTOM" );
 
-	Rows[ ID ] = Row;
+	tinsert( self, Index, Row );
 	return Row;
 end
-
 --[[****************************************************************************
-  * Function: local ColumnOnClick                                              *
-  * Description: Calls the column's defined sort function.                     *
+  * Function: local RowRemove                                                  *
+  * Description: Hides a row button and allows it to be recycled.              *
   ****************************************************************************]]
-local function ColumnOnClick ( self, ... )
-	PlaySound( "igMainMenuOptionCheckBoxOn" );
-	if ( type( self.OnClick ) == "function" ) then
-		self:OnClick( ... );
+local RowRemove;
+do
+	local function ClearElements ( Count, ... )
+		for Index = 1, Count do
+			local Element = select( Index, ... );
+			Element:Hide();
+			Element:SetText();
+		end
+	end
+	function RowRemove ( self, Index )
+		local Row = self[ Index ];
+		tremove( self, Index );
+		self.UnusedRows[ Row ] = true;
+		Row:Hide();
+		Row.Key = nil;
+		ClearElements( self.NumColumns, Row:GetRegions() );
+		for Column = 1, self.NumColumns do -- Remove values
+			Row[ Column ] = nil;
+		end
+		-- Reanchor next row
+		if ( self[ Index ] ) then
+			self[ Index ]:SetPoint( "TOP", Index == 1 and self.Header or self[ Index - 1 ], "BOTTOM" );
+		end
 	end
 end
+
 --[[****************************************************************************
   * Function: local ColumnCreate                                               *
   * Description: Creates a new column header for the table.                    *
   ****************************************************************************]]
 local function ColumnCreate ( self )
 	local Columns = self.Header;
-	local ID = #Columns + 1;
+	local Index = #Columns + 1;
 
 	local Column = CreateFrame( "Button", nil, Columns );
-	Column:SetID( ID );
+	Column:SetID( Index );
 	Column:SetFontString( Column:CreateFontString( nil, "ARTWORK", self.HeaderFont or "GameFontHighlightSmall" ) );
-	Column:RegisterForClicks( "LeftButtonUp" );
-	Column:SetScript( "OnClick", ColumnOnClick );
+	Column:Disable();
 	Column:SetPoint( "TOP" );
 	Column:SetPoint( "BOTTOM" );
-	if ( ID == 1 ) then
+	if ( Index == 1 ) then
 		Column:SetPoint( "LEFT" );
 	else
-		Column:SetPoint( "LEFT", Columns[ ID - 1 ], "RIGHT" );
+		Column:SetPoint( "LEFT", Columns[ Index - 1 ], "RIGHT" );
 	end
 
 	-- Artwork
@@ -117,9 +141,8 @@ local function ColumnCreate ( self )
 	Middle:SetPoint( "BOTTOMRIGHT", Right, "BOTTOMLEFT" );
 	Middle:SetTexture( "Interface\\FriendsFrame\\WhoFrame-ColumnTabs" );
 	Middle:SetTexCoord( 0.078125, 0.90625, 0, 0.75 );
-	Column:SetHighlightTexture( "Interface\\PaperDollInfoFrame\\UI-Character-Tab-Highlight", "ADD" );
 
-	Columns[ ID ] = Column;
+	Columns[ Index ] = Column;
 	return Column;
 end
 
@@ -128,26 +151,21 @@ end
   * Description: Resizes all table headers and elements.                       *
   ****************************************************************************]]
 local function Resize ( self )
-	local Columns = self.Header;
-
 	local Width = 0;
-	for Index, Column in ipairs( Columns ) do
-		if ( not Column:IsShown() ) then
-			break;
-		else
-			local ColumnWidth = Column:GetTextWidth();
-			for _, Row in ipairs( self ) do
-				ColumnWidth = max( ColumnWidth, Row[ Index ]:GetStringWidth() );
-			end
-			ColumnWidth = ColumnWidth + ColumnPadding * 2;
-			Column:SetWidth( ColumnWidth );
-			Width = Width + ColumnWidth;
+	for Index = 1, self.NumColumns do
+		local Column = self.Header[ Index ];
+		local ColumnWidth = Column:GetTextWidth();
+		for _, Row in ipairs( self ) do
+			ColumnWidth = max( ColumnWidth, select( Index, Row:GetRegions() ):GetStringWidth() );
 		end
+		ColumnWidth = ColumnWidth + ColumnPadding * 2;
+		Column:SetWidth( ColumnWidth );
+		Width = Width + ColumnWidth;
 	end
 
-	local MinWidth = self.MinWidth or 1;
-	if ( MinWidth > Width and #Columns > 0 ) then
-		local LastColumn = Columns[ #Columns ];
+	local MinWidth = self.MinWidth or 1; -- Never set width to 0
+	if ( MinWidth > Width and self.NumColumns > 0 ) then
+		local LastColumn = self.Header[ #self.Header ];
 		LastColumn:SetWidth( LastColumn:GetWidth() + ( MinWidth - Width ) );
 	end
 	self:SetWidth( max( Width, MinWidth ) );
@@ -166,128 +184,133 @@ end
 
 
 --[[****************************************************************************
-  * Function: _UTF.Table.Methods:Clear                                         *
-  * Description: Empties the table of all rows.                                *
+  * Function: RowObject:GetNumRegions                                          *
   ****************************************************************************]]
-function me.Methods:Clear ()
-	if ( self.Selection ) then
-		self.Selection:UnlockHighlight();
-		self.Selection = nil;
-		if ( type( self.OnSelect ) == "function" ) then
-			self:OnSelect();
-		end
+do
+	local RowMethodsOriginal = getmetatable( ScriptErrorsButton ).__index; -- Generic button metatable
+	function RowMethods:GetNumRegions ()
+		return RowMethodsOriginal.GetNumRegions( self ) - 1; -- Skip highlight region
 	end
-	wipe( self.Keys );
-	for Index, Row in ipairs( self ) do
-		self[ Index ] = nil;
-		self.UnusedRows[ Row ] = true;
-		Row:Hide();
-		Row.Key = nil;
-		for _, Element in ipairs( Row ) do
-			Element:Hide();
-			Element:SetText();
-			Element.Value = nil;
-		end
+--[[****************************************************************************
+  * Function: RowObject:GetRegions                                             *
+  ****************************************************************************]]
+	function RowMethods:GetRegions ()
+		return select( 2, RowMethodsOriginal.GetRegions( self ) ); -- Skip highlight region
 	end
-	self:Resize();
 end
 --[[****************************************************************************
-  * Function: _UTF.Table.Methods:SetHeader                                     *
-  * Description: Sets the header configuration for the data table.  Accepts a  *
-  *   list of argument pairs representing column names and corresponding       *
-  *   header click callbacks.  Any non-function callback disables that         *
-  *   column's header button.                                                  *
+  * Function: RowObject:GetData                                                *
+  * Description: Returns the row's key and all original element data.          *
   ****************************************************************************]]
-function me.Methods:SetHeader ( ... )
+function RowMethods:GetData ()
+	return self.Key, unpack( self );
+end
+
+
+
+
+--[[****************************************************************************
+  * Function: TableObject:Clear                                                *
+  * Description: Empties the table of all rows.                                *
+  ****************************************************************************]]
+function TableMethods:Clear ()
+	if ( #self > 0 ) then
+		self:SetSelection();
+		wipe( self.Keys );
+		for Index = #self, 1, -1 do -- Remove in reverse so rows don't move mid-loop
+			RowRemove( self, Index );
+		end
+		self:Resize();
+		return true;
+	end
+end
+--[[****************************************************************************
+  * Function: TableObject:SetHeader                                            *
+  * Description: Sets the headers for the data table to the list of header     *
+  *   labels provided.  Labels with value nil will have no label text.         *
+  ****************************************************************************]]
+function TableMethods:SetHeader ( ... )
 	local Columns = self.Header;
-	local ColumnCount = ceil( select( "#", ... ) / 2 );
-	self.ColumnCount = ColumnCount;
+	local NumColumns = select( "#", ... );
+	self.NumColumns = NumColumns;
 
 	-- Create necessary column buttons
-	if ( #Columns < ColumnCount ) then
-		for Index = #Columns + 1, ColumnCount do
+	if ( #Columns < NumColumns ) then
+		for Index = #Columns + 1, NumColumns do
 			ColumnCreate( self );
-		end
-		-- Add new elements to rows
-		for _, Row in ipairs( self ) do
-			RowAddElements( self, Row );
 		end
 	end
 
 	-- Fill out buttons
-	for Index, Column in ipairs( Columns ) do
-		if ( Index > ColumnCount ) then
-			Column:Hide();
-			Column:SetText();
-			Column:SetScript( "OnClick", nil );
-		else
-			local Value = select( Index * 2 - 1, ... );
-			Column:SetText( Value ~= nil and tostring( Value ) or nil );
-
-			local OnClick = select( Index * 2, ... );
-			Column.OnClick = type( OnClick ) == "function" and OnClick or nil;
-			Column[ Column.OnClick and "Enable" or "Disable" ]( Column );
-			Column:Show();
-		end
+	for Index = 1, NumColumns do
+		local Column = Columns[ Index ];
+		local Value = select( Index, ... );
+		Column:SetText( Value ~= nil and tostring( Value ) or nil );
+		Column:Show();
+	end
+	for Index = NumColumns + 1, #Columns do -- Hide unused
+		local Column = Columns[ Index ];
+		Column:Hide();
+		Column:SetText();
 	end
 
 	self:Clear();
 end
 --[[****************************************************************************
-  * Function: _UTF.Table.Methods:AddRow                                        *
+  * Function: TableObject:AddRow                                               *
   * Description: Adds a row of strings to the table with the current header.   *
   ****************************************************************************]]
-function me.Methods:AddRow ( Key, ... )
-	local Row = RowCreate( self );
-	assert( Key == nil or self.Keys[ Key ] == nil, "Index key must be unique." );
-	self.Keys[ Key ] = Row;
-	Row.Key = Key;
-	for Index = 1, self.ColumnCount do
-		local Element = Row[ Index ];
-		local Value = select( Index, ... );
-		Element.Value = Value;
-		Element:SetText( Value ~= nil and tostring( Value ) or nil );
-		Element:Show();
+do
+	local function UpdateElements ( self, Row, ... )
+		for Index = 1, self.NumColumns do
+			local Element = select( Index, ... );
+			local Value = Row[ Index ];
+			Element:SetText( Value ~= nil and tostring( Value ) or nil );
+			Element:Show();
+			Element:SetJustifyH( type( Value ) == "number" and "RIGHT" or "LEFT" );
+		end
+		for Index = self.NumColumns + 1, select( "#", ... ) do
+			select( Index, ... ):Hide();
+		end
 	end
-	-- Hide unused elements
-	for Index = self.ColumnCount + 1, #Row do
-		Row[ Index ]:Hide();
-	end
+	function TableMethods:AddRow ( Key, ... )
+		assert( Key == nil or self.Keys[ Key ] == nil, "Index key must be unique." );
+		local Row = RowInsert( self ); -- Appended
+		self.Keys[ Key ] = Row;
+		Row.Key = Key;
+		for Index = 1, self.NumColumns do
+			Row[ Index ] = select( Index, ... );
+		end
 
-	self:Resize();
-	return Row;
+		RowAddElements( self, Row );
+		UpdateElements( self, Row, Row:GetRegions() );
+
+		self:Resize();
+		return Row;
+	end
 end
 --[[****************************************************************************
-  * Function: _UTF.Table.Methods:Resize                                        *
+  * Function: TableObject:Resize                                               *
   * Description: Requests that the table be resized on the next update.        *
   ****************************************************************************]]
-function me.Methods:Resize ()
+function TableMethods:Resize ()
 	self:SetScript( "OnUpdate", OnUpdate );
 end
 --[[****************************************************************************
-  * Function: _UTF.Table.Methods:GetSelection                                  *
+  * Function: TableObject:GetSelectionData                                     *
   * Description: Returns the data contained in the selected row.               *
   ****************************************************************************]]
-do
-	local RowData = {};
-	function me.Methods:GetSelection ()
-		if ( self.Selection ) then
-			wipe( RowData );
-			for Index = 1, self.ColumnCount do
-				RowData[ Index ] = self.Selection[ Index ].Value;
-			end
-			return self.Selection.Key, unpack( RowData );
-		end
+function TableMethods:GetSelectionData ()
+	if ( self.Selection ) then
+		return self.Selection:GetData();
 	end
 end
 --[[****************************************************************************
-  * Function: _UTF.Table.Methods:SetSelection                                  *
+  * Function: TableObject:SetSelection                                         *
   * Description: Sets the selection to a given row.                            *
   ****************************************************************************]]
-function me.Methods:SetSelection ( Row )
-	if ( type( Row ) ~= "table" ) then -- Lookup by key
-		Row = self.Keys[ Row ];
-	end
+function TableMethods:SetSelection ( Row )
+	assert( Row == nil or type( Row ) == "table", "Row must be an existing table row." );
 	if ( Row ~= self.Selection ) then
 		if ( self.Selection ) then -- Remove old selection
 			self.Selection:UnlockHighlight();
@@ -298,18 +321,29 @@ function me.Methods:SetSelection ( Row )
 			Row:LockHighlight();
 		end
 		if ( type( self.OnSelect ) == "function" ) then
-			self:OnSelect( self:GetSelection() );
+			self:OnSelect( self:GetSelectionData() );
 		end
+		return true;
 	end
 end
 --[[****************************************************************************
-  * Function: _UTF.Table.Methods:SetMinWidth                                   *
+  * Function: TableObject:SetSelection                                         *
+  * Description: Sets the selection to a row indexed by the given key.         *
+  ****************************************************************************]]
+function TableMethods:SetSelectionByKey ( Key )
+	return self:SetSelection( self.Keys[ Key ] );
+end
+--[[****************************************************************************
+  * Function: TableObject:SetMinWidth                                          *
   * Description: Sets a minimum width that the table must occupy.              *
   ****************************************************************************]]
-function me.Methods:SetMinWidth ( MinWidth )
+function TableMethods:SetMinWidth ( MinWidth )
 	assert( not MinWidth or ( tonumber( MinWidth ) and MinWidth > 0 ), "MinWidth must be a positive number or nil." );
-	self.MinWidth = tonumber( MinWidth );
-	self:Resize();
+	MinWidth = tonumber( MinWidth );
+	if ( self.MinWidth ~= MinWidth ) then
+		self.MinWidth = MinWidth;
+		self:Resize();
+	end
 end
 
 
@@ -321,10 +355,11 @@ end
   ****************************************************************************]]
 function me.New ( Name, Parent, HeaderFont, ElementFont )
 	local Table = CreateFrame( "Frame", Name, Parent );
-	-- Add shared methods
-	for Key, Value in pairs( me.Methods ) do
-		Table[ Key ] = Value;
+	if ( not getmetatable( TableMethods ) ) then
+		setmetatable( TableMethods, getmetatable( Table ) );
 	end
+	setmetatable( Table, me.TableMeta );
+
 	Table.HeaderFont = HeaderFont;
 	Table.ElementFont = ElementFont;
 
