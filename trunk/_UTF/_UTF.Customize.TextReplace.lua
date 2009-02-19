@@ -96,7 +96,7 @@ function me.CanAdd ( Key, ValueEditBox )
 	if ( Key ~= "" ) then
 		Key = KeyToIndex( Key );
 		if ( not Key or _UTFOptions.Chat.TextReplacements[ Key ][ 2 ] ~= ValueEditBox:GetText() ) then
-			return Key;
+			return Key or true;
 		end
 	end
 end
