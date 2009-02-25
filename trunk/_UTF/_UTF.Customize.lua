@@ -9,13 +9,11 @@ local L = _UTFLocalization;
 local me = CreateFrame( "Frame" );
 _UTF.Customize = me;
 
-local Table = _UTF.Table.New( nil, nil, nil, "ChatFontNormal" );
-me.Table = Table;
-
 local Panes = {};
 me.Panes = Panes;
 local Tabs = {};
 me.Tabs = Tabs;
+me.TableContainer = CreateFrame( "Frame", nil, me );
 
 me.PaneID = nil;
 
@@ -28,7 +26,13 @@ me.PaneID = nil;
   ****************************************************************************]]
 function me.SetPane ( ID )
 	local NewPane = Panes[ ID ];
-	if ( NewPane ) then
+	if ( NewPane and NewPane ~= Panes[ me.PaneID ] ) then
+		if ( not me.Table ) then
+			local Table = _UTF.Table.New( nil, me.TableContainer, nil, "ChatFontNormal" );
+			me.Table = Table;
+			Table.OnSelect = me.TableOnSelect;
+			Table:SetAllPoints( me.TableContainer );
+		end
 		-- Hide the old pane
 		if ( Panes[ me.PaneID ] ) then
 			Panes[ me.PaneID ]:Hide();
@@ -50,13 +54,12 @@ end
   ****************************************************************************]]
 function me.AddPane ( Pane, Title )
 	local ID = #Panes + 1;
-	local Tab = CreateFrame( "Button", "_UTFCustomizeTab"..ID, me, "TabButtonTemplate" );
+	local Tab = CreateFrame( "Button", "_UTFCustomizeTab"..ID, me.TableContainer, "TabButtonTemplate" );
 	tinsert( Panes, Pane );
 	tinsert( Tabs, Tab );
 
 	Pane:SetID( ID );
 	Pane:SetParent( me );
-	Pane:SetAllPoints( me.ScrollFrame );
 
 	Tab:SetID( ID );
 	Tab:SetText( Title );
@@ -64,11 +67,11 @@ function me.AddPane ( Pane, Title )
 	Tab:SetScript( "OnClick", me.TabOnClick );
 	Tab:SetScript( "OnShow", Tab:GetScript( "OnLoad" ) );
 
+	Pane:Hide();
+	PanelTemplates_DeselectTab( Tab );
 	if ( ID == 1 ) then
-		Tab:SetPoint( "BOTTOMLEFT", me.ScrollFrame, "TOPLEFT" );
+		Tab:SetPoint( "BOTTOMLEFT", me.TableContainer, "TOPLEFT" );
 	else
-		Pane:Hide();
-		PanelTemplates_DeselectTab( Tab );
 		Tab:SetPoint( "LEFT", Tabs[ ID - 1 ], "RIGHT", -4, 0 );
 	end
 end
@@ -111,7 +114,9 @@ function me.ValidateButtons ()
 	local Pane = Panes[ me.PaneID ];
 
 	local CanRemove = Pane and Pane.CanRemove( me.EditBox1:GetText() ) or nil;
-	Table:SetSelectionByKey( CanRemove );
+	if ( me.Table ) then
+		me.Table:SetSelectionByKey( CanRemove );
+	end
 
 	me.AddButton[ ( Pane and Pane.CanAdd( me.EditBox1:GetText(), me.EditBox2 ) )
 		and "Enable" or "Disable" ]( me.AddButton );
@@ -144,10 +149,10 @@ function me.Remove ()
 	end
 end
 --[[****************************************************************************
-  * Function: _UTF.Customize.Table:OnSelect                                    *
+  * Function: _UTF.Customize:TableOnSelect                                     *
   * Description: Updates the edit boxes when a table row is selected.          *
   ****************************************************************************]]
-function Table:OnSelect ( Key )
+function me:TableOnSelect ( Key )
 	if ( Panes[ me.PaneID ] and Panes[ me.PaneID ].OnSelect and Key ~= nil ) then
 		local Value1, Value2 = Panes[ me.PaneID ].OnSelect( Key );
 		me.SetEditBoxText( Value1, Value2 );
@@ -234,21 +239,12 @@ do
 
 	me.UpdateEditBoxLabels();
 
-
-	-- Add scroll frame
-	local ScrollFrame = CreateFrame( "ScrollFrame", "_UTFCustomizeScrollFrame", me, "UIPanelScrollFrameTemplate" );
-	me.ScrollFrame = ScrollFrame;
-	ScrollFrame:SetPoint( "TOPLEFT", SubText, "BOTTOMLEFT", -2, -32 );
-	ScrollFrame:SetPoint( "BOTTOMRIGHT", AddButton, "TOPRIGHT", -22, 4 );
-	ScrollFrame:SetBackdrop( {
+	me.TableContainer:SetPoint( "TOPLEFT", SubText, "BOTTOMLEFT", -2, -32 );
+	me.TableContainer:SetPoint( "BOTTOMRIGHT", AddButton, "TOPRIGHT", -22, 4 );
+	me.TableContainer:SetBackdrop( {
 		bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background";
-		tile = true; tileSize = 32;
-		insets = { left = 0; right = -24; top = 0; bottom = 0; };
 	} );
-	ScrollFrame:SetScrollChild( Table );
-	ScrollFrame:SetScript( "OnSizeChanged", function ( self, Width, Height )
-		Table:SetMinWidth( Width );
-	end );
+
 
 	InterfaceOptions_AddCategory( me );
 end

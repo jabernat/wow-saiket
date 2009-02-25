@@ -24,7 +24,7 @@ local ColumnPadding = 6;
   * Description: Selects a row element when the row is clicked.                *
   ****************************************************************************]]
 local function RowOnClick ( self )
-	self:GetParent():SetSelection( self );
+	self:GetParent().Table:SetSelection( self );
 end
 --[[****************************************************************************
   * Function: local RowAddElements                                             *
@@ -45,18 +45,20 @@ end
   * Description: Creates a new row button for the table.                       *
   ****************************************************************************]]
 local function RowInsert ( self, Index )
-	Index = Index or #self + 1;
+	local Rows = self.Rows;
+	Index = Index or #Rows + 1;
+
 	local Row = next( self.UnusedRows );
 	if ( Row ) then
 		self.UnusedRows[ Row ] = nil;
 		Row:Show();
 	else
-		Row = CreateFrame( "Button", nil, self );
+		Row = CreateFrame( "Button", nil, Rows );
 		Row:SetScript( "OnClick", RowOnClick );
 		Row:RegisterForClicks( "LeftButtonUp" );
 		Row:SetHeight( RowHeight );
 		Row:SetPoint( "LEFT" );
-		Row:SetPoint( "RIGHT" );
+		Row:SetPoint( "RIGHT", self.View, -1, 0 );
 		Row:SetHighlightTexture( "Interface\\FriendsFrame\\UI-FriendsFrame-HighlightBar", "ADD" );
 		-- Apply row methods
 		if ( not getmetatable( RowMethods ) ) then
@@ -65,12 +67,16 @@ local function RowInsert ( self, Index )
 		setmetatable( Row, me.RowMeta );
 	end
 
-	if ( self[ Index ] ) then -- Move old row below new one
-		self[ Index ]:SetPoint( "TOP", Row, "BOTTOM" );
+	if ( Rows[ Index ] ) then -- Move old row below new one
+		Rows[ Index ]:SetPoint( "TOP", Row, "BOTTOM" );
 	end
-	Row:SetPoint( "TOP", Index == 1 and self.Header or self[ Index - 1 ], "BOTTOM" );
+	if ( Index == 1 ) then
+		Row:SetPoint( "TOP", Rows );
+	else
+		Row:SetPoint( "TOP", Rows[ Index - 1 ], "BOTTOM" );
+	end
 
-	tinsert( self, Index, Row );
+	tinsert( Rows, Index, Row );
 	return Row;
 end
 --[[****************************************************************************
@@ -87,8 +93,10 @@ do
 		end
 	end
 	function RowRemove ( self, Index )
-		local Row = self[ Index ];
-		tremove( self, Index );
+		local Rows = self.Rows;
+		local Row = Rows[ Index ];
+
+		tremove( Rows, Index );
 		self.UnusedRows[ Row ] = true;
 		Row:Hide();
 		Row.Key = nil;
@@ -97,8 +105,12 @@ do
 			Row[ Column ] = nil;
 		end
 		-- Reanchor next row
-		if ( self[ Index ] ) then
-			self[ Index ]:SetPoint( "TOP", Index == 1 and self.Header or self[ Index - 1 ], "BOTTOM" );
+		if ( Rows[ Index ] ) then
+			if ( Index == 1 ) then
+				Row:SetPoint( "TOP", Rows );
+			else
+				Row:SetPoint( "TOP", Rows[ Index - 1 ], "BOTTOM" );
+			end
 		end
 	end
 end
@@ -151,25 +163,20 @@ end
   * Description: Resizes all table headers and elements.                       *
   ****************************************************************************]]
 local function Resize ( self )
+	local Rows = self.Rows;
 	local Width = 0;
 	for Index = 1, self.NumColumns do
 		local Column = self.Header[ Index ];
 		local ColumnWidth = Column:GetTextWidth();
-		for _, Row in ipairs( self ) do
+		for _, Row in ipairs( Rows ) do
 			ColumnWidth = max( ColumnWidth, select( Index, Row:GetRegions() ):GetStringWidth() );
 		end
 		ColumnWidth = ColumnWidth + ColumnPadding * 2;
 		Column:SetWidth( ColumnWidth );
 		Width = Width + ColumnWidth;
 	end
-
-	local MinWidth = self.MinWidth or 1; -- Never set width to 0
-	if ( MinWidth > Width and self.NumColumns > 0 ) then
-		local LastColumn = self.Header[ #self.Header ];
-		LastColumn:SetWidth( LastColumn:GetWidth() + ( MinWidth - Width ) );
-	end
-	self:SetWidth( max( Width, MinWidth ) );
-	self:SetHeight( ( 1 + #self ) * RowHeight );
+	self.Body:SetWidth( Width > 0 and Width or 1 );
+	self.Body:SetHeight( ( 1 + #Rows ) * RowHeight );
 end
 --[[****************************************************************************
   * Function: local OnUpdate                                                   *
@@ -178,6 +185,142 @@ end
 local function OnUpdate ( self )
 	self:SetScript( "OnUpdate", nil );
 	Resize( self );
+end
+--[[****************************************************************************
+  * Function: local ScrollHorizontal                                           *
+  ****************************************************************************]]
+local function ScrollHorizontal ( View, Delta )
+	local XScroll = View.XScroll;
+	XScroll:SetValue( XScroll:GetValue() + Delta * XScroll:GetWidth() / 2 )
+end
+--[[****************************************************************************
+  * Function: local ScrollVertical                                             *
+  ****************************************************************************]]
+local function ScrollVertical ( View, Delta )
+	local YScroll = View.YScroll;
+	YScroll:SetValue( YScroll:GetValue() + Delta * YScroll:GetHeight() / 2 )
+end
+--[[****************************************************************************
+  * Function: local OnMouseWheel                                               *
+  ****************************************************************************]]
+local function OnMouseWheel ( self, Delta )
+	local View = self.View;
+	if ( View:GetHorizontalScrollRange() > 0 and ( View:GetVerticalScrollRange() == 0 or IsShiftKeyDown() ) ) then
+		ScrollHorizontal( View, -Delta );
+	else
+		ScrollVertical( View, -Delta );
+	end
+end
+--[[****************************************************************************
+  * Function: local OnValueChangedHorizontal                                   *
+  ****************************************************************************]]
+local function OnValueChangedHorizontal ( self, HorizontalScroll )
+	local View = self:GetParent();
+	View:SetHorizontalScroll( -HorizontalScroll );
+
+	local Min, Max = self:GetMinMaxValues();
+	View.Left[ HorizontalScroll == Min and "Disable" or "Enable" ]( View.Left );
+	View.Right[ HorizontalScroll == Max and "Disable" or "Enable" ]( View.Right );
+end
+--[[****************************************************************************
+  * Function: local OnValueChangedVertical                                     *
+  ****************************************************************************]]
+local function OnValueChangedVertical ( self, VerticalScroll )
+	local View = self:GetParent();
+	View:SetVerticalScroll( VerticalScroll );
+
+	local Min, Max = self:GetMinMaxValues();
+	View.Up[ VerticalScroll == Min and "Disable" or "Enable" ]( View.Up );
+	View.Down[ VerticalScroll == Max and "Disable" or "Enable" ]( View.Down );
+end
+--[[****************************************************************************
+  * Function: local OnScrollRangeChanged                                       *
+  * Description: Adds and adjusts scrollbars when necessary.                   *
+  ****************************************************************************]]
+local OnScrollRangeChanged;
+do
+	local function CreateScrollFrame ( View, ScrollScript )
+		local Scroll = CreateFrame( "Slider", nil, View );
+		Scroll:Hide();
+		Scroll:SetThumbTexture( "Interface\\Buttons\\UI-ScrollBar-Knob" );
+		local Dec = CreateFrame( "Button", nil, Scroll, "UIPanelScrollUpButtonTemplate" );
+		local Inc = CreateFrame( "Button", nil, Scroll, "UIPanelScrollDownButtonTemplate" );
+		Dec:SetScript( "OnClick", function ()
+			PlaySound( "UChatScrollButton" );
+			ScrollScript( View, -1 );
+		end );
+		Inc:SetScript( "OnClick", function ()
+			PlaySound( "UChatScrollButton" );
+			ScrollScript( View, 1 );
+		end );
+		local Thumb = Scroll:GetThumbTexture();
+		Thumb:SetWidth( Dec:GetWidth() );
+		Thumb:SetHeight( Dec:GetWidth() );
+		Thumb:SetTexCoord( 0.25, 0.75, 0.25, 0.75 );
+		local Background = Scroll:CreateTexture( nil, "BACKGROUND" );
+		Background:SetTexture( 0, 0, 0, 0.5 );
+		Background:SetAllPoints();
+		return Scroll, Dec, Inc;
+	end
+	local function RotateTextures ( ... )
+		for Index = 1, select( "#", ... ) do
+			select( Index, ... ):SetTexCoord( 0.75, 0.25, 0.25, 0.25, 0.75, 0.75, 0.25, 0.75 ); -- 90 degrees counter-clockwise
+		end
+	end
+	function OnScrollRangeChanged ( View, XRange, YRange )
+		local Table = View:GetParent();
+		local XScroll, YScroll = View.XScroll, View.YScroll;
+		Table:EnableMouseWheel( XRange > 0 or YRange > 0 ); -- Enable only if scrollable
+
+		-- Horizontal scrolling
+		if ( XRange > 0 ) then
+			if ( not XScroll ) then -- Create scrollbar
+				XScroll, View.Left, View.Right = CreateScrollFrame( View, ScrollHorizontal );
+				View.XScroll = XScroll;
+				View.Left:SetPoint( "BOTTOMLEFT", Table );
+				XScroll:SetPoint( "BOTTOMLEFT", View.Left, "BOTTOMRIGHT" );
+				XScroll:SetPoint( "TOPRIGHT", View.Right, "TOPLEFT" );
+				XScroll:SetOrientation( "HORIZONTAL" );
+				XScroll:SetScript( "OnValueChanged", OnValueChangedHorizontal );
+				RotateTextures( View.Left:GetRegions() );
+				RotateTextures( View.Right:GetRegions() );
+			end
+			if ( not XScroll:IsShown() ) then -- Show and position scrollbar
+				XScroll:Show();
+				View:SetPoint( "BOTTOM", XScroll, "TOP" );
+			end
+			-- Setup scrollbar's range
+			View.Right:SetPoint( "BOTTOMRIGHT", Table, YRange > 0 and -View.Right:GetWidth() or 0, 0 );
+			XScroll:SetMinMaxValues( 0, XRange );
+			XScroll:SetValue( min( XScroll:GetValue(), XRange ) );
+		elseif ( XScroll and XScroll:IsShown() ) then -- Hide scrollbar
+			XScroll:Hide();
+			View:SetPoint( "BOTTOM", Table );
+		end
+
+		-- Vertical scrolling
+		if ( YRange > 0 ) then
+			if ( not YScroll ) then -- Create scrollbar
+				YScroll, View.Up, View.Down = CreateScrollFrame( View, ScrollVertical );
+				View.YScroll = YScroll;
+				View.Up:SetPoint( "TOPRIGHT", Table );
+				YScroll:SetPoint( "TOPRIGHT", View.Up, "BOTTOMRIGHT" );
+				YScroll:SetPoint( "BOTTOMLEFT", View.Down, "TOPLEFT" );
+				YScroll:SetScript( "OnValueChanged", OnValueChangedVertical );
+			end
+			if ( not YScroll:IsShown() ) then -- Show and position scrollbar
+				YScroll:Show();
+				View:SetPoint( "RIGHT", YScroll, "LEFT" );
+			end
+			-- Setup scrollbar's range
+			View.Down:SetPoint( "BOTTOMRIGHT", Table, 0, XRange > 0 and View.Down:GetHeight() or 0 );
+			YScroll:SetMinMaxValues( 0, YRange );
+			YScroll:SetValue( min( YScroll:GetValue(), YRange ) );
+		elseif ( YScroll and YScroll:IsShown() ) then -- Hide scrollbar
+			YScroll:Hide();
+			View:SetPoint( "RIGHT", Table );
+		end
+	end
 end
 
 
@@ -214,10 +357,14 @@ end
   * Description: Empties the table of all rows.                                *
   ****************************************************************************]]
 function TableMethods:Clear ()
-	if ( #self > 0 ) then
+	local Rows = self.Rows;
+	if ( #Rows > 0 ) then
+		if ( self.View.YScroll ) then -- Force correct view resize
+			self.View.YScroll:SetValue( 0 );
+		end
 		self:SetSelection();
 		wipe( self.Keys );
-		for Index = #self, 1, -1 do -- Remove in reverse so rows don't move mid-loop
+		for Index = #Rows, 1, -1 do -- Remove in reverse so rows don't move mid-loop
 			RowRemove( self, Index );
 		end
 		self:Resize();
@@ -233,6 +380,9 @@ function TableMethods:SetHeader ( ... )
 	local Columns = self.Header;
 	local NumColumns = select( "#", ... );
 	self.NumColumns = NumColumns;
+	if ( self.View.XScroll ) then -- Force correct view resize
+		self.View.XScroll:SetValue( 0 );
+	end
 
 	-- Create necessary column buttons
 	if ( #Columns < NumColumns ) then
@@ -254,7 +404,9 @@ function TableMethods:SetHeader ( ... )
 		Column:SetText();
 	end
 
-	self:Clear();
+	if ( not self:Clear() ) then
+		self:Resize(); -- Fit to only headers
+	end
 end
 --[[****************************************************************************
   * Function: TableObject:AddRow                                               *
@@ -276,8 +428,10 @@ do
 	function TableMethods:AddRow ( Key, ... )
 		assert( Key == nil or self.Keys[ Key ] == nil, "Index key must be unique." );
 		local Row = RowInsert( self ); -- Appended
-		self.Keys[ Key ] = Row;
-		Row.Key = Key;
+		if ( Key ~= nil ) then
+			self.Keys[ Key ] = Row;
+			Row.Key = Key;
+		end
 		for Index = 1, self.NumColumns do
 			Row[ Index ] = select( Index, ... );
 		end
@@ -333,18 +487,6 @@ end
 function TableMethods:SetSelectionByKey ( Key )
 	return self:SetSelection( self.Keys[ Key ] );
 end
---[[****************************************************************************
-  * Function: TableObject:SetMinWidth                                          *
-  * Description: Sets a minimum width that the table must occupy.              *
-  ****************************************************************************]]
-function TableMethods:SetMinWidth ( MinWidth )
-	assert( not MinWidth or ( tonumber( MinWidth ) and MinWidth > 0 ), "MinWidth must be a positive number or nil." );
-	MinWidth = tonumber( MinWidth );
-	if ( self.MinWidth ~= MinWidth ) then
-		self.MinWidth = MinWidth;
-		self:Resize();
-	end
-end
 
 
 
@@ -360,18 +502,40 @@ function me.New ( Name, Parent, HeaderFont, ElementFont )
 	end
 	setmetatable( Table, me.TableMeta );
 
-	Table.HeaderFont = HeaderFont;
-	Table.ElementFont = ElementFont;
+	local Body = CreateFrame( "Frame" );
+	Table.Body = Body;
 
-	local Header = CreateFrame( "Frame", nil, Table );
+	local Rows = CreateFrame( "Frame", nil, Body ); -- Note: Created before header so header always overlaps
+	Table.Rows = Rows;
+	Rows.Table = Table;
+	Rows:SetPoint( "TOPLEFT", 0, -RowHeight ); -- Leave room for header to overlay
+	Rows:SetPoint( "BOTTOMRIGHT" );
+
+	local Header = CreateFrame( "Frame", nil, Body );
 	Table.Header = Header;
-	Header:SetPoint( "TOPLEFT" );
+	Header:SetPoint( "TOP", Table );
+	Header:SetPoint( "LEFT" );
 	Header:SetPoint( "RIGHT" );
 	Header:SetHeight( RowHeight );
+	local Background = Header:CreateTexture( nil, "BACKGROUND" );
+	Background:SetTexture( 0, 0, 0 );
+	Background:SetPoint( "BOTTOMLEFT" );
+
+	local View = CreateFrame( "ScrollFrame", nil, Table );
+	Table.View = View;
+	View:SetPoint( "TOPLEFT" );
+	View:SetPoint( "BOTTOM" );
+	View:SetPoint( "RIGHT" );
+	View:SetScrollChild( Body );
+	View:SetScript( "OnScrollRangeChanged", OnScrollRangeChanged );
+	Background:SetPoint( "TOPRIGHT", View, -1, 1 );
 
 	Table.Keys = {};
 	Table.UnusedRows = {};
-	Table:SetHeader(); -- Clear all and resize
+	Table.HeaderFont = HeaderFont;
+	Table.ElementFont = ElementFont;
 
+	Table:SetScript( "OnMouseWheel", OnMouseWheel );
+	Table:SetHeader(); -- Clear all and resize
 	return Table;
 end
