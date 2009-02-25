@@ -20,9 +20,9 @@ me.Label2 = L.CUSTOMIZE_ENTITIES_VALUE;
   * Description: Updates the data display.                                     *
   ****************************************************************************]]
 do
-	local Table = _UTF.Customize.Table;
 	local SortOrder = {};
 	function me.Update ()
+		local Table = _UTF.Customize.Table;
 		Table:SetHeader( L.CUSTOMIZE_ENTITIES_GLYPH, L.CUSTOMIZE_ENTITIES_NAME, L.CUSTOMIZE_ENTITIES_VALUE );
 		for Name in pairs( _UTFOptions.CharacterEntities ) do
 			SortOrder[ #SortOrder + 1 ] = Name;
