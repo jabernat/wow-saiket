@@ -28,7 +28,7 @@ function me.SetPane ( ID )
 	local NewPane = Panes[ ID ];
 	if ( NewPane and NewPane ~= Panes[ me.PaneID ] ) then
 		if ( not me.Table ) then
-			local Table = _UTF.Table.New( nil, me.TableContainer, nil, "ChatFontNormal" );
+			local Table = LibStub( "LibTextTable-1.0" ).New( nil, me.TableContainer, nil, "ChatFontNormal" );
 			me.Table = Table;
 			Table.OnSelect = me.TableOnSelect;
 			Table:SetAllPoints( me.TableContainer );
