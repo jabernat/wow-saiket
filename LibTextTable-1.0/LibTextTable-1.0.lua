@@ -1,17 +1,20 @@
 --[[****************************************************************************
-  * _UTF by Saiket                                                             *
-  * _UTF.Table.lua - Simple string table control.                              *
+  * LibTextTable-1.0 by Saiket                                                 *
+  * LibTextTable-1.0.lua - Creates table controls for tabular text data.       *
   ****************************************************************************]]
 
 
-local _UTF = _UTF;
-local me = {};
-_UTF.Table = me;
+local MAJOR, MINOR = "LibTextTable-1.0", 1;
 
-me.RowMeta = { __index = {}; };
-local RowMethods = me.RowMeta.__index;
-me.TableMeta = { __index = {}; };
-local TableMethods = me.TableMeta.__index;
+local lib = LibStub:NewLibrary( MAJOR, MINOR );
+if ( not lib ) then
+	return;
+end
+
+lib.RowMeta = { __index = {}; };
+local RowMethods = lib.RowMeta.__index;
+lib.TableMeta = { __index = {}; };
+local TableMethods = lib.TableMeta.__index;
 
 local RowHeight = 14;
 local ColumnPadding = 6;
@@ -64,7 +67,7 @@ local function RowInsert ( self, Index )
 		if ( not getmetatable( RowMethods ) ) then
 			setmetatable( RowMethods, getmetatable( Row ) );
 		end
-		setmetatable( Row, me.RowMeta );
+		setmetatable( Row, lib.RowMeta );
 	end
 
 	if ( Rows[ Index ] ) then -- Move old row below new one
@@ -492,15 +495,15 @@ end
 
 
 --[[****************************************************************************
-  * Function: _UTF.Table.New                                                   *
+  * Function: lib.New                                                          *
   * Description: Creates a new table.                                          *
   ****************************************************************************]]
-function me.New ( Name, Parent, HeaderFont, ElementFont )
+function lib.New ( Name, Parent, HeaderFont, ElementFont )
 	local Table = CreateFrame( "Frame", Name, Parent );
 	if ( not getmetatable( TableMethods ) ) then
 		setmetatable( TableMethods, getmetatable( Table ) );
 	end
-	setmetatable( Table, me.TableMeta );
+	setmetatable( Table, lib.TableMeta );
 
 	local Body = CreateFrame( "Frame" );
 	Table.Body = Body;
