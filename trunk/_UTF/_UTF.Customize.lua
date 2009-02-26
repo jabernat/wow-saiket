@@ -240,10 +240,9 @@ do
 	me.UpdateEditBoxLabels();
 
 	me.TableContainer:SetPoint( "TOPLEFT", SubText, "BOTTOMLEFT", -2, -32 );
-	me.TableContainer:SetPoint( "BOTTOMRIGHT", AddButton, "TOPRIGHT", -22, 4 );
-	me.TableContainer:SetBackdrop( {
-		bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background";
-	} );
+	me.TableContainer:SetPoint( "RIGHT", -16, 0 );
+	me.TableContainer:SetPoint( "BOTTOM", AddButton, "TOP", 0, 4 );
+	me.TableContainer:SetBackdrop( { bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background"; } );
 
 
 	InterfaceOptions_AddCategory( me );
