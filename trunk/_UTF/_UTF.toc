@@ -11,7 +11,7 @@
 ## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:UTF
 ## X-RelSite-WoWI: 9336
 ## X-Localizations: enUS
-## X-Embeds: LibCamera-1.0
+## X-Embeds: LibTextTable-1.0
 ## SavedVariables: _UTFOptions
 ## OptionalDeps: _Dev, LibTextTable-1.0
 embeds.xml
