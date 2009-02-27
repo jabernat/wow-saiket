@@ -169,9 +169,9 @@ do
 	local GetSpellInfo = GetSpellInfo;
 	local select = select;
 	local Texture;
-	function me.AddMessageSpellGsub ( Match )
-		Texture = select( 3, GetSpellInfo( Match ) );
-		return Texture and "|T"..Texture..":0|t|Hspell:"..Match;
+	function me.AddMessageSpellGsub ( Full, ID )
+		Texture = select( 3, GetSpellInfo( ID ) );
+		return Texture and "|T"..Texture..":0|t"..Full;
 	end
 end
 --[[****************************************************************************
@@ -181,9 +181,9 @@ end
 do
 	local GetItemIcon = GetItemIcon;
 	local Texture;
-	function me.AddMessageItemGsub ( Match )
-		Texture = GetItemIcon( Match );
-		return Texture and "|T"..Texture..":0|t|H"..Match.."|h[";
+	function me.AddMessageItemGsub ( Full, ItemString )
+		Texture = GetItemIcon( ItemString );
+		return Texture and "|T"..Texture..":0|t"..Full;
 	end
 end
 --[[****************************************************************************
@@ -194,9 +194,9 @@ do
 	local GetAchievementInfo = GetAchievementInfo;
 	local select = select;
 	local Texture;
-	function me.AddMessageAchievementGsub ( ID, Data )
+	function me.AddMessageAchievementGsub ( Full, ID )
 		Texture = select( 10, GetAchievementInfo( ID ) );
-		return Texture and "|T"..Texture..":0|t|Hachievement:"..ID..Data.."|h[";
+		return Texture and "|T"..Texture..":0|t"..Full;
 	end
 end
 --[[****************************************************************************
@@ -219,10 +219,11 @@ do
 			if ( select( 4, ... ) == nil ) then -- Most likely a message added by another addon which won't be caught by the event handler
 				Text = ParseMessageURLs( Text );
 			end
-			-- Add item and spell icons
-			Text = Text:gsub( "|Hspell:(%d+)", AddMessageSpellGsub ):gsub( "|H(item:[^|]+)|h%[", AddMessageItemGsub );
-			-- Add achievement icons
-			Text = Text:gsub( "|Hachievement:(%d+)([^|]*)|h%[", AddMessageAchievementGsub );
+			-- Add link icons
+			Text = Text:gsub( "(|cff%x%x%x%x%x%x|Hspell:(%d+))", AddMessageSpellGsub );
+			Text = Text:gsub( "(|cff%x%x%x%x%x%x|Htrade:(%d+))", AddMessageSpellGsub );
+			Text = Text:gsub( "(|cff%x%x%x%x%x%x|H(item:[^|]+))", AddMessageItemGsub );
+			Text = Text:gsub( "(|cff%x%x%x%x%x%x|Hachievement:(%d+))", AddMessageAchievementGsub );
 			if ( not Text:match( L.FCF_TIMESTAMP_PATTERN ) and TimeIsKnown() ) then
 				Text = L.FCF_TIMESTAMP_FORMAT:format( GetGameTimeString(), Text );
 			end
