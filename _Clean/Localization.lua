@@ -60,11 +60,13 @@ do
 	UNIT_YOU_DEST_POSSESSIVE   = UNIT_YOU_DEST; -- "You" instead of "Your"
 	UNIT_YOU_SOURCE_POSSESSIVE = UNIT_YOU_SOURCE;
 
-	-- Spells
-	TEXT_MODE_A_STRING_SPELL       = "|Hspell:%s:%s|h%s|h"; -- Make spells linkable
-	TEXT_MODE_A_STRING_SPELL_EXTRA = "|Hspell:%s:%s|h%s|h";
-	TEXT_MODE_A_STRING_BRACE_ITEM  = LightGray.."[%2$s"..LightGray.."]|r";
-	TEXT_MODE_A_STRING_BRACE_SPELL = LightGray.."[%2$s"..LightGray.."]|r";
+	-- Spell/item links
+	TEXT_MODE_A_STRING_ITEM        = LightGray.."|Hitem:%s|h%s|h|r";
+	TEXT_MODE_A_STRING_SPELL       = LightGray.."|Hspell:%s:%s|h%s|h|r";
+	TEXT_MODE_A_STRING_SPELL_EXTRA = LightGray.."|Hspell:%s:%s|h%s|h|r";
+	-- Optional inner-link braces
+	TEXT_MODE_A_STRING_BRACE_ITEM  = LightGray.."[%2$s"..LightGray.."]";
+	TEXT_MODE_A_STRING_BRACE_SPELL = LightGray.."[%2$s"..LightGray.."]";
 
 	-- Timestamps
 	TEXT_MODE_A_STRING_TIMESTAMP = GRAY_FONT_COLOR_CODE.."[%s]|r %s";
