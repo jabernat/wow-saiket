@@ -60,9 +60,18 @@ do
 	Button.tooltipText = HELP_BUTTON;
 	Button.newbieText = NEWBIE_TOOLTIP_HELP;
 
-	-- Move the vehicle seat and durability frames to the middle
+	-- Move the durability frame to the middle
 	hooksecurefunc( "UIParent_ManageFramePositions", me.UpdateDurabilityFrame );
 	me.UpdateDurabilityFrame();
 
 	hooksecurefunc( "GameTooltip_SetDefaultAnchor", me.GameTooltipSetDefaultAnchor );
+
+	-- Pad class icons
+	local IconPadding = 0.08 / 4; -- Icons are in a 4x4 grid
+	for _, Coords in pairs( CLASS_BUTTONS ) do
+		Coords[ 1 ] = Coords[ 1 ] + IconPadding;
+		Coords[ 2 ] = Coords[ 2 ] - IconPadding;
+		Coords[ 3 ] = Coords[ 3 ] + IconPadding;
+		Coords[ 4 ] = Coords[ 4 ] - IconPadding;
+	end
 end

@@ -12,7 +12,7 @@
 ## X-Localizations: enUS
 ## SavedVariables: _CleanOptions
 ## RequiredDeps: Dominos
-## OptionalDeps: _Dev, BigWigs_Plugins, BigWigs_Extras, ItemRack, BugSack, LibSharedMedia-3.0
+## OptionalDeps: _Dev, BigWigs_Plugins, BigWigs_Extras, BugSack, Gladius, ItemRack, LibSharedMedia-3.0
 Localization.lua
 
 _Clean.lua
@@ -33,5 +33,6 @@ _Clean.BlizzardCombatText.lua
 
 _Clean.BigWigs.lua
 _Clean.BugSack.lua
+_Clean.Gladius.lua
 _Clean.ItemRack.lua
 _Clean.LibSharedMedia.lua
