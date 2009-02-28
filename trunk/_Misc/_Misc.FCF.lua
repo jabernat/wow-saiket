@@ -222,6 +222,7 @@ do
 			-- Add link icons
 			Text = Text:gsub( "(|cff%x%x%x%x%x%x|Hspell:(%d+))", AddMessageSpellGsub );
 			Text = Text:gsub( "(|cff%x%x%x%x%x%x|Htrade:(%d+))", AddMessageSpellGsub );
+			Text = Text:gsub( "(|cff%x%x%x%x%x%x|Henchant:(%d+))", AddMessageSpellGsub );
 			Text = Text:gsub( "(|cff%x%x%x%x%x%x|H(item:[^|]+))", AddMessageItemGsub );
 			Text = Text:gsub( "(|cff%x%x%x%x%x%x|Hachievement:(%d+))", AddMessageAchievementGsub );
 			if ( not Text:match( L.FCF_TIMESTAMP_PATTERN ) and TimeIsKnown() ) then
