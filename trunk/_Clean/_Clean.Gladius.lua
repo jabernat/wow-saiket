@@ -17,7 +17,12 @@ _Clean.Gladius = me;
   ****************************************************************************]]
 function me:HealthOnValueChanged ( Value )
 	Value = Value / 100;
-	local R, G, B, A = 1 - Value, Value, 0, Value * -0.75 / 0.5 + 1.75;
+	local R, G, B, A;
+	if ( Value == 0 ) then
+		R, G, B, A = 1, 1, 1, 0.25;
+	else
+		R, G, B, A = 1 - Value, Value, 0, Value * -0.75 / 0.5 + 1.75;
+	end
 	self.Texture:SetVertexColor( R, G, B, A );
 	self.Text:SetTextColor( R, G, B, A );
 	me.HealthOnSizeChanged( self, self:GetWidth() );
