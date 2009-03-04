@@ -3,7 +3,7 @@
 ## Notes: Compilation of small changes.
 ## Author: Saiket
 ## Version: 3.0.8.1
-## X-Date: 2009-02-27
+## X-Date: 2009-03-04
 ## X-Category: Miscellaneous, Interface Enhancements
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
@@ -11,7 +11,6 @@
 ## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Misc
 ## X-Localizations: enUS
 ## SavedVariables: _MiscOptions
-## OptionalDeps: _Dev
 Localization.lua
 
 _Misc.lua
