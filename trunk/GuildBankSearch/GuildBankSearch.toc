@@ -15,7 +15,6 @@
 ## LoadOnDemand: 1
 ## LoadWith: Blizzard_GuildBankUI
 ## RequiredDeps: Blizzard_GuildBankUI
-Localization.lua
-Localization.koKR.lua
+Locales.xml
 
 GuildBankSearch.lua
