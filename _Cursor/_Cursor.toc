@@ -4,7 +4,7 @@
 ## Notes-koKR: 사용자가 정의한 효과를 커서에 추가합니다.
 ## Author: Saiket
 ## Version: 3.0.8.1
-## X-Date: 2009-02-04
+## X-Date: 2009-03-04
 ## X-Category: Interface Enhancements
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
@@ -14,7 +14,6 @@
 ## X-Localizations: enUS, koKR
 ## SavedVariables: _CursorOptions
 ## SavedVariablesPerCharacter: _CursorOptionsCharacter
-## OptionalDeps: _Dev
 Localization.lua
 Localization.koKR.lua
 
