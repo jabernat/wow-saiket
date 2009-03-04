@@ -1,16 +1,10 @@
 --[[****************************************************************************
   * ItemRackTitles by Saiket                                                   *
-  * Localization.lua - Localized string constants (en-US).                     *
+  * Locales/Locale-enUS.lua - Localized string constants (en-US).              *
   ****************************************************************************]]
 
 
 do
-	local Metatable = {
-		__index = function ( self, Key )
-			rawset( self, Key, Key );
-			return Key;
-		end;
-	};
 	local LDQuo, RDQuo = "\226\128\156", "\226\128\157";
 
 
@@ -26,5 +20,10 @@ do
 		OPTIONS_ENABLE_DESC = "This determines if the title is changed when equipping the set.";
 		OPTIONS_DROPDOWN = "Title";
 		OPTIONS_DROPDOWN_DESC = "The title to display upon equipping this set.";
-	}, Metatable );
+	}, {
+		__index = function ( self, Key )
+			rawset( self, Key, Key );
+			return Key;
+		end;
+	} );
 end

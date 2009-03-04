@@ -2,7 +2,7 @@
 ## Title: ItemRack|cffccccccTitles|r
 ## Notes: Swap titles with your gear sets.
 ## Author: Saiket
-## Version: 3.0.3.2
+## Version: 3.0.8.1
 ## X-Date: 2009-03-04
 ## X-Category: Inventory
 ## X-License: GPLv3
@@ -12,6 +12,6 @@
 ## X-RelSite-WoWI: 12018
 ## X-Localizations: enUS
 ## RequiredDeps: ItemRack
-Localization.lua
+Locales.xml
 
 ItemRackTitles.lua
