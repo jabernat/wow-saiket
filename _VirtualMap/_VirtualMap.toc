@@ -12,7 +12,7 @@
 ## X-Localizations: enUS
 ## X-Embeds: LibCamera-1.0
 ## SavedVariables: _VirtualMapOptions
-## LoadOnDemand: 1
+## LoadManagers: AddonLoader
 ## LoadWith: GatherMate
 ## RequiredDeps: GatherMate
 ## OptionalDeps: Ace3, LibCamera-1.0
