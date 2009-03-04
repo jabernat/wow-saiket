@@ -47,5 +47,5 @@ do
 
 	_Units.RegisterAddOnInitializer( "_Misc", function ()
 		_Misc.GameTooltip.RegisterTooltip( Tooltip );
-	end
+	end );
 end
