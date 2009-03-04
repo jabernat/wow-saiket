@@ -8,7 +8,7 @@ local GatherMate = GatherMate;
 local me = setmetatable( LibStub( "AceAddon-3.0" ):NewAddon( "_VirtualMap", "AceEvent-3.0" ), { __index = CreateFrame( "Frame", nil, UIParent ) } );
 me[ 0 ] = me[ 0 ]; -- Copy userdata from metatable
 _VirtualMap = me;
-local L = LibStub( "AceLocale-3.0" ):GetLocale( "_VirtualMap" );
+local L = _VirtualMapLocalization;
 
 local NodeTextures = GatherMate.nodeTextures;
 me.NodeTextures = NodeTextures;
@@ -229,7 +229,7 @@ end
   * Description: Sets up options.                                              *
   ****************************************************************************]]
 function me:OnInitialize ()
-	me.DB = LibStub( "AceDB-3.0" ):New( "_VirtualMapDB", me.Defaults );
+	me.DB = LibStub( "AceDB-3.0" ):New( "_VirtualMapOptions", me.Defaults );
 	DB = me.DB.global;
 
 	LibStub( "AceConfigRegistry-3.0" ):RegisterOptionsTable( "_VirtualMap", me.Options );
