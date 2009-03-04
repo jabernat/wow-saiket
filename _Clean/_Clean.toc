@@ -3,7 +3,7 @@
 ## Notes: Change the UI's look and feel.
 ## Author: Saiket
 ## Version: 3.0.8.1
-## X-Date: 2009-03-01
+## X-Date: 2009-03-04
 ## X-Category: Frame Modification
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
@@ -12,7 +12,7 @@
 ## X-Localizations: enUS
 ## SavedVariables: _CleanOptions
 ## RequiredDeps: Dominos
-## OptionalDeps: _Dev, BigWigs_Plugins, BigWigs_Extras, BugSack, Gladius, ItemRack, LibSharedMedia-3.0
+## OptionalDeps: LibSharedMedia-3.0
 Localization.lua
 
 _Clean.lua
