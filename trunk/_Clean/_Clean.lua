@@ -71,18 +71,18 @@ me.BottomPane = CreateFrame( "Frame", nil, UIParent );
   * Function: _Clean.NilFunction                                               *
   * Description: Recycled generic function placeholder.                        *
   ****************************************************************************]]
-me.NilFunction = _Dev and _Dev.NilFunction or function () end;
+function me.NilFunction () end
 --[[****************************************************************************
   * Function: _Clean.Print                                                     *
   * Description: Write a string to the specified frame, or to the default chat *
   *   frame when unspecified. Output color defaults to yellow.                 *
   ****************************************************************************]]
-me.Print = _Dev and _Dev.Print or function ( Message, ChatFrame, Color )
+function me.Print ( Message, ChatFrame, Color )
 	if ( not Color ) then
 		Color = NORMAL_FONT_COLOR;
 	end
 	( ChatFrame or DEFAULT_CHAT_FRAME ):AddMessage( tostring( Message ), Color.r, Color.g, Color.b, Color.id );
-end;
+end
 
 
 --[[****************************************************************************
@@ -257,14 +257,14 @@ do
 
 
 	-- Set up font replacement
-	me.MonospaceFont:SetFont(
-		"Interface\\AddOns\\_Clean\\Skin\\DejaVuSansMono.ttf", 10, "" );
-	me.MonospaceNumberFont:SetFont(
-		"Interface\\AddOns\\_Clean\\Skin\\DejaVuSansMono.ttf", 8, "OUTLINE" );
-	me.RegisterAddOnInitializer( "Blizzard_MacroUI",
-		function () MacroFrameText:SetFontObject( me.MonospaceFont ); end );
-	me.RegisterAddOnInitializer( "_Dev",
-		function () _Dev.Font:SetFontObject( me.MonospaceNumberFont ); end );
+	me.MonospaceFont:SetFont( "Interface\\AddOns\\_Clean\\Skin\\DejaVuSansMono.ttf", 10, "" );
+	me.MonospaceNumberFont:SetFont( "Interface\\AddOns\\_Clean\\Skin\\DejaVuSansMono.ttf", 8, "OUTLINE" );
+	me.RegisterAddOnInitializer( "Blizzard_MacroUI", function ()
+		MacroFrameText:SetFontObject( me.MonospaceFont );
+	end );
+	me.RegisterAddOnInitializer( "_Dev", function ()
+		_Dev.Font:SetFontObject( me.MonospaceNumberFont );
+	end );
 
 	local Normal = me.Colors.Normal;
 	GameFontNormal:SetTextColor( Normal.r, Normal.g, Normal.b );

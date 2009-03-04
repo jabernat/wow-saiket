@@ -132,7 +132,7 @@ function me:OnEvent ()
 	me:UnregisterEvent( "PLAYER_LOGIN" );
 	me:SetScript( "OnEvent", nil );
 	me.OnEvent = nil;
-	local NilFunction = _Dev and _Dev.NilFunction or function () end;
+	local NilFunction = _Clean.NilFunction;
 
 	local OldProfile = Dominos.db:GetCurrentProfile();
 	if ( OldProfile ~= me.DominosProfile ) then

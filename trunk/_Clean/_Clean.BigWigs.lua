@@ -29,7 +29,7 @@ do
 				Anchor:SetPoint( "BOTTOM", _Clean.BottomPane, "TOP" );
 			end
 
-			local NilFunction = _Dev and _Dev.NilFunction or function () end;
+			local NilFunction = _Clean.NilFunction;
 			Anchor.ClearAllPoints = NilFunction;
 			Anchor.SetPoint = NilFunction;
 			Anchor.StartMoving = NilFunction;
