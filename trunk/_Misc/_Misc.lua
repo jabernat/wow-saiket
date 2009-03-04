@@ -44,23 +44,23 @@ AfkDndStatus.Text = AfkDndStatus:CreateFontString( nil, "ARTWORK", "GameFontNorm
   * Function: _Misc.NilFunction                                                *
   * Description: Recycled generic function placeholder.                        *
   ****************************************************************************]]
-me.NilFunction = _Dev and _Dev.NilFunction or function () end;
+function me.NilFunction () end
 --[[****************************************************************************
   * Function: _Misc.Print                                                      *
   * Description: Write a string to the specified frame, or to the default chat *
   *   frame when unspecified. Output color defaults to yellow.                 *
   ****************************************************************************]]
-me.Print = _Dev and _Dev.Print or function ( Message, ChatFrame, Color )
+function me.Print ( Message, ChatFrame, Color )
 	if ( not Color ) then
 		Color = NORMAL_FONT_COLOR;
 	end
 	( ChatFrame or DEFAULT_CHAT_FRAME ):AddMessage( tostring( Message ), Color.r, Color.g, Color.b, Color.id );
-end;
+end
 --[[****************************************************************************
   * Function: _Misc.Exec                                                       *
   * Description: Works like RunScript, but returns the output.                 *
   ****************************************************************************]]
-me.Exec = _Dev and _Dev.Exec or function ( Script, ... )
+function me.Exec ( Script, ... )
 	local Function, ErrorMessage = loadstring( "return "..Script );
 	if ( Function ) then
 		return pcall( Function, ... );
@@ -378,12 +378,12 @@ do
 	-- Create the time display
 	local TimeText = UIParent:CreateFontString( nil, "OVERLAY" );
 	TimeText:SetPoint( "TOPLEFT", UIParent );
-	if ( IsAddOnLoaded( "_Dev" ) ) then
+	me.RegisterAddOnInitializer( "_Dev", function ()
 		_Dev.Stats:SetPoint( "TOPLEFT", TimeText, "TOPRIGHT" );
-	end
-	if ( IsAddOnLoaded( "_Clean" ) ) then
+	end );
+	if ( not me.RegisterAddOnInitializer( "_Clean", function ()
 		TimeText:SetFontObject( _Clean.MonospaceNumberFont );
-	else
+	end ) ) then
 		TimeText:SetFontObject( NumberFontNormalSmall );
 	end
 	TimeText:SetAlpha( 0.5 );
