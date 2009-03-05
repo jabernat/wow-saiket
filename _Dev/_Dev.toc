@@ -3,7 +3,7 @@
 ## Notes: Special tools useful for debugging the UI.
 ## Author: Saiket
 ## Version: 3.0.8.1
-## X-Date: 2009-02-09
+## X-Date: 2009-03-04
 ## X-Category: Development Tools
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
@@ -15,7 +15,7 @@
 ## OptionalDeps: !ImprovedErrorFrame, !BugGrabber, !Swatter, !BaudErrorFrame
 ## LoadManagers: AddonLoader
 ## X-LoadOn-Always: true
-Localization.lua
+Locales.xml
 
 _Dev.lua
 _Dev.xml
