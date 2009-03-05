@@ -46,10 +46,10 @@ local Units = {
 	Each element is given the same fields as those in the Columns table above,
 	  which point to those specific frames for the row.
 	]]
-	[ "target" ]    = { Position = "TOP"; Offset = 8; }; -- Only one Top unit at a time!
-	[ "player" ]    = { Position = 1; };
-	[ "playerpet" ] = { Position = 2; Margin = -4; Scale = 0.8; };
-	[ "focus" ]     = { Position = 3; Margin =  8; };
+	[ "target" ] = { Position = "TOP"; Offset = 8; }; -- Only one Top unit at a time!
+	[ "player" ] = { Position = 1; };
+	[ "pet" ]    = { Position = 2; Margin = -4; Scale = 0.8; };
+	[ "focus" ]  = { Position = 3; Margin =  8; };
 };
 me.Units = Units;
 local UnitsParty = {}; -- Compiled automatically based on Party flag
@@ -204,7 +204,7 @@ end
   * Description: Fired when a unit's pet changes.                              *
   ****************************************************************************]]
 function me:UNIT_PET ( _, UnitID )
-	UnitID = UnitID.."pet";
+	UnitID = UnitID == "player" and "pet" or UnitID.."pet";
 	if ( Units[ UnitID ] ) then
 		UnitFrame.Update( UnitID );
 	end
