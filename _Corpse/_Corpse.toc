@@ -12,8 +12,7 @@
 ## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Corpse
 ## X-Localizations: enUS, koKR
 ## X-CompatibleLocales: enUS, koKR
-Localization.lua
-Localization.koKR.lua
+Locales.xml
 
 _Corpse.lua
 _Corpse.Battlegrounds.lua
