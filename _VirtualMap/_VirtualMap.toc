@@ -16,7 +16,7 @@
 ## LoadWith: GatherMate
 ## RequiredDeps: GatherMate
 ## OptionalDeps: Ace3, LibCamera-1.0
-embeds.xml
+Embeds.xml
 Locales.xml
 
 _VirtualMap.lua
