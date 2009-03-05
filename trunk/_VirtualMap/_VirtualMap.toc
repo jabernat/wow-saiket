@@ -16,6 +16,9 @@
 ## LoadWith: GatherMate
 ## RequiredDeps: GatherMate
 ## OptionalDeps: Ace3, LibCamera-1.0
+Libs\LibStub\LibStub.lua
+Libs\CallbackHandler-1.0\CallbackHandler-1.0.lua
+
 Embeds.xml
 Locales.xml
 
