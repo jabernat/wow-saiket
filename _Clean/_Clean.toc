@@ -13,7 +13,7 @@
 ## SavedVariables: _CleanOptions
 ## RequiredDeps: Dominos
 ## OptionalDeps: LibSharedMedia-3.0
-Localization.lua
+Locales.xml
 
 _Clean.lua
 _Clean.Backdrop.lua
