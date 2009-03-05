@@ -5,7 +5,7 @@
   ****************************************************************************]]
 
 
-local L = AceLibrary( "AceLocale-2.2" ):new( "GridStatusHealthFade" );
+local L = GridStatusHealthFadeLocalization;
 local me = GridStatus:NewModule( "GridStatusHealthFade" );
 GridStatusHealthFade = me;
 
@@ -14,13 +14,13 @@ local STATUS_ID = "alert_healthFade";
 local ColorTables = {};
 me.ColorTables = ColorTables;
 
-me.menuName = L[ "Health Fade" ];
+me.menuName = L.TITLE;
 me.options = false;
 
 me.defaultDB = {
 	debug = false;
 	[ STATUS_ID ] = {
-		text = L[ "Health Fade" ];
+		text = L.TITLE;
 		enable = true;
 		priority = 1;
 		range = false;
@@ -62,9 +62,9 @@ do
 	end
 	function me:OnInitialize ()
 		self.super.OnInitialize( self );
-		AddColorPicker( "ColorHigh", L[ "Color High" ], L[ "Color to blend for units at max health" ] );
-		AddColorPicker( "ColorLow", L[ "Color Low" ], L[ "Color to blend for units at no health" ] );
-		self:RegisterStatus( STATUS_ID, L[ "Health Fade" ], Options, true );
+		AddColorPicker( "ColorHigh", L.COLOR_HIGH, L.COLOR_HIGH_DESC );
+		AddColorPicker( "ColorLow", L.COLOR_LOW, L.COLOR_LOW_DESC );
+		self:RegisterStatus( STATUS_ID, L.TITLE, Options, true );
 	end
 end
 --[[****************************************************************************
@@ -179,7 +179,7 @@ do
 				Settings.priority,
 				( Settings.range and 40 ),
 				Color,
-				L[ "%d%%" ]:format( ceil( Percentage * 100 ) ),
+				L.LABEL_FORMAT:format( ceil( Percentage * 100 ) ),
 				Percentage,
 				1,
 				Settings.icon );
