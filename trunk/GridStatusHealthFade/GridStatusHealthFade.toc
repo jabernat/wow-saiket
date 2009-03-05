@@ -3,7 +3,7 @@
 ## Notes: A status that fadess between two colors based on health.
 ## Author: Saiket (Originally by North101)
 ## Version: 3.0.8.1
-## X-Date: 2009-01-27
+## X-Date: 2009-03-04
 ## X-Category: UnitFrame
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
@@ -13,6 +13,6 @@
 ## X-Localizations: enUS
 ## X-GridStatusModule: GridStatusHealthFade
 ## RequiredDeps: Grid
-Localization.lua
+Locales.xml
 
 GridStatusHealthFade.lua
