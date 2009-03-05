@@ -13,8 +13,6 @@
 ## X-Localizations: enUS
 ## SavedVariables: _DevOptions
 ## OptionalDeps: !ImprovedErrorFrame, !BugGrabber, !Swatter, !BaudErrorFrame
-## LoadManagers: AddonLoader
-## X-LoadOn-Always: true
 Locales.xml
 
 _Dev.lua
