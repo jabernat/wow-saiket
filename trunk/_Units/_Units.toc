@@ -11,7 +11,7 @@
 ## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Units
 ## X-Localizations: enUS
 ## SavedVariables: _UnitsOptions
-Localization.lua
+Locales.xml
 
 _Units.lua
 _Units.MouseoverTarget.lua
