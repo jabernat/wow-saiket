@@ -11,7 +11,7 @@
 ## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Misc
 ## X-Localizations: enUS
 ## SavedVariables: _MiscOptions
-Localization.lua
+Locales.xml
 
 _Misc.lua
 _Misc.Camera.lua
