@@ -1,19 +1,18 @@
 --[[****************************************************************************
   * _Clean by Saiket                                                           *
-  * Localization.lua - Localized string constants (en-US).                     *
+  * Locales/Locale-enUS.lua - Localized string constants (en-US).              *
   ****************************************************************************]]
 
 
 do
-	_CleanLocalization = setmetatable(
-		{
-			BLIZZARDCOMBATLOG_TRUNCATESUFFIX = "-";
-		}, {
-			__index = function ( self, Key )
-				rawset( self, Key, Key );
-				return Key;
-			end;
-		} );
+	_CleanLocalization = setmetatable( {
+		BLIZZARDCOMBATLOG_TRUNCATESUFFIX = "-";
+	}, {
+		__index = function ( self, Key )
+			rawset( self, Key, Key );
+			return Key;
+		end;
+	} );
 
 
 
