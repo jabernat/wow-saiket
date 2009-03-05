@@ -14,7 +14,7 @@
 ## X-Embeds: LibTextTable-1.0
 ## SavedVariables: _UTFOptions
 ## OptionalDeps: LibTextTable-1.0
-embeds.xml
+Embeds.xml
 Locales.xml
 
 _UTF.lua
