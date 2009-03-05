@@ -1,6 +1,6 @@
 --[[****************************************************************************
   * _Cursor by Saiket                                                          *
-  * Localization.lua - Localized string constants (en-US).                     *
+  * Locales/Locale-enUS.lua - Localized string constants (en-US).              *
   ****************************************************************************]]
 
 
@@ -12,7 +12,7 @@ do
 		end;
 	};
 	local LDQuo, RDQuo = "\226\128\156", "\226\128\157";
-	local Title = "_|cffcccc88Cursor"..FONT_COLOR_CODE_CLOSE;
+	local Title = "_|cffcccc88Cursor|r";
 
 
 	_CursorLocalization = setmetatable( {
