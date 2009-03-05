@@ -14,6 +14,6 @@
 ## SavedVariablesPerCharacter: _LatencyOptions
 ## OptionalDeps: LibGraph-2.0
 embeds.xml
-Localization.lua
+Locales.xml
 
 _Latency.lua

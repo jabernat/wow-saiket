@@ -1,23 +1,25 @@
 --[[****************************************************************************
   * _Misc by Saiket                                                            *
-  * Localization.lua - Localized string constants (en-US).                     *
+  * Locales/Locale-enUS.lua - Localized string constants (en-US).              *
   ****************************************************************************]]
 
 
 do
 	local Title = "_|cffCCCC88Latency|r";
-	_LatencyLocalization = setmetatable(
-		{
-			TITLE = Title;
-			SUBTITLE_FORMAT = GRAY_FONT_COLOR_CODE.."(|r%.01fms"..GRAY_FONT_COLOR_CODE..")";
-			LOCK = "lock";
-			ONCLOSE_NOTICE = Title..": To reopen the meter, use \"/latency\" or \"/lag\".";
-		}, {
-			__index = function ( self, Key )
-				rawset( self, Key, Key );
-				return Key;
-			end;
-		} );
+	local LDQuo, RDQuo = GRAY_FONT_COLOR_CODE.."\226\128\156", "\226\128\157|r";
+
+
+	_LatencyLocalization = setmetatable( {
+		TITLE = Title;
+		SUBTITLE_FORMAT = GRAY_FONT_COLOR_CODE.."(|r%.01fms"..GRAY_FONT_COLOR_CODE..")";
+		LOCK = "lock";
+		ONCLOSE_NOTICE = Title..": To reopen the meter, use "..LDQuo.."/latency"..RDQuo.." or "..LDQuo.."/lag"..RDQuo..".";
+	}, {
+		__index = function ( self, Key )
+			rawset( self, Key, Key );
+			return Key;
+		end;
+	} );
 
 
 
