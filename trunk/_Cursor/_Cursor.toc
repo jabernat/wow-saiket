@@ -14,8 +14,7 @@
 ## X-Localizations: enUS, koKR
 ## SavedVariables: _CursorOptions
 ## SavedVariablesPerCharacter: _CursorOptionsCharacter
-Localization.lua
-Localization.koKR.lua
+Locales.xml
 
 _Cursor.lua
 _Cursor.Options.lua

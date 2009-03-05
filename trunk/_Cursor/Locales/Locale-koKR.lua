@@ -1,13 +1,14 @@
 --[[****************************************************************************
   * _Cursor by Saiket                                                          *
-  * Localization.lua - Localized string constants (ko-KR) by freshworks.       *
+  * Locales/Locale-koKR.lua - Localized string constants (ko-KR) by            *
+  *   freshworks.                                                              *
   ****************************************************************************]]
 
 
 if ( GetLocale() == "koKR" ) then
 	local Metatable = getmetatable( _CursorLocalization );
 	local LDQuo, RDQuo = "\226\128\156", "\226\128\157";
-	local Title = "_|cffcccc88Cursor"..FONT_COLOR_CODE_CLOSE;
+	local Title = "_|cffcccc88Cursor|r";
 
 
 	_CursorLocalization = setmetatable( {
