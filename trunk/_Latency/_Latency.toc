@@ -13,7 +13,7 @@
 ## X-Embeds: LibGraph-2.0
 ## SavedVariablesPerCharacter: _LatencyOptions
 ## OptionalDeps: LibGraph-2.0
-embeds.xml
+Embeds.xml
 Locales.xml
 
 _Latency.lua
