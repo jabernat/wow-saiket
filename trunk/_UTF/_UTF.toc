@@ -15,7 +15,7 @@
 ## SavedVariables: _UTFOptions
 ## OptionalDeps: LibTextTable-1.0
 embeds.xml
-Localization.lua
+Locales.xml
 
 _UTF.lua
 _UTF.CharacterEntities.lua
