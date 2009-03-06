@@ -201,6 +201,8 @@ function me:OnEnable ()
 		PlayerIcon.TextureHalo:SetWidth( DB.settings.IconSize * 80 / 64 );
 
 		me:Show();
+
+		LibStub( "LibCamera-1.0" ).RegisterCallback( me, "LibCamera_Update", "UpdateCamera" );
 	else
 		me:Disable();
 	end
@@ -211,6 +213,7 @@ end
   ****************************************************************************]]
 function me:OnDisable ()
 	me:Hide();
+	LibStub( "LibCamera-1.0" ).UnregisterCallback( me, "LibCamera_Update" );
 end
 --[[****************************************************************************
   * Function: _VirtualMap:UpdateCamera                                         *
@@ -238,8 +241,6 @@ function me:OnInitialize ()
 	GatherMate:GetModule( "Config" ):RegisterModule( "_VirtualMap", me.Options );
 
 	self:RegisterMessage( "GatherMateConfigChanged", "UpdateFull" );
-
-	LibStub( "LibCamera-1.0" ).RegisterCallback( me, "LibCamera_Update", "UpdateCamera" );
 end
 
 
