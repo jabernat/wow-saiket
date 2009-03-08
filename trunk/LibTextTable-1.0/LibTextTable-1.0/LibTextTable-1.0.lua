@@ -382,7 +382,6 @@ end
 function TableMethods:SetHeader ( ... )
 	local Columns = self.Header;
 	local NumColumns = select( "#", ... );
-	self.NumColumns = NumColumns;
 	if ( self.View.XScroll ) then -- Force correct view resize
 		self.View.XScroll:SetValue( 0 );
 	end
@@ -410,6 +409,7 @@ function TableMethods:SetHeader ( ... )
 	if ( not self:Clear() ) then
 		self:Resize(); -- Fit to only headers
 	end
+	self.NumColumns = NumColumns;
 end
 --[[****************************************************************************
   * Function: TableObject:AddRow                                               *
