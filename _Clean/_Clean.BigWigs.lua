@@ -4,18 +4,11 @@
   ****************************************************************************]]
 
 
-local _Clean = _Clean;
-local me = {};
-_Clean.BigWigs = me;
-
-
-
-
 --------------------------------------------------------------------------------
 -- Function Hooks / Execution
 -----------------------------
 
-do
+if ( select( 6, GetAddOnInfo( "BigWigs_Plugins" ) ) ~= "MISSING" ) then
 	_Clean.RegisterAddOnInitializer( "BigWigs_Plugins", function ()
 		-- Reposition bar anchors to the middle of the screen
 		hooksecurefunc( BigWigs:GetModule( "Bars" ), "SetupFrames", function ( self, Emphasize )
@@ -35,6 +28,8 @@ do
 			Anchor.StartMoving = NilFunction;
 		end );
 	end );
+end
+if ( select( 6, GetAddOnInfo( "BigWigs_Extras" ) ) ~= "MISSING" ) then
 	_Clean.RegisterAddOnInitializer( "BigWigs_Extras", function ()
 		-- Recolor flash frame red
 		local Flash = BigWigs:GetModule( "Flash" );

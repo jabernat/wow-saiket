@@ -4,6 +4,9 @@
   ****************************************************************************]]
 
 
+if ( select( 6, GetAddOnInfo( "BugSack" ) ) == "MISSING" ) then
+	return;
+end
 local _Clean = _Clean;
 local me = {};
 _Clean.BugSack = me;
