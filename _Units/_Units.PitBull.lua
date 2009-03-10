@@ -6,6 +6,9 @@
   ****************************************************************************]]
 
 
+if ( select( 6, GetAddOnInfo( "PitBull" ) ) == "MISSING" ) then
+	return;
+end
 local _Units = _Units;
 local me = {};
 _Units.PitBull = me;
