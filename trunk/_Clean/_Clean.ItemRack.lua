@@ -10,7 +10,7 @@
 -- Function Hooks / Execution
 -----------------------------
 
-do
+if ( select( 6, GetAddOnInfo( "ItemRack" ) ) ~= "MISSING" ) then
 	_Clean.RegisterAddOnInitializer( "ItemRack", function ()
 		ItemRackMinimapFrame:RegisterForDrag();
 		ItemRackMinimapFrame:DisableDrawLayer( "ARTWORK" );
