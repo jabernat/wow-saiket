@@ -6,6 +6,9 @@
   ****************************************************************************]]
 
 
+if ( select( 6, GetAddOnInfo( "Grid" ) ) == "MISSING" ) then
+	return;
+end
 local L = _UnitsLocalization;
 local _Units = _Units;
 local me = {};
