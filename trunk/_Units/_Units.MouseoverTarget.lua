@@ -42,7 +42,6 @@ do
 
 	Tooltip:SetPoint( "BOTTOMLEFT", GameTooltip, "BOTTOMRIGHT" );
 	Tooltip:SetScale( 0.8 );
-	Tooltip:SetClampedToScreen( false );
 	Tooltip.Text = _G[ Tooltip:GetName().."TextLeft1" ];
 
 	_Units.RegisterAddOnInitializer( "_Misc", function ()
