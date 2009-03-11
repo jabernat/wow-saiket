@@ -74,54 +74,6 @@ do
 end
 
 
---[[****************************************************************************
-  * Function: _Clean.ActionBar:ActionButtonOnUpdate                            *
-  * Description: Tints action buttons red when out of range.                   *
-  ****************************************************************************]]
-function me:ActionButtonOnUpdate ( Elapsed )
-	if ( self.rangeTimer == TOOLTIP_UPDATE_TIME ) then -- Just updated
-		me.ActionButtonUpdateUsable( self );
-	end
-end
---[[****************************************************************************
-  * Function: _Clean.ActionBar:ActionButtonUpdateUsable                        *
-  * Description: Tints action buttons red when out of range.                   *
-  ****************************************************************************]]
-do
-	-- Note: This gets called a ton; optimize anything and everything.
-	local IsActionInRange = IsActionInRange;
-	local IsUsableAction = IsUsableAction;
-	local _G = _G;
-	local Action, Icon, Usable, NotEnoughMana;
-	local Icons = {};
-	function me:ActionButtonUpdateUsable ()
-		Action = self.action;
-		if ( not Action ) then -- Note: Prevents error when saving sets in Dominos
-			return;
-		end
-		Icon = Icons[ self ];
-		if ( not Icon ) then
-			Icon = _G[ self:GetName().."Icon" ];
-			Icons[ self ] = Icon;
-		end
-		Usable, NotEnoughMana = IsUsableAction( Action );
-
-		if ( Usable ) then -- Not out of mana or unusable
-			if ( IsActionInRange( Action ) ~= 0 ) then
-				Icon:SetVertexColor( 1.0, 1.0, 1.0 ); -- Usable
-				self:SetAlpha( 1.0 );
-			else
-				Icon:SetVertexColor( 0.8, 0.1, 0.1 );
-				self:SetAlpha( 0.6 );
-			end
-		elseif ( NotEnoughMana ) then -- Very distinct blue
-			Icon:SetVertexColor( 0.1, 0.1, 1.0 );
-			self:SetAlpha( 0.6 );
-		end
-	end
-end
-
-
 
 
 --[[****************************************************************************
@@ -275,8 +227,4 @@ do
 	KeyRingButton:SetWidth( 8 );
 	KeyRingButton:GetNormalTexture():SetTexCoord( 0.15, 0.45, 0.1, 0.52 );
 	KeyRingButton:Show();
-
-	-- Hooks
-	hooksecurefunc( "ActionButton_OnUpdate", me.ActionButtonOnUpdate );
-	hooksecurefunc( "ActionButton_UpdateUsable", me.ActionButtonUpdateUsable );
 end
