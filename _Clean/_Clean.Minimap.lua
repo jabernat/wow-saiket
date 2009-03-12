@@ -70,16 +70,16 @@ do
 	-- Expand the minimap to a square and replace the artwork with a simple border
 	GetMinimapShape = me.GetMinimapShape;
 	Minimap:SetMaskTexture( "Interface\\Buttons\\WHITE8X8" );
-	_Clean.Backdrop.Add( Minimap, _Clean.Backdrop.Padding );
 	Minimap:SetBlipTexture( "Interface\\AddOns\\_Clean\\Skin\\ObjectIcons" );
 
 	MinimapCluster:SetWidth( Minimap:GetWidth() );
 	MinimapCluster:SetHeight( Minimap:GetHeight() );
-	Minimap:SetAllPoints( MinimapCluster );
 	MinimapCluster:SetScale( 0.9 );
+	Minimap:SetAllPoints( MinimapCluster );
 	MinimapCluster:ClearAllPoints();
 	MinimapCluster:SetPoint( "TOPRIGHT", UIParent, 0, -16 );
 	MinimapCluster:EnableMouse( false );
+	_Clean.Backdrop.Add( MinimapCluster, _Clean.Backdrop.Padding );
 
 	MinimapToggleButton:Hide();
 	MinimapBorderTop:Hide();
@@ -123,7 +123,7 @@ do
 	MiniMapVoiceChatFrame:Hide();
 
 	MiniMapMailFrame:ClearAllPoints();
-	MiniMapMailFrame:SetPoint( "BOTTOMRIGHT", Minimap, -1, 1 );
+	MiniMapMailFrame:SetPoint( "BOTTOMRIGHT", Minimap, -1, 0 );
 	MiniMapMailFrame:SetWidth( 14 );
 	MiniMapMailFrame:SetHeight( 14 );
 	MiniMapMailBorder:Hide();
