@@ -28,9 +28,8 @@ function me.Create ( Parent )
 	return Backdrop;
 end
 --[[****************************************************************************
-  * Function: _Clean.CastingBar.HideArtwork                                    *
-  * Description: This version does not have a border, has no progress spark,   *
-  *   and does not flash when done casting.                                    *
+  * Function: _Clean.Backdrop.Add                                              *
+  * Description: Similar to Create, but also sets the backdrop with padding.   *
   ****************************************************************************]]
 function me.Add ( Parent, Padding )
 	local Backdrop = me.Create( Parent );
