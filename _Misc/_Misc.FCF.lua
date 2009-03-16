@@ -363,7 +363,6 @@ do
 
 	-- Log chat
 	LoggingChat( true );
-	LoggingCombat( true );
 
 	-- Play sound every time a whisper is recieved
 	CHAT_TELL_ALERT_TIME = 0;
