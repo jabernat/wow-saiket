@@ -32,6 +32,7 @@ do
 	local UnitCanAttack = UnitCanAttack;
 	local UnitIsUnit = UnitIsUnit;
 	local UnitPlayerOrPetInRaid = UnitPlayerOrPetInRaid;
+	local UnitIsDead = UnitIsDead;
 	local UnitInRange = UnitInRange;
 	local IsSpellInRange = IsSpellInRange;
 	local CheckInteractDistance = CheckInteractDistance;
@@ -40,10 +41,10 @@ do
 			if ( UnitCanAssist( "player", UnitID ) ) then
 				if ( UnitIsUnit( UnitID, "player" ) or UnitIsUnit( UnitID, "pet" ) or UnitPlayerOrPetInRaid( UnitID ) ) then
 					return UnitInRange( UnitID ); -- Fast checking for self and party members
-				elseif ( HelpName ) then -- Slow method for where UnitInRange doesn't work
+				elseif ( HelpName and not UnitIsDead( UnitID ) ) then -- Slow method for where UnitInRange doesn't work
 					return IsSpellInRange( HelpName, UnitID ) == 1;
 				end
-			elseif ( HarmName and UnitCanAttack( "player", UnitID ) ) then
+			elseif ( HarmName and not UnitIsDead( UnitID ) and UnitCanAttack( "player", UnitID ) ) then
 				return IsSpellInRange( HarmName, UnitID ) == 1;
 			end
 
