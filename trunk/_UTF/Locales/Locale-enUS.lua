@@ -34,8 +34,10 @@ do
 		OPTIONS_TEXTREPLACE_DESC = "Replace certain customizable parts of chat messages with UTF equivalents.  Can also be used to correct common spelling errors.";
 	}, {
 		__index = function ( self, Key )
-			rawset( self, Key, Key );
-			return Key;
+			if ( Key ~= nil ) then
+				rawset( self, Key, Key );
+				return Key;
+			end
 		end;
 	} );
 
