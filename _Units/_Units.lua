@@ -1,13 +1,7 @@
 --[[****************************************************************************
   * _Units by Saiket                                                           *
   * _Units.lua - Common functions.                                             *
-  *                                                                            *
-  * + Adds a mouseover target tooltip.                                         *
-  * + Disables the default Blizzard unit frames.                               *
   ****************************************************************************]]
-
-
-_UnitsOptions = {};
 
 
 local me = CreateFrame( "Frame" );
@@ -97,24 +91,28 @@ end
   * Description: Effectively removes a default Blizzard unit frame.  Copied    *
   *   from XPerl.                                                              *
   ****************************************************************************]]
---[[function me:BlizzardFrameDisable ()
-	UnregisterUnitWatch( self );
-	self:UnregisterAllEvents();
+function me:BlizzardFrameDisable ()
+	self.Show = _Clean.NilFunction;
 	self:Hide();
 
-	-- Drag off screen so Show operations won't reveal it
-	self:ClearAllPoints();
-	self:SetPoint( "BOTTOMRIGHT", UIParent, "TOPLEFT", -512, 512 );
-
+	UnregisterUnitWatch( self );
+	self:UnregisterAllEvents();
 	if ( self.healthbar ) then
 		self.healthbar:UnregisterAllEvents();
 	end
 	if ( self.manabar ) then
 		self.manabar:UnregisterAllEvents();
 	end
-end]]
+end
 
 
+--[[****************************************************************************
+  * Function: _Units:PLAYER_TARGET_CHANGED                                     *
+  ****************************************************************************]]
+function me:PLAYER_TARGET_CHANGED ( Event )
+	PlaySound( UnitExists( Event == "PLAYER_FOCUS_CHANGED" and "focus" or "target" ) and "igCharacterSelect" or "igCharacterDeselect" );
+end
+me.PLAYER_FOCUS_CHANGED = me.PLAYER_TARGET_CHANGED;
 --[[****************************************************************************
   * Function: _Units:ADDON_LOADED                                              *
   ****************************************************************************]]
@@ -153,10 +151,14 @@ do
 	me:RegisterEvent( "PLAYER_LOGIN" );
 	me:RegisterEvent( "ADDON_LOADED" );
 
+	me:RegisterEvent( "PLAYER_TARGET_CHANGED" );
+	me:RegisterEvent( "PLAYER_FOCUS_CHANGED" );
+
 	tinsert( UnitPopupFrames, me.DropDown:GetName() );
 	UIDropDownMenu_Initialize( me.DropDown, me.InitializeGenericMenu, "MENU" );
 
-	--[[for Index = 1, MAX_PARTY_MEMBERS do
+
+	for Index = 1, MAX_PARTY_MEMBERS do
 		me.BlizzardFrameDisable( _G[ "PartyMemberFrame"..Index ] );
-	end]]
+	end
 end
