@@ -16,8 +16,10 @@ do
 		ONCLOSE_NOTICE = Title..": To reopen the meter, use "..LDQuo.."/latency"..RDQuo.." or "..LDQuo.."/lag"..RDQuo..".";
 	}, {
 		__index = function ( self, Key )
-			rawset( self, Key, Key );
-			return Key;
+			if ( Key ~= nil ) then
+				rawset( self, Key, Key );
+				return Key;
+			end
 		end;
 	} );
 
