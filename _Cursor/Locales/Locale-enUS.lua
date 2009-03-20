@@ -7,8 +7,10 @@
 do
 	local Metatable = {
 		__index = function ( self, Key )
-			rawset( self, Key, Key );
-			return Key;
+			if ( Key ~= nil ) then
+				rawset( self, Key, Key );
+				return Key;
+			end
 		end;
 	};
 	local LDQuo, RDQuo = "\226\128\156", "\226\128\157";
