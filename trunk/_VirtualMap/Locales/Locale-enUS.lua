@@ -42,8 +42,10 @@ do
 		NORTH_INDICATOR = "N";
 	}, {
 		__index = function ( self, Key )
-			rawset( self, Key, Key );
-			return Key;
+			if ( Key ~= nil ) then
+				rawset( self, Key, Key );
+				return Key;
+			end
 		end;
 	} );
 
