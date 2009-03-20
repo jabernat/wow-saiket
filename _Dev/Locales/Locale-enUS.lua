@@ -107,8 +107,10 @@ do
 			OUTLINE_BORDERALPHA_FORMAT = "%01.01f";
 		}, {
 			__index = function ( self, Key )
-				Key = Key:gsub( "%.", "_" ):upper();
-				return rawget( self, Key ) or "OPTIONS."..Key;
+				if ( Key ~= nil ) then
+					Key = Key:gsub( "%.", "_" ):upper();
+					return rawget( self, Key ) or "OPTIONS."..Key;
+				end
 			end;
 		} );
 
@@ -119,8 +121,10 @@ do
 		STATS_MEGABYTE_FORMAT    = "%.3fMB";
 	}, {
 		__index = function ( self, Key )
-			rawset( self, Key, Key );
-			return Key;
+			if ( Key ~= nil ) then
+				rawset( self, Key, Key );
+				return Key;
+			end
 		end;
 	} );
 
