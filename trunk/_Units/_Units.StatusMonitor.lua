@@ -386,11 +386,11 @@ function UnitFrame.UpdateHealth ( UnitID )
 	HealthString:SetTextColor( R, G, B );
 
 	-- Determine condition text
-	local Condition = ( UnitIsDisconnected( UnitID ) and "ABSENT" )
+	local Condition = ( UnitIsDisconnected( UnitID ) and "OFFLINE" )
 		or ( UnitIsFeignDeath( UnitID ) and "FEIGN" )
 		or ( UnitIsGhost( UnitID ) and "GHOST" )
-		or ( UnitIsDead( UnitID ) and "CORPSE" );
-	Units[ UnitID ].Condition:SetText( L.STATUSMONITOR_CONDITION_LABELS[ Condition ] );
+		or ( UnitIsDead( UnitID ) and "DEAD" );
+	Units[ UnitID ].Condition:SetText( L[ Condition ] );
 end
 --[[****************************************************************************
   * Function: _Units.StatusMonitor.UnitFrame.UpdateMana                        *
