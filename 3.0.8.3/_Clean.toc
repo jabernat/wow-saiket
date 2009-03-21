@@ -1,0 +1,43 @@
+## Interface: 30000
+## Title: _|cffCCCC88Clean|r
+## Notes: Change the UI's look and feel.
+## Author: Saiket
+## Version: 3.0.8.3
+## X-Date: 2009-03-20
+## X-Category: Frame Modification
+## X-License: GPLv3
+## X-Email: saiket.wow@gmail.com
+## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons
+## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Clean
+## X-Localizations: enUS
+## X-Embeds: LibSharedMedia-3.0
+## SavedVariables: _CleanOptions
+## RequiredDeps: Dominos
+## OptionalDeps: LibSharedMedia-3.0
+Libs\LibStub\LibStub.lua
+Libs\CallbackHandler-1.0\CallbackHandler-1.0.lua
+
+Embeds.xml
+Locales.xml
+
+_Clean.LibSharedMedia.lua
+_Clean.lua
+_Clean.Backdrop.lua
+
+_Clean.ActionBar.lua
+
+_Clean.CastingBar.lua
+_Clean.Crosshairs.lua
+_Clean.FCF.lua
+_Clean.General.lua
+_Clean.Minimap.lua
+_Clean.WorldStateFrame.lua
+
+_Clean.BlizzardBattlefieldMinimap.lua
+_Clean.BlizzardCombatLog.lua
+_Clean.BlizzardCombatText.lua
+
+_Clean.BigWigs.lua
+_Clean.BugSack.lua
+_Clean.Gladius.lua
+_Clean.ItemRack.lua
