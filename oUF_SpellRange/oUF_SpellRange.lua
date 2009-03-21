@@ -39,17 +39,17 @@ do
 	function IsInRange ( UnitID )
 		if ( UnitIsConnected( UnitID ) ) then
 			if ( UnitCanAssist( "player", UnitID ) ) then
-				if ( UnitIsUnit( UnitID, "player" ) or UnitIsUnit( UnitID, "pet" ) or UnitPlayerOrPetInRaid( UnitID ) ) then
-					return UnitInRange( UnitID ); -- Fast checking for self and party members
-				elseif ( HelpName and not UnitIsDead( UnitID ) ) then -- Slow method for where UnitInRange doesn't work
+				if ( HelpName and not UnitIsDead( UnitID ) ) then
 					return IsSpellInRange( HelpName, UnitID ) == 1;
+				elseif ( UnitIsUnit( UnitID, "player" ) or UnitIsUnit( UnitID, "pet" ) or UnitPlayerOrPetInRaid( UnitID ) ) then
+					return UnitInRange( UnitID ); -- Fast checking for self and party members (38 yd range)
 				end
 			elseif ( HarmName and not UnitIsDead( UnitID ) and UnitCanAttack( "player", UnitID ) ) then
 				return IsSpellInRange( HarmName, UnitID ) == 1;
 			end
 
 			-- Fallback when spell not found or class uses none
-			return CheckInteractDistance( UnitID, 4 ); -- Follow distance (28 yards)
+			return CheckInteractDistance( UnitID, 4 ); -- Follow distance (28 yd range)
 		end
 	end
 end
@@ -142,7 +142,7 @@ end
 
 do
 	local Class = select( 2, UnitClass( "player" ) );
-	-- Optional low level baseline skills with at least 30 yard range
+	-- Optional low level baseline skills with greater than 28 yard range
 	HelpID = ( {
 		DEATHKNIGHT = 61999; -- Raise Ally
 		DRUID = 5185; -- Healing Touch
