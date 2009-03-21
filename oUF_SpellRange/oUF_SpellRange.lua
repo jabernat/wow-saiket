@@ -33,6 +33,7 @@ do
 	local UnitIsUnit = UnitIsUnit;
 	local UnitPlayerOrPetInRaid = UnitPlayerOrPetInRaid;
 	local UnitIsDead = UnitIsDead;
+	local UnitOnTaxi = UnitOnTaxi;
 	local UnitInRange = UnitInRange;
 	local IsSpellInRange = IsSpellInRange;
 	local CheckInteractDistance = CheckInteractDistance;
@@ -41,8 +42,9 @@ do
 			if ( UnitCanAssist( "player", UnitID ) ) then
 				if ( HelpName and not UnitIsDead( UnitID ) ) then
 					return IsSpellInRange( HelpName, UnitID ) == 1;
-				elseif ( UnitIsUnit( UnitID, "player" ) or UnitIsUnit( UnitID, "pet" )
-					or UnitPlayerOrPetInParty( UnitID ) or UnitPlayerOrPetInRaid( UnitID )
+				elseif ( not UnitOnTaxi( "player" ) -- UnitInRange always returns nil while on flightpaths
+					and ( UnitIsUnit( UnitID, "player" ) or UnitIsUnit( UnitID, "pet" )
+						or UnitPlayerOrPetInParty( UnitID ) or UnitPlayerOrPetInRaid( UnitID ) )
 				) then
 					return UnitInRange( UnitID ); -- Fast checking for self and party members (38 yd range)
 				end
