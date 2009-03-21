@@ -41,7 +41,9 @@ do
 			if ( UnitCanAssist( "player", UnitID ) ) then
 				if ( HelpName and not UnitIsDead( UnitID ) ) then
 					return IsSpellInRange( HelpName, UnitID ) == 1;
-				elseif ( UnitIsUnit( UnitID, "player" ) or UnitIsUnit( UnitID, "pet" ) or UnitPlayerOrPetInRaid( UnitID ) ) then
+				elseif ( UnitIsUnit( UnitID, "player" ) or UnitIsUnit( UnitID, "pet" )
+					or UnitPlayerOrPetInParty( UnitID ) or UnitPlayerOrPetInRaid( UnitID )
+				) then
 					return UnitInRange( UnitID ); -- Fast checking for self and party members (38 yd range)
 				end
 			elseif ( HarmName and not UnitIsDead( UnitID ) and UnitCanAttack( "player", UnitID ) ) then
