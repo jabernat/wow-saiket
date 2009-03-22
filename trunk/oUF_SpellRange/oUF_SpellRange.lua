@@ -120,6 +120,9 @@ end
   ****************************************************************************]]
 local function Enable ( self, UnitID )
 	if ( self.SpellRange ) then
+		assert( type( self.SpellRangeOverride ) == "function"
+			or ( type( self.inRangeAlpha ) == "number" and type( self.outsideRangeAlpha ) == "number" ),
+			"oUF layout addon omitted required SpellRange properties." );
 		if ( self.Range ) then -- Disable default range checking
 			self:DisableElement( "Range" );
 			self.Range = nil;
