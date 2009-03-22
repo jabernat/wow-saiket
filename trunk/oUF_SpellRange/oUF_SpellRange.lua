@@ -114,9 +114,9 @@ local function Enable ( self, UnitID )
 		else
 			UpdateFrame:Show();
 		end
+		Objects[ self ] = true;
+		return true;
 	end
-	Objects[ self ] = true;
-	return true;
 end
 --[[****************************************************************************
   * Function: local Disable                                                    *

@@ -2,7 +2,7 @@
 ## Title: oUF SpellRange
 ## Notes: Range element for oUF that works for non-group members
 ## Author: Saiket
-## Version: 3.0.9.3
+## Version: 3.0.9.4
 ## X-Date: 2009-03-22
 ## X-Category: UnitFrame
 ## X-License: GPLv3
