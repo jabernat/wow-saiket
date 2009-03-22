@@ -145,14 +145,14 @@ end
 -----------------------------
 
 do
-	local Class = select( 2, UnitClass( "player" ) );
+	local _, Class = UnitClass( "player" );
 	-- Optional low level baseline skills with greater than 28 yard range
 	HelpID = ( {
 		DEATHKNIGHT = 61999; -- Raise Ally
 		DRUID = 5185; -- Healing Touch
 		MAGE = 1459; -- Arcane Intellect
 		PALADIN = 635; -- Holy Light
-		PRIEST = 585; -- Smite
+		PRIEST = 2050; -- Lesser Heal
 		SHAMAN = 331; -- Healing Wave
 		WARLOCK = 5697; -- Unending Breath
 	} )[ Class ];
@@ -162,7 +162,7 @@ do
 		HUNTER = 75; -- Auto Shot
 		MAGE = 133; -- Fireball
 		PALADIN = 62124; -- Hand of Reckoning
-		PRIEST = 2050; -- Lesser Heal
+		PRIEST = 585; -- Smite
 		SHAMAN = 403; -- Lightning Bolt
 		WARLOCK = 686; -- Shadow Bolt
 		WARRIOR = 355; -- Taunt
