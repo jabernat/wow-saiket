@@ -1,0 +1,14 @@
+## Interface: 30000
+## Title: oUF SpellRange
+## Notes: Range element for oUF that works for non-group members
+## Author: Saiket
+## Version: 3.0.9.4
+## X-Date: 2009-03-22
+## X-Category: UnitFrame
+## X-License: GPLv3
+## X-Email: saiket.wow@gmail.com
+## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons
+## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:oUF_SpellRange
+## X-RelSite-WoWI: 12839
+## RequiredDeps: oUF
+oUF_SpellRange.lua
