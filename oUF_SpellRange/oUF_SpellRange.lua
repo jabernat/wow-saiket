@@ -3,9 +3,12 @@
   * oUF_SpellRange.lua - Improved range element for oUF.                       *
   *                                                                            *
   * Elements handled: .SpellRange                                              *
-  * Settings:                                                                  *
-  *   - inRangeAlpha - Frame alpha value for units in range. (Required)        *
-  *   - outsideRangeAlpha - Frame alpha for units out of range. (Required)     *
+  * Settings: (Either override method or both alpha properties are required)   *
+  *   - :SpellRangeOverride( InRange ) - Callback fired when a unit either     *
+  *       enters or leaves range. Overrides default alpha changing.            *
+  *   OR                                                                       *
+  *   - .inRangeAlpha - Frame alpha value for units in range.                  *
+  *   - .outsideRangeAlpha - Frame alpha for units out of range.               *
   * Note that SpellRange will automatically disable Range elements of frames.  *
   ****************************************************************************]]
 
@@ -14,6 +17,7 @@ local UpdateRate = 0.1;
 
 local UpdateFrame;
 local Objects = {};
+local ObjectRanges = {};
 
 -- Class-specific spell info
 local HelpID, HelpName;
@@ -60,8 +64,21 @@ end
 --[[****************************************************************************
   * Function: local UpdateRange                                                *
   ****************************************************************************]]
-local function UpdateRange ( self )
-	self:SetAlpha( self[ IsInRange( self.unit ) and "inRangeAlpha" or "outsideRangeAlpha" ] );
+local UpdateRange;
+do
+	local InRange;
+	function UpdateRange ( self )
+		InRange = not not IsInRange( self.unit ); -- Cast to boolean
+		if ( ObjectRanges[ self ] ~= InRange ) then -- Range state changed
+			ObjectRanges[ self ] = InRange;
+
+			if ( self.SpellRangeOverride ) then
+				self:SpellRangeOverride( InRange );
+			else
+				self:SetAlpha( self[ InRange and "inRangeAlpha" or "outsideRangeAlpha" ] );
+			end
+		end
+	end
 end
 --[[****************************************************************************
   * Function: local UpdateSpells                                               *
@@ -123,6 +140,7 @@ end
   ****************************************************************************]]
 local function Disable ( self )
 	Objects[ self ] = nil;
+	ObjectRanges[ self ] = nil;
 	if ( not next( Objects ) ) then
 		UpdateFrame:Hide();
 	end
@@ -133,6 +151,7 @@ end
 local function Update ( self, Event, UnitID )
 	if ( Event ~= "OnTargetUpdate" ) then -- Caused by a real event
 		UpdateSpells();
+		ObjectRanges[ self ] = nil; -- Force update to fire
 		UpdateRange( self ); -- Update range immediately
 	end
 end
