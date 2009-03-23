@@ -186,8 +186,10 @@ end
   * Function: _Units.oUF:PostUpdatePower                                       *
   ****************************************************************************]]
 function me:PostUpdatePower ( Event, UnitID, Bar, Power, PowerMax )
-	if ( UnitIsDeadOrGhost( UnitID ) or select( 2, UnitPowerType( UnitID ) ) ~= "MANA" ) then
+	if ( UnitIsDeadOrGhost( UnitID ) ) then
 		Bar:SetValue( 0 );
+		Bar.Value:SetText();
+	elseif ( select( 2, UnitPowerType( UnitID ) ) ~= "MANA" ) then
 		Bar.Value:SetText();
 	else
 		me.BarFormatValue( Bar, Power, PowerMax );
