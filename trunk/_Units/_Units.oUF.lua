@@ -533,6 +533,11 @@ function me.StyleMeta.__call ( Style, self, UnitID )
 			self.Reputation = Progress;
 			Progress.PostUpdate = me.ReputationPostUpdate;
 		end
+	elseif ( UnitID == "pet" ) then
+		if ( IsAddOnLoaded( "oUF_Experience" ) ) then
+			self.Experience = Progress;
+			Progress:SetStatusBarColor( unpack( Colors.experience ) );
+		end
 	else -- Castbar
 		self.Castbar = Progress;
 		Progress:SetStatusBarColor( unpack( Colors.cast ) );
