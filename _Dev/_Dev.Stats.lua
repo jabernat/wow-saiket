@@ -36,9 +36,12 @@ me.HighLatency = 450;
   * Description: Hides or shows the stats display.                             *
   ****************************************************************************]]
 function me.ToggleFramerate ( Enable )
-	_DevOptions.Stats.Enabled = Enable == nil and not _DevOptions.Stats.Enabled or Enable;
+	if ( Enable == nil ) then
+		Enable = not _DevOptions.Stats.Enabled;
+	end
+	_DevOptions.Stats.Enabled = Enable;
 
-	if ( _DevOptions.Stats.Enabled ) then
+	if ( Enable ) then
 		me:Show();
 	else
 		me:Hide();
