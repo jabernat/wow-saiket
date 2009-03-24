@@ -19,5 +19,9 @@ do
 		TimeManagerClockButton:SetAllPoints( _Misc.Time.Text );
 		TimeManagerClockButton:SetScript( "OnEnter", nil );
 		TimeManagerClockButton:SetScript( "OnLeave", nil );
+
+		_Misc.RegisterAddOnInitializer( "_Clean", function ()
+			_Clean.AddLockedButton( TimeManagerClockButton );
+		end );
 	end );
 end
