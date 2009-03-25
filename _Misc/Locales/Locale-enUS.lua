@@ -84,6 +84,13 @@ do
 	BINDING_NAME__MISC_CAMERA_FLIP   = BINDING_NAME_FLIPCAMERAYAW;
 
 
+	-- Player name chat links
+	JOINED_PARTY = "|Hplayer:%1$s|h[%1$s]|h joins the party.";
+	ERR_JOINED_GROUP_S = JOINED_PARTY;
+	LEFT_PARTY = "|Hplayer:%1$s|h[%1$s]|h leaves the party.";
+	ERR_LEFT_GROUP_S = LEFT_PARTY;
+
+
 	-- Macro
 	SLASH_PRINT1 = "/print";
 	SLASH_ALERT1 = "/alert";
