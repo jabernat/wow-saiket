@@ -205,6 +205,7 @@ end
 function me:PostCreateAuraIcon ( Frame )
 	_Clean.RemoveButtonIconBorder( Frame.icon );
 	Frame.UpdateTooltip = me.AuraUpdateTooltip;
+	Frame.cd:SetReverse( true );
 end
 --[[****************************************************************************
   * Function: _Units.oUF:PostCreateAuraIconPlayer                              *
