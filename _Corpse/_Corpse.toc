@@ -2,17 +2,19 @@
 ## Title: _|cffCCCC88Corpse|r
 ## Notes: Adds online/offline status and other info to corpse tooltips.
 ## Notes-koKR: 온라인/오프라인 상태와 기타 정보를 시체 툴팁에 추가합니다.
+## Notes-zhCH: 通过添加目标为好友的方式来判断尸体是否在线
+## Notes-zhTW: 通過添加目標為好友的方式來判斷屍體是否在線
 ## Author: Saiket
-## Version: 3.0.9.1
-## X-Date: 2009-03-25
+## Version: 3.0.9.2
+## X-Date: 2009-03-26
 ## X-Category: Tooltips, Interface Enhancements
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
 ## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons/Corpse
 ## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Corpse
 ## X-RelSite-WoWI: 12901
-## X-Localizations: enUS, koKR
-## X-CompatibleLocales: enUS, koKR
+## X-Localizations: enUS, koKR, zhCN, zhTW
+## X-CompatibleLocales: enUS, koKR, zhCN, zhTW
 Locales.xml
 
 _Corpse.lua
