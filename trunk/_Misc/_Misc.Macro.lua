@@ -211,11 +211,11 @@ do
 		elseif ( NameGround and IsOutdoors() ) then -- Can probably mount up
 			-- Determine if flying is enabled
 			local Flyable;
+			SetMapToCurrentZone();
 			if ( GetCurrentMapContinent() == 4 ) then -- Northrend
 				if ( GetSpellInfo( "Cold Weather Flying" ) ) then
 					local Map = GetZoneText();
 					if ( Map == "Dalaran" and GetSubZoneText() ~= "Krasus' Landing" ) then
-						SetMapToCurrentZone();
 						if ( GetCurrentMapDungeonLevel() == 1 ) then
 							Flyable = false; -- Mounting disallowed in upper Dalaran
 						end
