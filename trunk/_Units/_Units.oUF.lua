@@ -386,7 +386,7 @@ do
 
 		R, G, B = unpack( Color );
 		return L.OUF_NAME_FORMAT:format( R * 255, G * 255, B * 255,
-			Server and L.OUF_SERVER_DELIMITER:join( Name, Server ) or Name );
+			( Server and Server ~= "" ) and L.OUF_SERVER_DELIMITER:join( Name, Server ) or Name );
 	end
 end
 
