@@ -242,49 +242,37 @@ end
 
 
 --[[****************************************************************************
-  * Function: _Units.oUF:DebuffHighlightSetVertexColor                         *
-  * Description: Sets the vertex color of all border textures.                 *
-  ****************************************************************************]]
-function me:DebuffHighlightSetVertexColor ( R, G, B, A )
-end
---[[****************************************************************************
-  * Function: _Units.oUF:DebuffHighlightGetVertexColor                         *
-  ****************************************************************************]]
-me.DebuffHighlightGetVertexColor = _Clean.NilFunction;
---[[****************************************************************************
   * Function: _Units.oUF:CreateDebuffHighlight                                 *
   * Description: Creates a border frame that behaves like a texture for the    *
   *   oUF_DebuffHighlight element.                                             *
   ****************************************************************************]]
 do
-	local function SetVertexColorRegions ( R, G, B, A, ... )
-		for Index = 1, select( "#", ... ) do
-			select( Index, ... ):SetVertexColor( R, G, B, A );
+	local function SetVertexColor ( self, ... )
+		for Index = 1, #self do
+			self[ Index ]:SetVertexColor( ... );
 		end
 	end
-	local function SetVertexColor ( self, R, G, B, A )
-		if ( R ) then
-			SetVertexColorRegions( R, G, B, A, self:GetRegions() );
-			self:Show();
-		else
-			self:Hide();
-		end
+	local function GetVertexColor ( self )
+		return self[ 1 ]:GetVertexColor();
 	end
 	local function CreateTexture( self, Point1, Point1Frame, Point2, Point2Frame, Point2Rel )
 		local Texture = self:CreateTexture( nil, "OVERLAY" );
+		tinsert( self, Texture );
 		Texture:SetTexture( "Interface\\Buttons\\WHITE8X8" );
 		Texture:SetPoint( Point1, Point1Frame );
 		Texture:SetPoint( Point2, Point2Frame, Point2Rel );
 	end
 	function me:CreateDebuffHighlight ( Backdrop )
 		local Frame = CreateFrame( "Frame", nil, self.Health );
-		Frame.GetVertexColor = _Clean.NilFunction;
-		Frame.SetVertexColor = SetVertexColor;
 		-- Four separate outline textures so faded frames blend correctly
 		CreateTexture( Frame, "TOPLEFT", Backdrop, "BOTTOMRIGHT", self, "TOPRIGHT" );
 		CreateTexture( Frame, "TOPRIGHT", Backdrop, "BOTTOMLEFT", self, "BOTTOMRIGHT" );
 		CreateTexture( Frame, "BOTTOMRIGHT", Backdrop, "TOPLEFT", self, "BOTTOMLEFT" );
 		CreateTexture( Frame, "BOTTOMLEFT", Backdrop, "TOPRIGHT", self, "TOPLEFT" );
+
+		Frame.GetVertexColor = GetVertexColor;
+		Frame.SetVertexColor = SetVertexColor;
+		Frame:SetVertexColor( 0, 0, 0, 0 ); -- Hide when not debuffed
 		return Frame;
 	end
 end
