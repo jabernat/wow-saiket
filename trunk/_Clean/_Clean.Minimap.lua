@@ -130,6 +130,7 @@ do
 	MiniMapMailBorder:SetTexture();
 	MiniMapMailIcon:SetAllPoints( MiniMapMailFrame );
 	MiniMapMailIcon:SetGradientAlpha( "VERTICAL", Background.r, Background.g, Background.b, Background.a, Foreground.r, Foreground.g, Foreground.b, Foreground.a );
+	MiniMapMailIcon:SetTexture( "Interface\\Minimap\\Tracking\\Mailbox" ); -- No black background
 	_Clean.RemoveButtonIconBorder( MiniMapMailIcon );
 
 	MiniMapBattlefieldFrame:ClearAllPoints();
