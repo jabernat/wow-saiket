@@ -20,8 +20,8 @@ local Objects = {};
 local ObjectRanges = {};
 
 -- Class-specific spell info
-local HelpID, HelpName;
-local HarmID, HarmName;
+local HelpName, CanHelp; -- Name of spell, and whether it is known by the player
+local HarmName, CanHarm;
 
 
 
@@ -44,7 +44,7 @@ do
 	function IsInRange ( UnitID )
 		if ( UnitIsConnected( UnitID ) ) then
 			if ( UnitCanAssist( "player", UnitID ) ) then
-				if ( HelpName and not UnitIsDead( UnitID ) ) then
+				if ( CanHelp and not UnitIsDead( UnitID ) ) then
 					return IsSpellInRange( HelpName, UnitID ) == 1;
 				elseif ( not UnitOnTaxi( "player" ) -- UnitInRange always returns nil while on flightpaths
 					and ( UnitIsUnit( UnitID, "player" ) or UnitIsUnit( UnitID, "pet" )
@@ -52,7 +52,7 @@ do
 				) then
 					return UnitInRange( UnitID ); -- Fast checking for self and party members (38 yd range)
 				end
-			elseif ( HarmName and not UnitIsDead( UnitID ) and UnitCanAttack( "player", UnitID ) ) then
+			elseif ( CanHarm and not UnitIsDead( UnitID ) and UnitCanAttack( "player", UnitID ) ) then
 				return IsSpellInRange( HarmName, UnitID ) == 1;
 			end
 
@@ -84,11 +84,12 @@ end
   * Function: local UpdateSpells                                               *
   ****************************************************************************]]
 local function UpdateSpells ()
-	if ( HelpID ) then
-		HelpName = GetSpellInfo( HelpID );
+	-- Only populate name if spell is in spellbook
+	if ( HelpName ) then
+		CanHelp = GetSpellInfo( HelpName );
 	end
-	if ( HarmID ) then
-		HarmName = GetSpellInfo( HarmID );
+	if ( HarmName ) then
+		CanHarm = GetSpellInfo( HarmName );
 	end
 end
 
@@ -169,7 +170,7 @@ end
 do
 	local _, Class = UnitClass( "player" );
 	-- Optional low level baseline skills with greater than 28 yard range
-	HelpID = ( {
+	HelpName = GetSpellInfo( ( {
 		DEATHKNIGHT = 61999; -- Raise Ally
 		DRUID = 5185; -- Healing Touch
 		MAGE = 1459; -- Arcane Intellect
@@ -177,8 +178,8 @@ do
 		PRIEST = 2050; -- Lesser Heal
 		SHAMAN = 331; -- Healing Wave
 		WARLOCK = 5697; -- Unending Breath
-	} )[ Class ];
-	HarmID = ( {
+	} )[ Class ] );
+	HarmName = GetSpellInfo( ( {
 		DEATHKNIGHT = 52375; -- Death Coil
 		DRUID = 5176; -- Wrath
 		HUNTER = 75; -- Auto Shot
@@ -188,7 +189,7 @@ do
 		SHAMAN = 403; -- Lightning Bolt
 		WARLOCK = 686; -- Shadow Bolt
 		WARRIOR = 355; -- Taunt
-	} )[ Class ];
+	} )[ Class ] );
 
 	oUF:AddElement( "SpellRange", Update, Enable, Disable );
 end
