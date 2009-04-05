@@ -178,7 +178,7 @@ do
 		PRIEST = 2050; -- Lesser Heal
 		SHAMAN = 331; -- Healing Wave
 		WARLOCK = 5697; -- Unending Breath
-	} )[ Class ] );
+	} )[ Class ] or 0 );
 	HarmName = GetSpellInfo( ( {
 		DEATHKNIGHT = 52375; -- Death Coil
 		DRUID = 5176; -- Wrath
@@ -189,7 +189,7 @@ do
 		SHAMAN = 403; -- Lightning Bolt
 		WARLOCK = 686; -- Shadow Bolt
 		WARRIOR = 355; -- Taunt
-	} )[ Class ] );
+	} )[ Class ] or 0 );
 
 	oUF:AddElement( "SpellRange", Update, Enable, Disable );
 end
