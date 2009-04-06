@@ -230,7 +230,11 @@ do
 	function AddOnChat.AddMessage ( Prefix, Message, Type, Sender )
 		local Color = ChatTypeInfo[ Type ];
 		local Message = L.ADDONCHAT_MSG_FORMAT:format( L.ADDONCHAT_TYPES[ Type ],
-			Sender, Sender, EscapeString( Prefix ), EscapeString( Message ) );
+			Type == "WHISPER_INFORM" and L.ADDONCHAT_OUTBOUND or "",
+			Sender, EscapeString( Prefix ), EscapeString( Message ) );
+		if ( Type == "WHISPER_INFORM" ) then
+			Type = "WHISPER";
+		end
 	
 		for ChatFrame, TypeList in pairs( ChatFrames ) do
 			if ( TypeList[ Type ] ) then
@@ -246,6 +250,18 @@ do
 	local AddMessage = AddOnChat.AddMessage;
 	function AddOnChat:OnEvent ( Event, ... )
 		AddMessage( ... );
+	end
+end
+--[[****************************************************************************
+  * Function: _Dev.Events.AddOnChat.SendAddonMessage                           *
+  ****************************************************************************]]
+do
+	local AddMessage = AddOnChat.AddMessage;
+	local strupper = strupper;
+	function AddOnChat.SendAddonMessage ( Prefix, Message, Type, Target )
+		if ( Type:upper() == "WHISPER" ) then
+			AddMessage( Prefix, Message, "WHISPER_INFORM", Target:lower():gsub( "^%a", strupper ) );
+		end
 	end
 end
 
@@ -312,6 +328,7 @@ end
 
 do
 	AddOnChat:SetScript( "OnEvent", AddOnChat.OnEvent );
+	hooksecurefunc( "SendAddonMessage", AddOnChat.SendAddonMessage );
 
 	hooksecurefunc( "FCFOptionsDropDown_Initialize", AddOnChat.DropDownInitialize );
 

@@ -43,7 +43,8 @@ do
 
 		-- Events
 		ADDONCHAT_MESSAGES = "|cffCCCC88AddOn Messages|r"; -- Tan
-		ADDONCHAT_MSG_FORMAT = "["..GRAY_FONT_COLOR_CODE.."Mod|r%s] |Hplayer:%s|h[%s]|h: [%s] %s";
+		ADDONCHAT_MSG_FORMAT = "["..GRAY_FONT_COLOR_CODE.."Mod|r%s]%1s|Hplayer:%3$s|h[%3$s]|h: [%s] %s";
+		ADDONCHAT_OUTBOUND = "\194\187"; -- '>>'
 			-- Type, Sender, Sender, Prefix, Message
 		ADDONCHAT_TYPES = {
 			[ "GUILD" ]        = CHAT_MSG_GUILD;
@@ -51,6 +52,7 @@ do
 			[ "PARTY" ]        = CHAT_MSG_PARTY;
 			[ "BATTLEGROUND" ] = CHAT_MSG_BATTLEGROUND;
 			[ "WHISPER" ]      = CHAT_MSG_WHISPER_INFORM;
+			[ "WHISPER_INFORM" ] = CHAT_MSG_WHISPER_INFORM;
 		};
 
 
