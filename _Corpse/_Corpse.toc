@@ -6,7 +6,7 @@
 ## Notes-zhTW: 通過添加目標為好友的方式來判斷屍體是否在線
 ## Author: Saiket
 ## Version: 3.0.9.4
-## X-Date: 2009-03-30
+## X-Date: 2009-04-10
 ## X-Category: Tooltips, Interface Enhancements
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
@@ -14,7 +14,7 @@
 ## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Corpse
 ## X-RelSite-WoWI: 12901
 ## X-Localizations: enUS, koKR, zhCN, zhTW
-## X-CompatibleLocales: deDE, enUS, esES, frFR, koKR, ruRU, zhCN, zhTW
+## X-CompatibleLocales: deDE, enUS, esES, esMX, frFR, koKR, ruRU, zhCN, zhTW
 Locales.xml
 
 _Corpse.lua
