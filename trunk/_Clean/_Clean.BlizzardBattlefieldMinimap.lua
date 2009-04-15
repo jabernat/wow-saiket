@@ -111,15 +111,14 @@ do
 		BattlefieldMinimapTab:RegisterForDrag();
 		BattlefieldMinimapTab:RegisterForClicks( "RightButtonUp" );
 		_Clean.AddLockedButton( BattlefieldMinimapTab );
-		hooksecurefunc( "BattlefieldMinimapDropDown_Initialize",
-			me.DropDownInitialize );
+		hooksecurefunc( "BattlefieldMinimapTabDropDown_Initialize", me.DropDownInitialize );
 		hooksecurefunc( BattlefieldMinimapTab, "SetPoint", me.SetPoint );
 
 		-- Lock the tab's alpha
 		DEFAULT_BATTLEFIELD_TAB_ALPHA = 0.5;
 		BattlefieldMinimapTab:SetAlpha( DEFAULT_BATTLEFIELD_TAB_ALPHA );
 		hooksecurefunc( BattlefieldMinimapTab, "SetAlpha", me.SetAlpha );
-		hooksecurefunc( "BattlefieldMinimap_SetOpacity", me.SetOpacity );
+		hooksecurefunc( "BattlefieldMinimap_UpdateOpacity", me.SetOpacity );
 
 		-- Lock show in battlegrounds setting
 		me.DropDownUpdate();
