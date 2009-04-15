@@ -1,0 +1,20 @@
+## Interface: 30100
+## Title: _|cffCCCC88Cursor|r
+## Notes: Adds custom effects to your cursor.
+## Notes-koKR: 사용자가 정의한 효과를 커서에 추가합니다.
+## Author: Saiket
+## Version: 3.1.0.2
+## X-Date: 2009-04-15
+## X-Category: Interface Enhancements
+## X-License: GPLv3
+## X-Email: saiket.wow@gmail.com
+## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons/Cursor
+## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Cursor
+## X-RelSite-WoWI: 10531
+## X-Localizations: enUS, koKR
+## SavedVariables: _CursorOptions
+## SavedVariablesPerCharacter: _CursorOptionsCharacter
+Locales.xml
+
+_Cursor.lua
+_Cursor.Options.lua
