@@ -1,9 +1,9 @@
-## Interface: 30000
+## Interface: 30100
 ## Title: Lib: TextTable-1.0
 ## Notes: Creates simple table controls for tabular text data.
 ## Author: Saiket
-## Version: 3.0.8.1
-## X-Date: 2009-03-07
+## Version: 3.1.0.1
+## X-Date: 2009-04-14
 ## X-Category: Library
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
