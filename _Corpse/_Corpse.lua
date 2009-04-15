@@ -249,10 +249,10 @@ function me.UIErrorsFrameOnEvent ( self, Event, Message, ... )
 	end
 end
 --[[****************************************************************************
-  * Function: _Corpse.MessageEventHandler                                      *
+  * Function: _Corpse:MessageEventHandler                                      *
   * Description: Blocks automated invite and remove messages.                  *
   ****************************************************************************]]
-function me.MessageEventHandler ( Message )
+function me:MessageEventHandler ( _, Message )
 	local Name;
 
 	if ( me.AddFriendLast or me.AddFriendSwapLast ) then
