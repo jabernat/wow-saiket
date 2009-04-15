@@ -10,7 +10,7 @@
 
 local _Misc = _Misc;
 local me = {
-	Text = MiniMapPing:CreateFontString( nil, "ARTWORK", "NumberFontNormalSmall" );
+	Text = MinimapPing:CreateFontString( nil, "ARTWORK", "NumberFontNormalSmall" );
 };
 _Misc.Minimap = me;
 
@@ -27,11 +27,11 @@ end
 
 
 --[[****************************************************************************
-  * Function: _Misc.Minimap:MiniMapPingOnEvent                                 *
+  * Function: _Misc.Minimap:MinimapPingOnEvent                                 *
   * Description: Catches the MINIMAP_PING event and displays the name of the   *
   *   player who pinged.                                                       *
   ****************************************************************************]]
-function me:MiniMapPingOnEvent ( Event, UnitID )
+function me:MinimapPingOnEvent ( Event, UnitID )
 	if ( Event == "MINIMAP_PING" ) then
 		me.Text:SetText( UnitName( UnitID ) );
 	end
@@ -45,13 +45,11 @@ end
 -----------------------------
 
 do
-	MINIMAPPING_TIMER = 30; -- The little minimap blip will remain visible for this number of seconds
-
 	-- Generate the new ping name fontstring
-	me.Text:SetPoint( "TOPRIGHT", MiniMapPing, "CENTER", -8, -8 );
-	me.Text:SetTextColor( GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b, 0.5 ); -- 50% opacity
+	me.Text:SetPoint( "TOPRIGHT", MinimapPing, "CENTER", -8, -8 );
+	me.Text:SetTextColor( GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b, 0.75 );
 	-- Hook MINIMAP_PING
-	_Misc.HookScript( MiniMapPing, "OnEvent", me.MiniMapPingOnEvent );
+	_Misc.HookScript( MinimapPing, "OnEvent", me.MinimapPingOnEvent );
 
 
 	-- Enable scroll wheel
