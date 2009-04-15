@@ -41,7 +41,6 @@ me.DefaultSets = {
 		L.CURSORS[ "Laser" ].."|1|LOW||spells\\cthuneeyeattack|1.5|.4|32|13",
 		L.CURSORS[ "Heat" ].."|1|BACKGROUND||spells\\deathanddecay_area_base",
 		L.CURSORS[ "Smoke" ].."|1|BACKGROUND||spells\\sandvortex_state_base",
-		L.CURSORS[ "Explosion" ].."|1|LOW|Indicator|Explosion|4",
 	};
 };
 me.DefaultModelSet = L.SETS[ "Energy beam" ];
@@ -68,7 +67,6 @@ me.Presets = {
 		[ "Ring, holy" ] = "spells\\holy_precast_high_base|.8||9|-9";
 		[ "Ring, pulse blue" ] = "spells\\brillianceaura|.8||8|-8";
 		[ "Ring, frost" ] = "spells\\ice_precast_high_hand|1.9||11|-9";
-		[ "Ring, swirl" ] = "particles\\stunswirl_state_head|||9|-8";
 		[ "Ring, vengeance" ] = "spells\\vengeance_state_hand|2||9|-8";
 		[ "Simple, black" ] = "spells\\shadowmissile|2||5|-6";
 		[ "Simple, green" ] = "spells\\nature_precast_chest|||8|-8";
@@ -77,25 +75,6 @@ me.Presets = {
 		[ "Weather, sun" ] = "spells\\goblin_weather_machine_sunny|1.5|2.1|11|-9";
 		[ "Weather, snow" ] = "spells\\goblin_weather_machine_snow|1.5|2.1|11|-9";
 		[ "Weather, cloudy" ] = "spells\\goblin_weather_machine_cloudy|1.5|2.1|11|-9";
-	};
-	[ "Indicator" ] = {
-		[ "Arcane torrent" ] = "spells\\arcanetorrent|.5||7|-7";
-		[ "Blood cloud" ] = "spells\\beastwithin_state_base|.5";
-		[ "Death knight impact" ] = "spells\\warlock_shadowflame|.8||8|-8";
-		[ "Explosion" ] = "spells\\canon_impact_dust|.5|4";
-		[ "Explosion, dust" ] = "spells\\xplosion_dust_impact|.25";
-		[ "Explosion, fel" ] = "spells\\xplosion_fel_impact|.7";
-		[ "Explosion, huge comic" ] = "particles\\bloodspurts\\bloodspurtblack";
-		[ "Glow, white" ] = "spells\\druid_flourish|.5||8|-7";
-		[ "Light blue pulse" ] = "spells\\stoneform_state_base|||9|-8";
-		[ "Periodic glint" ] = "spells\\enchantments\\sparkle_a|4";
-		[ "Shockwave, orange" ] = "spells\\challengingshout_cast_base||2.4";
-		[ "Shockwave, red" ] = "spells\\lacerate_impact|1.3";
-		[ "Shockwave, yellow" ] = "spells\\cleave_impact_chest|.5|2.4";
-		[ "Short trail, holy" ] = "spells\\holy_impactdd_high_chest|.5";
-		[ "Short trail, lava" ] = "spells\\lavaelemental_impact_base";
-		[ "Short trail, plague" ] = "spells\\deathknight_ghoul_explode_simple";
-		[ "Snowball hit" ] = "spells\\snowball_impact_chest|||5|-6";
 	};
 	[ "Particle" ] = {
 		[ "Dust, arcane" ] = "spells\\arcane_form_precast|1.1|.7|9|-11";
@@ -112,6 +91,7 @@ me.Presets = {
 		[ "Frost" ] = "spells\\ice_precast_low_hand|2.5||8|-7";
 		[ "Lava burst" ] = "spells\\shaman_lavaburst_missile|.8||9|-7";
 		[ "Leaves" ] = "spells\\nature_form_precast|2.5|1|13|-11";
+		[ "Periodic glint" ] = "spells\\enchantments\\sparkle_a|4";
 		[ "Plague cloud" ] = "spells\\forsakencatapult_missile|1.5|2.3|10|-10";
 		[ "Shadow cloud" ] = "spells\\cripple_state_chest|.5||8|-8";
 		[ "Spark, small white" ] = "spells\\dispel_low_recursive|4";
@@ -390,25 +370,56 @@ end
 --[[****************************************************************************
   * Function: _Cursor:ADDON_LOADED                                             *
   ****************************************************************************]]
-function me:ADDON_LOADED ( _, AddOn )
-	if ( AddOn:lower() == "_cursor" ) then
-		me:UnregisterEvent( "ADDON_LOADED" );
-		me.ADDON_LOADED = nil;
-
-		if ( not _CursorOptions ) then
-			_CursorOptions = { Sets = CopyTable( me.DefaultSets ) };
+do
+	local function ToTable ( ... )
+		local Table = {};
+		for Index = 1, select( "#", ... ) do
+			Table[ #Table + 1 ] = tonumber( ( select( Index, ... ) ) );
 		end
-		if ( not _CursorOptionsCharacter.Cursors[ 1 ] ) then
-			me.LoadSet( me.DefaultSets[ me.DefaultModelSet ] );
-		else
-			me.Update();
-			if ( me.Options ) then
-				me.Options.Update();
+		return Table;
+	end
+	local function VersionCompare ( Version1, Version2 ) -- Compares delimited version strings
+		if ( Version1 == Version2 ) then
+			return 0;
+		end
+		Version1, Version2 = ToTable( ( "." ):split( Version1 or "" ) ), ToTable( ( "." ):split( Version2 or "" ) );
+		for Index, Sub1 in ipairs( Version1 ) do
+			local Sub2 = Version2[ Index ];
+			if ( not Sub2 or Sub1 > Sub2 ) then
+				return 1;
+			elseif ( Sub1 < Sub2 ) then
+				return -1;
 			end
 		end
+		return #Version1 - #Version2;
+	end
+	function me:ADDON_LOADED ( _, AddOn )
+		if ( AddOn:lower() == "_cursor" ) then
+			me:UnregisterEvent( "ADDON_LOADED" );
+			me.ADDON_LOADED = nil;
+	
+			if ( not _CursorOptions ) then
+				_CursorOptions = { Sets = CopyTable( me.DefaultSets ) };
+			end
 
-		_CursorOptions.Version = Version;
-		_CursorOptionsCharacter.Version = Version;
+			if ( VersionCompare( _CursorOptions.Version, Version ) < 0 ) then
+				local Name = L.SETS[ "Face Melter (Warning, bright!)" ];
+				if ( _CursorOptions.Sets[ Name ] ) then
+					_CursorOptions.Sets[ Name ] = CopyTable( me.DefaultSets[ Name ] );
+				end
+				_CursorOptions.Version = Version;
+			end
+			_CursorOptionsCharacter.Version = Version;
+
+			if ( not _CursorOptionsCharacter.Cursors[ 1 ] ) then
+				me.LoadSet( me.DefaultSets[ me.DefaultModelSet ] );
+			else
+				me.Update();
+				if ( me.Options ) then
+					me.Options.Update();
+				end
+			end
+		end
 	end
 end
 --[[****************************************************************************

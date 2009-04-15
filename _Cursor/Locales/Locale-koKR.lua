@@ -28,7 +28,6 @@ if ( GetLocale() == "koKR" ) then
 		}, Metatable ); -- All names of cursor layers
 		TYPES = setmetatable( { -- All type names
 			[ "Glow" ] = "작열";
-			[ "Indicator" ] = "지시자";
 			[ "Particle" ] = "입자";
 			[ "Trail" ] = "자국";
 			[ "Breath" ] = "숨결";
@@ -53,7 +52,6 @@ if ( GetLocale() == "koKR" ) then
 			[ "Ring, holy" ] = "고리, 신성";
 			[ "Ring, pulse blue" ] = "고리, 푸른색 맥박";
 			[ "Ring, frost" ] = "고리, 냉기";
-			[ "Ring, swirl" ] = "고리, 소용돌이";
 			[ "Ring, vengeance" ] = "고리, 복수심";
 			[ "Simple, black" ] = "단순함, 검은색";
 			[ "Simple, green" ] = "단순함, 녹색";
@@ -62,25 +60,6 @@ if ( GetLocale() == "koKR" ) then
 			[ "Weather, sun" ] = "날씨, 태양";
 			[ "Weather, snow" ] = "날씨, 눈";
 			[ "Weather, cloudy" ] = "날씨, 구름";
-
-			-- Indicator
-			[ "Arcane torrent" ] = "비전 격류";
-			[ "Blood cloud" ] = "피의 구름";
-			[ "Death knight impact" ] = "죽음의 기사 충격";
-			[ "Explosion" ] = "폭발";
-			[ "Explosion, dust" ] = "폭발, 먼지";
-			[ "Explosion, fel" ] = "폭발, 지옥";
-			[ "Explosion, huge comic" ] = "폭발, 만화처럼 거대한";
-			[ "Glow, white" ] = "작열, 흰색";
-			[ "Light blue pulse" ] = "밝은 푸른색 맥박";
-			[ "Periodic glint" ] = "주기적인 반짝임";
-			[ "Shockwave, orange" ] = "충격파, 주황색";
-			[ "Shockwave, red" ] = "충격파, 빨간색";
-			[ "Shockwave, yellow" ] = "충격파, 노란색";
-			[ "Short trail, holy" ] = "짧은 자국, 신성";
-			[ "Short trail, lava" ] = "짧은 자국, 용암";
-			[ "Short trail, plague" ] = "짧은 자국, 역병";
-			[ "Snowball hit" ] = "눈뭉치 던지기";
 
 			-- Particle
 			[ "Dust, arcane" ] = "먼지, 비전";
@@ -97,6 +76,7 @@ if ( GetLocale() == "koKR" ) then
 			[ "Frost" ] = "냉기";
 			[ "Lava burst" ] = "용암 폭발";
 			[ "Leaves" ] = "나뭇잎";
+			[ "Periodic glint" ] = "주기적인 반짝임";
 			[ "Plague cloud" ] = "역병 구름";
 			[ "Shadow cloud" ] = "암흑 구름";
 			[ "Spark, small white" ] = "불꽃, 작은 하얀색";
