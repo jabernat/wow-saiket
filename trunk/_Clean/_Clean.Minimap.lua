@@ -18,15 +18,15 @@ _Clean.Minimap = me;
   ****************************************************************************]]
 function me.MinimapSetPing ( X, Y, Sound )
 	if ( abs( X ) <= 0.5 and abs( Y ) <= 0.5 ) then
-		MiniMapPing:SetPoint( "CENTER", Minimap, "CENTER",
+		MinimapPing:SetPoint( "CENTER", Minimap, "CENTER",
 			X * Minimap:GetWidth(), Y * Minimap:GetHeight() );
-		MiniMapPing:SetAlpha( 1.0 );
-		MiniMapPing:Show();
+		MinimapPing:SetAlpha( 1.0 );
+		MinimapPing:Show();
 		if ( Sound ) then
 			PlaySound( "MapPing" );
 		end
 	else
-		MiniMapPing:Hide();
+		MinimapPing:Hide();
 	end
 end
 --[[****************************************************************************
@@ -88,14 +88,6 @@ do
 	MinimapBorder:SetTexture();
 	MinimapNorthTag:Hide();
 	MinimapNorthTag:SetTexture();
-
-
-	-- Align the ping model with its frame
-	MiniMapPing:SetWidth( 15 );
-	MiniMapPing:SetHeight( 15 );
-	local Hypotenuse = ( GetScreenWidth() ^ 2 + GetScreenHeight() ^ 2 ) ^ 0.5 * UIParent:GetEffectiveScale();
-	local Center = 0.5 * MiniMapPing:GetWidth() / Hypotenuse;
-	MiniMapPing:SetPosition( Center, Center, 0 );
 
 
 	-- Move default buttons that sit around the minimap
