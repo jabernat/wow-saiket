@@ -26,7 +26,6 @@ local EventsUsed = 0; -- Number of events registered for by addons
 
 
 local AngleMinDelta = 1e-5; -- Minimum angle change to trigger an OnChanged event
-local ArrowModel = PlayerArrowFrame;
 local PI = math.pi;
 local DegreesToRadians = PI / 180;
 local EVENT_UPDATE, EVENT_UPDATEDISTANCE = "LibCamera_Update", "LibCamera_UpdateDistance";
@@ -41,7 +40,7 @@ local EVENT_UPDATE, EVENT_UPDATEDISTANCE = "LibCamera_Update", "LibCamera_Update
 do
 	local SaveView = SaveView;
 	local IsMouselooking = IsMouselooking;
-	local UpdateWorldMapArrowFrames = UpdateWorldMapArrowFrames;
+	local GetPlayerFacing = GetPlayerFacing;
 	local GetCVar = GetCVar;
 	local SetCVar = SetCVar;
 	local tonumber = tonumber;
@@ -68,8 +67,7 @@ do
 		end
 		NewYaw = DegreesToRadians * GetCVar( "cameraYawD" ) + YawOffset;
 		if ( not ( IsCameraMoving or IsMouselooking() ) ) then -- Camera angle relative to player face
-			UpdateWorldMapArrowFrames();
-			NewYaw = NewYaw + ArrowModel:GetFacing();
+			NewYaw = NewYaw + GetPlayerFacing();
 		end
 		NewYaw = NewYaw % ( PI * 2 );
 		if ( not Yaw or abs( NewYaw - Yaw ) >= AngleMinDelta ) then
