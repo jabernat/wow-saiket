@@ -175,7 +175,9 @@ end
   * Function: _Dev.ReloadUIBinding                                             *
   * Description: Key binding to reload the UI.                                 *
   ****************************************************************************]]
-me.ReloadUIBinding = function () ReloadUI(); end; -- Allow late binding
+function me.ReloadUIBinding ()
+	ReloadUI(); -- Allow late binding
+end;
 --[[****************************************************************************
   * Function: _Dev.ToggleAddOn                                                 *
   * Description: Toggles the given addon and reloads the UI immediately.  If   *
@@ -193,6 +195,7 @@ function me.ToggleAddOn ( AddOnName )
 			ReloadUI();
 			return;
 		elseif ( IsAddOnLoadOnDemand( AddOnName ) ) then
+			EnableAddOn( AddOnName );
 			Loaded, ErrorReason = LoadAddOn( AddOnName );
 			if ( Loaded ) then
 				return;
