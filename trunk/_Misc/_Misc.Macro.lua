@@ -199,8 +199,8 @@ end
   * Description: Uses the mount with the given name depending on location.     *
   ****************************************************************************]]
 do
+	local NorthrendFlyingSpell = GetSpellInfo( 54197 ); -- Cold Weather Flying
 	local GetCompanionInfo = GetCompanionInfo;
-	local select = select;
 	function me.Mount ( NameGround, NameFlying )
 		if ( IsMounted() ) then
 			Dismount();
@@ -213,7 +213,7 @@ do
 			local Flyable;
 			SetMapToCurrentZone();
 			if ( GetCurrentMapContinent() == 4 ) then -- Northrend
-				if ( GetSpellInfo( "Cold Weather Flying" ) ) then
+				if ( GetSpellInfo( NorthrendFlyingSpell ) ) then
 					local Map = GetZoneText();
 					if ( Map == "Dalaran" and GetSubZoneText() ~= "Krasus' Landing" ) then
 						if ( GetCurrentMapDungeonLevel() == 1 ) then
@@ -233,8 +233,12 @@ do
 
 			-- Find and use mount
 			local Name = ( Flyable and NameFlying or NameGround ):trim():lower();
+			local SpellID = tonumber( Name );
 			for Index = 1, GetNumCompanions( "MOUNT" ) do
-				if ( select( 2, GetCompanionInfo( "MOUNT", Index ) ):lower() == Name ) then
+				local _, MountName, MountSpellID = GetCompanionInfo( "MOUNT", Index );
+				if ( SpellID and SpellID == MountSpellID
+					or Name == MountName:lower()
+				) then
 					CallCompanion( "MOUNT", Index );
 					return true;
 				end
@@ -247,7 +251,7 @@ end
   * Description: Slash command chat handler for _Misc.Macro.Mount.             *
   ****************************************************************************]]
 function me.MountSlashCommand ( Input )
-	me.Mount( ( ";" ):split( Input ) );
+	me.Mount( ( "," ):split( SecureCmdOptionParse( Input ) ) );
 end
 
 
