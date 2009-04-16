@@ -243,7 +243,6 @@ end
   * Description: Blocks error messages from trying to invite enemies to group. *
   ****************************************************************************]]
 function me.UIErrorsFrameOnEvent ( self, Event, Message, ... )
-	print(Event,Message,...)
 	if ( not ( me.InviteUnitLast and Event == "UI_ERROR_MESSAGE" and Message == L.ENEMY_ONLINE ) ) then
 		-- Not caused by _Corpse, okay to display error
 		return me.UIErrorsFrameOnEventBackup( self, Event, Message, ... );
