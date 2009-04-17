@@ -80,6 +80,6 @@ do
 		hooksecurefunc( "ContainerFrameItemButton_OnModifiedClick", me.ContainerFrameItemButtonOnModifiedClick );
 	
 		-- Set the default aution length to long
-		AuctionsRadioButton_OnClick( AuctionsLongAuctionButton:GetID() );
+		AuctionsRadioButton_OnClick( AuctionsLongAuctionButton );
 	end );
 end
