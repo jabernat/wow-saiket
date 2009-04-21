@@ -212,7 +212,7 @@ do
 		SpellEvents[ "DAMAGE_SPLIT" ] = true;
 		SpellEvents[ "DAMAGE_SHIELD_MISSED" ] = true;
 		for _, Prefix in ipairs( Prefixes ) do
-			if ( Prefix == "RANGE" or Prefix:match( "^SPELL_" ) ) then
+			if ( Prefix == "RANGE" or Prefix:match( "^SPELL" ) ) then
 				for _, Suffix in ipairs( Suffixes ) do
 					SpellEvents[ Prefix..Suffix ] = true;
 				end
