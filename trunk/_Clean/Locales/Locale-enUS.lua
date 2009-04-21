@@ -25,6 +25,7 @@ do
 			FORMAT = "%1$s %2$s %4$s %3$s %5$s %6$s";
 			FORMAT_ENVIRONMENTAL = "%4$s %2$s %3$s %5$s %6$s"; -- No source
 			FORMAT_MISS = "%1$s %2$s %4$s %5$s %6$s"; -- Don't duplicate miss type
+			FORMAT_ENCHANT = "%4$s %2$s %5$s %3$s %6$s"; -- Use player as source and item as destination
 			ACTIONS = {
 				HURT = "Hurt|cffcc7f7f";
 				HEAL = "Heal|cff66ff66";
