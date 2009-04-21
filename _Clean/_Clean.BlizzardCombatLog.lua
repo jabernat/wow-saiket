@@ -6,10 +6,12 @@
 
 local _Clean = _Clean;
 local L = _CleanLocalization.BLIZZARD_COMBATLOG;
-local me = {
-	MaxFieldLength = 16;
-};
+local me = {};
 _Clean.BlizzardCombatLog = me;
+
+local MaxFieldLength = 16;
+
+local SpellEvents = {};
 
 
 
@@ -27,9 +29,9 @@ end
   ****************************************************************************]]
 do
 	local max = max;
-	function me.Truncate ( MaxLength, Text )
-		if ( #Text > MaxLength ) then
-			return Text:sub( 1, max( 0, MaxLength - 1 ) )..L.TRUNCATESUFFIX;
+	function me.Truncate ( Text )
+		if ( #Text > MaxFieldLength ) then
+			return Text:sub( 1, max( 0, MaxFieldLength - 1 ) )..L.TRUNCATESUFFIX;
 		else
 			return Text;
 		end
@@ -41,16 +43,27 @@ end
   ****************************************************************************]]
 do
 	local Truncate = me.Truncate;
-	function me.FilterEvent ( Timestamp, EventType, SourceGUID, SourceName, SourceFlags, DestGUID, DestName, DestFlags, SpellID, SpellName, ... )
-		if ( SpellName and ( EventType:find( "^SPELL_" ) or EventType:find( "^RANGE_" ) ) ) then
-			SpellName = Truncate( me.MaxFieldLength, SpellName );
+	local select = select;
+	local SpellID, SpellName, ItemID, ItemName;
+	function me.FilterEvent ( Timestamp, Event, SourceGUID, SourceName, SourceFlags, DestGUID, DestName, DestFlags, ... )
+		if ( SourceName ) then
+			SourceName = Truncate( SourceName );
+		end
+		if ( DestName ) then
+			DestName = Truncate( DestName );
 		end
 
-		return Timestamp, EventType, SourceGUID,
-			SourceName and Truncate( me.MaxFieldLength, SourceName ) or nil,
-			SourceFlags, DestGUID,
-			DestName and Truncate( me.MaxFieldLength, DestName ) or nil,
-			DestFlags, SpellID, SpellName, ...;
+		if ( SpellEvents[ Event ] ) then
+			SpellID, SpellName = ...;
+			return Timestamp, Event, SourceGUID, SourceName, SourceFlags, DestGUID, DestName, DestFlags,
+				SpellID, SpellName and Truncate( SpellName ), select( 3, ... );
+		elseif ( Event == "ENCHANT_APPLIED" or Event == "ENCHANT_REMOVED" ) then
+			SpellName, ItemID, ItemName = ...;
+			return Timestamp, Event, SourceGUID, SourceName, SourceFlags, DestGUID, DestName, DestFlags,
+				SpellName, ItemID, ItemName and Truncate( ItemName ), select( 4, ... );
+		end
+
+		return Timestamp, Event, SourceGUID, SourceName, SourceFlags, DestGUID, DestName, DestFlags, ...;
 	end
 end
 --[[****************************************************************************
@@ -195,10 +208,22 @@ do
 			"_SUMMON", -- NPC
 			"_RESURRECT",
 		};
+		SpellEvents[ "DAMAGE_SHIELD" ] = true;
+		SpellEvents[ "DAMAGE_SPLIT" ] = true;
+		SpellEvents[ "DAMAGE_SHIELD_MISSED" ] = true;
+		for _, Prefix in ipairs( Prefixes ) do
+			if ( Prefix == "RANGE" or Prefix:match( "^SPELL_" ) ) then
+				for _, Suffix in ipairs( Suffixes ) do
+					SpellEvents[ Prefix..Suffix ] = true;
+				end
+			end
+		end
 
 		-- Add format overrides for events with odd parameters
 		TEXT_MODE_A_STRING_1 = L.FORMAT;
 		wipe( EVENT_TEMPLATE_FORMATS );
+		EVENT_TEMPLATE_FORMATS[ "ENCHANT_APPLIED" ] = L.FORMAT_ENCHANT;
+		EVENT_TEMPLATE_FORMATS[ "ENCHANT_REMOVED" ] = L.FORMAT_ENCHANT;
 		for _, Prefix in ipairs( Prefixes ) do
 			EVENT_TEMPLATE_FORMATS[ Prefix.."_MISSED" ] = L.FORMAT_MISS;
 		end
