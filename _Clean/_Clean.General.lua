@@ -63,6 +63,7 @@ do
 	-- Move the durability frame to the middle
 	hooksecurefunc( "UIParent_ManageFramePositions", me.UpdateDurabilityFrame );
 	me.UpdateDurabilityFrame();
+	DurabilityFrame:SetScale( 2.0 );
 
 	hooksecurefunc( "GameTooltip_SetDefaultAnchor", me.GameTooltipSetDefaultAnchor );
 
