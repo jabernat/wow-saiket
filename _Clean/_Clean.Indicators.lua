@@ -1,18 +1,18 @@
 --[[****************************************************************************
   * _Clean by Saiket                                                           *
-  * _Clean.WorldStateFrame.lua - Modifies the world PvP objective display.     *
+  * _Clean.Indicators.lua - Modifies all situational indicator widgets.        *
   ****************************************************************************]]
 
 
 local _Clean = _Clean;
 local me = {};
-_Clean.WorldStateFrame = me;
+_Clean.Indicators = me;
 
 
 
 
 --[[****************************************************************************
-  * Function: _Clean.WorldStateFrame.AlwaysUpFrameUpdate                       *
+  * Function: _Clean.Indicators.AlwaysUpFrameUpdate                            *
   * Description: Disables mouse input for objectives and positions them.       *
   ****************************************************************************]]
 do
@@ -43,6 +43,16 @@ do
 end
 
 
+--[[****************************************************************************
+  * Function: _Clean.Indicators.UpdateDurabilityFrame                          *
+  * Description: Moves the durability frame to the center of the bottom pane.  *
+  ****************************************************************************]]
+function me.UpdateDurabilityFrame ()
+	DurabilityFrame:ClearAllPoints();
+	DurabilityFrame:SetPoint( "CENTER", _Clean.BottomPane );
+end
+
+
 
 
 --------------------------------------------------------------------------------
@@ -50,14 +60,19 @@ end
 -----------------------------
 
 do
-	-- Reposition frame
+	-- Move capture/worldstate frames
 	WorldStateAlwaysUpFrame:SetAlpha( 0.5 );
 	WorldStateAlwaysUpFrame:EnableMouse( false );
 	WorldStateAlwaysUpFrame:ClearAllPoints();
 	WorldStateAlwaysUpFrame:SetPoint( "BOTTOM", _Clean.BottomPane, 0, 6 );
 	WorldStateAlwaysUpFrame:SetHeight( 1 );
 
-	-- Hooks
 	hooksecurefunc( "UIParent_ManageFramePositions", me.AlwaysUpFrameUpdate );
 	hooksecurefunc( "WorldStateAlwaysUpFrame_Update", me.AlwaysUpFrameUpdate );
+
+
+	-- Move the durability frame to the middle
+	hooksecurefunc( "UIParent_ManageFramePositions", me.UpdateDurabilityFrame );
+	me.UpdateDurabilityFrame();
+	DurabilityFrame:SetScale( 2.0 );
 end
