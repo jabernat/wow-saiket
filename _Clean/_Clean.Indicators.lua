@@ -5,14 +5,14 @@
 
 
 local _Clean = _Clean;
-local me = {};
+local me = CreateFrame( "Frame" );
 _Clean.Indicators = me;
 
 
 
 
 --[[****************************************************************************
-  * Function: _Clean.Indicators.AlwaysUpFrameUpdate                            *
+  * Function: _Clean.Indicators.WorldStateUpdate                               *
   * Description: Disables mouse input for objectives and positions them.       *
   ****************************************************************************]]
 do
@@ -27,7 +27,7 @@ do
 			return true;
 		end
 	end
-	function me.AlwaysUpFrameUpdate ()
+	function me.WorldStateUpdate ()
 		LastFrame = WorldStateAlwaysUpFrame;
 		for Index = 1, NUM_EXTENDED_UI_FRAMES do
 			if ( not AddFrame( _G[ "WorldStateCaptureBar"..Index ], 0.8 ) ) then
@@ -44,12 +44,36 @@ end
 
 
 --[[****************************************************************************
-  * Function: _Clean.Indicators.UpdateDurabilityFrame                          *
+  * Function: _Clean.Indicators.DurabilityMove                                 *
   * Description: Moves the durability frame to the center of the bottom pane.  *
   ****************************************************************************]]
-function me.UpdateDurabilityFrame ()
+function me.DurabilityMove ()
 	DurabilityFrame:ClearAllPoints();
 	DurabilityFrame:SetPoint( "CENTER", _Clean.BottomPane );
+end
+
+
+--[[****************************************************************************
+  * Function: _Clean.Indicators.VehicleMove                                    *
+  * Description: Moves the vehicle seating to the center of the bottom pane.   *
+  ****************************************************************************]]
+function me.VehicleMove ()
+	VehicleSeatIndicator:ClearAllPoints();
+	VehicleSeatIndicator:SetPoint( "CENTER", _Clean.BottomPane );
+end
+--[[****************************************************************************
+  * Function: _Clean.Indicators.VehicleUpdateSeats                             *
+  * Description: Disables unusable seat buttons.                               *
+  ****************************************************************************]]
+function me.VehicleUpdateSeats ()
+	if ( VehicleSeatIndicator.currSkin ) then -- In vehicle
+		for Index = 1, UnitVehicleSeatCount( "player" ) do
+			local Button = _G[ "VehicleSeatIndicatorButton"..Index ];
+
+			local Type, OccupantName = UnitVehicleSeatInfo( "player", Index );
+			Button:EnableMouse( OccupantName ~= UnitName( "player" ) and ( OccupantName or CanSwitchVehicleSeats() ) );
+		end
+	end
 end
 
 
@@ -67,12 +91,21 @@ do
 	WorldStateAlwaysUpFrame:SetPoint( "BOTTOM", _Clean.BottomPane, 0, 6 );
 	WorldStateAlwaysUpFrame:SetHeight( 1 );
 
-	hooksecurefunc( "UIParent_ManageFramePositions", me.AlwaysUpFrameUpdate );
-	hooksecurefunc( "WorldStateAlwaysUpFrame_Update", me.AlwaysUpFrameUpdate );
+	hooksecurefunc( "UIParent_ManageFramePositions", me.WorldStateUpdate );
+	hooksecurefunc( "WorldStateAlwaysUpFrame_Update", me.WorldStateUpdate );
 
 
 	-- Move the durability frame to the middle
-	hooksecurefunc( "UIParent_ManageFramePositions", me.UpdateDurabilityFrame );
-	me.UpdateDurabilityFrame();
+	hooksecurefunc( "UIParent_ManageFramePositions", me.DurabilityMove );
+	me.DurabilityMove();
 	DurabilityFrame:SetScale( 2.0 );
+
+
+	-- Move the vehicle seat indicator to the middle
+	hooksecurefunc( "MultiActionBar_Update", me.VehicleMove );
+	hooksecurefunc( "VehicleSeatIndicator_Update", me.VehicleUpdateSeats );
+	me.VehicleMove();
+	VehicleSeatIndicator:SetAlpha( 0.6 );
+	VehicleSeatIndicator:SetFrameStrata( DurabilityFrame:GetFrameStrata() );
+	VehicleSeatIndicator:SetFrameLevel( DurabilityFrame:GetFrameLevel() );
 end
