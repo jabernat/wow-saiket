@@ -90,6 +90,7 @@ do
 	WorldStateAlwaysUpFrame:ClearAllPoints();
 	WorldStateAlwaysUpFrame:SetPoint( "BOTTOM", _Clean.BottomPane, 0, 6 );
 	WorldStateAlwaysUpFrame:SetHeight( 1 );
+	WorldStateAlwaysUpFrame:SetFrameStrata( "BACKGROUND" );
 
 	hooksecurefunc( "UIParent_ManageFramePositions", me.WorldStateUpdate );
 	hooksecurefunc( "WorldStateAlwaysUpFrame_Update", me.WorldStateUpdate );
@@ -99,6 +100,7 @@ do
 	hooksecurefunc( "UIParent_ManageFramePositions", me.DurabilityMove );
 	me.DurabilityMove();
 	DurabilityFrame:SetScale( 2.0 );
+	DurabilityFrame:SetFrameStrata( "BACKGROUND" );
 
 
 	-- Move the vehicle seat indicator to the middle
@@ -106,6 +108,5 @@ do
 	hooksecurefunc( "VehicleSeatIndicator_Update", me.VehicleUpdateSeats );
 	me.VehicleMove();
 	VehicleSeatIndicator:SetAlpha( 0.6 );
-	VehicleSeatIndicator:SetFrameStrata( DurabilityFrame:GetFrameStrata() );
-	VehicleSeatIndicator:SetFrameLevel( DurabilityFrame:GetFrameLevel() );
+	VehicleSeatIndicator:SetFrameStrata( "BACKGROUND" );
 end
