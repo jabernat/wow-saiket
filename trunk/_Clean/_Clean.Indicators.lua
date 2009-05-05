@@ -5,7 +5,7 @@
 
 
 local _Clean = _Clean;
-local me = CreateFrame( "Frame" );
+local me = {};
 _Clean.Indicators = me;
 
 
