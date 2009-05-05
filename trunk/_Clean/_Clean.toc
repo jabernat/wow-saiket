@@ -32,6 +32,7 @@ _Clean.FCF.lua
 _Clean.General.lua
 _Clean.Indicators.lua
 _Clean.Minimap.lua
+_Clean.Watch.lua
 
 _Clean.BlizzardBattlefieldMinimap.lua
 _Clean.BlizzardCombatLog.lua
