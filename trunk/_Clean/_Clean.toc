@@ -30,8 +30,8 @@ _Clean.CastingBar.lua
 _Clean.Crosshairs.lua
 _Clean.FCF.lua
 _Clean.General.lua
+_Clean.Indicators.lua
 _Clean.Minimap.lua
-_Clean.WorldStateFrame.lua
 
 _Clean.BlizzardBattlefieldMinimap.lua
 _Clean.BlizzardCombatLog.lua

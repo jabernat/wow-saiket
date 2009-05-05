@@ -22,16 +22,6 @@ function me:GameTooltipSetDefaultAnchor ( Parent )
 end
 
 
---[[****************************************************************************
-  * Function: _Clean.General.UpdateDurabilityFrame                             *
-  * Description: Moves the durability frame to the center of the bottom pane.  *
-  ****************************************************************************]]
-function me.UpdateDurabilityFrame ()
-	DurabilityFrame:ClearAllPoints();
-	DurabilityFrame:SetPoint( "CENTER", _Clean.BottomPane );
-end
-
-
 
 
 --------------------------------------------------------------------------------
@@ -59,11 +49,6 @@ do
 	LoadMicroButtonTextures( Button, "Help" );
 	Button.tooltipText = HELP_BUTTON;
 	Button.newbieText = NEWBIE_TOOLTIP_HELP;
-
-	-- Move the durability frame to the middle
-	hooksecurefunc( "UIParent_ManageFramePositions", me.UpdateDurabilityFrame );
-	me.UpdateDurabilityFrame();
-	DurabilityFrame:SetScale( 2.0 );
 
 	hooksecurefunc( "GameTooltip_SetDefaultAnchor", me.GameTooltipSetDefaultAnchor );
 
