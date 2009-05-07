@@ -7,7 +7,7 @@
 local LibSharedMedia = LibStub( "LibSharedMedia-3.0" );
 local L = _UnitsLocalization;
 local _Units = _Units;
-local me = {};
+local me = CreateFrame( "Frame" );
 _Units.oUF = me;
 
 me.BarTexture = LibSharedMedia:Fetch( LibSharedMedia.MediaType.STATUSBAR, "_Clean" );
@@ -53,6 +53,9 @@ me.StyleMeta = {
 		ProgressHeight = 0.10;
 	};
 };
+
+me.Arena = {};
+me.ArenaTarget = {};
 
 
 
@@ -651,6 +654,49 @@ function me.StyleMeta.__call ( Style, self, UnitID )
 end
 
 
+--[[****************************************************************************
+  * Function: _Units.oUF:PLAYER_ENTERING_WORLD                                 *
+  * Description: Spawns a set of enemy unit frames when entering arenas.       *
+  ****************************************************************************]]
+function me:PLAYER_ENTERING_WORLD ()
+	if ( select( 2, IsInInstance() ) == "arena" ) then
+		local Count = GetNumArenaOpponents();
+		if ( Count <= #me.Arena ) then
+			return; -- Not creating anything new
+		end
+
+		-- Arena units
+		oUF:SetActiveStyle( "_UnitsArena" );
+		for Index = #me.Arena + 1, Count do
+			local Frame = oUF:Spawn( "arena"..Index, "_UnitsArena"..Index );
+			if ( #me.Arena == 0 ) then
+				Frame:SetPoint( "LEFT", UIParent );
+				Frame:SetPoint( "TOP", me.Pet, "BOTTOM", 0, -185 );
+			else
+				Frame:SetPoint( "TOPLEFT", me.Arena[ #me.Arena ], "BOTTOMLEFT", 0, -_Clean.Backdrop.Padding * 2 );
+			end
+			tinsert( me.Arena, Frame );
+		end
+
+		-- Arena targets
+		oUF:SetActiveStyle( "_UnitsArenaTarget" );
+		for Index = #me.ArenaTarget + 1, Count do
+			local Frame = me.Arena[ Index ];
+			local Target = oUF:Spawn( Frame.unit.."target", Frame:GetName().."Target" );
+			me.ArenaTarget[ Index ] = Target;
+			Target:SetPoint( "TOPLEFT", Frame, "TOPRIGHT", _Clean.Backdrop.Padding * 2, 0 );
+			-- Show only when target is friendly
+			UnregisterUnitWatch( Target );
+			RegisterStateDriver( Target, "visibility", "[target="..Target.unit..",help]show;hide" );
+		end
+	end
+end
+--[[****************************************************************************
+  * Function: _Units.oUF:OnEvent                                               *
+  ****************************************************************************]]
+me.OnEvent = _Units.OnEvent;
+
+
 
 
 --------------------------------------------------------------------------------
@@ -658,6 +704,9 @@ end
 -----------------------------
 
 do
+	me:SetScript( "OnEvent", me.OnEvent );
+	me:RegisterEvent( "PLAYER_ENTERING_WORLD" );
+
 	CreateFont( "_UnitsOUFFontNormal" ):SetFont( "Fonts\\ARIALN.TTF", 10, "OUTLINE" );
 	CreateFont( "_UnitsOUFFontTiny" ):SetFont( "Fonts\\ARIALN.TTF", 8, "OUTLINE" );
 	CreateFont( "_UnitsOUFFontMicro" ):SetFont( "Fonts\\ARIALN.TTF", 6 );
@@ -758,31 +807,4 @@ do
 	me.FocusTarget = oUF:Spawn( "focustarget", "_UnitsFocusTarget" );
 	me.FocusTarget:SetPoint( "LEFT", me.TargetTarget );
 	me.FocusTarget:SetPoint( "TOP", me.Pet );
-
-
-	-- Arena units
-	oUF:SetActiveStyle( "_UnitsArena" );
-	me.Arena = {};
-	for Index = 1, 5 do
-		local Frame = oUF:Spawn( "focus"--[["arena"..Index]], "_UnitsArena"..Index );
-		if ( #me.Arena == 0 ) then
-			Frame:SetPoint( "LEFT", UIParent );
-			Frame:SetPoint( "TOP", me.Pet, "BOTTOM", 0, -185 );
-		else
-			Frame:SetPoint( "TOPLEFT", me.Arena[ #me.Arena ], "BOTTOMLEFT", 0, -_Clean.Backdrop.Padding * 2 );
-		end
-		tinsert( me.Arena, Frame );
-	end
-
-	-- Arena targets
-	oUF:SetActiveStyle( "_UnitsArenaTarget" );
-	me.ArenaTarget = {};
-	for Index, Frame in ipairs( me.Arena ) do
-		local Target = oUF:Spawn( Frame.unit.."target", Frame:GetName().."Target" );
-		me.ArenaTarget[ Index ] = Target;
-		Target:SetPoint( "TOPLEFT", Frame, "TOPRIGHT", _Clean.Backdrop.Padding * 2, 0 );
-		-- Show only when target is friendly
-		UnregisterUnitWatch( Target );
-		RegisterStateDriver( Target, "visibility", "[target="..Target.unit..",help]show;hide" );
-	end
 end
