@@ -40,13 +40,17 @@ Colors.power.FUEL = Colors.power.ENERGY;
 me.StyleMeta = {
 	__index = { -- Defaults
 		PortraitSide = "RIGHT"; -- "LEFT"/"RIGHT"/false
-		HealthLength = "Small"; -- "Full"/"Small"/"Tiny"
-		PowerLength  = "Full"; -- Same as Health
+		HealthText = "Small"; -- "Full"/"Small"/"Tiny"
+		PowerText  = "Full"; -- Same as Health
 		NameFont = me.FontNormal;
 		BarValueFont = me.FontTiny;
 		CastTime = true;
+		Auras = true;
 		AuraSize = 15;
-		DebuffHighlightFilter = true;
+		DebuffHighlight = true;
+
+		PowerHeight = 0.25;
+		ProgressHeight = 0.10;
 	};
 };
 
@@ -59,7 +63,9 @@ me.StyleMeta = {
   ****************************************************************************]]
 function me:SetStatusBarColor ( R, G, B, A )
 	self.Texture:SetVertexColor( R, G, B, A );
-	self.Value:SetTextColor( R, G, B, A );
+	if ( self.Value ) then
+		self.Value:SetTextColor( R, G, B, A );
+	end
 end
 
 --[[****************************************************************************
@@ -162,10 +168,12 @@ end
   * Function: _Units.oUF:PostUpdateHealth                                      *
   ****************************************************************************]]
 do
-	local function ColorDead ( Health, Label )
-		Health.Value:SetText( L[ Label ] );
-		Health.Texture:SetVertexColor( 0.2, 0.2, 0.2 );
-		Health.Value:SetTextColor( unpack( Colors.disconnected ) );
+	local function ColorDead ( Bar, Label )
+		Bar.Texture:SetVertexColor( 0.2, 0.2, 0.2 );
+		if ( Bar.Value ) then
+			Bar.Value:SetText( L[ Label ] );
+			Bar.Value:SetTextColor( unpack( Colors.disconnected ) );
+		end
 	end
 	function me:PostUpdateHealth ( Event, UnitID, Bar, Health, HealthMax )
 		if ( UnitIsGhost( UnitID ) ) then
@@ -176,7 +184,7 @@ do
 			ColorDead( Bar, "DEAD" );
 		elseif ( not UnitIsConnected( UnitID ) ) then
 			ColorDead( Bar, "OFFLINE" );
-		else
+		elseif ( Bar.Value ) then
 			me.BarFormatValue( Bar, Health, HealthMax );
 		end
 	end
@@ -186,13 +194,18 @@ end
   * Function: _Units.oUF:PostUpdatePower                                       *
   ****************************************************************************]]
 function me:PostUpdatePower ( Event, UnitID, Bar, Power, PowerMax )
-	if ( UnitIsDeadOrGhost( UnitID ) ) then
+	local Dead = UnitIsDeadOrGhost( UnitID );
+	if ( Dead ) then
 		Bar:SetValue( 0 );
-		Bar.Value:SetText();
-	elseif ( select( 2, UnitPowerType( UnitID ) ) ~= "MANA" ) then
-		Bar.Value:SetText();
-	else
-		me.BarFormatValue( Bar, Power, PowerMax );
+	end
+	if ( Bar.Value ) then
+		if ( Dead ) then
+			Bar.Value:SetText();
+		elseif ( select( 2, UnitPowerType( UnitID ) ) ~= "MANA" ) then
+			Bar.Value:SetText();
+		else
+			me.BarFormatValue( Bar, Power, PowerMax );
+		end
 	end
 end
 
@@ -458,21 +471,23 @@ function me.StyleMeta.__call ( Style, self, UnitID )
 	self.Health = Health;
 	Health:SetPoint( "TOPLEFT", Bars );
 	Health:SetPoint( "RIGHT", Bars );
-	Health:SetHeight( Style[ "initial-height" ] * 0.65 );
+	Health:SetHeight( Style[ "initial-height" ] * ( 1 - Style.PowerHeight - Style.ProgressHeight ) );
 	Health.SetStatusBarColor = me.SetStatusBarColor;
 	me.CreateBarBackground( Health, 0.07 );
 	Health.frequentUpdates = true;
 	Health.colorDisconnected = true;
 	Health.colorTapping = true;
 	Health.colorSmooth = true;
-	Health.ValueLength = Style.HealthLength;
 
-	local HealthValue = Health:CreateFontString( nil, "OVERLAY", Style.BarValueFont );
-	Health.Value = HealthValue;
-	HealthValue:SetPoint( "TOPRIGHT", -2, 0 );
-	HealthValue:SetPoint( "BOTTOM" );
-	HealthValue:SetJustifyV( "MIDDLE" );
-	HealthValue:SetAlpha( 0.75 );
+	if ( Style.HealthText ) then
+		local HealthValue = Health:CreateFontString( nil, "OVERLAY", Style.BarValueFont );
+		Health.Value = HealthValue;
+		HealthValue:SetPoint( "TOPRIGHT", -2, 0 );
+		HealthValue:SetPoint( "BOTTOM" );
+		HealthValue:SetJustifyV( "MIDDLE" );
+		HealthValue:SetAlpha( 0.75 );
+		Health.ValueLength = Style.HealthText;
+	end
 
 	self.PostUpdateHealth = me.PostUpdateHealth;
 
@@ -482,19 +497,21 @@ function me.StyleMeta.__call ( Style, self, UnitID )
 	self.Power = Power;
 	Power:SetPoint( "TOPLEFT", Health, "BOTTOMLEFT" );
 	Power:SetPoint( "RIGHT", Bars );
-	Power:SetHeight( Style[ "initial-height" ] * 0.25 );
+	Power:SetHeight( Style[ "initial-height" ] * Style.PowerHeight );
 	Power.SetStatusBarColor = me.SetStatusBarColor;
 	me.CreateBarBackground( Power, 0.14 );
 	Power.frequentUpdates = true;
 	Power.colorPower = true;
-	Power.ValueLength = Style.PowerLength;
 
-	local PowerValue = Power:CreateFontString( nil, "OVERLAY", Style.BarValueFont );
-	Power.Value = PowerValue;
-	PowerValue:SetPoint( "TOPRIGHT", -2, 0 );
-	PowerValue:SetPoint( "BOTTOM" );
-	PowerValue:SetJustifyV( "MIDDLE" );
-	PowerValue:SetAlpha( 0.75 );
+	if ( Style.PowerText ) then
+		local PowerValue = Power:CreateFontString( nil, "OVERLAY", Style.BarValueFont );
+		Power.Value = PowerValue;
+		PowerValue:SetPoint( "TOPRIGHT", -2, 0 );
+		PowerValue:SetPoint( "BOTTOM" );
+		PowerValue:SetJustifyV( "MIDDLE" );
+		PowerValue:SetAlpha( 0.75 );
+		Power.ValueLength = Style.PowerText;
+	end
 
 	self.PostUpdatePower = me.PostUpdatePower;
 
@@ -554,7 +571,11 @@ function me.StyleMeta.__call ( Style, self, UnitID )
 	local Name = Health:CreateFontString( nil, "OVERLAY", Style.NameFont );
 	self.Name = Name;
 	Name:SetPoint( "LEFT", 2, 0 );
-	Name:SetPoint( "RIGHT", HealthValue, "LEFT" );
+	if ( Health.Value ) then
+		Name:SetPoint( "RIGHT", Health.Value, "LEFT" );
+	else
+		Name:SetPoint( "RIGHT", -2, 0 );
+	end
 	Name:SetJustifyH( "LEFT" );
 	self:Tag( Name, "[_UnitsName]" );
 
@@ -569,35 +590,37 @@ function me.StyleMeta.__call ( Style, self, UnitID )
 	self:Tag( Info, "[_UnitsClassification]" );
 
 
-	-- Buffs
-	local Buffs = CreateFrame( "Frame", nil, self );
-	self.Buffs = Buffs;
-	Buffs:SetPoint( "TOPLEFT", Backdrop, "BOTTOMLEFT" );
-	Buffs:SetPoint( "RIGHT", Backdrop );
-	Buffs:SetHeight( 1 );
-	Buffs.initialAnchor = "TOPLEFT";
-	Buffs[ "growth-y" ] = "DOWN";
-	Buffs.size = Style.AuraSize;
+	if ( Style.Auras ) then
+		-- Buffs
+		local Buffs = CreateFrame( "Frame", nil, self );
+		self.Buffs = Buffs;
+		Buffs:SetPoint( "TOPLEFT", Backdrop, "BOTTOMLEFT" );
+		Buffs:SetPoint( "RIGHT", Backdrop );
+		Buffs:SetHeight( 1 );
+		Buffs.initialAnchor = "TOPLEFT";
+		Buffs[ "growth-y" ] = "DOWN";
+		Buffs.size = Style.AuraSize;
 
-	-- Debuffs
-	local Debuffs = CreateFrame( "Frame", nil, self );
-	self.Debuffs = Debuffs;
-	Debuffs:SetPoint( "TOPLEFT", Buffs, "BOTTOMLEFT" );
-	Debuffs:SetPoint( "RIGHT", Backdrop );
-	Debuffs:SetHeight( 1 );
-	Debuffs.initialAnchor = "TOPLEFT";
-	Debuffs[ "growth-y" ] = "DOWN";
-	Debuffs.showDebuffType = true;
-	Debuffs.size = Style.AuraSize;
+		-- Debuffs
+		local Debuffs = CreateFrame( "Frame", nil, self );
+		self.Debuffs = Debuffs;
+		Debuffs:SetPoint( "TOPLEFT", Buffs, "BOTTOMLEFT" );
+		Debuffs:SetPoint( "RIGHT", Backdrop );
+		Debuffs:SetHeight( 1 );
+		Debuffs.initialAnchor = "TOPLEFT";
+		Debuffs[ "growth-y" ] = "DOWN";
+		Debuffs.showDebuffType = true;
+		Debuffs.size = Style.AuraSize;
 
-	self.PostCreateAuraIcon = me[ UnitID == "player" and "PostCreateAuraIconPlayer" or "PostCreateAuraIcon" ];
-	self.PostUpdateAura = me.PostUpdateAura;
+		self.PostCreateAuraIcon = me[ UnitID == "player" and "PostCreateAuraIconPlayer" or "PostCreateAuraIcon" ];
+		self.PostUpdateAura = me.PostUpdateAura;
+	end
 
 	-- Debuff highlight
-	if ( IsAddOnLoaded( "oUF_DebuffHighlight" ) ) then
+	if ( IsAddOnLoaded( "oUF_DebuffHighlight" ) and Style.DebuffHighlight ) then
 		self.DebuffHighlight = me.CreateDebuffHighlight( self, Backdrop );
 		self.DebuffHighlightAlpha = 1;
-		self.DebuffHighlightFilter = Style.DebuffHighlightFilter;
+		self.DebuffHighlightFilter = Style.DebuffHighlight ~= "ALL";
 	end
 
 
@@ -664,20 +687,45 @@ do
 		[ "initial-width" ] = 130;
 		[ "initial-height" ] = 50;
 		PortraitSide = false;
-		HealthLength = "Small";
-		PowerLength  = "Full";
+		HealthText = "Small";
+		PowerText  = "Full";
 		CastTime = false;
-		DebuffHighlightFilter = false; -- Show all
+		DebuffHighlight = "ALL";
 	}, me.StyleMeta ) );
 	oUF:RegisterStyle( "_UnitsSmall", setmetatable( {
 		[ "initial-width" ] = 130;
 		[ "initial-height" ] = 50;
 		PortraitSide = "LEFT";
-		HealthLength = "Tiny";
-		PowerLength  = "Small";
+		HealthText = "Tiny";
+		PowerText  = "Small";
 		NameFont = me.FontTiny;
 		CastTime = false;
 		AuraSize = 10;
+	}, me.StyleMeta ) );
+	oUF:RegisterStyle( "_UnitsArena", setmetatable( {
+		[ "initial-width" ] = 110;
+		[ "initial-height" ] = 36;
+		PortraitSide = "RIGHT";
+		HealthText = "Tiny";
+		PowerText  = "Tiny";
+		NameFont = me.FontTiny;
+		CastTime = false;
+		Auras = false;
+		DebuffHighlight = false;
+		PowerHeight = 0.2;
+		ProgressHeight = 0.2;
+	}, me.StyleMeta ) );
+	oUF:RegisterStyle( "_UnitsArenaTarget", setmetatable( {
+		[ "initial-width" ] = 80;
+		[ "initial-height" ] = 36;
+		PortraitSide = "LEFT";
+		HealthText = false;
+		PowerText  = false;
+		NameFont = me.FontTiny;
+		CastTime = false;
+		Auras = false;
+		PowerHeight = 0.2;
+		ProgressHeight = 0.2;
 	}, me.StyleMeta ) );
 
 
@@ -710,4 +758,31 @@ do
 	me.FocusTarget = oUF:Spawn( "focustarget", "_UnitsFocusTarget" );
 	me.FocusTarget:SetPoint( "LEFT", me.TargetTarget );
 	me.FocusTarget:SetPoint( "TOP", me.Pet );
+
+
+	-- Arena units
+	oUF:SetActiveStyle( "_UnitsArena" );
+	me.Arena = {};
+	for Index = 1, 5 do
+		local Frame = oUF:Spawn( "focus"--[["arena"..Index]], "_UnitsArena"..Index );
+		if ( #me.Arena == 0 ) then
+			Frame:SetPoint( "LEFT", UIParent );
+			Frame:SetPoint( "TOP", me.Pet, "BOTTOM", 0, -185 );
+		else
+			Frame:SetPoint( "TOPLEFT", me.Arena[ #me.Arena ], "BOTTOMLEFT", 0, -_Clean.Backdrop.Padding * 2 );
+		end
+		tinsert( me.Arena, Frame );
+	end
+
+	-- Arena targets
+	oUF:SetActiveStyle( "_UnitsArenaTarget" );
+	me.ArenaTarget = {};
+	for Index, Frame in ipairs( me.Arena ) do
+		local Target = oUF:Spawn( Frame.unit.."target", Frame:GetName().."Target" );
+		me.ArenaTarget[ Index ] = Target;
+		Target:SetPoint( "TOPLEFT", Frame, "TOPRIGHT", _Clean.Backdrop.Padding * 2, 0 );
+		-- Show only when target is friendly
+		UnregisterUnitWatch( Target );
+		RegisterStateDriver( Target, "visibility", "[target="..Target.unit..",help]show;hide" );
+	end
 end
