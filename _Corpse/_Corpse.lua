@@ -24,7 +24,7 @@ me.InviteUnitLast = nil; -- Saved in case invited enemy is online(ambiguous case
 me.RemoveFriendSwapLast = nil;
 me.AddFriendSwapLast = nil;
 
-me.UIErrorsFrameOnEventBackup = UIErrorsFrame_OnEvent;
+me.UIErrorsFrameOnEventBackup = UIErrorsFrame:GetScript( "OnEvent" );
 
 
 
@@ -513,7 +513,6 @@ do
 	ShowHookFrame:SetScript( "OnShow", me.ShowHookOnShow );
 	me.ShowHookUpdate();
 
-	UIErrorsFrame_OnEvent = me.UIErrorsFrameOnEvent;
-	UIErrorsFrame:SetScript( "OnEvent", UIErrorsFrame_OnEvent );
+	UIErrorsFrame:SetScript( "OnEvent", me.UIErrorsFrameOnEvent );
 	ChatFrame_AddMessageEventFilter( "CHAT_MSG_SYSTEM", me.MessageEventHandler );
 end
