@@ -1,0 +1,29 @@
+## Interface: 30100
+## Title: _|cffCCCC88NPCScan|r
+## Notes: Scans NPCs around you for rare ones.
+## Author: Saiket
+## Version: 3.1.0.1
+## X-Date: 2009-05-12
+## X-Category: Miscellaneous
+## X-License: GPLv3
+## X-Email: saiket.wow@gmail.com
+## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons/NPCScan
+## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:NPCScan
+## X-RelSite-WoWI: 12995
+## X-Localizations: enUS
+## X-CompatibleLocales: deDE, enUS, esES, esMX, frFR, ruRU
+## X-Embeds: LibTextTable-1.0
+## SavedVariables: _NPCScanOptions
+## SavedVariablesPerCharacter: _NPCScanOptionsCharacter
+## OptionalDeps: LibTextTable-1.0
+Libs\LibStub\LibStub.lua
+
+Embeds.xml
+Locales.xml
+
+_NPCScan.lua
+_NPCScan.Button.lua
+_NPCScan.TamableIDs.lua
+
+_NPCScan.Config.lua
+_NPCScan.Config.Search.lua
