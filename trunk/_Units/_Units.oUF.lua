@@ -222,6 +222,7 @@ function me:PostCreateAuraIcon ( Frame )
 	_Clean.RemoveButtonIconBorder( Frame.icon );
 	Frame.UpdateTooltip = me.AuraUpdateTooltip;
 	Frame.cd:SetReverse( true );
+	Frame:SetFrameLevel( self:GetFrameLevel() - 1 ); -- Don't allow auras to overlap other units
 end
 --[[****************************************************************************
   * Function: _Units.oUF:PostCreateAuraIconPlayer                              *
