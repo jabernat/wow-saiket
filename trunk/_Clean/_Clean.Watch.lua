@@ -16,7 +16,9 @@ _Clean.Watch = me;
   * Description: Completely disables the collapse button when "hidden".        *
   ****************************************************************************]]
 function me:CollapseButtonEnable ()
-	self:EnableMouse( self:IsEnabled() == 1 );
+	local Enable = self:IsEnabled() == 1;
+	self:EnableMouse( Enable );
+	WatchFrameTitleButton:EnableMouse( Enable );
 end
 
 
@@ -30,7 +32,7 @@ do
 		if ( IsShiftKeyDown() ) then -- Stop tracking
 			CloseDropDownMenus();
 			if ( self.type == "QUEST" ) then
-				RemoveQuestWatch( self.index );
+				RemoveQuestWatch( GetQuestIndexForWatch( self.index ) );
 				WatchFrame_Update();
 				if ( QuestLogFrame:IsVisible() ) then
 					QuestLog_Update();
