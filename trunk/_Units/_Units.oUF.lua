@@ -225,22 +225,6 @@ function me:PostCreateAuraIcon ( Frame )
 	Frame:SetFrameLevel( self:GetFrameLevel() - 1 ); -- Don't allow auras to overlap other units
 end
 --[[****************************************************************************
-  * Function: _Units.oUF:PostCreateAuraIconPlayer                              *
-  ****************************************************************************]]
-do
-	local function CancelPlayerBuff ( self, Button )
-		if ( Button == "RightButton" ) then
-			CancelUnitBuff( "player", self:GetID(), self.filter );
-		end
-	end
-	function me:PostCreateAuraIconPlayer ( Frame, _, _, IsDebuff )
-		if ( not IsDebuff ) then
-			Frame:SetScript( "OnMouseUp", CancelPlayerBuff );
-		end
-		me.PostCreateAuraIcon( self, Frame )
-	end
-end
---[[****************************************************************************
   * Function: _Units.oUF:PostUpdateAura                                        *
   * Description: Resizes the buffs frame so debuffs anchor correctly.          *
   ****************************************************************************]]
@@ -616,7 +600,7 @@ function me.StyleMeta.__call ( Style, self, UnitID )
 		Debuffs.showDebuffType = true;
 		Debuffs.size = Style.AuraSize;
 
-		self.PostCreateAuraIcon = me[ UnitID == "player" and "PostCreateAuraIconPlayer" or "PostCreateAuraIcon" ];
+		self.PostCreateAuraIcon = me.PostCreateAuraIcon;
 		self.PostUpdateAura = me.PostUpdateAura;
 	end
 
