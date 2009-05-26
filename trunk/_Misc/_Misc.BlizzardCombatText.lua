@@ -57,6 +57,17 @@ do
 		[ 20167 ] = true; -- Seal of Light
 		[ 54968 ] = true; -- Glyph of Holy Light
 		[ 15290 ] = true; -- Vampiric Embrace
+
+		[ 52041 ] = true; -- Healing Stream Totem I
+		[ 52042 ] = true; -- Healing Stream Totem (Rank unknown)
+		[ 52046 ] = true; -- Healing Stream Totem II
+		[ 52047 ] = true; -- Healing Stream Totem III
+		[ 52048 ] = true; -- Healing Stream Totem IV
+		[ 52049 ] = true; -- Healing Stream Totem V
+		[ 52050 ] = true; -- Healing Stream Totem VI
+		[ 58759 ] = true; -- Healing Stream Totem VII
+		[ 58760 ] = true; -- Healing Stream Totem VIII
+		[ 58761 ] = true; -- Healing Stream Totem IX
 	};
 	function me:COMBAT_LOG_EVENT_UNFILTERED ( Event, _, Type, _, Caster, CasterFlags, _, Target, TargetFlags, SpellID, _, _, Amount, Overhealing, Critical )
 		if ( Type:match( "_HEAL$" ) and not ( Type:match( "^ENVIRONMENTAL" ) or IgnoredSpells[ SpellID ] ) ) then
