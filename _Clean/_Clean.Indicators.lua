@@ -65,13 +65,24 @@ end
   * Function: _Clean.Indicators.VehicleUpdateSeats                             *
   * Description: Disables unusable seat buttons.                               *
   ****************************************************************************]]
-function me.VehicleUpdateSeats ()
-	if ( VehicleSeatIndicator.currSkin ) then -- In vehicle
-		for Index = 1, UnitVehicleSeatCount( "player" ) do
-			local Button = _G[ "VehicleSeatIndicatorButton"..Index ];
+do
+	local Buttons = {};
+	function me.VehicleUpdateSeats ()
+		if ( VehicleSeatIndicator.currSkin ) then -- In vehicle
+			-- Cache any new buttons
+			local Button = _G[ "VehicleSeatIndicatorButton"..( #Buttons + 1 ) ];
+			while ( Button ) do
+				tinsert( Buttons, Button );
+				Button = _G[ "VehicleSeatIndicatorButton"..( #Buttons + 1 ) ];
+			end
 
-			local Type, OccupantName = UnitVehicleSeatInfo( "player", Index );
-			Button:EnableMouse( OccupantName ~= UnitName( "player" ) and ( OccupantName or CanSwitchVehicleSeats() ) );
+			-- Only mouse-enable usefull buttons
+			for Index, Button in ipairs( Buttons ) do
+				if ( Button:IsShown() ) then
+					local Type, OccupantName = UnitVehicleSeatInfo( "player", Index );
+					Button:EnableMouse( OccupantName ~= UnitName( "player" ) and ( OccupantName or CanSwitchVehicleSeats() ) );
+				end
+			end
 		end
 	end
 end
