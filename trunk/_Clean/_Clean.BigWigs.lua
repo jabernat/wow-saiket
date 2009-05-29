@@ -10,23 +10,25 @@
 
 if ( select( 6, GetAddOnInfo( "BigWigs_Plugins" ) ) ~= "MISSING" ) then
 	_Clean.RegisterAddOnInitializer( "BigWigs_Plugins", function ()
+		BigWigs:GasModule( "Bars 2" ); -- Will error if missing
+
 		-- Reposition bar anchors to the middle of the screen
-		hooksecurefunc( BigWigs:GetModule( "Bars" ), "SetupFrames", function ( self, Emphasize )
-			local Anchor = Emphasize and BigWigsEmphasizedBarAnchor or BigWigsBarAnchor;
+		local function LockAnchor ( Anchor )
 			Anchor:RegisterForDrag();
 			Anchor:SetUserPlaced( false );
-			Anchor:ClearAllPoints();
-			if ( Emphasize ) then
-				Anchor:SetPoint( "TOP", _Clean.BottomPane );
-			else
-				Anchor:SetPoint( "BOTTOM", _Clean.BottomPane, "TOP" );
-			end
 
-			local NilFunction = _Clean.NilFunction;
-			Anchor.ClearAllPoints = NilFunction;
-			Anchor.SetPoint = NilFunction;
-			Anchor.StartMoving = NilFunction;
-		end );
+			Anchor.ClearAllPoints = _Clean.NilFunction;
+			Anchor.SetPoint = _Clean.NilFunction;
+			Anchor.StartMoving = _Clean.NilFunction;
+		end
+
+		BigWigsAnchor:ClearAllPoints();
+		BigWigsAnchor:SetPoint( "BOTTOM", _Clean.BottomPane, "TOP" );
+		LockAnchor( BigWigsAnchor );
+
+		BigWigsEmphasizeAnchor:ClearAllPoints();
+		BigWigsEmphasizeAnchor:SetPoint( "TOP", _Clean.BottomPane );
+		LockAnchor( BigWigsEmphasizeAnchor );
 	end );
 end
 if ( select( 6, GetAddOnInfo( "BigWigs_Extras" ) ) ~= "MISSING" ) then
