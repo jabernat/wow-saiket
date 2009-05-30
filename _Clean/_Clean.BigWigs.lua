@@ -10,7 +10,7 @@
 
 if ( select( 6, GetAddOnInfo( "BigWigs_Plugins" ) ) ~= "MISSING" ) then
 	_Clean.RegisterAddOnInitializer( "BigWigs_Plugins", function ()
-		BigWigs:GasModule( "Bars 2" ); -- Will error if missing
+		BigWigs:GetModule( "Bars 2" ); -- Will error if missing
 
 		-- Reposition bar anchors to the middle of the screen
 		local function LockAnchor ( Anchor )
