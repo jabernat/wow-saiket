@@ -645,7 +645,8 @@ end
   ****************************************************************************]]
 function me:PLAYER_ENTERING_WORLD ()
 	if ( select( 2, IsInInstance() ) == "arena" ) then
-		local Count = GetNumArenaOpponents();
+		local Count = 5; --GetNumArenaOpponents(); -- Returns zero on entering world
+
 		if ( Count <= #me.Arena ) then
 			return; -- Not creating anything new
 		end
