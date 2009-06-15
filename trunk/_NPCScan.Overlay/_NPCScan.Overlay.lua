@@ -31,20 +31,32 @@ do
 			( BF - CE + E ) / Det, ( CD - AF - D ) / Det,
 			( BF - CE + E - B ) / Det, ( CD - AF - D + A ) / Det );
 	end
+	local MinX, MinY, WindowX, WindowY;
 	local ABx, ABy, BCx, BCy;
 	local ScaleX, ScaleY, ShearFactor, Sin, Cos;
+	local Parent, Width, Height;
 	function me:TextureDraw ( Ax, Ay, Bx, By, Cx, Cy )
-		ABx, ABy, BCx, BCy = Ax - Bx, Ay - By, Bx - Cx, By - Cy;
+		-- Note: The texture region is made as small as possible to improve framerates.
+		local MinX, MinY = min( Ax, Bx, Cx ), min( Ay, By, Cy );
+		local WindowX = max( Ax, Bx, Cx ) - MinX;
+		local WindowY = max( Ay, By, Cy ) - MinY;
 
 		-- Translate, rotate, scale, and shear so three of the parallelogram's corners lie on the points
+		ABx, ABy, BCx, BCy = Ax - Bx, Ay - By, Bx - Cx, By - Cy;
 		ScaleX = ( BCx * BCx + BCy * BCy ) ^ 0.5;
 		ScaleY = ( ABx * BCy - BCx * ABy ) / ScaleX;
 		ShearFactor = -( ABx * BCx + ABy * BCy ) / ( ScaleX * ScaleX );
 		Sin, Cos = BCy / ScaleX, -BCx / ScaleX;
 
 		ApplyTransform( self,
-			 Cos * ScaleX, Sin * ScaleY + Cos * ScaleX * ShearFactor, Bx,
-			-Sin * ScaleX, Cos * ScaleY - Sin * ScaleX * ShearFactor, By );
+			 Cos * ScaleX / WindowX, ( Sin * ScaleY + Cos * ScaleX * ShearFactor ) / WindowX, ( Bx - MinX ) / WindowX,
+			-Sin * ScaleX / WindowY, ( Cos * ScaleY - Sin * ScaleX * ShearFactor ) / WindowY, ( By - MinY ) / WindowY );
+
+		Parent = self:GetParent();
+		Width, Height = Parent:GetWidth(), Parent:GetHeight();
+		self:SetPoint( "TOPLEFT", MinX * Width, -MinY * Height );
+		self:SetWidth( WindowX * Width );
+		self:SetHeight( WindowY * Height );
 	end
 end
 --[[****************************************************************************
@@ -61,7 +73,6 @@ function me:TextureAdd ( ID )
 		Texture = self:CreateTexture();
 		Texture:SetTexture( [[Interface\AddOns\_NPCScan.Overlay\Skin\Triangle]] );
 	end
-	Texture:SetAllPoints();
 	Texture.ID = ID;
 
 	local UsedCache = TexturesUsed[ self ];
