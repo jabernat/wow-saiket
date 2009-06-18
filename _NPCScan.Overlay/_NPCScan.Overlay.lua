@@ -5,7 +5,8 @@
 
 
 local L = _NPCScanLocalization.OVERLAY;
-local me = {};
+local _NPCScan = _NPCScan;
+local me = CreateFrame( "Frame" );
 _NPCScan.Overlay = me;
 me.Version = GetAddOnMetadata( "_NPCScan.Overlay", "Version" ):match( "^([%d.]+)" );
 
@@ -116,14 +117,14 @@ function me:PolygonRemove ( ID )
 	end
 end
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay:PolygonDraw                                     *
+  * Function: _NPCScan.Overlay:PolygonAdd                                      *
   * Description: Draws the given polygon onto a frame.                         *
   ****************************************************************************]]
 do
 	local byte = string.byte;
 	local lshift = bit.lshift;
 	local Max = 2 ^ 16 - 1;
-	function me:PolygonAdd ( ID, PolyData, R, G, B, A )
+	function me:PolygonAdd ( ID, PolyData, Layer, R, G, B, A )
 		for Index = 1, #PolyData, 12 do
 			local Ax, Ay, Bx, By, Cx, Cy =
 				( lshift( byte( PolyData, Index ), 8 ) + byte( PolyData, Index + 1 ) ) / Max,
@@ -135,9 +136,113 @@ do
 			local Texture = me.TextureAdd( self, ID );
 			me.TextureDraw( Texture, Ax, Ay, Bx, By, Cx, Cy );
 			Texture:SetVertexColor( R, G, B, A );
+			Texture:SetDrawLayer( Layer );
 		end
 	end
 end
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay:PolygonSetZone                                  *
+  * Description: Repaints a given zone's polygons on the frame.                *
+  ****************************************************************************]]
+do
+	local Colors = {
+		RED_FONT_COLOR,
+		RAID_CLASS_COLORS.PALADIN,
+		GREEN_FONT_COLOR,
+		RAID_CLASS_COLORS.MAGE,
+		RAID_CLASS_COLORS.DRUID,
+	};
+	function me:PolygonSetZone ( MapName, Layer )
+		me.PolygonRemoveAll( self );
+
+		local MapData = me.PathData[ MapName ];
+		if ( MapData ) then
+			local ColorIndex = 0;
+
+			for NPCID, Data in pairs( MapData ) do
+				ColorIndex = ColorIndex + 1;
+				local Color = Colors[ ( ColorIndex - 1 ) % #Colors + 1 ];
+				if ( type( Data ) == "table" ) then
+					for _, PolyData in ipairs( Data ) do
+						me.PolygonAdd( self, NPCID, PolyData, Layer, Color.r, Color.g, Color.b, 0.5 );
+					end
+				else
+					me.PolygonAdd( self, NPCID, Data, Layer, Color.r, Color.g, Color.b, 0.5 );
+				end
+			end
+		end
+	end
+end
+
+
+
+
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.WorldMapUpdate                                  *
+  ****************************************************************************]]
+do
+	local LastMap;
+	function me.WorldMapUpdate ()
+		local Map = GetMapInfo();
+		if ( Map ~= LastMap ) then
+			LastMap = Map;
+			me.PolygonSetZone( WorldMapDetailFrame, Map, "OVERLAY" );
+		end
+	end
+end
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.WorldMapEnable                                  *
+  ****************************************************************************]]
+function me.WorldMapEnable ()
+	hooksecurefunc( "WorldMapFrame_Update", me.WorldMapUpdate );
+end
+
+
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.BattlefieldMinimapUpdate                        *
+  ****************************************************************************]]
+do
+	local LastMap;
+	function me.BattlefieldMinimapUpdate ()
+		local Map = GetMapInfo();
+		if ( Map ~= LastMap ) then
+			LastMap = Map;
+			me.PolygonSetZone( me.BattlefieldMinimapFrame, Map, "OVERLAY" );
+		end
+	end
+end
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.BattlefieldMinimapEnable                        *
+  ****************************************************************************]]
+function me.BattlefieldMinimapEnable ()
+	hooksecurefunc( "BattlefieldMinimap_Update", me.BattlefieldMinimapUpdate );
+	me.BattlefieldMinimapFrame = CreateFrame( "Frame", nil, BattlefieldMinimap );
+	me.BattlefieldMinimapFrame:SetAllPoints();
+end
+
+
+
+
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay:ADDON_LOADED                                    *
+  ****************************************************************************]]
+function me:ADDON_LOADED ( _, AddOn )
+	AddOn = AddOn:lower();
+	if ( AddOn == "_npcscan.overlay" ) then
+		me.WorldMapEnable();
+		if ( IsAddOnLoaded( "Blizzard_BattlefieldMinimap" ) ) then
+			me.BattlefieldMinimapEnable();
+		end
+
+		LoadAddOn( "Routes" ); -- TODO(Remove)
+	elseif ( AddOn == "blizzard_battlefieldminimap" ) then
+		me.BattlefieldMinimapEnable();
+	end
+end
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay:OnEvent                                         *
+  ****************************************************************************]]
+me.OnEvent = _NPCScan.OnEvent;
 
 
 
@@ -147,12 +252,6 @@ end
 -----------------------------
 
 do
-	local LastFrame;
-	function TEST ( Frame, Count )
-		me.PolygonRemove( LastFrame, 3 );
-		LastFrame = Frame;
-		for Index = 1, Count do
-			me.PolygonAdd( Frame, 3, me.PathData[ 3 ][ 1 ], 1.0, 0.1, 0.1, 0.5 );
-		end
-	end
+	me:SetScript( "OnEvent", me.OnEvent );
+	me:RegisterEvent( "ADDON_LOADED" );
 end
