@@ -36,28 +36,43 @@ do
 	local ABx, ABy, BCx, BCy;
 	local ScaleX, ScaleY, ShearFactor, Sin, Cos;
 	local Parent, Width, Height;
+	local BorderScale, BorderOffset = 256 / 254, -1 / 256; -- Removes one-pixel transparent border
 	function me:TextureDraw ( Ax, Ay, Bx, By, Cx, Cy )
-		-- Note: The texture region is made as small as possible to improve framerates.
-		local MinX, MinY = min( Ax, Bx, Cx ), min( Ay, By, Cy );
-		local WindowX = max( Ax, Bx, Cx ) - MinX;
-		local WindowY = max( Ay, By, Cy ) - MinY;
-
-		-- Translate, rotate, scale, and shear so three of the parallelogram's corners lie on the points
+		--[[ Transform parallelogram so its corners lie on the tri's points:
+		1. Translate by BorderOffset to hide top and left transparent borders.
+		2. Scale by BorderScale to push bottom and left transparent borders out.
+		3. Scale to counter the effects of resizing the image.
+		4. Translate to negate moving the image region relative to its parent.
+		5. Rotate so point A lies on a line parallel to line BC.
+		6. Scale X by the length of line BC, and Y by the length of the perpendicular line from BC to point A.
+		7. Shear the image so its bottom left corner aligns with point A.
+		]]
 		ABx, ABy, BCx, BCy = Ax - Bx, Ay - By, Bx - Cx, By - Cy;
 		ScaleX = ( BCx * BCx + BCy * BCy ) ^ 0.5;
 		ScaleY = ( ABx * BCy - BCx * ABy ) / ScaleX;
 		ShearFactor = -( ABx * BCx + ABy * BCy ) / ( ScaleX * ScaleX );
 		Sin, Cos = BCy / ScaleX, -BCx / ScaleX;
 
-		ApplyTransform( self,
-			 Cos * ScaleX / WindowX, ( Sin * ScaleY + Cos * ScaleX * ShearFactor ) / WindowX, ( Bx - MinX ) / WindowX,
-			-Sin * ScaleX / WindowY, ( Cos * ScaleY - Sin * ScaleX * ShearFactor ) / WindowY, ( By - MinY ) / WindowY );
+		-- Note: The texture region is made as small as possible to improve framerates.
+		MinX, MinY = min( Ax, Bx, Cx ), min( Ay, By, Cy );
+		WindowX = max( Ax, Bx, Cx ) - MinX;
+		WindowY = max( Ay, By, Cy ) - MinY;
 
 		Parent = self:GetParent();
 		Width, Height = Parent:GetWidth(), Parent:GetHeight();
 		self:SetPoint( "TOPLEFT", MinX * Width, -MinY * Height );
 		self:SetWidth( WindowX * Width );
 		self:SetHeight( WindowY * Height );
+
+		WindowX = BorderScale / WindowX;
+		WindowY = BorderScale / WindowY;
+		ApplyTransform( self,
+			WindowX * Cos * ScaleX,
+			WindowX * ( Cos * ScaleX * ShearFactor + Sin * ScaleY ),
+			WindowX * ( Bx - MinX ) + BorderOffset,
+			WindowY * -Sin * ScaleX,
+			WindowY * ( Cos * ScaleY - Sin * ScaleX * ShearFactor ),
+			WindowY * ( By - MinY ) + BorderOffset );
 	end
 end
 --[[****************************************************************************
