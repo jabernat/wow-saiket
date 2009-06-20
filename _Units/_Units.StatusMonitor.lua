@@ -345,13 +345,15 @@ end
   * Description: Updates the given unit's name.                                *
   ****************************************************************************]]
 function UnitFrame.UpdateName ( UnitID )
-	local NameString = Units[ UnitID ].Name;
-	local Color = UnitIsPlayer( UnitID )
-		and ( UnitIsConnected( UnitID ) and RAID_CLASS_COLORS[ select( 2, UnitClass( UnitID ) ) ] or GRAY_FONT_COLOR )
-		or NORMAL_FONT_COLOR;
+	if ( UnitID ~= "player" ) then
+		local NameString = Units[ UnitID ].Name;
+		local Color = UnitIsPlayer( UnitID )
+			and ( UnitIsConnected( UnitID ) and RAID_CLASS_COLORS[ select( 2, UnitClass( UnitID ) ) ] or GRAY_FONT_COLOR )
+			or NORMAL_FONT_COLOR;
 
-	NameString:SetText( UnitName( UnitID ) );
-	NameString:SetTextColor( Color.r, Color.g, Color.b );
+		NameString:SetText( UnitName( UnitID ) );
+		NameString:SetTextColor( Color.r, Color.g, Color.b );
+	end
 end
 --[[****************************************************************************
   * Function: _Units.StatusMonitor.UnitFrame.UpdateHealth                      *
