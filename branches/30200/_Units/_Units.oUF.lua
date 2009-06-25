@@ -349,7 +349,7 @@ do
 		else
 			local Level = UnitLevel( UnitID );
 			if ( Plus[ UnitClassification( UnitID ) ] or Level ~= MAX_PLAYER_LEVEL or UnitLevel( "player" ) ~= MAX_PLAYER_LEVEL ) then
-				local Color = Level < 0 and QuestDifficultyColor[ "impossible" ] or GetDifficultyColor( Level );
+				local Color = Level < 0 and QuestDifficultyColors[ "impossible" ] or GetQuestDifficultyColor( Level );
 				return L.OUF_CLASSIFICATION_FORMAT:format( Color.r * 255, Color.g * 255, Color.b * 255,
 					oUF.Tags[ "[smartlevel]" ]( UnitID ) );
 			end
