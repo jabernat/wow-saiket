@@ -333,7 +333,7 @@ end
   * Function: RowObject:GetNumRegions                                          *
   ****************************************************************************]]
 do
-	local RowMethodsOriginal = getmetatable( ScriptErrorsButton ).__index; -- Generic button metatable
+	local RowMethodsOriginal = getmetatable( BasicScriptErrorsButton ).__index; -- Generic button metatable
 	function RowMethods:GetNumRegions ()
 		return RowMethodsOriginal.GetNumRegions( self ) - 1; -- Skip highlight region
 	end
