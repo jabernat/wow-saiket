@@ -512,7 +512,7 @@ function me.StyleMeta.__call ( Style, self, UnitID )
 	Progress:SetAlpha( 0.8 );
 	me.CreateBarBackground( Progress, 0.07 ):SetParent( Bars ); -- Show background while hidden
 	if ( UnitID == "player" ) then
-		if ( IsAddOnLoaded( "oUF_Experience" ) and UnitLevel( "player" ) ~= MAX_PLAYER_LEVEL ) then
+		if ( IsAddOnLoaded( "oUF_Experience" ) and UnitLevel( "player" ) ~= MAX_PLAYER_LEVEL and not IsXPUserDisabled() ) then
 			self.Experience = Progress;
 			Progress:SetStatusBarColor( unpack( Colors.experience ) );
 			Progress.PostUpdate = me.ExperiencePostUpdate;
