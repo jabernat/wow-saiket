@@ -10,6 +10,8 @@ local me = CreateFrame( "Frame" );
 _NPCScan.Overlay = me;
 me.Version = GetAddOnMetadata( "_NPCScan.Overlay", "Version" ):match( "^([%d.]+)" );
 
+me.Modules = {};
+
 local TexturesUnused = {};
 local TexturesUsed = {};
 
@@ -193,46 +195,34 @@ end
 
 
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay.WorldMapUpdate                                  *
+  * Function: _NPCScan.Overlay.ModuleRegister                                  *
+  * Description: Registers a canvas module to paint polygons on.               *
   ****************************************************************************]]
-do
-	local LastMap;
-	function me.WorldMapUpdate ()
-		local Map = GetMapInfo();
-		if ( Map ~= LastMap ) then
-			LastMap = Map;
-			me.PolygonSetZone( WorldMapDetailFrame, Map, "OVERLAY" );
-		end
+function me.ModuleRegister ( Name, Module )
+	me.Modules[ Name ] = Module;
+end
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.ModuleEnable                                    *
+  ****************************************************************************]]
+function me.ModuleEnable ( Name )
+	local Module = me.Modules[ Name ];
+	if ( Module and not Module.Enabled ) then
+		Module.Enabled = true;
+		Module:Enable();
+		Module:Update();
+		return true;
 	end
 end
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay.WorldMapEnable                                  *
+  * Function: _NPCScan.Overlay.ModuleDisable                                   *
   ****************************************************************************]]
-function me.WorldMapEnable ()
-	hooksecurefunc( "WorldMapFrame_Update", me.WorldMapUpdate );
-end
-
-
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.BattlefieldMinimapUpdate                        *
-  ****************************************************************************]]
-do
-	local LastMap;
-	function me.BattlefieldMinimapUpdate ()
-		local Map = GetMapInfo();
-		if ( Map ~= LastMap ) then
-			LastMap = Map;
-			me.PolygonSetZone( me.BattlefieldMinimapFrame, Map, "OVERLAY" );
-		end
+function me.ModuleDisable ( Name )
+	local Module = me.Modules[ Name ];
+	if ( Module and Module.Enabled ) then
+		Module.Enabled = nil;
+		Module:Disable();
+		return true;
 	end
-end
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.BattlefieldMinimapEnable                        *
-  ****************************************************************************]]
-function me.BattlefieldMinimapEnable ()
-	hooksecurefunc( "BattlefieldMinimap_Update", me.BattlefieldMinimapUpdate );
-	me.BattlefieldMinimapFrame = CreateFrame( "Frame", nil, BattlefieldMinimap );
-	me.BattlefieldMinimapFrame:SetAllPoints();
 end
 
 
@@ -241,17 +231,13 @@ end
 --[[****************************************************************************
   * Function: _NPCScan.Overlay:ADDON_LOADED                                    *
   ****************************************************************************]]
-function me:ADDON_LOADED ( _, AddOn )
-	AddOn = AddOn:lower();
-	if ( AddOn == "_npcscan.overlay" ) then
-		me.WorldMapEnable();
-		if ( IsAddOnLoaded( "Blizzard_BattlefieldMinimap" ) ) then
-			me.BattlefieldMinimapEnable();
+function me:ADDON_LOADED ( Event, AddOn )
+	if ( AddOn:lower() == "_npcscan.overlay" ) then
+		me:UnregisterEvent( Event );
+		me[ Event ] = nil;
+		for Name, Module in pairs( me.Modules ) do
+			Module:Enable();
 		end
-
-		LoadAddOn( "Routes" ); -- TODO(Remove)
-	elseif ( AddOn == "blizzard_battlefieldminimap" ) then
-		me.BattlefieldMinimapEnable();
 	end
 end
 --[[****************************************************************************

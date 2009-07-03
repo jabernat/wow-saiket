@@ -1,0 +1,75 @@
+--[[****************************************************************************
+  * _NPCScan.Overlay by Saiket                                                 *
+  * _NPCScan.Overlay.BattlefieldMinimap.lua - Canvas for the                   *
+  *   Blizzard_BattlefieldMinimap addon.                                       *
+  ****************************************************************************]]
+
+
+local Overlay = _NPCScan.Overlay;
+local me = CreateFrame( "Frame" );
+Overlay.BattlefieldMinimap = me;
+
+me.Layer = "OVERLAY";
+
+
+
+
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.BattlefieldMinimap.Setup                        *
+  ****************************************************************************]]
+function me.Setup ()
+	me.Setup = nil;
+
+	me:SetParent( BattlefieldMinimap );
+
+	-- Inherit standard map update code from WorldMap module
+	local WorldMap = Overlay.WorldMap;
+	me.Enable = WorldMap.Enable;
+	me.Disable = WorldMap.Disable;
+	me.Update = WorldMap.Update;
+	WorldMap.OnLoad( me );
+	me:Enable();
+end
+
+
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.BattlefieldMinimap:Update                       *
+  ****************************************************************************]]
+function me:Update ()
+end
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.BattlefieldMinimap:Disable                      *
+  ****************************************************************************]]
+function me:Disable ()
+	me:UnregisterEvent( "ADDON_LOADED" );
+end
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.BattlefieldMinimap:Enable                       *
+  ****************************************************************************]]
+do
+	local function ADDON_LOADED ( self, Event, AddOn )
+		if ( AddOn:lower() == "blizzard_battlefieldminimap" ) then
+			me:UnregisterEvent( "ADDON_LOADED" );
+			me.Setup();
+		end
+	end
+	function me:Enable ()
+		if ( IsAddOnLoaded( "Blizzard_BattlefieldMinimap" ) ) then
+			me.Setup();
+		else -- Register to wait until it loads
+			me:SetScript( "OnEvent", ADDON_LOADED );
+			me:RegisterEvent( "ADDON_LOADED" );
+		end
+	end
+end
+
+
+
+
+--------------------------------------------------------------------------------
+-- Function Hooks / Execution
+-----------------------------
+
+do
+	Overlay.ModuleRegister( "BattlefieldMinimap", me );
+end
