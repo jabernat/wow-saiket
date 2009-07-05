@@ -28,6 +28,11 @@ me.OptionsCharacterDefault = {
 	NPCs = { -- Keys must be lowercase and trimmed, but don't have to match the NPC name
 		[ L.NPCS[ "Gondria" ]:trim():lower() ] = 33776;
 		[ L.NPCS[ "Time-Lost Proto Drake" ]:trim():lower() ] = 32491;
+
+		[ L.NPCS[ "Dart" ]:trim():lower() ] = 14232;
+		[ L.NPCS[ "Takk the Leaper" ]:trim():lower() ] = 5842;
+		[ L.NPCS[ "Ravasaur Matriarch" ]:trim():lower() ] = 6581;
+		[ L.NPCS[ "Razormaw Matriarch" ]:trim():lower() ] = 1140;
 	};
 	Achievements = {}; -- Filled with all entries in me.Achievements
 };
