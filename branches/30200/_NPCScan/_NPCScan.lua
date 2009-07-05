@@ -122,8 +122,13 @@ function me.ScanAdd ( ID )
 		local FoundName = me.TestID( ID );
 		if ( FoundName ) then -- Already seen
 			me.CacheListAdd( FoundName );
-		else
-			me.ScanIDs[ ID ] = ( me.ScanIDs[ ID ] or 0 ) + 1; -- Increment
+		else -- Increment
+			if ( me.ScanIDs[ ID ] ) then
+				me.ScanIDs[ ID ] = me.ScanIDs[ ID ] + 1;
+			else
+				me.ScanIDs[ ID ] = 1;
+				me.Overlays.Add( ID );
+			end
 			return true;
 		end
 	end
@@ -136,7 +141,12 @@ function me.ScanRemove ( ID )
 	if ( me.Options.FindTamable or not me.TamableIDs[ ID ] ) then
 		local Count = me.ScanIDs[ ID ];
 		if ( Count ) then -- Decrement
-			me.ScanIDs[ ID ] = Count > 1 and Count - 1 or nil;
+			if ( Count > 1 ) then
+				me.ScanIDs[ ID ] = Count - 1;
+			else
+				me.ScanIDs[ ID ] = nil;
+				me.Overlays.Remove( ID );
+			end
 			return true;
 		end
 	end
@@ -146,7 +156,10 @@ end
   * Description: Stops all concurrent scans for a common NPC ID.               *
   ****************************************************************************]]
 function me.ScanRemoveAll ( ID )
-	me.ScanIDs[ ID ] = nil;
+	if ( me.ScanIDs[ ID ] ) then
+		me.ScanIDs[ ID ] = nil;
+		me.Overlays.Remove( ID );
+	end
 end
 
 
