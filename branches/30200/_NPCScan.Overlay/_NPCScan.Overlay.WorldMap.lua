@@ -63,8 +63,10 @@ end
 --[[****************************************************************************
   * Function: _NPCScan.Overlay.WorldMap:Update                                 *
   ****************************************************************************]]
-function me:Update ()
-	MapUpdate( self, true );
+function me:Update ( Map )
+	if ( not Map or Map == self.MapLast ) then
+		MapUpdate( self, true );
+	end
 end
 --[[****************************************************************************
   * Function: _NPCScan.Overlay.WorldMap:Disable                                *

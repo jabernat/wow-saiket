@@ -4,13 +4,16 @@
   ****************************************************************************]]
 
 
-local L = _NPCScanLocalization.OVERLAY;
 local _NPCScan = _NPCScan;
 local me = CreateFrame( "Frame" );
 _NPCScan.Overlay = me;
 me.Version = GetAddOnMetadata( "_NPCScan.Overlay", "Version" ):match( "^([%d.]+)" );
 
-me.Modules = {};
+me.ModulesEnabled = {};
+me.ModulesDisabled = {};
+
+me.NPCMaps = {};
+me.NPCsEnabled = {};
 
 local TexturesUnused = {};
 local TexturesUsed = {};
@@ -138,20 +141,17 @@ end
   * Description: Draws the given polygon onto a frame.                         *
   ****************************************************************************]]
 do
-	local byte = string.byte;
-	local lshift = bit.lshift;
 	local Max = 2 ^ 16 - 1;
+	local function Decode ( Ax1, Ax2, Ay1, Ay2, Bx1, Bx2, By1, By2, Cx1, Cx2, Cy1, Cy2 )
+		return
+			( Ax1 * 256 + Ax2 ) / Max, ( Ay1 * 256 + Ay2 ) / Max,
+			( Bx1 * 256 + Bx2 ) / Max, ( By1 * 256 + By2 ) / Max,
+			( Cx1 * 256 + Cx2 ) / Max, ( Cy1 * 256 + Cy2 ) / Max;
+	end
 	function me:PolygonAdd ( ID, PolyData, Layer, R, G, B, A )
 		for Index = 1, #PolyData, 12 do
-			local Ax, Ay, Bx, By, Cx, Cy =
-				( lshift( byte( PolyData, Index ), 8 ) + byte( PolyData, Index + 1 ) ) / Max,
-				( lshift( byte( PolyData, Index + 2 ), 8 ) + byte( PolyData, Index + 3 ) ) / Max,
-				( lshift( byte( PolyData, Index + 4 ), 8 ) + byte( PolyData, Index + 5 ) ) / Max,
-				( lshift( byte( PolyData, Index + 6 ), 8 ) + byte( PolyData, Index + 7 ) ) / Max,
-				( lshift( byte( PolyData, Index + 8 ), 8 ) + byte( PolyData, Index + 9 ) ) / Max,
-				( lshift( byte( PolyData, Index + 10 ), 8 ) + byte( PolyData, Index + 11 ) ) / Max;
 			local Texture = me.TextureAdd( self, ID );
-			me.TextureDraw( Texture, Ax, Ay, Bx, By, Cx, Cy );
+			me.TextureDraw( Texture, Decode( PolyData:byte( Index, Index + 11 ) ) );
 			Texture:SetVertexColor( R, G, B, A );
 			Texture:SetDrawLayer( Layer );
 		end
@@ -176,15 +176,11 @@ do
 		if ( MapData ) then
 			local ColorIndex = 0;
 
-			for NPCID, Data in pairs( MapData ) do
+			for NPCID, PolyData in pairs( MapData ) do
 				ColorIndex = ColorIndex + 1;
-				local Color = Colors[ ( ColorIndex - 1 ) % #Colors + 1 ];
-				if ( type( Data ) == "table" ) then
-					for _, PolyData in ipairs( Data ) do
-						me.PolygonAdd( self, NPCID, PolyData, Layer, Color.r, Color.g, Color.b, 0.5 );
-					end
-				else
-					me.PolygonAdd( self, NPCID, Data, Layer, Color.r, Color.g, Color.b, 0.5 );
+				if ( me.NPCsEnabled[ NPCID ] ) then
+					local Color = Colors[ ( ColorIndex - 1 ) % #Colors + 1 ];
+					me.PolygonAdd( self, NPCID, PolyData, Layer, Color.r, Color.g, Color.b, 0.5 );
 				end
 			end
 		end
@@ -199,15 +195,16 @@ end
   * Description: Registers a canvas module to paint polygons on.               *
   ****************************************************************************]]
 function me.ModuleRegister ( Name, Module )
-	me.Modules[ Name ] = Module;
+	me.ModulesDisabled[ Name ] = Module;
 end
 --[[****************************************************************************
   * Function: _NPCScan.Overlay.ModuleEnable                                    *
   ****************************************************************************]]
 function me.ModuleEnable ( Name )
-	local Module = me.Modules[ Name ];
-	if ( Module and not Module.Enabled ) then
-		Module.Enabled = true;
+	local Module = me.ModulesDisabled[ Name ];
+	if ( Module ) then
+		me.ModulesDisabled[ Name ] = nil;
+		me.ModulesEnabled[ Name ] = Module;
 		Module:Enable();
 		Module:Update();
 		return true;
@@ -217,10 +214,43 @@ end
   * Function: _NPCScan.Overlay.ModuleDisable                                   *
   ****************************************************************************]]
 function me.ModuleDisable ( Name )
-	local Module = me.Modules[ Name ];
-	if ( Module and Module.Enabled ) then
-		Module.Enabled = nil;
+	local Module = me.ModulesEnabled[ Name ];
+	if ( Module ) then
+		me.ModulesEnabled[ Name ] = nil;
+		me.ModulesDisabled[ Name ] = Module;
 		Module:Disable();
+		return true;
+	end
+end
+
+
+
+
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.NPCEnable                                       *
+  ****************************************************************************]]
+function me.NPCEnable ( ID )
+	local Map = me.NPCMaps[ ID ];
+	if ( Map and not me.NPCsEnabled[ ID ] ) then
+		me.NPCsEnabled[ ID ] = true;
+
+		for Name, Module in pairs( me.ModulesEnabled ) do
+			Module:Update( Map );
+		end
+		return true;
+	end
+end
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.NPCDisable                                      *
+  ****************************************************************************]]
+function me.NPCDisable ( ID )
+	if ( me.NPCsEnabled[ ID ] ) then
+		me.NPCsEnabled[ ID ] = nil;
+
+		local Map = me.NPCMaps[ ID ];
+		for Name, Module in pairs( me.ModulesEnabled ) do
+			Module:Update( Map );
+		end
 		return true;
 	end
 end
@@ -235,8 +265,17 @@ function me:ADDON_LOADED ( Event, AddOn )
 	if ( AddOn:lower() == "_npcscan.overlay" ) then
 		me:UnregisterEvent( Event );
 		me[ Event ] = nil;
-		for Name, Module in pairs( me.Modules ) do
-			Module:Enable();
+
+		-- Build a reverse lookup of NPC IDs to zones
+		for ZoneName, ZoneData in pairs( me.PathData ) do
+			for ID in pairs( ZoneData ) do
+				me.NPCMaps[ ID ] = ZoneName;
+			end
+		end
+
+		-- Enable all modules
+		for Name in pairs( me.ModulesDisabled ) do
+			me.ModuleEnable( Name );
 		end
 	end
 end
