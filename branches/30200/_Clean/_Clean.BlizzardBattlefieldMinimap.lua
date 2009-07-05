@@ -46,7 +46,7 @@ end
 do
 	local Disabled = false;
 	function me:SetPoint ( ... )
-		if ( not Disabled ) then -- Restore alpha
+		if ( not Disabled ) then
 			Disabled = true;
 			self:ClearAllPoints();
 			self:SetPoint( "BOTTOMRIGHT", ChatFrame2Tab, "BOTTOMLEFT", 2, 0 );
@@ -91,7 +91,7 @@ do
 
 		-- Set up the tab and close buttons
 		BattlefieldMinimap:ClearAllPoints();
-		BattlefieldMinimap:SetPoint( "BOTTOMRIGHT", ChatFrame2, "TOPRIGHT", 6, -1 );
+		BattlefieldMinimap:SetPoint( "BOTTOMRIGHT", ChatFrame2, "TOPRIGHT", 6, -2 );
 
 		local function ShrinkTabBorder ( Texture )
 			local Left, Top, _, _, Right = Texture:GetTexCoord();
