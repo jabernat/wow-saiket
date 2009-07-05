@@ -28,6 +28,12 @@ function me.Setup ()
 	me.Disable = WorldMap.Disable;
 	me.Update = WorldMap.Update;
 	WorldMap.OnLoad( me );
+
+	me:ClearAllPoints();
+	me:SetPoint( "TOPLEFT" );
+	local Tile = _G[ "BattlefieldMinimap"..NUM_WORLDMAP_DETAIL_TILES ];
+	me:SetPoint( "BOTTOMRIGHT", Tile, -22 / 256 * Tile:GetWidth(), 100 / 256 * Tile:GetHeight() );
+
 	me:Enable();
 end
 
