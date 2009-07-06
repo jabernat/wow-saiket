@@ -176,10 +176,10 @@ end
   ****************************************************************************]]
 do
 	local Colors = {
-		RED_FONT_COLOR,
-		RAID_CLASS_COLORS.PALADIN,
+		RAID_CLASS_COLORS.SHAMAN,
+		RAID_CLASS_COLORS.DEATHKNIGHT,
 		GREEN_FONT_COLOR,
-		RAID_CLASS_COLORS.MAGE,
+		RAID_CLASS_COLORS.PALADIN,
 		RAID_CLASS_COLORS.DRUID,
 	};
 	function me:PolygonSetZone ( MapName, Layer )
@@ -193,7 +193,7 @@ do
 				ColorIndex = ColorIndex + 1;
 				if ( me.NPCsEnabled[ NPCID ] ) then
 					local Color = Colors[ ( ColorIndex - 1 ) % #Colors + 1 ];
-					me.PolygonAdd( self, NPCID, PolyData, Layer, Color.r, Color.g, Color.b, 0.5 );
+					me.PolygonAdd( self, NPCID, PolyData, Layer, Color.r, Color.g, Color.b, 0.55 );
 				end
 			end
 		end
