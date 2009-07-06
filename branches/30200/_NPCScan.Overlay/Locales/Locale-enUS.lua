@@ -11,5 +11,7 @@ do
 
 		MODULE_BATTLEFIELDMINIMAP = "Battlefield-Minimap Popout";
 		MODULE_WORLDMAP = "Main World Map Frame";
+		MODULE_WORLDMAP_KEY = "_|cffCCCC88NPCScan|r.Overlay";
+		MODULE_WORLDMAP_KEY_FORMAT = "\226\151\143 %s";
 	}, getmetatable( _NPCScanLocalization ) );
 end

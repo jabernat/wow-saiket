@@ -10,7 +10,6 @@ local me = CreateFrame( "Frame" );
 Overlay.BattlefieldMinimap = me;
 
 me.Label = _NPCScanLocalization.OVERLAY.MODULE_BATTLEFIELDMINIMAP;
-me.Layer = "OVERLAY";
 
 
 
@@ -36,6 +35,19 @@ function me.Setup ()
 	me:SetPoint( "BOTTOMRIGHT", Tile, -22 / 256 * Tile:GetWidth(), 100 / 256 * Tile:GetHeight() );
 
 	me:Enable();
+end
+
+
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.BattlefieldMinimap:Repaint                      *
+  ****************************************************************************]]
+do
+	local function PaintPath ( ID, PolyData, R, G, B )
+		Overlay.PolygonAdd( me, ID, PolyData, "OVERLAY", R, G, B, 1 );
+	end
+	function me:Repaint ( Map )
+		Overlay.ApplyZone( Map, PaintPath );
+	end
 end
 
 

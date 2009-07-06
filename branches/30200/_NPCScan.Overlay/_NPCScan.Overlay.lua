@@ -28,6 +28,14 @@ me.Modules = {};
 me.NPCMaps = {};
 me.NPCsEnabled = {};
 
+me.Colors = {
+	RAID_CLASS_COLORS.SHAMAN,
+	RAID_CLASS_COLORS.DEATHKNIGHT,
+	GREEN_FONT_COLOR,
+	RAID_CLASS_COLORS.DRUID,
+	RAID_CLASS_COLORS.PALADIN,
+};
+
 local TexturesUnused = {};
 local TexturesUsed = {};
 
@@ -170,31 +178,23 @@ do
 		end
 	end
 end
+
+
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay:PolygonSetZone                                  *
-  * Description: Repaints a given zone's polygons on the frame.                *
+  * Function: _NPCScan.Overlay:ApplyZone                                       *
+  * Description: Passes the ID, PolyData, and color of all NPCs in a zone to   *
+  *   a callback function.                                                     *
   ****************************************************************************]]
-do
-	local Colors = {
-		RAID_CLASS_COLORS.SHAMAN,
-		RAID_CLASS_COLORS.DEATHKNIGHT,
-		GREEN_FONT_COLOR,
-		RAID_CLASS_COLORS.PALADIN,
-		RAID_CLASS_COLORS.DRUID,
-	};
-	function me:PolygonSetZone ( MapName, Layer )
-		me.PolygonRemoveAll( self );
+function me.ApplyZone ( MapName, Callback )
+	local MapData = me.PathData[ MapName ];
+	if ( MapData ) then
+		local ColorIndex = 0;
 
-		local MapData = me.PathData[ MapName ];
-		if ( MapData ) then
-			local ColorIndex = 0;
-
-			for NPCID, PolyData in pairs( MapData ) do
-				ColorIndex = ColorIndex + 1;
-				if ( me.NPCsEnabled[ NPCID ] ) then
-					local Color = Colors[ ( ColorIndex - 1 ) % #Colors + 1 ];
-					me.PolygonAdd( self, NPCID, PolyData, Layer, Color.r, Color.g, Color.b, 0.55 );
-				end
+		for NPCID, PolyData in pairs( MapData ) do
+			ColorIndex = ColorIndex + 1;
+			if ( me.NPCsEnabled[ NPCID ] ) then
+				local Color = me.Colors[ ( ColorIndex - 1 ) % #me.Colors + 1 ];
+				Callback( NPCID, PolyData, Color.r, Color.g, Color.b );
 			end
 		end
 	end
