@@ -9,8 +9,21 @@ local me = CreateFrame( "Frame" );
 _NPCScan.Overlay = me;
 me.Version = GetAddOnMetadata( "_NPCScan.Overlay", "Version" ):match( "^([%d.]+)" );
 
-me.ModulesEnabled = {};
-me.ModulesDisabled = {};
+me.Options = {
+	Version = me.Version;
+	Modules = {};
+};
+
+me.OptionsDefault = {
+	Version = me.Version;
+	Modules = {
+		[ "WorldMap" ] = true;
+		[ "BattlefieldMinimap" ] = true;
+	};
+};
+
+
+me.Modules = {};
 
 me.NPCMaps = {};
 me.NPCsEnabled = {};
@@ -195,16 +208,18 @@ end
   * Description: Registers a canvas module to paint polygons on.               *
   ****************************************************************************]]
 function me.ModuleRegister ( Name, Module )
-	me.ModulesDisabled[ Name ] = Module;
+	me.Modules[ Name ] = Module;
+	me.Config.ModuleRegister( Name, Module.Label );
 end
 --[[****************************************************************************
   * Function: _NPCScan.Overlay.ModuleEnable                                    *
   ****************************************************************************]]
 function me.ModuleEnable ( Name )
-	local Module = me.ModulesDisabled[ Name ];
-	if ( Module ) then
-		me.ModulesDisabled[ Name ] = nil;
-		me.ModulesEnabled[ Name ] = Module;
+	if ( not me.Options.Modules[ Name ] ) then
+		me.Options.Modules[ Name ] = true;
+		me.Config.Modules[ Name ]:SetChecked( true );
+
+		local Module = me.Modules[ Name ];
 		Module:Enable();
 		Module:Update();
 		return true;
@@ -214,11 +229,11 @@ end
   * Function: _NPCScan.Overlay.ModuleDisable                                   *
   ****************************************************************************]]
 function me.ModuleDisable ( Name )
-	local Module = me.ModulesEnabled[ Name ];
-	if ( Module ) then
-		me.ModulesEnabled[ Name ] = nil;
-		me.ModulesDisabled[ Name ] = Module;
-		Module:Disable();
+	if ( me.Options.Modules[ Name ] ) then
+		me.Options.Modules[ Name ] = nil;
+		me.Config.Modules[ Name ]:SetChecked( false );
+
+		me.Modules[ Name ]:Disable();
 		return true;
 	end
 end
@@ -234,8 +249,8 @@ function me.NPCEnable ( ID )
 	if ( Map and not me.NPCsEnabled[ ID ] ) then
 		me.NPCsEnabled[ ID ] = true;
 
-		for Name, Module in pairs( me.ModulesEnabled ) do
-			Module:Update( Map );
+		for Name in pairs( me.Options.Modules ) do
+			me.Modules[ Name ]:Update( Map );
 		end
 		return true;
 	end
@@ -248,14 +263,35 @@ function me.NPCDisable ( ID )
 		me.NPCsEnabled[ ID ] = nil;
 
 		local Map = me.NPCMaps[ ID ];
-		for Name, Module in pairs( me.ModulesEnabled ) do
-			Module:Update( Map );
+		for Name in pairs( me.Options.Modules ) do
+			me.Modules[ Name ]:Update( Map );
 		end
 		return true;
 	end
 end
 
 
+
+
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.Synchronize                                     *
+  * Description: Reloads enabled modules from saved settings.                  *
+  ****************************************************************************]]
+function me.Synchronize ( Options )
+	-- Load defaults if settings omitted
+	if ( not Options ) then
+		Options = me.OptionsDefault;
+	end
+
+	for Name in pairs( me.Options.Modules ) do
+		me.ModuleDisable( Name );
+	end
+	for Name in pairs( me.Modules ) do
+		if ( Options.Modules[ Name ] ) then
+			me.ModuleEnable( Name );
+		end
+	end
+end
 
 
 --[[****************************************************************************
@@ -273,10 +309,10 @@ function me:ADDON_LOADED ( Event, AddOn )
 			end
 		end
 
-		-- Enable all modules
-		for Name in pairs( me.ModulesDisabled ) do
-			me.ModuleEnable( Name );
-		end
+		local Options = _NPCScanOverlayOptions;
+		_NPCScanOverlayOptions = me.Options;
+
+		me.Synchronize( Options ); -- Loads defaults if nil
 	end
 end
 --[[****************************************************************************

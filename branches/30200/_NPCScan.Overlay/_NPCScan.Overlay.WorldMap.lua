@@ -8,6 +8,7 @@ local Overlay = _NPCScan.Overlay;
 local me = CreateFrame( "Frame", nil, WorldMapDetailFrame );
 Overlay.WorldMap = me;
 
+me.Label = _NPCScanLocalization.OVERLAY.MODULE_WORLDMAP;
 me.Layer = "OVERLAY";
 
 
