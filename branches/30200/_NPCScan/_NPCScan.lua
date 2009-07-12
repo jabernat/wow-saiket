@@ -415,7 +415,9 @@ do
 				Name = me.TestID( ID );
 				if ( Name ) then
 					me.Alert( L[ me.TamableIDs[ ID ] and "FOUND_TAMABLE_FORMAT" or "FOUND_FORMAT" ]:format( Name ), GREEN_FONT_COLOR );
-					me.Button.SetNPC( Name, ID );
+					if ( not ( me.TamableIDs[ ID ] and IsResting() ) ) then
+						me.Button.SetNPC( Name, ID );
+					end
 					me.ScanRemoveAll( ID );
 					me.Config.Search.UpdateTab();
 				end
