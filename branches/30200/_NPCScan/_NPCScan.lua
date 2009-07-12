@@ -65,16 +65,6 @@ function me.Message ( Message, Color )
 	end
 	DEFAULT_CHAT_FRAME:AddMessage( L.MESSAGE_FORMAT:format( Message ), Color.r, Color.g, Color.b );
 end
---[[****************************************************************************
-  * Function: _NPCScan.Alert                                                   *
-  * Description: Dramatically prints a message and play a sound.               *
-  ****************************************************************************]]
-function me.Alert ( Message, Color )
-	me.Message( Message, Color );
-	PlaySoundFile( "sound\\event sounds\\event_wardrum_ogre.wav" );
-	PlaySoundFile( "sound\\events\\scourge_horn.wav" );
-	UIFrameFlash( LowHealthFrame, 0.5, 0.5, 6, false, 0.5 );
-end
 
 
 --[[****************************************************************************
@@ -414,7 +404,7 @@ do
 			for ID in pairs( me.ScanIDs ) do
 				Name = me.TestID( ID );
 				if ( Name ) then
-					me.Alert( L[ me.TamableIDs[ ID ] and "FOUND_TAMABLE_FORMAT" or "FOUND_FORMAT" ]:format( Name ), GREEN_FONT_COLOR );
+					me.Message( L[ me.TamableIDs[ ID ] and "FOUND_TAMABLE_FORMAT" or "FOUND_FORMAT" ]:format( Name ), GREEN_FONT_COLOR );
 					if ( not ( me.TamableIDs[ ID ] and IsResting() ) ) then
 						me.Button.SetNPC( Name, ID );
 					end

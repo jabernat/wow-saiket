@@ -43,7 +43,17 @@ me.ModelCameras = {
   * Description: Sets the button to a given NPC and shows it.                  *
   ****************************************************************************]]
 function me.SetNPC ( Name, ID )
+	if ( tonumber( ID ) ) then
+		_NPCScan.Overlays.Add( ID );
+	end
+
+	PlaySoundFile( "sound\\event sounds\\event_wardrum_ogre.wav" );
+	PlaySoundFile( "sound\\events\\scourge_horn.wav" );
+	UIFrameFlash( LowHealthFrame, 0.5, 0.5, 6, false, 0.5 );
 	if ( InCombatLockdown() ) then
+		if ( tonumber( me.PendingID ) ) then -- Remove old pending NPC
+			_NPCScan.Overlays.Remove( me.PendingID );
+		end
 		me.PendingName = Name;
 		me.PendingID = ID;
 	else
@@ -65,6 +75,11 @@ end
   * Description: Updates the button based on its Name and ID fields.           *
   ****************************************************************************]]
 function me.Update ( Name, ID )
+	if ( tonumber( me.ID ) ) then -- Remove last overlay
+		_NPCScan.Overlays.Remove( me.ID );
+	end
+	me.ID = ID;
+
 	me:Show(); -- Note: Must be visible before model scale calls will work
 	me:SetText( Name );
 	Model.Reset();
@@ -104,15 +119,22 @@ end
 
 
 --[[****************************************************************************
+  * Function: _NPCScan.Button:OnHide                                           *
+  ****************************************************************************]]
+function me:OnHide ()
+	if ( tonumber( me.ID ) ) then -- Remove current overlay
+		_NPCScan.Overlays.Remove( me.ID );
+	end
+	me.ID = nil;
+end
+--[[****************************************************************************
   * Function: _NPCScan.Button:OnEnter                                          *
-  * Description: Highlights the button.                                        *
   ****************************************************************************]]
 function me:OnEnter ()
 	me:SetBackdropBorderColor( 1, 1, 0.15 ); -- Yellow
 end
 --[[****************************************************************************
   * Function: _NPCScan.Button:OnLeave                                          *
-  * Description: Removes highlighting.                                         *
   ****************************************************************************]]
 function me:OnLeave ()
 	me:SetBackdropBorderColor( 0.7, 0.15, 0.05 ); -- Brown
@@ -268,6 +290,7 @@ do
 	me:SetScript( "OnEnter", me.OnEnter );
 	me:SetScript( "OnLeave", me.OnLeave );
 	me:SetScript( "OnEvent", me.OnEvent );
+	me:HookScript( "OnHide", me.OnHide );
 	me:RegisterEvent( "PLAYER_REGEN_ENABLED" );
 	me:RegisterEvent( "MODIFIER_STATE_CHANGED" );
 end
