@@ -71,7 +71,9 @@ function me.SetNPC ( Name, ID )
 	if ( SoundInBGChanged ) then
 		SetCVar( "Sound_EnableSoundWhenGameIsInBG", 0 );
 	end
-	UIFrameFlash( LowHealthFrame, 0.5, 0.5, 6, false, 0.5 );
+	if ( GetCVarBool( "screenEdgeFlash" ) ) then
+		UIFrameFlash( LowHealthFrame, 0.5, 0.5, 6, false, 0.5 );
+	end
 
 	if ( InCombatLockdown() ) then
 		if ( tonumber( me.PendingID ) ) then -- Remove old pending NPC
