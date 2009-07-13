@@ -47,12 +47,25 @@ function me.SetNPC ( Name, ID )
 		_NPCScan.Overlays.Add( ID );
 	end
 
+	local SoundEnableChanged, SoundInBGChanged;
 	if ( true or _NPCScanOptions.AlertSoundEnable ) then
-		me.SoundEnableChanged = me.CheckBoxSetValue( AudioOptionsSoundPanelEnableSound, true ) or me.SoundEnableChanged;
-		me.SoundInBGChanged = me.CheckBoxSetValue( AudioOptionsSoundPanelSoundInBG, true ) or me.SoundInBGChanged;
+		if ( not GetCVarBool( "Sound_EnableAllSound" ) ) then
+			SoundEnableChanged = true;
+			SetCVar( "Sound_EnableAllSound", 1 );
+		end
+		if ( not GetCVarBool( "Sound_EnableSoundWhenGameIsInBG" ) ) then
+			SoundInBGChanged = true;
+			SetCVar( "Sound_EnableSoundWhenGameIsInBG", 1 );
+		end
 	end
 	PlaySoundFile( "sound\\event sounds\\event_wardrum_ogre.wav" );
 	PlaySoundFile( "sound\\events\\scourge_horn.wav" );
+	if ( SoundEnableChanged ) then
+		SetCVar( "Sound_EnableAllSound", 0 );
+	end
+	if ( SoundInBGChanged ) then
+		SetCVar( "Sound_EnableSoundWhenGameIsInBG", 0 );
+	end
 	UIFrameFlash( LowHealthFrame, 0.5, 0.5, 6, false, 0.5 );
 
 	if ( InCombatLockdown() ) then
@@ -124,22 +137,6 @@ end
 
 
 --[[****************************************************************************
-  * Function: _NPCScan.Button.CheckBoxSetValue                                 *
-  ****************************************************************************]]
-function me:CheckBoxSetValue ( Enable )
-	if ( self:GetValue() == "1" ) then
-		if ( not Enable ) then
-			self:Click();
-			return true;
-		end
-	elseif ( Enable ) then
-		self:Click();
-		return true;
-	end
-end
-
-
---[[****************************************************************************
   * Function: _NPCScan.Button:OnHide                                           *
   ****************************************************************************]]
 function me:OnHide ()
@@ -147,8 +144,6 @@ function me:OnHide ()
 		_NPCScan.Overlays.Remove( me.ID );
 	end
 	me.ID = nil;
-
-	me:PLAYER_LOGOUT(); -- Undo sound options changes
 end
 --[[****************************************************************************
   * Function: _NPCScan.Button:OnEnter                                          *
@@ -163,19 +158,6 @@ function me:OnLeave ()
 	me:SetBackdropBorderColor( 0.7, 0.15, 0.05 ); -- Brown
 end
 
---[[****************************************************************************
-  * Function: _NPCScan.Button:PLAYER_LOGOUT                                    *
-  ****************************************************************************]]
-function me:PLAYER_LOGOUT ()
-	if ( me.SoundEnableChanged ) then
-		me.SoundEnableChanged = nil;
-		me.CheckBoxSetValue( AudioOptionsSoundPanelEnableSound, false );
-	end
-	if ( me.SoundInBGChanged ) then
-		me.SoundInBGChanged = nil;
-		me.CheckBoxSetValue( AudioOptionsSoundPanelSoundInBG, false );
-	end
-end
 --[[****************************************************************************
   * Function: _NPCScan.Button:PLAYER_REGEN_ENABLED                             *
   ****************************************************************************]]
@@ -329,5 +311,4 @@ do
 	me:HookScript( "OnHide", me.OnHide );
 	me:RegisterEvent( "PLAYER_REGEN_ENABLED" );
 	me:RegisterEvent( "MODIFIER_STATE_CHANGED" );
-	me:RegisterEvent( "PLAYER_LOGOUT" );
 end
