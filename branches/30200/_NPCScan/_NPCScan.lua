@@ -45,7 +45,7 @@ me.Achievements = { -- Criteria data for each achievement
 };
 me.CriteriaUpdateRequested = nil;
 
-me.IDMax = 0xFFFFFF; -- Largest ID that will fit in a GUID's 2-byte NPC ID field
+me.IDMax = 0xFFFFFF; -- Largest ID that will fit in a GUID's 24-bit NPC ID field
 me.UpdateRate = 0.1;
 
 local Tooltip = CreateFrame( "GameTooltip", "_NPCScanTooltip", me );
