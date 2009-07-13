@@ -472,10 +472,11 @@ function me:PLAYER_ENTERING_WORLD ()
 	end
 
 	-- Do not scan while in instances
-	if ( IsInInstance() ) then
-		self:Hide();
-	else
+	local InInstance, InstanceType = IsInInstance();
+	if ( not InInstance or InstanceType == "party" ) then
 		self:Show();
+	else
+		self:Hide();
 	end
 end
 --[[****************************************************************************
