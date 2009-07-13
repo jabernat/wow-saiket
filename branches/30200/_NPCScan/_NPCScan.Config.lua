@@ -6,6 +6,7 @@
 
 local _NPCScan = _NPCScan;
 local L = _NPCScanLocalization;
+local LSM = LibStub( "LibSharedMedia-3.0" );
 local me = CreateFrame( "Frame" );
 _NPCScan.Config = me;
 

@@ -6,6 +6,7 @@
 
 local _NPCScan = _NPCScan;
 local L = _NPCScanLocalization;
+local LSM = LibStub( "LibSharedMedia-3.0" );
 local me = CreateFrame( "Button", "_NPCScanButton", nil, "SecureActionButtonTemplate,SecureHandlerShowHideTemplate" );
 _NPCScan.Button = me;
 
@@ -48,7 +49,7 @@ function me.SetNPC ( Name, ID )
 	end
 
 	local SoundEnableChanged, SoundInBGChanged;
-	if ( true or _NPCScanOptions.AlertSoundEnable ) then
+	if ( _NPCScanOptions.AlertSoundUnmute ) then
 		if ( not GetCVarBool( "Sound_EnableAllSound" ) ) then
 			SoundEnableChanged = true;
 			SetCVar( "Sound_EnableAllSound", 1 );
@@ -58,8 +59,12 @@ function me.SetNPC ( Name, ID )
 			SetCVar( "Sound_EnableSoundWhenGameIsInBG", 1 );
 		end
 	end
-	PlaySoundFile( "sound\\event sounds\\event_wardrum_ogre.wav" );
-	PlaySoundFile( "sound\\events\\scourge_horn.wav" );
+	if ( _NPCScanOptions.AlertSound == nil ) then -- Default
+		PlaySoundFile( "sound\\event sounds\\event_wardrum_ogre.wav" );
+		PlaySoundFile( "sound\\events\\scourge_horn.wav" );
+	else
+		PlaySoundFile( LSM:Fetch( LSM.MediaType.SOUND, _NPCScanOptions.AlertSound ) );
+	end
 	if ( SoundEnableChanged ) then
 		SetCVar( "Sound_EnableAllSound", 0 );
 	end
