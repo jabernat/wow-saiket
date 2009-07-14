@@ -48,29 +48,7 @@ function me.SetNPC ( Name, ID )
 		_NPCScan.Overlays.Add( ID );
 	end
 
-	local SoundEnableChanged, SoundInBGChanged;
-	if ( _NPCScanOptions.AlertSoundUnmute ) then
-		if ( not GetCVarBool( "Sound_EnableAllSound" ) ) then
-			SoundEnableChanged = true;
-			SetCVar( "Sound_EnableAllSound", 1 );
-		end
-		if ( not GetCVarBool( "Sound_EnableSoundWhenGameIsInBG" ) ) then
-			SoundInBGChanged = true;
-			SetCVar( "Sound_EnableSoundWhenGameIsInBG", 1 );
-		end
-	end
-	if ( _NPCScanOptions.AlertSound == nil ) then -- Default
-		PlaySoundFile( "sound\\event sounds\\event_wardrum_ogre.wav" );
-		PlaySoundFile( "sound\\events\\scourge_horn.wav" );
-	else
-		PlaySoundFile( LSM:Fetch( LSM.MediaType.SOUND, _NPCScanOptions.AlertSound ) );
-	end
-	if ( SoundEnableChanged ) then
-		SetCVar( "Sound_EnableAllSound", 0 );
-	end
-	if ( SoundInBGChanged ) then
-		SetCVar( "Sound_EnableSoundWhenGameIsInBG", 0 );
-	end
+	me.PlaySound( _NPCScan.Options.AlertSound );
 	if ( GetCVarBool( "screenEdgeFlash" ) ) then
 		UIFrameFlash( LowHealthFrame, 0.5, 0.5, 6, false, 0.5 );
 	end
@@ -83,6 +61,34 @@ function me.SetNPC ( Name, ID )
 		me.PendingID = ID;
 	else
 		me.Update( Name, ID );
+	end
+end
+--[[****************************************************************************
+  * Function: _NPCScan.Button.PlaySound                                        *
+  ****************************************************************************]]
+function me.PlaySound ( AlertSound )
+	local SoundEnableChanged, SoundInBGChanged;
+	if ( _NPCScan.Options.AlertSoundUnmute ) then
+		if ( not GetCVarBool( "Sound_EnableAllSound" ) ) then
+			SoundEnableChanged = true;
+			SetCVar( "Sound_EnableAllSound", 1 );
+		end
+		if ( not GetCVarBool( "Sound_EnableSoundWhenGameIsInBG" ) ) then
+			SoundInBGChanged = true;
+			SetCVar( "Sound_EnableSoundWhenGameIsInBG", 1 );
+		end
+	end
+	if ( AlertSound == nil ) then -- Default
+		PlaySoundFile( [[sound\event sounds\event_wardrum_ogre.wav]] );
+		PlaySoundFile( [[sound\events\scourge_horn.wav]] );
+	else
+		PlaySoundFile( LSM:Fetch( LSM.MediaType.SOUND, AlertSound ) );
+	end
+	if ( SoundEnableChanged ) then
+		SetCVar( "Sound_EnableAllSound", 0 );
+	end
+	if ( SoundInBGChanged ) then
+		SetCVar( "Sound_EnableSoundWhenGameIsInBG", 0 );
 	end
 end
 --[[****************************************************************************

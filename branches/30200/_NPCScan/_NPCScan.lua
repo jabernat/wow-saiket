@@ -20,8 +20,10 @@ me.OptionsCharacter = {
 me.OptionsDefault = {
 	Version = me.Version;
 	CacheWarnings = true;
-	FindTamable = false;
-	AchievementsAddFound = false;
+	FindTamable = nil;
+	AchievementsAddFound = nil;
+	AlertSoundUnmute = nil;
+	AlertSound = nil; -- Default sound
 };
 me.OptionsCharacterDefault = {
 	Version = me.Version;
@@ -273,10 +275,10 @@ end
   * Description: Enables printing cache lists on login.                        *
   ****************************************************************************]]
 function me.SetCacheWarnings ( Enable )
-	if ( Enable ~= me.Options.CacheWarnings ) then
-		me.Options.CacheWarnings = Enable;
+	if ( not Enable ~= not me.Options.CacheWarnings ) then
+		me.Options.CacheWarnings = Enable or nil;
 
-		me.Config.CacheWarningsCheckbox:SetChecked( Enable );
+		me.Config.CacheWarnings:SetChecked( Enable );
 		return true;
 	end
 end
@@ -288,7 +290,7 @@ do
 	local NPCsTemp = {};
 	local AchievementsTemp = {};
 	function me.SetFindTamable ( Enable )
-		if ( Enable ~= me.Options.FindTamable ) then
+		if ( not Enable ~= not me.Options.FindTamable ) then
 			-- Remove all pet scans
 			for Name, ID in pairs( me.OptionsCharacter.NPCs ) do
 				if ( me.TamableIDs[ ID ] ) then
@@ -301,7 +303,7 @@ do
 				me.AchievementRemove( AchievementID );
 			end
 
-			me.Options.FindTamable = Enable;
+			me.Options.FindTamable = Enable or nil;
 			me.Config.Search.FindTamableCheckbox:SetChecked( Enable );
 
 			-- Re-add the scans
@@ -323,14 +325,38 @@ end
   * Description: Enables tracking of unneeded achievement NPCs.                *
   ****************************************************************************]]
 function me.SetAchievementsAddFound ( Enable )
-	if ( Enable ~= me.Options.AchievementsAddFound ) then
-		me.Options.AchievementsAddFound = Enable;
+	if ( not Enable ~= not me.Options.AchievementsAddFound ) then
+		me.Options.AchievementsAddFound = Enable or nil;
 		me.Config.Search.AddFoundCheckbox:SetChecked( Enable );
 
 		for AchievementID in pairs( me.OptionsCharacter.Achievements ) do
 			me.AchievementRemove( AchievementID );
 			me.AchievementAdd( AchievementID );
 		end
+		return true;
+	end
+end
+--[[****************************************************************************
+  * Function: _NPCScan.SetAlertSoundUnmute                                     *
+  * Description: Enables unmuting sound to play found alerts.                  *
+  ****************************************************************************]]
+function me.SetAlertSoundUnmute ( Enable )
+	if ( not Enable ~= not me.Options.AlertSoundUnmute ) then
+		me.Options.AlertSoundUnmute = Enable or nil;
+
+		me.Config.AlertSoundUnmute:SetChecked( Enable );
+		return true;
+	end
+end
+--[[****************************************************************************
+  * Function: _NPCScan.SetAlertSound                                           *
+  * Description: Sets the sound to play when NPCs are found.                   *
+  ****************************************************************************]]
+function me.SetAlertSound ( AlertSound )
+	if ( AlertSound ~= me.Options.AlertSound ) then
+		me.Options.AlertSound = AlertSound;
+
+		UIDropDownMenu_SetText( me.Config.AlertSound, AlertSound == nil and L.CONFIG_ALERT_SOUND_DEFAULT or AlertSound );
 		return true;
 	end
 end
@@ -370,6 +396,8 @@ function me.Synchronize ( Options, OptionsCharacter )
 	me.SetCacheWarnings( Options.CacheWarnings );
 	me.SetFindTamable( Options.FindTamable );
 	me.SetAchievementsAddFound( Options.AchievementsAddFound );
+	me.SetAlertSoundUnmute( Options.AlertSoundUnmute );
+	me.SetAlertSound( Options.AlertSound );
 
 	for Name, ID in pairs( OptionsCharacter.NPCs ) do
 		me.NPCAdd( Name, ID );
@@ -431,8 +459,6 @@ function me.OnLoad ()
 	if ( Options ) then
 		if ( Options.Version == "3.0.9.2" ) then -- 3.1.0.1: Added options for finding already found and tamable mobs
 			Options.CacheWarnings = true;
-			Options.FindTamable = false;
-			Options.AchievementsAddFound = false;
 			Options.Version = "3.1.0.1";
 		end
 		Options.Version = me.Version;
