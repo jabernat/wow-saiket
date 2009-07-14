@@ -484,6 +484,13 @@ function me.OnLoad ()
 			end
 			OptionsCharacter.Version = "3.1.0.1";
 		end
+		if ( OptionsCharacter.Version == "3.1.0.1" ) then -- 3.2.0.1: Added default scans for rare raptors in 3.2
+			OptionsCharacter.NPCs[ L.NPCS[ "Dart" ]:trim():lower() ] = 14232;
+			OptionsCharacter.NPCs[ L.NPCS[ "Takk the Leaper" ]:trim():lower() ] = 5842;
+			OptionsCharacter.NPCs[ L.NPCS[ "Ravasaur Matriarch" ]:trim():lower() ] = 6581;
+			OptionsCharacter.NPCs[ L.NPCS[ "Razormaw Matriarch" ]:trim():lower() ] = 1140;
+			OptionsCharacter.Version = "3.2.0.1";
+		end
 		OptionsCharacter.Version = me.Version;
 	end
 
