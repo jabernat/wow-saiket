@@ -50,7 +50,7 @@ do
 		for Index = 1, MAX_TRADE_SKILL_REAGENTS do
 			local Button = _G[ "TradeSkillReagent"..Index ];
 	
-			_Misc.HookScript( Button, "OnClick", me.ReagentOnClick );
+			Button:HookScript( "OnClick", me.ReagentOnClick );
 		end
 
 		TradeSkillFrame:SetHeight( 768 );

@@ -73,5 +73,5 @@ do
 	me:SetBackdropColor( TOOLTIP_DEFAULT_BACKGROUND_COLOR.r, TOOLTIP_DEFAULT_BACKGROUND_COLOR.g, TOOLTIP_DEFAULT_BACKGROUND_COLOR.b );
 
 	-- Register to show and hide on mouseover and mouseout
-	_Misc.HookScript( WorldMapButton, "OnUpdate", me.OnUpdate );
+	WorldMapButton:HookScript( "OnUpdate", me.OnUpdate );
 end
