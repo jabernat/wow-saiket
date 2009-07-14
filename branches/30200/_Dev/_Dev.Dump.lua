@@ -276,6 +276,7 @@ do
 
 	local Forbidden = {
 		[ "PRINT" ] = true;
+		[ "DUMP" ] = true;
 	};
 	for Key in pairs( Forbidden ) do
 		SlashCmdList[ Key ] = nil;
