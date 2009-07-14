@@ -110,8 +110,12 @@ function me:PLAYER_ENTERING_WORLD ()
 		function ()
 			return assert( _NPCScan.Overlay.Version );
 		end,
-		_NPCScan.Overlay.NPCEnable,
-		_NPCScan.Overlay.NPCDisable );
+		function ( ID )
+			_NPCScan.Overlay.NPCEnable( ID );
+		end,
+		function ( ID )
+			_NPCScan.Overlay.NPCDisable( ID );
+		end );
 
 
 	me.Register( "RareSpawnOverlay",
