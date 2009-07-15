@@ -32,7 +32,6 @@ do
 		CACHED_SEPARATOR = ", ";
 
 		OVERLAY_INCOMPATIBLE = "Your versions of %s ("..GRAY_FONT_COLOR_CODE.."%s|r) and "..Title.." ("..GRAY_FONT_COLOR_CODE.."%s|r) are incompatible.  Please update both so they can work together."; -- Overlay name, Overlay version, _NPCScan version
-		OVERLAY_VERSION_UNKNOWN = UNKNOWN;
 
 
 		CONFIG_TITLE = Title;
