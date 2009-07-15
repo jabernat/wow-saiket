@@ -50,10 +50,6 @@ me.CriteriaUpdateRequested = nil;
 me.IDMax = 0xFFFFFF; -- Largest ID that will fit in a GUID's 24-bit NPC ID field
 me.UpdateRate = 0.1;
 
-local Tooltip = CreateFrame( "GameTooltip", "_NPCScanTooltip", me );
-
-local CacheList = {};
-
 
 
 
@@ -72,13 +68,14 @@ end
 --[[****************************************************************************
   * Function: _NPCScan.CacheListAdd                                            *
   ****************************************************************************]]
-function me.CacheListAdd ( FoundName )
-	CacheList[ #CacheList + 1 ] = FoundName;
-end
+do
+	local CacheList = {};
+	function me.CacheListAdd ( FoundName )
+		CacheList[ #CacheList + 1 ] = FoundName;
+	end
 --[[****************************************************************************
   * Function: _NPCScan.CacheListPrint                                          *
   ****************************************************************************]]
-do
 	local FirstPrint = true;
 	function me.CacheListPrint ( ForcePrint )
 		if ( #CacheList > 0 ) then
@@ -101,11 +98,17 @@ end
   * Function: _NPCScan.TestID                                                  *
   * Description: Checks for a given NPC ID.                                    *
   ****************************************************************************]]
-function me.TestID ( ID )
-	Tooltip:SetOwner( WorldFrame, "ANCHOR_NONE" );
-	Tooltip:SetHyperlink( ( "unit:0xF530%06X000000" ):format( ID ) );
-	if ( Tooltip:IsShown() ) then
-		return Tooltip.Text:GetText();
+do
+	local Tooltip = CreateFrame( "GameTooltip", "_NPCScanTooltip", me );
+	-- Add template text lines
+	local Text = Tooltip:CreateFontString( "$parentTextLeft1", nil, "GameTooltipText" );
+	Tooltip:AddFontStrings( Text, Tooltip:CreateFontString( "$parentTextRight1", nil, "GameTooltipText" ) );
+	function me.TestID ( ID )
+		Tooltip:SetOwner( WorldFrame, "ANCHOR_NONE" );
+		Tooltip:SetHyperlink( ( "unit:0xF530%06X000000" ):format( ID ) );
+		if ( Tooltip:IsShown() ) then
+			return Text:GetText();
+		end
 	end
 end
 
@@ -549,12 +552,6 @@ do
 	me:SetScript( "OnUpdate", me.OnUpdate );
 	me:SetScript( "OnEvent", me.OnEvent );
 	me:RegisterEvent( "PLAYER_ENTERING_WORLD" );
-
-	-- Add template text lines
-	Tooltip.Text = Tooltip:CreateFontString( "$parentTextLeft1", nil, "GameTooltipText" );
-	Tooltip:AddFontStrings(
-		Tooltip.Text,
-		Tooltip:CreateFontString( "$parentTextRight1", nil, "GameTooltipText" ) );
 
 
 	-- Save achievement criteria data
