@@ -5,7 +5,7 @@
 
 
 local _NPCScan = _NPCScan;
-local me = CreateFrame( "Frame" );
+local me = {};
 _NPCScan.Overlay = me;
 me.Version = GetAddOnMetadata( "_NPCScan.Overlay", "Version" ):match( "^([%d.]+)" );
 
@@ -38,6 +38,9 @@ me.Colors = {
 
 local TexturesUnused = {};
 local TexturesUsed = {};
+
+local MESSAGE_ADD = "NpcOverlay_Add";
+local MESSAGE_REMOVE = "NpcOverlay_Remove";
 
 
 
@@ -242,9 +245,9 @@ end
 
 
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay.NPCEnable                                       *
+  * Function: _NPCScan.Overlay.NPCAdd                                          *
   ****************************************************************************]]
-function me.NPCEnable ( ID )
+function me.NPCAdd ( ID )
 	local Map = me.NPCMaps[ ID ];
 	if ( Map and not me.NPCsEnabled[ ID ] ) then
 		me.NPCsEnabled[ ID ] = true;
@@ -256,9 +259,9 @@ function me.NPCEnable ( ID )
 	end
 end
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay.NPCDisable                                      *
+  * Function: _NPCScan.Overlay.NPCRemove                                       *
   ****************************************************************************]]
-function me.NPCDisable ( ID )
+function me.NPCRemove ( ID )
 	if ( me.NPCsEnabled[ ID ] ) then
 		me.NPCsEnabled[ ID ] = nil;
 
@@ -294,33 +297,6 @@ function me.Synchronize ( Options )
 end
 
 
---[[****************************************************************************
-  * Function: _NPCScan.Overlay:ADDON_LOADED                                    *
-  ****************************************************************************]]
-function me:ADDON_LOADED ( Event, AddOn )
-	if ( AddOn:lower() == "_npcscan.overlay" ) then
-		me:UnregisterEvent( Event );
-		me[ Event ] = nil;
-
-		-- Build a reverse lookup of NPC IDs to zones
-		for ZoneName, ZoneData in pairs( me.PathData ) do
-			for ID in pairs( ZoneData ) do
-				me.NPCMaps[ ID ] = ZoneName;
-			end
-		end
-
-		local Options = _NPCScanOverlayOptions;
-		_NPCScanOverlayOptions = me.Options;
-
-		me.Synchronize( Options ); -- Loads defaults if nil
-	end
-end
---[[****************************************************************************
-  * Function: _NPCScan.Overlay:OnEvent                                         *
-  ****************************************************************************]]
-me.OnEvent = _NPCScan.OnEvent;
-
-
 
 
 --------------------------------------------------------------------------------
@@ -328,6 +304,25 @@ me.OnEvent = _NPCScan.OnEvent;
 -----------------------------
 
 do
-	me:SetScript( "OnEvent", me.OnEvent );
-	me:RegisterEvent( "ADDON_LOADED" );
+	LibStub( "AceEvent-3.0" ):Embed( me );
+	me:RegisterEvent( "ADDON_LOADED", function ( Event, AddOn )
+		if ( AddOn:lower() == "_npcscan.overlay" ) then
+			me:UnregisterEvent( Event );
+
+			-- Build a reverse lookup of NPC IDs to zones
+			for ZoneName, ZoneData in pairs( me.PathData ) do
+				for ID in pairs( ZoneData ) do
+					me.NPCMaps[ ID ] = ZoneName;
+				end
+			end
+
+			local Options = _NPCScanOverlayOptions;
+			_NPCScanOverlayOptions = me.Options;
+
+			me.Synchronize( Options ); -- Loads defaults if nil
+
+			me:RegisterMessage( MESSAGE_ADD, function ( _, ID ) me.NPCAdd( ID ); end );
+			me:RegisterMessage( MESSAGE_REMOVE, function ( _, ID ) me.NPCRemove( ID ); end );
+		end
+	end );
 end
