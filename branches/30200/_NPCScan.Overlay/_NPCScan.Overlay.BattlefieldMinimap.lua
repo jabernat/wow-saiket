@@ -43,7 +43,7 @@ end
   ****************************************************************************]]
 do
 	local function PaintPath ( ID, PolyData, R, G, B )
-		Overlay.PolygonAdd( me, ID, PolyData, "OVERLAY", R, G, B, 1 );
+		Overlay.PolygonAdd( me, ID, PolyData, "OVERLAY", R, G, B, 0.8 );
 	end
 	function me:Repaint ( Map )
 		Overlay.ApplyZone( Map, PaintPath );
