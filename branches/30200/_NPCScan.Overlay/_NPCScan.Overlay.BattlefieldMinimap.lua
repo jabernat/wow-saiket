@@ -42,8 +42,8 @@ end
   * Function: _NPCScan.Overlay.BattlefieldMinimap:Repaint                      *
   ****************************************************************************]]
 do
-	local function PaintPath ( ID, PolyData, R, G, B )
-		Overlay.PolygonAdd( me, ID, PolyData, "OVERLAY", R, G, B, 0.8 );
+	local function PaintPath ( NpcID, R, G, B )
+		Overlay.PathAdd( me, NpcID, "OVERLAY", R, G, B, 0.8 );
 	end
 	function me:Repaint ( Map )
 		Overlay.ApplyZone( Map, PaintPath );

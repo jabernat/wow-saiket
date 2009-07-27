@@ -25,7 +25,7 @@ me.OptionsDefault = {
 
 me.Modules = {};
 
-me.NPCMaps = {};
+me.NPCMaps = {}; -- [ NpcID ] = MapName;
 me.NPCsEnabled = {};
 
 me.Colors = {
@@ -108,7 +108,7 @@ end
   * Function: _NPCScan.Overlay:TextureAdd                                      *
   * Description: Gets an unused texture and adds it to the given frame.        *
   ****************************************************************************]]
-function me:TextureAdd ( ID )
+function me:TextureAdd ( ID, Layer, R, G, B, A )
 	local Texture = TexturesUnused[ #TexturesUnused ];
 	if ( Texture ) then
 		TexturesUnused[ #TexturesUnused ] = nil;
@@ -118,6 +118,8 @@ function me:TextureAdd ( ID )
 		Texture = self:CreateTexture();
 		Texture:SetTexture( [[Interface\AddOns\_NPCScan.Overlay\Skin\Triangle]] );
 	end
+	Texture:SetVertexColor( R, G, B, A );
+	Texture:SetDrawLayer( Layer );
 	Texture.ID = ID;
 
 	local UsedCache = TexturesUsed[ self ];
@@ -131,10 +133,10 @@ end
 
 
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay:PolygonRemoveAll                                *
+  * Function: _NPCScan.Overlay:PathRemoveAll                                   *
   * Description: Removes all polygon artwork from a frame.                     *
   ****************************************************************************]]
-function me:PolygonRemoveAll ()
+function me:PathRemoveAll ()
 	if ( TexturesUsed[ self ] ) then
 		for _, Texture in ipairs( TexturesUsed[ self ] ) do
 			TexturesUnused[ #TexturesUnused + 1 ] = Texture;
@@ -144,15 +146,15 @@ function me:PolygonRemoveAll ()
 	end
 end
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay:PolygonRemove                                   *
-  * Description: Reclaims all textures associated with a polygon set ID.       *
+  * Function: _NPCScan.Overlay:PathRemove                                      *
+  * Description: Reclaims all textures associated with an NPC's ID.            *
   ****************************************************************************]]
-function me:PolygonRemove ( ID )
+function me:PathRemove ( NpcID )
 	local UsedCache = TexturesUsed[ self ];
 	if ( UsedCache ) then
 		for Index = #UsedCache, 1, -1 do
 			local Texture = UsedCache[ Index ];
-			if ( Texture.ID == ID ) then
+			if ( Texture.ID == NpcID ) then
 				tremove( UsedCache, Index );
 				TexturesUnused[ #TexturesUnused + 1 ] = Texture;
 				Texture:Hide();
@@ -161,43 +163,40 @@ function me:PolygonRemove ( ID )
 	end
 end
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay:PolygonAdd                                      *
-  * Description: Draws the given polygon onto a frame.                         *
+  * Function: _NPCScan.Overlay:PathAdd                                         *
+  * Description: Draws the given NPC's path onto a frame.                      *
   ****************************************************************************]]
 do
 	local Max = 2 ^ 16 - 1;
-	local function Decode ( Ax1, Ax2, Ay1, Ay2, Bx1, Bx2, By1, By2, Cx1, Cx2, Cy1, Cy2 )
-		return
-			( Ax1 * 256 + Ax2 ) / Max, ( Ay1 * 256 + Ay2 ) / Max,
-			( Bx1 * 256 + Bx2 ) / Max, ( By1 * 256 + By2 ) / Max,
-			( Cx1 * 256 + Cx2 ) / Max, ( Cy1 * 256 + Cy2 ) / Max;
-	end
-	function me:PolygonAdd ( ID, PolyData, Layer, R, G, B, A )
-		for Index = 1, #PolyData, 12 do
-			local Texture = me.TextureAdd( self, ID );
-			me.TextureDraw( Texture, Decode( PolyData:byte( Index, Index + 11 ) ) );
-			Texture:SetVertexColor( R, G, B, A );
-			Texture:SetDrawLayer( Layer );
+	local Ax1, Ax2, Ay1, Ay2, Bx1, Bx2, By1, By2, Cx1, Cx2, Cy1, Cy2;
+	function me:PathAdd ( NpcID, Layer, R, G, B, A )
+		local PathData = me.PathData[ me.NPCMaps[ NpcID ] ][ NpcID ];
+		for Index = 1, #PathData, 12 do
+			Ax1, Ax2, Ay1, Ay2, Bx1, Bx2, By1, By2, Cx1, Cx2, Cy1, Cy2 = PathData:byte( Index, Index + 11 );
+			me.TextureDraw( me.TextureAdd( self, NpcID, Layer, R, G, B, A ),
+				( Ax1 * 256 + Ax2 ) / Max, ( Ay1 * 256 + Ay2 ) / Max,
+				( Bx1 * 256 + Bx2 ) / Max, ( By1 * 256 + By2 ) / Max,
+				( Cx1 * 256 + Cx2 ) / Max, ( Cy1 * 256 + Cy2 ) / Max );
 		end
 	end
 end
 
 
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay:ApplyZone                                       *
-  * Description: Passes the ID, PolyData, and color of all NPCs in a zone to   *
-  *   a callback function.                                                     *
+  * Function: _NPCScan.Overlay.ApplyZone                                       *
+  * Description: Passes the NpcID, color, PathData, ZoneWidth, and ZoneHeight  *
+  *   of all NPCs in a zone to a callback function.                            *
   ****************************************************************************]]
-function me.ApplyZone ( MapName, Callback )
-	local MapData = me.PathData[ MapName ];
+function me.ApplyZone ( Map, Callback )
+	local MapData = me.PathData[ Map ];
 	if ( MapData ) then
 		local ColorIndex = 0;
 
-		for NPCID, PolyData in pairs( MapData ) do
+		for NpcID in pairs( MapData ) do
 			ColorIndex = ColorIndex + 1;
-			if ( me.NPCsEnabled[ NPCID ] ) then
+			if ( me.NPCsEnabled[ NpcID ] ) then
 				local Color = me.Colors[ ( ColorIndex - 1 ) % #me.Colors + 1 ];
-				Callback( NPCID, PolyData, Color.r, Color.g, Color.b );
+				Callback( NpcID, Color.r, Color.g, Color.b );
 			end
 		end
 	end
@@ -247,10 +246,10 @@ end
 --[[****************************************************************************
   * Function: _NPCScan.Overlay.NPCAdd                                          *
   ****************************************************************************]]
-function me.NPCAdd ( ID )
-	local Map = me.NPCMaps[ ID ];
-	if ( Map and not me.NPCsEnabled[ ID ] ) then
-		me.NPCsEnabled[ ID ] = true;
+function me.NPCAdd ( NpcID )
+	local Map = me.NPCMaps[ NpcID ];
+	if ( Map and not me.NPCsEnabled[ NpcID ] ) then
+		me.NPCsEnabled[ NpcID ] = true;
 
 		for Name in pairs( me.Options.Modules ) do
 			me.Modules[ Name ]:Update( Map );
@@ -261,17 +260,29 @@ end
 --[[****************************************************************************
   * Function: _NPCScan.Overlay.NPCRemove                                       *
   ****************************************************************************]]
-function me.NPCRemove ( ID )
-	if ( me.NPCsEnabled[ ID ] ) then
-		me.NPCsEnabled[ ID ] = nil;
+function me.NPCRemove ( NpcID )
+	if ( me.NPCsEnabled[ NpcID ] ) then
+		me.NPCsEnabled[ NpcID ] = nil;
 
-		local Map = me.NPCMaps[ ID ];
+		local Map = me.NPCMaps[ NpcID ];
 		for Name in pairs( me.Options.Modules ) do
 			me.Modules[ Name ]:Update( Map );
 		end
 		return true;
 	end
 end
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay[ MESSAGE_ADD ]                                  *
+  ****************************************************************************]]
+me[ MESSAGE_ADD ] = function ( _, _, NpcID )
+	me.NPCAdd( NpcID );
+end;
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay[ MESSAGE_REMOVE ]                               *
+  ****************************************************************************]]
+me[ MESSAGE_REMOVE ] = function ( _, _, NpcID )
+	me.NPCRemove( NpcID );
+end;
 
 
 
@@ -310,9 +321,9 @@ do
 			me:UnregisterEvent( Event );
 
 			-- Build a reverse lookup of NPC IDs to zones
-			for ZoneName, ZoneData in pairs( me.PathData ) do
-				for ID in pairs( ZoneData ) do
-					me.NPCMaps[ ID ] = ZoneName;
+			for Map, MapData in pairs( me.PathData ) do
+				for NpcID in pairs( MapData ) do
+					me.NPCMaps[ NpcID ] = Map;
 				end
 			end
 
@@ -321,8 +332,8 @@ do
 
 			me.Synchronize( Options ); -- Loads defaults if nil
 
-			me:RegisterMessage( MESSAGE_ADD, function ( _, ID ) me.NPCAdd( ID ); end );
-			me:RegisterMessage( MESSAGE_REMOVE, function ( _, ID ) me.NPCRemove( ID ); end );
+			me:RegisterMessage( MESSAGE_ADD );
+			me:RegisterMessage( MESSAGE_REMOVE );
 		end
 	end );
 end

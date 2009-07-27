@@ -41,8 +41,8 @@ end
 do
 	local Count, Height, Width;
 	local NPCNames = {};
-	local function PaintPathAndKey ( ID, PolyData, R, G, B )
-		Overlay.PolygonAdd( me, ID, PolyData, "OVERLAY", R, G, B, 0.55 );
+	local function PaintPathAndKey ( NpcID, R, G, B )
+		Overlay.PathAdd( me, NpcID, "OVERLAY", R, G, B, 0.55 );
 
 		Count = Count + 1;
 		local Line = Key[ Count ];
@@ -56,17 +56,17 @@ do
 			Line:Show();
 		end
 
-		Line:SetText( L.MODULE_WORLDMAP_KEY_FORMAT:format( me.AchievementNPCNames[ ID ] or NPCNames[ ID ] or ID ) );
+		Line:SetText( L.MODULE_WORLDMAP_KEY_FORMAT:format( me.AchievementNPCNames[ NpcID ] or NPCNames[ NpcID ] or NpcID ) );
 		Line:SetTextColor( R, G, B );
 
 		Width = max( Width, Line:GetStringWidth() );
 		Height = Height + Line:GetStringHeight();
 	end
 	local function MapHasNPCs ( Map )
-		local Zone = Overlay.PathData[ Map ];
-		if ( Zone ) then
-			for ID in pairs( Zone ) do
-				if ( Overlay.NPCsEnabled[ ID ] ) then
+		local MapData = Overlay.PathData[ Map ];
+		if ( MapData ) then
+			for NpcID in pairs( MapData ) do
+				if ( Overlay.NPCsEnabled[ NpcID ] ) then
 					return true;
 				end
 			end
@@ -79,8 +79,8 @@ do
 			Count = 0;
 
 			-- Cache custom mob names
-			for Name, ID in pairs( _NPCScan.OptionsCharacter.NPCs ) do
-				NPCNames[ ID ] = Name;
+			for Name, NpcID in pairs( _NPCScan.OptionsCharacter.NPCs ) do
+				NPCNames[ NpcID ] = Name;
 			end
 			Overlay.ApplyZone( Map, PaintPathAndKey );
 			wipe( NPCNames );
@@ -110,7 +110,7 @@ do
 		if ( Map ~= self.MapLast ) then
 			self.MapLast = Map;
 
-			Overlay.PolygonRemoveAll( self );
+			Overlay.PathRemoveAll( self );
 			self:Repaint( Map );
 		end
 	end
@@ -160,7 +160,7 @@ end
 function me:Disable ()
 	self:UnregisterEvent( "WORLD_MAP_UPDATE" );
 	self:Hide();
-	Overlay.PolygonRemoveAll( self );
+	Overlay.PathRemoveAll( self );
 end
 --[[****************************************************************************
   * Function: _NPCScan.Overlay.WorldMap:Enable                                 *
@@ -213,8 +213,8 @@ do
 
 	-- Cache achievement NPC names
 	for AchievementID, Achievement in pairs( _NPCScan.Achievements ) do
-		for CriteriaID, NPCID in pairs( Achievement.Criteria ) do
-			me.AchievementNPCNames[ NPCID ] = GetAchievementCriteriaInfo( CriteriaID );
+		for CriteriaID, NpcID in pairs( Achievement.Criteria ) do
+			me.AchievementNPCNames[ NpcID ] = GetAchievementCriteriaInfo( CriteriaID );
 		end
 	end
 end
