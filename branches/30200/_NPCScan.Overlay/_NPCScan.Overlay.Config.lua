@@ -5,10 +5,10 @@
   ****************************************************************************]]
 
 
-local _NPCScan = _NPCScan;
+local Overlay = _NPCScan.Overlay;
 local L = _NPCScanLocalization.OVERLAY;
 local me = CreateFrame( "Frame" );
-_NPCScan.Overlay.Config = me;
+Overlay.Config = me;
 
 me.Modules = {};
 
@@ -22,7 +22,7 @@ function me:ModuleOnClick ( Enable )
 	local Enable = self:GetChecked() == 1;
 
 	PlaySound( Enable and "igMainMenuOptionCheckBoxOn" or "igMainMenuOptionCheckBoxOff" );
-	_NPCScan.Overlay[ Enable and "ModuleEnable" or "ModuleDisable" ]( self.Name );
+	Overlay[ Enable and "ModuleEnable" or "ModuleDisable" ]( self.Name );
 end
 --[[****************************************************************************
   * Function: _NPCScan.Overlay.Config.ModuleRegister                           *
@@ -54,10 +54,67 @@ end
 
 
 --[[****************************************************************************
+  * Function: _NPCScan.Overlay.Config:TableSetHeader                           *
+  ****************************************************************************]]
+do
+	local function Recurse ( NewValue, Count, CurrentValue, ... )
+		if ( Count == 0 ) then
+			return NewValue;
+		else
+			return CurrentValue, Recurse( NewValue, Count - 1, ... );
+		end
+	end
+	local function Append ( NewValue, ... ) -- Appends a value to a vararg list
+		return Recurse( NewValue, select( "#", ... ), ... );
+	end
+
+	local SetHeaderBackup;
+	function me:TableSetHeader ( ... )
+		return SetHeaderBackup( self, Append( L.CONFIG_ZONE, ... ) );
+	end
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.Config:TableAddRow                              *
+  ****************************************************************************]]
+	local AddRowBackup;
+	function me:TableAddRow ( ... )
+		local Map = Overlay.NPCMaps[ select( 4, ... ) ]; -- Arg 4 is NpcID
+		if ( Map ) then
+			return AddRowBackup( self, Append( Overlay.GetZoneName( Map ), ... ) );
+		else
+			return AddRowBackup( self, ... );
+		end
+	end
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.Config:TableOnShow                              *
+  * Description: Hooks _NPCScan's "Search" table to add a zone column.         *
+  ****************************************************************************]]
+	local OnShowBackup = _NPCScan.Config.Search.OnShow;
+	function me:TableOnShow ()
+		self:SetScript( "OnShow", OnShowBackup );
+		me.TableOnShow = nil;
+
+		if ( not self.Table ) then
+			self.Table = LibStub( "LibTextTable-1.0" ).New( nil, self.TableContainer );
+			self.Table:SetAllPoints();
+		end
+
+		SetHeaderBackup = self.Table.SetHeader;
+		AddRowBackup = self.Table.AddRow;
+		self.Table.SetHeader = me.TableSetHeader;
+		self.Table.AddRow = me.TableAddRow;
+
+		OnShowBackup( self );
+	end
+end
+
+
+
+
+--[[****************************************************************************
   * Function: _NPCScan.Overlay.Config:default                                  *
   ****************************************************************************]]
 function me:default ()
-	_NPCScan.Overlay.Synchronize();
+	Overlay.Synchronize();
 end
 
 
@@ -87,4 +144,7 @@ do
 
 
 	InterfaceOptions_AddCategory( me );
+
+
+	_NPCScan.Config.Search:SetScript( "OnShow", me.TableOnShow );
 end

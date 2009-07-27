@@ -10,6 +10,7 @@ Overlay.ZoneMaps = {}; -- [ LocalizedZoneName ] = MapFile;
 local Indexes = {};
 local Widths = {};
 local Heights = {};
+local Names = {};
 
 
 
@@ -22,6 +23,13 @@ function Overlay.GetZoneSize ( Map )
 	Map = Indexes[ Map ];
 	return Widths[ Map ], Heights[ Map ];
 end
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.GetZoneName                                     *
+  * Description: Gets a localized zone name for a map.                         *
+  ****************************************************************************]]
+function Overlay.GetZoneName ( Map )
+	return Names[ Indexes[ Map ] ];
+end
 
 
 
@@ -33,7 +41,7 @@ end
 do
 	local function Add ( Map, Width, Height )
 		if ( Overlay.PathData[ Map ] ) then
-			local Index = #Widths;
+			local Index = #Widths + 1;
 			Indexes[ Map ] = Index;
 			Widths[ Index ] = Width;
 			Heights[ Index ] = Height;
@@ -83,7 +91,9 @@ do
 
 			local Map = GetMapInfo();
 			if ( Indexes[ Map ] ) then
-				Overlay.ZoneMaps[ select( ZoneIndex, ... ) ] = Map;
+				local Name = select( ZoneIndex, ... );
+				Names[ Indexes[ Map ] ] = Name;
+				Overlay.ZoneMaps[ Name ] = Map;
 			end
 		end
 	end
