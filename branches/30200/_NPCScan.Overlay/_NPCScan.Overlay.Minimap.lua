@@ -26,7 +26,7 @@ local UpdateForce, IsInside, RotateMinimap;
   * Function: _NPCScan.Overlay.Minimap:Repaint                                 *
   ****************************************************************************]]
 do
-	local Radius, Side, Shape;
+	local Quadrants;
 	local X, Y, Facing, Width, Height;
 	local FacingSin, FacingCos;
 	local MaxDataValue = 2 ^ 16 - 1;
@@ -37,7 +37,7 @@ do
 		local Ax, Ax2, Ay, Ay2, Bx, Bx2, By, By2, Cx, Cx2, Cy, Cy2;
 		local AInside, BInside, CInside;
 		local function IsQuadrantRound ( X, Y )
-			return Shape[ Y > 0
+			return Quadrants[ Y > 0
 				and ( X > 0 and 1 or 2 )
 				 or ( X < 0 and 3 or 4 ) ];
 		end
@@ -57,23 +57,21 @@ do
 				end
 
 				if ( -- If all points are on one side, cannot possibly intersect
-					not ( ( Ax > Radius and Bx > Radius and Cx > Radius )
-					or ( Ay > Radius and By > Radius and Cy > Radius )
-					or ( Ax < -Radius and Bx < -Radius and Cx < -Radius )
-					or ( Ay < -Radius and By < -Radius and Cy < -Radius ) )
+					not ( ( Ax > 0.5 and Bx > 0.5 and Cx > 0.5 )
+					or ( Ay > 0.5 and By > 0.5 and Cy > 0.5 )
+					or ( Ax < -0.5 and Bx < -0.5 and Cx < -0.5 )
+					or ( Ay < -0.5 and By < -0.5 and Cy < -0.5 ) )
 				) then
-					AInside = IsQuadrantRound( Ax, Ay ) and ( Ax * Ax + Ay * Ay <= Radius * Radius )
-						or ( Ax <= Radius and Ay <= Radius and Ax >= -Radius and Ay >= -Radius );
-					BInside = IsQuadrantRound( Bx, By ) and ( Bx * Bx + By * By <= Radius * Radius )
-						or ( Bx <= Radius and By <= Radius and Bx >= -Radius and By >= -Radius );
-					CInside = IsQuadrantRound( Cx, Cy ) and ( Cx * Cx + Cy * Cy <= Radius * Radius )
-						or ( Cx <= Radius and Cy <= Radius and Cx >= -Radius and Cy >= -Radius );
+					AInside = IsQuadrantRound( Ax, Ay ) and ( Ax * Ax + Ay * Ay <= 0.25 )
+						or ( Ax <= 0.5 and Ay <= 0.5 and Ax >= -0.5 and Ay >= -0.5 );
+					BInside = IsQuadrantRound( Bx, By ) and ( Bx * Bx + By * By <= 0.25 )
+						or ( Bx <= 0.5 and By <= 0.5 and Bx >= -0.5 and By >= -0.5 );
+					CInside = IsQuadrantRound( Cx, Cy ) and ( Cx * Cx + Cy * Cy <= 0.25 )
+						or ( Cx <= 0.5 and Cy <= 0.5 and Cx >= -0.5 and Cy >= -0.5 );
 
 					-- Tri within square of minimap
 					Overlay.TextureDraw( Overlay.TextureAdd( me, NpcID, "ARTWORK", R, G, B, 0.55 ),
-						Ax / Side + 0.5, Ay / Side + 0.5,
-						Bx / Side + 0.5, By / Side + 0.5,
-						Cx / Side + 0.5, Cy / Side + 0.5 );
+						Ax + 0.5, Ay + 0.5, Bx + 0.5, By + 0.5, Cx + 0.5, Cy + 0.5 );
 				end
 			end
 		end
@@ -101,16 +99,14 @@ do
 	function me:Repaint ( Map, NewX, NewY, NewFacing )
 		Overlay.PathRemoveAll( self );
 
-		X = NewX;
-		Y = NewY;
-		Facing = NewFacing;
+		Quadrants = MinimapShapes[ GetMinimapShape and GetMinimapShape() ] or MinimapShapes[ "ROUND" ];
 
+		local Side = ( IsInside and RadiiInside or RadiiOutside )[ Minimap:GetZoom() + 1 ] * 2;
 		Width, Height = Overlay.GetZoneSize( Map );
-		Width, Height = Width / MaxDataValue, Height / MaxDataValue; -- Simplifies data decompression
-
-		Radius = ( IsInside and RadiiInside or RadiiOutside )[ Minimap:GetZoom() + 1 ];
-		Side = Radius * 2;
-		Shape = MinimapShapes[ GetMinimapShape and GetMinimapShape() ] or MinimapShapes[ "ROUND" ];
+		Width, Height = Width / MaxDataValue / Side, Height / MaxDataValue / Side; -- Simplifies data decompression
+		X = NewX / Side;
+		Y = NewY / Side;
+		Facing = NewFacing;
 
 		if ( RotateMinimap ) then
 			FacingSin = math.sin( Facing );
