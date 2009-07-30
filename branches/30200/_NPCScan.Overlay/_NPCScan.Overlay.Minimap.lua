@@ -151,6 +151,9 @@ end
   ****************************************************************************]]
 function me:ZONE_CHANGED_NEW_AREA ()
 	UpdateForce = true;
+	if ( not WorldMapFrame:IsVisible() ) then
+		SetMapToCurrentZone();
+	end
 end
 --[[****************************************************************************
   * Function: _NPCScan.Overlay.Minimap:CVAR_UPDATE                             *
@@ -158,7 +161,7 @@ end
 function me:CVAR_UPDATE ( _, CVar, Value )
 	if ( CVar == "ROTATE_MINIMAP" ) then
 		RotateMinimap = Value == "1";
-		me.UpdateForce = true;
+		UpdateForce = true;
 	end
 end
 --[[****************************************************************************
@@ -166,6 +169,7 @@ end
   ****************************************************************************]]
 function me:PLAYER_LOGIN ()
 	RotateMinimap = GetCVarBool( "rotateMinimap" );
+	SetMapToCurrentZone();
 end
 --[[****************************************************************************
   * Function: _NPCScan.Overlay.Minimap:OnShow                                  *
@@ -222,7 +226,7 @@ end
   ****************************************************************************]]
 function me:Update ( Map )
 	if ( not Map or Map == Overlay.ZoneMaps[ GetRealZoneText() ] ) then
-		me.UpdateForce = true;
+		UpdateForce = true;
 	end
 end
 --[[****************************************************************************
@@ -258,6 +262,7 @@ do
 	me:RegisterEvent( "PLAYER_LOGIN" );
 
 	Minimap.SetZoom = me.SetZoom;
+	WorldMapFrame:HookScript( "OnHide", SetMapToCurrentZone );
 
 	Overlay.ModuleRegister( "Minimap", me );
 end

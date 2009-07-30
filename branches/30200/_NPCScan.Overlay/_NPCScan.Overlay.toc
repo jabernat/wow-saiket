@@ -13,8 +13,10 @@
 ## RequiredDeps: _NPCScan
 Locales.xml
 
+#Tools\Matrix.lua
 _NPCScan.Overlay.lua
 _NPCScan.Overlay.Config.lua
+#Tools\Canvas.lua
 
 _NPCScan.Overlay.PathData.lua
 _NPCScan.Overlay.ZoneData.lua
