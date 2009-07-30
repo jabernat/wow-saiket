@@ -234,7 +234,7 @@ end
   ****************************************************************************]]
 function me:Disable ()
 	self:Hide();
-	Overlay.PolygonRemoveAll( self );
+	Overlay.PathRemoveAll( self );
 end
 --[[****************************************************************************
   * Function: _NPCScan.Overlay.Minimap:Enable                                  *
