@@ -223,6 +223,9 @@ function me:PostCreateAuraIcon ( Frame )
 	Frame.UpdateTooltip = me.AuraUpdateTooltip;
 	Frame.cd:SetReverse( true );
 	Frame:SetFrameLevel( self:GetFrameLevel() - 1 ); -- Don't allow auras to overlap other units
+
+	Frame.count:ClearAllPoints();
+	Frame.count:SetPoint( "BOTTOMLEFT" );
 end
 --[[****************************************************************************
   * Function: _Units.oUF:PostUpdateAura                                        *
