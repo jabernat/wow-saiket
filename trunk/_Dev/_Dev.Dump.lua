@@ -12,10 +12,8 @@
   * + Escapes special characters with their C-style escape sequences if        *
   *   applicable, else with their more general escaped code points.            *
   * + Shows the names and types of UIObjects.                                  *
-  * + The function dump(input,label) works identically to the slash command,   *
-  *   but a label can be specified to uniquely identify the result. Care       *
-  *   should be taken to not specify a third argument, as it's used            *
-  *   internally.                                                              *
+  * + The function dump(label,...) works identically to the slash command, but *
+  *   a label can be specified to uniquely identify the result.                *
   ****************************************************************************]]
 
 
@@ -154,10 +152,13 @@ do
 	local type = type;
 	local next = next;
 	local pairs = pairs;
-	function me.Explore ( Input, LValueString )
+	local select = select;
+	local rawequal = rawequal;
+	function me.Explore ( LValueString, ... )
+		local ArgCount = 1;
 		if ( not Depth ) then -- First iteration, initialize
 			Depth = 0;
-			Temp[ "table" ]    = { n = 0; };
+			Temp[ "table" ]    = { n = 0 };
 			Temp[ "function" ] = { n = 0 };
 			Temp[ "userdata" ] = { n = 0 };
 			Temp[ "thread" ]   = { n = 0 };
@@ -168,53 +169,73 @@ do
 				and "("..LValueString..")" or L.DUMP_LVALUE_DEFAULT;
 			OverTime = false;
 			EndTime = _DevOptions.Dump.MaxExploreTime
-				and ( _DevOptions.Dump.MaxExploreTime + GetTime() )
-				or nil;
+				and ( _DevOptions.Dump.MaxExploreTime + GetTime() ) or nil;
+
+			-- Trim nil values from end
+			for Index = select( "#", ... ), 1, -1 do
+				ArgCount = Index;
+				if ( not rawequal( select( Index, ... ), nil ) ) then
+					break;
+				end
+			end
+			if ( ArgCount > 1 ) then
+				Print( LValueString.." = ( ... )["..ToString( select( "#", ... ) ).."]:" );
+			end
 		end
 
 		local IndentString = L.DUMP_INDENT:rep( Depth );
 
-		if ( AddHistory( Input ) and type( Input ) == "table" ) then -- New table
-			local TableString = IndentString..LValueString.." = "..ToString( Input );
-			if ( next( Input ) == nil ) then -- Empty array
-				Print( TableString.." {};" );
-			else -- Display the table's contents
-				local MaxDepth = _DevOptions.Dump.MaxDepth;
-				if ( MaxDepth and Depth >= MaxDepth ) then -- Too deep
-					Print( TableString.." { "..L.DUMP_MAXDEPTH_ABBR.." };" );
-				else -- Not too deep
-					Print( TableString.." {" );
-					local MaxTableLen = _DevOptions.Dump.MaxTableLen;
-					local TableLen = 0;
-					Depth = Depth + 1;
-					for Key, Value in pairs( Input ) do
-						if ( EndTime ) then
-							if ( OverTime ) then
-								break;
-							elseif ( EndTime <= GetTime() ) then
-								Print( IndentString..L.DUMP_INDENT..L.DUMP_MAXEXPLORETIME_ABBR );
-								OverTime = true;
-								break;
-							end
-						end
+		for Index = 1, ArgCount do
+			local Input = ArgCount == 1 and ... or select( Index, ... );
+			-- Only print a nil arg when it's the only arg
+			if ( ArgCount == 1 or not rawequal( Input, nil ) ) then
+				if ( ArgCount > 1 ) then
+					LValueString = "["..ToString( Index ).."]";
+				end
 
-						if ( MaxTableLen ) then
-							TableLen = TableLen + 1;
-							if ( TableLen > MaxTableLen ) then -- Table is too long
-								Print( IndentString..L.DUMP_INDENT..L.DUMP_MAXTABLELEN_ABBR );
-								break;
-							end
-						end
-						AddHistory( Key );
+				if ( AddHistory( Input ) and type( Input ) == "table" ) then -- New table
+					local TableString = IndentString..LValueString.." = "..ToString( Input );
+					if ( next( Input ) == nil ) then -- Empty array
+						Print( TableString.." {};" );
+					else -- Display the table's contents
+						local MaxDepth = _DevOptions.Dump.MaxDepth;
+						if ( MaxDepth and Depth >= MaxDepth ) then -- Too deep
+							Print( TableString.." { "..L.DUMP_MAXDEPTH_ABBR.." };" );
+						else -- Not too deep
+							Print( TableString.." {" );
+							local MaxTableLen = _DevOptions.Dump.MaxTableLen;
+							local TableLen = 0;
+							Depth = Depth + 1;
+							for Key, Value in pairs( Input ) do
+								if ( EndTime ) then
+									if ( OverTime ) then
+										break;
+									elseif ( EndTime <= GetTime() ) then
+										Print( IndentString..L.DUMP_INDENT..L.DUMP_MAXEXPLORETIME_ABBR );
+										OverTime = true;
+										break;
+									end
+								end
 
-						me.Explore( Value, "["..ToString( Key ).."]" );
+								if ( MaxTableLen ) then
+									TableLen = TableLen + 1;
+									if ( TableLen > MaxTableLen ) then -- Table is too long
+										Print( IndentString..L.DUMP_INDENT..L.DUMP_MAXTABLELEN_ABBR );
+										break;
+									end
+								end
+								AddHistory( Key );
+
+								me.Explore( "["..ToString( Key ).."]", Value );
+							end
+							Depth = Depth - 1;
+							Print( IndentString.."};" );
+						end
 					end
-					Depth = Depth - 1;
-					Print( IndentString.."};" );
+				else
+					Print( IndentString..LValueString.." = "..ToString( Input )..";" );
 				end
 			end
-		else
-			Print( IndentString..LValueString.." = "..ToString( Input )..";" );
 		end
 
 		if ( Depth == 0 ) then -- Clean up
@@ -232,17 +253,21 @@ end
   * Function: _Dev.Dump.SlashCommand                                           *
   * Description: Slash command chat handler for the _Dev.Dump function.        *
   ****************************************************************************]]
-function me.SlashCommand ( Input )
-	if ( Input and not Input:find( "^%s*$" ) ) then
-		Input = Input:gsub( "||", "|" );
-		local Success, Target = _Dev.Exec( Input );
+do
+	local function Explore ( Input, Success, ... )
 		if ( Success ) then
-			local ErrorMessage = me.Explore( Target, Input );
+			local ErrorMessage = me.Explore( Input, ... );
 			if ( ErrorMessage ) then
 				_Dev.Error( L.DUMP_MESSAGE_FORMAT:format( ErrorMessage ) );
 			end
 		else -- Couldn't parse/runtime error
-			_Dev.Error( L.DUMP_MESSAGE_FORMAT:format( Target ) );
+			_Dev.Error( L.DUMP_MESSAGE_FORMAT:format( ( ... ) ) );
+		end
+	end
+	function me.SlashCommand ( Input )
+		if ( Input and not Input:find( "^%s*$" ) ) then
+			Input = Input:gsub( "||", "|" );
+			Explore( Input, _Dev.Exec( Input ) );
 		end
 	end
 end
@@ -276,6 +301,7 @@ do
 
 	local Forbidden = {
 		[ "PRINT" ] = true;
+		[ "DUMP" ] = true;
 	};
 	for Key in pairs( Forbidden ) do
 		SlashCmdList[ Key ] = nil;

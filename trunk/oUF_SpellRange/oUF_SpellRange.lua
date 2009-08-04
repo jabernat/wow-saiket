@@ -20,8 +20,8 @@ local Objects = {};
 local ObjectRanges = {};
 
 -- Class-specific spell info
-local HelpName, CanHelp; -- Name of spell, and whether it is known by the player
-local HarmName, CanHarm;
+local HelpID, HelpName, CanHelp; -- ID of spell, and whether it is known by the player
+local HarmID, HarmName, CanHarm;
 
 
 
@@ -83,13 +83,23 @@ end
 --[[****************************************************************************
   * Function: local UpdateSpells                                               *
   ****************************************************************************]]
-local function UpdateSpells ()
-	-- Only populate name if spell is in spellbook
-	if ( HelpName ) then
-		CanHelp = GetSpellInfo( HelpName );
-	end
-	if ( HarmName ) then
-		CanHarm = GetSpellInfo( HarmName );
+local UpdateSpells;
+do
+	local IsSpellKnown = IsSpellKnown;
+	function UpdateSpells ()
+		-- Set to true if spell is in spellbook, and cache its name
+		if ( HelpID ) then
+			CanHelp = IsSpellKnown( HelpID );
+			if ( CanHelp and not HelpName ) then
+				HelpName = GetSpellInfo( HelpID );
+			end
+		end
+		if ( HarmID ) then
+			CanHarm = IsSpellKnown( HarmID );
+			if ( CanHarm and not HarmName ) then
+				HarmName = GetSpellInfo( HarmID );
+			end
+		end
 	end
 end
 
@@ -170,7 +180,7 @@ end
 do
 	local _, Class = UnitClass( "player" );
 	-- Optional low level baseline skills with greater than 28 yard range
-	HelpName = GetSpellInfo( ( {
+	HelpID = ( {
 		DEATHKNIGHT = 61999; -- Raise Ally
 		DRUID = 5185; -- Healing Touch
 		MAGE = 1459; -- Arcane Intellect
@@ -178,8 +188,8 @@ do
 		PRIEST = 2050; -- Lesser Heal
 		SHAMAN = 331; -- Healing Wave
 		WARLOCK = 5697; -- Unending Breath
-	} )[ Class ] or 0 );
-	HarmName = GetSpellInfo( ( {
+	} )[ Class ];
+	HarmID = ( {
 		DEATHKNIGHT = 52375; -- Death Coil
 		DRUID = 5176; -- Wrath
 		HUNTER = 75; -- Auto Shot
@@ -189,7 +199,7 @@ do
 		SHAMAN = 403; -- Lightning Bolt
 		WARLOCK = 686; -- Shadow Bolt
 		WARRIOR = 355; -- Taunt
-	} )[ Class ] or 0 );
+	} )[ Class ];
 
 	oUF:AddElement( "SpellRange", Update, Enable, Disable );
 end

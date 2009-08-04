@@ -60,7 +60,7 @@ end
   * Description: Hooks a tooltip to update its contents when set.              *
   ****************************************************************************]]
 function me:RegisterTooltip ()
-	_Misc.HookScript( self, "OnTooltipSetUnit", me.OnTooltipSetUnit );
+	self:HookScript( "OnTooltipSetUnit", me.OnTooltipSetUnit );
 	hooksecurefunc( self, "SetUnit", me.SetUnit );
 end
 

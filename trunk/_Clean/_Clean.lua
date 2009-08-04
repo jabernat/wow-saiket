@@ -127,21 +127,6 @@ do
 		end
 	end
 end
---[[****************************************************************************
-  * Function: _Clean:HookScript                                                *
-  * Description: Hooks event handlers even when an original isn't present.     *
-  ****************************************************************************]]
-function me:HookScript ( Script, Handler )
-	if ( self == me ) then -- Prevent infinite recursion if something tries to hook me
-		getmetatable( me ).__index.HookScript( me, Script, Handler );
-	else
-		if ( self:GetScript( Script ) ) then
-			self:HookScript( Script, Handler );
-		else
-			self:SetScript( Script, Handler );
-		end
-	end
-end
 
 
 --[[****************************************************************************

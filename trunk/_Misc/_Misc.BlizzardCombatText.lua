@@ -69,7 +69,7 @@ do
 		[ 58760 ] = true; -- Healing Stream Totem VIII
 		[ 58761 ] = true; -- Healing Stream Totem IX
 	};
-	function me:COMBAT_LOG_EVENT_UNFILTERED ( Event, _, Type, _, Caster, CasterFlags, _, Target, TargetFlags, SpellID, _, _, Amount, Overhealing, Critical )
+	function me:COMBAT_LOG_EVENT_UNFILTERED ( Event, _, Type, _, Caster, CasterFlags, _, Target, TargetFlags, SpellID, _, _, Amount, Overhealing, _, Critical )
 		if ( Type:match( "_HEAL$" ) and not ( Type:match( "^ENVIRONMENTAL" ) or IgnoredSpells[ SpellID ] ) ) then
 			OnMe = band( TargetFlags, MeFlag ) ~= 0;
 			ByMe = band( CasterFlags, MeFlag ) ~= 0;

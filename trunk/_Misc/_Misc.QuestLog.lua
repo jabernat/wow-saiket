@@ -24,33 +24,24 @@ _Misc.QuestLog = me;
   ****************************************************************************]]
 do
 	local GetQuestLogTitle = GetQuestLogTitle;
-	local IsQuestWatched = IsQuestWatched;
 	function me.QuestLogUpdate ()
-		local NumEntries = GetNumQuestLogEntries();
-		local QuestIndex = FauxScrollFrame_GetOffset( QuestLogListScrollFrame );
-	
-		for DisplayOffset = 1, QUESTS_DISPLAYED do
-			QuestIndex = QuestIndex + 1;
-			if ( QuestIndex > NumEntries ) then
+		for _, Button in ipairs( QuestLogScrollFrame.buttons ) do
+			if ( not Button:IsShown() ) then
 				break;
 			end
-	
-			local TitleTextName = "QuestLogTitle"..DisplayOffset;
-			local TitleText = _G[ TitleTextName ];
-			local Title, Level, Tag, _, IsHeader, _, Completed, IsDaily = GetQuestLogTitle( QuestIndex );
+			local Index = Button:GetID();
+
+			local Title, Level, Tag, _, IsHeader, _, Completed, IsDaily = GetQuestLogTitle( Index );
 			if ( not IsHeader ) then
-				if ( IsDaily ) then
-					Tag = L.QUESTLOG_DAILY_FORMAT:format( Tag and L.QUESTLOG_QUESTTAGS[ Tag:match( L.QUESTLOG_DAILY_PATTERN ) ] or "" );
-				else
-					Tag = L.QUESTLOG_QUESTTAGS[ Tag ] or "";
+				if ( Tag ) then
+					Tag = L.QUESTLOG_QUESTTAGS[ Tag:match( L.QUESTLOG_DAILY_PATTERN ) or Tag ] or Tag;
 				end
-				TitleText:SetFormattedText( L.QUESTLOG_TITLETEXT_FORMAT, Level, Tag, Title );
+				if ( IsDaily ) then
+					Tag = L.QUESTLOG_DAILY_FORMAT:format( Tag or "" );
+				end
+				Button.normalText:SetFormattedText( L.QUESTLOG_TITLETEXT_FORMAT, Level, Tag or "", Title );
+				Button.tag:SetText( L.QUESTLOG_ISCOMPLETETAGS[ Completed ] );
 			end
-			if ( IsQuestWatched( QuestIndex ) ) then
-				_Misc.SetPoint( _G[ TitleTextName.."Check" ], "LEFT", TitleText, "LEFT", 6, 0 );
-			end
-			-- Only set tag text when quest is complete or failed
-			_G[ TitleTextName.."Tag" ]:SetText( L.QUESTLOG_ISCOMPLETETAGS[ Completed ] );
 		end
 	end
 end
@@ -64,13 +55,16 @@ end
 
 do
 	-- Make titles expand when no tag is present
-	for TitleIndex = 1, QUESTS_DISPLAYED do
-		local ButtonName = "QuestLogTitle"..TitleIndex;
-		local ButtonTag = _G[ ButtonName.."Tag" ];
-
-		ButtonTag:SetWidth( 0 ); -- Cause width to scale to text contents
-		_G[ ButtonName.."NormalText" ]:SetPoint( "RIGHT", ButtonTag, "LEFT" );
+	for Index, Button in ipairs( QuestLogScrollFrame.buttons ) do
+		Button.tag:SetWidth( 0 ); -- Cause width to scale to text contents
+		Button.normalText:SetPoint( "RIGHT", Button.tag, "LEFT" );
+		Button.groupMates:ClearAllPoints();
+		Button.groupMates:SetPoint( "RIGHT", Button.normalText, "LEFT" );
+		Button.check:ClearAllPoints();
+		Button.check:SetPoint( "RIGHT", Button.normalText, "LEFT" );
 	end
+	QuestLogTitleButton_Resize = _Misc.NilFunction;
 
 	hooksecurefunc( "QuestLog_Update", me.QuestLogUpdate );
+	QuestLogScrollFrame.update = QuestLog_Update;
 end
