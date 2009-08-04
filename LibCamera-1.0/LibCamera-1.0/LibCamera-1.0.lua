@@ -4,7 +4,7 @@
   ****************************************************************************]]
 
 
-local MAJOR, MINOR = "LibCamera-1.0", 4;
+local MAJOR, MINOR = "LibCamera-1.0", 5;
 
 local lib = LibStub:NewLibrary( MAJOR, MINOR );
 if ( not lib ) then
@@ -53,19 +53,19 @@ do
 		Changed = false;
 
 		-- Backup any existing camera data
-		OriginalPitch = GetCVar( "cameraPitchD" );
-		OriginalYaw = GetCVar( "cameraYawD" );
-		OriginalDistance = GetCVar( "cameraDistanceD" );
+		OriginalPitch = GetCVar( "cameraPitchE" );
+		OriginalYaw = GetCVar( "cameraYawE" );
+		OriginalDistance = GetCVar( "cameraDistanceE" );
 
 		-- Cache current camera information
 		SaveView( 5 );
-		NewPitch = DegreesToRadians * GetCVar( "cameraPitchD" );
+		NewPitch = DegreesToRadians * GetCVar( "cameraPitchE" );
 		-- Note: A pitch of zero (exactly) indicates an error related to pitchLimit CVar, so disregard
 		if ( not Pitch or ( NewPitch ~= 0 and abs( NewPitch - Pitch ) >= AngleMinDelta ) ) then
 			Pitch = NewPitch;
 			Changed = true;
 		end
-		NewYaw = DegreesToRadians * GetCVar( "cameraYawD" ) + YawOffset;
+		NewYaw = DegreesToRadians * GetCVar( "cameraYawE" ) + YawOffset;
 		if ( not ( IsCameraMoving or IsMouselooking() ) ) then -- Camera angle relative to player face
 			NewYaw = NewYaw + GetPlayerFacing();
 		end
@@ -74,7 +74,7 @@ do
 			Yaw = NewYaw;
 			Changed = true;
 		end
-		NewDistance = tonumber( GetCVar( "cameraDistanceD" ) );
+		NewDistance = tonumber( GetCVar( "cameraDistanceE" ) );
 		if ( NewDistance ~= Distance ) then
 			Distance = NewDistance;
 			Changed = true;
@@ -82,9 +82,9 @@ do
 		end
 
 		-- Restore original camera data
-		SetCVar( "cameraPitchD", OriginalPitch );
-		SetCVar( "cameraYawD", OriginalYaw );
-		SetCVar( "cameraDistanceD", OriginalDistance );
+		SetCVar( "cameraPitchE", OriginalPitch );
+		SetCVar( "cameraYawE", OriginalYaw );
+		SetCVar( "cameraDistanceE", OriginalDistance );
 
 
 		if ( Changed ) then

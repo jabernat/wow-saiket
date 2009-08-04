@@ -4,14 +4,43 @@
   ****************************************************************************]]
 
 
-local L = _NPCScanLocalization.OVERLAY;
 local _NPCScan = _NPCScan;
-local me = CreateFrame( "Frame" );
+local me = {};
 _NPCScan.Overlay = me;
 me.Version = GetAddOnMetadata( "_NPCScan.Overlay", "Version" ):match( "^([%d.]+)" );
 
+me.Options = {
+	Version = me.Version;
+	Modules = {};
+};
+
+me.OptionsDefault = {
+	Version = me.Version;
+	Modules = {
+		[ "WorldMap" ] = true;
+		[ "BattlefieldMinimap" ] = true;
+	};
+};
+
+
+me.Modules = {};
+
+me.NPCMaps = {}; -- [ NpcID ] = MapName;
+me.NPCsEnabled = {};
+
+me.Colors = {
+	RAID_CLASS_COLORS.SHAMAN,
+	RAID_CLASS_COLORS.DEATHKNIGHT,
+	GREEN_FONT_COLOR,
+	RAID_CLASS_COLORS.DRUID,
+	RAID_CLASS_COLORS.PALADIN,
+};
+
 local TexturesUnused = {};
 local TexturesUsed = {};
+
+local MESSAGE_ADD = "NpcOverlay_Add";
+local MESSAGE_REMOVE = "NpcOverlay_Remove";
 
 
 
@@ -79,7 +108,7 @@ end
   * Function: _NPCScan.Overlay:TextureAdd                                      *
   * Description: Gets an unused texture and adds it to the given frame.        *
   ****************************************************************************]]
-function me:TextureAdd ( ID )
+function me:TextureAdd ( ID, Layer, R, G, B, A )
 	local Texture = TexturesUnused[ #TexturesUnused ];
 	if ( Texture ) then
 		TexturesUnused[ #TexturesUnused ] = nil;
@@ -89,6 +118,8 @@ function me:TextureAdd ( ID )
 		Texture = self:CreateTexture();
 		Texture:SetTexture( [[Interface\AddOns\_NPCScan.Overlay\Skin\Triangle]] );
 	end
+	Texture:SetVertexColor( R, G, B, A );
+	Texture:SetDrawLayer( Layer );
 	Texture.ID = ID;
 
 	local UsedCache = TexturesUsed[ self ];
@@ -102,10 +133,10 @@ end
 
 
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay:PolygonRemoveAll                                *
+  * Function: _NPCScan.Overlay:PathRemoveAll                                   *
   * Description: Removes all polygon artwork from a frame.                     *
   ****************************************************************************]]
-function me:PolygonRemoveAll ()
+function me:PathRemoveAll ()
 	if ( TexturesUsed[ self ] ) then
 		for _, Texture in ipairs( TexturesUsed[ self ] ) do
 			TexturesUnused[ #TexturesUnused + 1 ] = Texture;
@@ -115,15 +146,15 @@ function me:PolygonRemoveAll ()
 	end
 end
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay:PolygonRemove                                   *
-  * Description: Reclaims all textures associated with a polygon set ID.       *
+  * Function: _NPCScan.Overlay:PathRemove                                      *
+  * Description: Reclaims all textures associated with an NPC's ID.            *
   ****************************************************************************]]
-function me:PolygonRemove ( ID )
+function me:PathRemove ( NpcID )
 	local UsedCache = TexturesUsed[ self ];
 	if ( UsedCache ) then
 		for Index = #UsedCache, 1, -1 do
 			local Texture = UsedCache[ Index ];
-			if ( Texture.ID == ID ) then
+			if ( Texture.ID == NpcID ) then
 				tremove( UsedCache, Index );
 				TexturesUnused[ #TexturesUnused + 1 ] = Texture;
 				Texture:Hide();
@@ -132,58 +163,40 @@ function me:PolygonRemove ( ID )
 	end
 end
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay:PolygonAdd                                      *
-  * Description: Draws the given polygon onto a frame.                         *
+  * Function: _NPCScan.Overlay:PathAdd                                         *
+  * Description: Draws the given NPC's path onto a frame.                      *
   ****************************************************************************]]
 do
-	local byte = string.byte;
-	local lshift = bit.lshift;
 	local Max = 2 ^ 16 - 1;
-	function me:PolygonAdd ( ID, PolyData, Layer, R, G, B, A )
-		for Index = 1, #PolyData, 12 do
-			local Ax, Ay, Bx, By, Cx, Cy =
-				( lshift( byte( PolyData, Index ), 8 ) + byte( PolyData, Index + 1 ) ) / Max,
-				( lshift( byte( PolyData, Index + 2 ), 8 ) + byte( PolyData, Index + 3 ) ) / Max,
-				( lshift( byte( PolyData, Index + 4 ), 8 ) + byte( PolyData, Index + 5 ) ) / Max,
-				( lshift( byte( PolyData, Index + 6 ), 8 ) + byte( PolyData, Index + 7 ) ) / Max,
-				( lshift( byte( PolyData, Index + 8 ), 8 ) + byte( PolyData, Index + 9 ) ) / Max,
-				( lshift( byte( PolyData, Index + 10 ), 8 ) + byte( PolyData, Index + 11 ) ) / Max;
-			local Texture = me.TextureAdd( self, ID );
-			me.TextureDraw( Texture, Ax, Ay, Bx, By, Cx, Cy );
-			Texture:SetVertexColor( R, G, B, A );
-			Texture:SetDrawLayer( Layer );
+	local Ax1, Ax2, Ay1, Ay2, Bx1, Bx2, By1, By2, Cx1, Cx2, Cy1, Cy2;
+	function me:PathAdd ( NpcID, Layer, R, G, B, A )
+		local PathData = me.PathData[ me.NPCMaps[ NpcID ] ][ NpcID ];
+		for Index = 1, #PathData, 12 do
+			Ax1, Ax2, Ay1, Ay2, Bx1, Bx2, By1, By2, Cx1, Cx2, Cy1, Cy2 = PathData:byte( Index, Index + 11 );
+			me.TextureDraw( me.TextureAdd( self, NpcID, Layer, R, G, B, A ),
+				( Ax1 * 256 + Ax2 ) / Max, ( Ay1 * 256 + Ay2 ) / Max,
+				( Bx1 * 256 + Bx2 ) / Max, ( By1 * 256 + By2 ) / Max,
+				( Cx1 * 256 + Cx2 ) / Max, ( Cy1 * 256 + Cy2 ) / Max );
 		end
 	end
 end
+
+
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay:PolygonSetZone                                  *
-  * Description: Repaints a given zone's polygons on the frame.                *
+  * Function: _NPCScan.Overlay.ApplyZone                                       *
+  * Description: Passes the NpcID, color, PathData, ZoneWidth, and ZoneHeight  *
+  *   of all NPCs in a zone to a callback function.                            *
   ****************************************************************************]]
-do
-	local Colors = {
-		RED_FONT_COLOR,
-		RAID_CLASS_COLORS.PALADIN,
-		GREEN_FONT_COLOR,
-		RAID_CLASS_COLORS.MAGE,
-		RAID_CLASS_COLORS.DRUID,
-	};
-	function me:PolygonSetZone ( MapName, Layer )
-		me.PolygonRemoveAll( self );
+function me.ApplyZone ( Map, Callback )
+	local MapData = me.PathData[ Map ];
+	if ( MapData ) then
+		local ColorIndex = 0;
 
-		local MapData = me.PathData[ MapName ];
-		if ( MapData ) then
-			local ColorIndex = 0;
-
-			for NPCID, Data in pairs( MapData ) do
-				ColorIndex = ColorIndex + 1;
-				local Color = Colors[ ( ColorIndex - 1 ) % #Colors + 1 ];
-				if ( type( Data ) == "table" ) then
-					for _, PolyData in ipairs( Data ) do
-						me.PolygonAdd( self, NPCID, PolyData, Layer, Color.r, Color.g, Color.b, 0.5 );
-					end
-				else
-					me.PolygonAdd( self, NPCID, Data, Layer, Color.r, Color.g, Color.b, 0.5 );
-				end
+		for NpcID in pairs( MapData ) do
+			ColorIndex = ColorIndex + 1;
+			if ( me.NPCsEnabled[ NpcID ] ) then
+				local Color = me.Colors[ ( ColorIndex - 1 ) % #me.Colors + 1 ];
+				Callback( NpcID, Color.r, Color.g, Color.b );
 			end
 		end
 	end
@@ -193,71 +206,106 @@ end
 
 
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay.WorldMapUpdate                                  *
+  * Function: _NPCScan.Overlay.ModuleRegister                                  *
+  * Description: Registers a canvas module to paint polygons on.               *
   ****************************************************************************]]
-do
-	local LastMap;
-	function me.WorldMapUpdate ()
-		local Map = GetMapInfo();
-		if ( Map ~= LastMap ) then
-			LastMap = Map;
-			me.PolygonSetZone( WorldMapDetailFrame, Map, "OVERLAY" );
-		end
+function me.ModuleRegister ( Name, Module )
+	me.Modules[ Name ] = Module;
+	me.Config.ModuleRegister( Name, Module.Label );
+end
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.ModuleEnable                                    *
+  ****************************************************************************]]
+function me.ModuleEnable ( Name )
+	if ( not me.Options.Modules[ Name ] ) then
+		me.Options.Modules[ Name ] = true;
+		me.Config.Modules[ Name ]:SetChecked( true );
+
+		local Module = me.Modules[ Name ];
+		Module:Enable();
+		Module:Update();
+		return true;
 	end
 end
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay.WorldMapEnable                                  *
+  * Function: _NPCScan.Overlay.ModuleDisable                                   *
   ****************************************************************************]]
-function me.WorldMapEnable ()
-	hooksecurefunc( "WorldMapFrame_Update", me.WorldMapUpdate );
+function me.ModuleDisable ( Name )
+	if ( me.Options.Modules[ Name ] ) then
+		me.Options.Modules[ Name ] = nil;
+		me.Config.Modules[ Name ]:SetChecked( false );
+
+		me.Modules[ Name ]:Disable();
+		return true;
+	end
 end
 
 
+
+
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay.BattlefieldMinimapUpdate                        *
+  * Function: _NPCScan.Overlay.NPCAdd                                          *
   ****************************************************************************]]
-do
-	local LastMap;
-	function me.BattlefieldMinimapUpdate ()
-		local Map = GetMapInfo();
-		if ( Map ~= LastMap ) then
-			LastMap = Map;
-			me.PolygonSetZone( me.BattlefieldMinimapFrame, Map, "OVERLAY" );
+function me.NPCAdd ( NpcID )
+	local Map = me.NPCMaps[ NpcID ];
+	if ( Map and not me.NPCsEnabled[ NpcID ] ) then
+		me.NPCsEnabled[ NpcID ] = true;
+
+		for Name in pairs( me.Options.Modules ) do
+			me.Modules[ Name ]:Update( Map );
 		end
+		return true;
 	end
 end
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay.BattlefieldMinimapEnable                        *
+  * Function: _NPCScan.Overlay.NPCRemove                                       *
   ****************************************************************************]]
-function me.BattlefieldMinimapEnable ()
-	hooksecurefunc( "BattlefieldMinimap_Update", me.BattlefieldMinimapUpdate );
-	me.BattlefieldMinimapFrame = CreateFrame( "Frame", nil, BattlefieldMinimap );
-	me.BattlefieldMinimapFrame:SetAllPoints();
-end
+function me.NPCRemove ( NpcID )
+	if ( me.NPCsEnabled[ NpcID ] ) then
+		me.NPCsEnabled[ NpcID ] = nil;
 
-
-
-
---[[****************************************************************************
-  * Function: _NPCScan.Overlay:ADDON_LOADED                                    *
-  ****************************************************************************]]
-function me:ADDON_LOADED ( _, AddOn )
-	AddOn = AddOn:lower();
-	if ( AddOn == "_npcscan.overlay" ) then
-		me.WorldMapEnable();
-		if ( IsAddOnLoaded( "Blizzard_BattlefieldMinimap" ) ) then
-			me.BattlefieldMinimapEnable();
+		local Map = me.NPCMaps[ NpcID ];
+		for Name in pairs( me.Options.Modules ) do
+			me.Modules[ Name ]:Update( Map );
 		end
-
-		LoadAddOn( "Routes" ); -- TODO(Remove)
-	elseif ( AddOn == "blizzard_battlefieldminimap" ) then
-		me.BattlefieldMinimapEnable();
+		return true;
 	end
 end
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay:OnEvent                                         *
+  * Function: _NPCScan.Overlay[ MESSAGE_ADD ]                                  *
   ****************************************************************************]]
-me.OnEvent = _NPCScan.OnEvent;
+me[ MESSAGE_ADD ] = function ( _, _, NpcID )
+	me.NPCAdd( NpcID );
+end;
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay[ MESSAGE_REMOVE ]                               *
+  ****************************************************************************]]
+me[ MESSAGE_REMOVE ] = function ( _, _, NpcID )
+	me.NPCRemove( NpcID );
+end;
+
+
+
+
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.Synchronize                                     *
+  * Description: Reloads enabled modules from saved settings.                  *
+  ****************************************************************************]]
+function me.Synchronize ( Options )
+	-- Load defaults if settings omitted
+	if ( not Options ) then
+		Options = me.OptionsDefault;
+	end
+
+	for Name in pairs( me.Options.Modules ) do
+		me.ModuleDisable( Name );
+	end
+	for Name in pairs( me.Modules ) do
+		if ( Options.Modules[ Name ] ) then
+			me.ModuleEnable( Name );
+		end
+	end
+end
 
 
 
@@ -267,6 +315,25 @@ me.OnEvent = _NPCScan.OnEvent;
 -----------------------------
 
 do
-	me:SetScript( "OnEvent", me.OnEvent );
-	me:RegisterEvent( "ADDON_LOADED" );
+	LibStub( "AceEvent-3.0" ):Embed( me );
+	me:RegisterEvent( "ADDON_LOADED", function ( Event, AddOn )
+		if ( AddOn:lower() == "_npcscan.overlay" ) then
+			me:UnregisterEvent( Event );
+
+			-- Build a reverse lookup of NPC IDs to zones
+			for Map, MapData in pairs( me.PathData ) do
+				for NpcID in pairs( MapData ) do
+					me.NPCMaps[ NpcID ] = Map;
+				end
+			end
+
+			local Options = _NPCScanOverlayOptions;
+			_NPCScanOverlayOptions = me.Options;
+
+			me.Synchronize( Options ); -- Loads defaults if nil
+
+			me:RegisterMessage( MESSAGE_ADD );
+			me:RegisterMessage( MESSAGE_REMOVE );
+		end
+	end );
 end

@@ -319,7 +319,7 @@ do
 		ChatFrames[ Index ] = ChatFrame;
 		TabFrames[ Index ] = TabFrame;
 
-		_Clean.HookScript( ChatFrame, "OnShow", me.ChatFrameOnShow );
+		ChatFrame:HookScript( "OnShow", me.ChatFrameOnShow );
 
 		-- Modify chat message frame
 		ChatFrame:SetMaxLines( me.MaxLines );
@@ -363,7 +363,7 @@ do
 		-- Modify chat frame tab
 		hooksecurefunc( TabFrame, "StopMovingOrSizing", Tab.StopMovingOrSizing );
 		_Clean.AddLockedButton( TabFrame );
-		_Clean.HookScript( TabFrame, "OnDoubleClick", Tab.OnDoubleClick );
+		TabFrame:HookScript( "OnDoubleClick", Tab.OnDoubleClick );
 		ShrinkTabBorder( Name.."TabLeft" );
 		ShrinkTabBorder( Name.."TabMiddle" );
 		ShrinkTabBorder( Name.."TabRight" );

@@ -82,5 +82,5 @@ function me:OnLoad ()
 	ColorPickerOkayButton:SetWidth( 96 );
 
 	self:GetParent().EditBox = self;
-	_Misc.HookScript( ColorPickerFrame, "OnColorSelect", me.OnColorSelect );
+	ColorPickerFrame:HookScript( "OnColorSelect", me.OnColorSelect );
 end

@@ -1,9 +1,9 @@
-## Interface: 30100
+## Interface: 30200
 ## Title: oUF SpellRange
 ## Notes: Range element for oUF that works for non-group members
 ## Author: Saiket
-## Version: 3.1.0.1
-## X-Date: 2009-04-14
+## Version: 3.2.0.1
+## X-Date: 2009-06-25
 ## X-Category: UnitFrame
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com

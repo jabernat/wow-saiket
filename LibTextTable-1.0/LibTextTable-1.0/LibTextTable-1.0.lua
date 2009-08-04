@@ -4,7 +4,7 @@
   ****************************************************************************]]
 
 
-local MAJOR, MINOR = "LibTextTable-1.0", 1;
+local MAJOR, MINOR = "LibTextTable-1.0", 2;
 
 local lib = LibStub:NewLibrary( MAJOR, MINOR );
 if ( not lib ) then
@@ -333,7 +333,7 @@ end
   * Function: RowObject:GetNumRegions                                          *
   ****************************************************************************]]
 do
-	local RowMethodsOriginal = getmetatable( ScriptErrorsButton ).__index; -- Generic button metatable
+	local RowMethodsOriginal = getmetatable( BasicScriptErrorsButton ).__index; -- Generic button metatable
 	function RowMethods:GetNumRegions ()
 		return RowMethodsOriginal.GetNumRegions( self ) - 1; -- Skip highlight region
 	end

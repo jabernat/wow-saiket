@@ -112,7 +112,7 @@ function Primary:OnMouseUp ( Button )
 	end
 	if ( IsModifiedClick( "_DEV_FRAMES_DUMP" ) ) then
 		-- Dump frame in full
-		_Dev.Dump.Explore( Target, L.FRAMES_MOUSEFOCUS );
+		_Dev.Dump.Explore( L.FRAMES_MOUSEFOCUS, Target );
 	end
 end
 

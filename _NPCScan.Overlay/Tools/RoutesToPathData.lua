@@ -33,17 +33,17 @@ require( "bit" );
 local EscapeString;
 do
 	local EscapeSequences = {
-		[ "\a" ] = "\\a"; -- Bell
-		[ "\b" ] = "\\b"; -- Backspace
-		[ "\t" ] = "\\t"; -- Horizontal tab
+		--[ "\a" ] = "\\a"; -- Bell
+		--[ "\b" ] = "\\b"; -- Backspace
+		--[ "\t" ] = "\\t"; -- Horizontal tab
 		[ "\n" ] = "\\n"; -- Newline
-		[ "\v" ] = "\\v"; -- Vertical tab
-		[ "\f" ] = "\\f"; -- Form feed
+		--[ "\v" ] = "\\v"; -- Vertical tab
+		--[ "\f" ] = "\\f"; -- Form feed
 		[ "\r" ] = "\\r"; -- Carriage return
 		[ "\\" ] = "\\\\"; -- Backslash
 		[ "\"" ] = "\\\""; -- Quotation mark
 	};
-	-- Add all non-printed characters to replacement table
+	--[[ Add all non-printed characters to replacement table
 	for Index = 0, 31 do
 		local Character = string.char( Index );
 		if ( not EscapeSequences[ Character ] ) then
@@ -55,10 +55,11 @@ do
 		if ( not EscapeSequences[ Character ] ) then
 			EscapeSequences[ Character ] = ( "\\%03d" ):format( Index );
 		end
-	end
+	end]]
 
 	function EscapeString ( Input )
-		return ( Input:gsub( "[%z\1-\31\"\\\127-\255]", EscapeSequences ) );
+		--return ( Input:gsub( "[%z\1-\31\"\\\127-\255]", EscapeSequences ) );
+		return ( Input:gsub( "[\r\n\"\\]", EscapeSequences ) );
 	end
 end
 
@@ -193,17 +194,13 @@ for _, ZoneName in ipairs( Zones ) do
 			local Data = Overlays[ ID ];
 
 			print( ( "\t%s (%d)" ):format( Name, ID ) );
-			if ( #Data == 1 ) then
+			local PolyData = "";
+			for Index, RouteName in ipairs( Data ) do
 				print( ( "\t\t%s" ):format( RouteName ) );
-				Outfile:write( ( "\t\t[ %d ] = \"%s\"; -- %s\n" ):format( ID, EscapeString( PolyLineToTris( ZoneData[ RouteName ].route ) ), Name ) );
-			else
-				Outfile:write( ( "\t\t[ %d ] = { -- %s\n" ):format( ID, Name ) );
-				for _, RouteName in ipairs( Data ) do
-					print( ( "\t\t%s" ):format( RouteName ) );
-					Outfile:write( ( "\t\t\t\"%s\",\n" ):format( EscapeString( PolyLineToTris( ZoneData[ RouteName ].route ) ) ) );
-				end
-				Outfile:write( "\t\t};\n" );
+				PolyData = PolyData..PolyLineToTris( ZoneData[ RouteName ].route );
 			end
+			Outfile:write( ( "\t\t-- %s\n" ):format( Name ) );
+			Outfile:write( ( "\t\t[ %d ] = \"%s\";\n" ):format( ID, EscapeString( PolyData ) ) );
 		end
 		Outfile:write( "\t};\n" );
 	end

@@ -49,11 +49,11 @@ do
 	me.Text:SetPoint( "TOPRIGHT", MinimapPing, "CENTER", -8, -8 );
 	me.Text:SetTextColor( GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b, 0.75 );
 	-- Hook MINIMAP_PING
-	_Misc.HookScript( MinimapPing, "OnEvent", me.MinimapPingOnEvent );
+	MinimapPing:HookScript( "OnEvent", me.MinimapPingOnEvent );
 
 
 	-- Enable scroll wheel
-	_Misc.HookScript( Minimap, "OnMouseWheel", me.OnMouseWheel );
+	Minimap:HookScript( "OnMouseWheel", me.OnMouseWheel );
 	Minimap:EnableMouseWheel( true );
 
 	MinimapZoomIn:Hide();

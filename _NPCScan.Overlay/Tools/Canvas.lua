@@ -42,8 +42,8 @@ Canvas:SetScript( "OnUpdate", function ( self, Elapsed )
 	if ( self.Changed ) then
 		self.Changed = nil;
 
-		me.PolygonRemoveAll( self );
-		me.TextureDraw( me.TextureAdd( self ), Buttons.A.X, Buttons.A.Y, Buttons.B.X, Buttons.B.Y, Buttons.C.X, Buttons.C.Y );
+		me.PathRemoveAll( self );
+		me.TextureDraw( me.TextureAdd( self, nil, "ARTWORK", 1, 1, 1, 1, 1 ), Buttons.A.X, Buttons.A.Y, Buttons.B.X, Buttons.B.Y, Buttons.C.X, Buttons.C.Y );
 
 
 		for Point, Button in pairs( Buttons ) do
