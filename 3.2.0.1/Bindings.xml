@@ -1,0 +1,25 @@
+<Bindings>
+	<Binding name="_MISC_CAMERA_UP" runOnUp="true" header="_MISC_CAMERA">
+		_Misc.Camera.MoveViewUp( keystate );
+	</Binding>
+	<Binding name="_MISC_CAMERA_DOWN" runOnUp="true">
+		_Misc.Camera.MoveViewDown( keystate );
+	</Binding>
+	<Binding name="_MISC_CAMERA_LEFT" runOnUp="true">
+		_Misc.Camera.MoveViewLeft( keystate );
+	</Binding>
+	<Binding name="_MISC_CAMERA_RIGHT" runOnUp="true">
+		_Misc.Camera.MoveViewRight( keystate );
+	</Binding>
+	<Binding name="_MISC_CAMERA_IN" runOnUp="true">
+		_Misc.Camera.MoveViewIn( keystate );
+	</Binding>
+	<Binding name="_MISC_CAMERA_OUT" runOnUp="true">
+		_Misc.Camera.MoveViewOut( keystate );
+	</Binding>
+	<Binding name="_MISC_CAMERA_FLIP" runOnUp="true">
+		_Misc.Camera.FlipView();
+	</Binding>
+
+	<ModifiedClick action="_MISC_AUCTION_QUERY" default="ALT-BUTTON1"/>
+</Bindings>
