@@ -199,7 +199,6 @@ end
   * Description: Uses the mount with the given name depending on location.     *
   ****************************************************************************]]
 do
-	local NorthrendFlyingSpell = GetSpellInfo( 54197 ); -- Cold Weather Flying
 	local GetCompanionInfo = GetCompanionInfo;
 	function me.Mount ( NameGround, NameFlying )
 		if ( IsMounted() ) then
@@ -209,30 +208,8 @@ do
 				VehicleExit();
 			end
 		elseif ( NameGround and IsOutdoors() ) then -- Can probably mount up
-			-- Determine if flying is enabled
-			local Flyable;
-			SetMapToCurrentZone();
-			if ( GetCurrentMapContinent() == 4 ) then -- Northrend
-				if ( GetSpellInfo( NorthrendFlyingSpell ) ) then
-					local Map = GetZoneText();
-					if ( Map == "Dalaran" and GetSubZoneText() ~= "Krasus' Landing" ) then
-						if ( GetCurrentMapDungeonLevel() == 1 ) then
-							Flyable = false; -- Mounting disallowed in upper Dalaran
-						end
-					elseif ( Map == "Wintergrasp" ) then
-						Flyable = false; -- Mounting disallowed in Wintergrasp
-					end
-				else -- Not trained
-					Flyable = false;
-				end
-			end
-
-			if ( Flyable == nil ) then -- Normal rules
-				Flyable = IsFlyableArea();
-			end
-
 			-- Find and use mount
-			local Name = ( Flyable and NameFlying or NameGround ):trim():lower();
+			local Name = ( IsFlyableArea() and NameFlying or NameGround ):trim():lower();
 			local SpellID = tonumber( Name );
 			for Index = 1, GetNumCompanions( "MOUNT" ) do
 				local _, MountName, MountSpellID = GetCompanionInfo( "MOUNT", Index );
