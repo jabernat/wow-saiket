@@ -297,7 +297,7 @@ end
   * Description: Adjusts the rested experience bar segment.                    *
   ****************************************************************************]]
 function me:ExperiencePostUpdate ( _, UnitID, Bar, Value, ValueMax )
-	if ( self.unit == "player" ) then
+	if ( UnitID == "player" ) then
 		local RestedExperience = GetXPExhaustion();
 		local Texture = Bar.RestTexture;
 		if ( RestedExperience ) then
@@ -390,7 +390,10 @@ end
   * Description: Creates a generic solo unit frame.                            *
   ****************************************************************************]]
 function me.StyleMeta.__call ( Style, self, UnitID )
-	self.menu = _Units.ShowGenericMenu;
+	-- Enable the right-click menu
+	SecureUnitButton_OnLoad( self, UnitID, _Units.ShowGenericMenu );
+	self:RegisterForClicks( "LeftButtonUp", "RightButtonUp" );
+
 	self.colors = Colors;
 	self.disallowVehicleSwap = true;
 
@@ -513,12 +516,14 @@ function me.StyleMeta.__call ( Style, self, UnitID )
 	Progress:SetPoint( "BOTTOMLEFT", Bars );
 	Progress:SetPoint( "TOPRIGHT", Power, "BOTTOMRIGHT" );
 	Progress:SetAlpha( 0.8 );
+	Progress:Hide();
 	me.CreateBarBackground( Progress, 0.07 ):SetParent( Bars ); -- Show background while hidden
 	if ( UnitID == "player" ) then
 		if ( IsAddOnLoaded( "oUF_Experience" ) and UnitLevel( "player" ) ~= MAX_PLAYER_LEVEL and not IsXPUserDisabled() ) then
 			self.Experience = Progress;
 			Progress:SetStatusBarColor( unpack( Colors.experience ) );
 			Progress.PostUpdate = me.ExperiencePostUpdate;
+			Progress:Show();
 			local Rest = Progress:CreateTexture( nil, "ARTWORK" );
 			Progress.RestTexture = Rest;
 			Rest:SetTexture( me.BarTexture );
@@ -531,9 +536,10 @@ function me.StyleMeta.__call ( Style, self, UnitID )
 			Progress.PostUpdate = me.ReputationPostUpdate;
 		end
 	elseif ( UnitID == "pet" ) then
-		if ( IsAddOnLoaded( "oUF_Experience" ) ) then
+		if ( IsAddOnLoaded( "oUF_Experience" ) and select( 2, UnitClass( "player" ) ) == "HUNTER" ) then
 			self.Experience = Progress;
 			Progress:SetStatusBarColor( unpack( Colors.experience ) );
+			Progress:Show();
 		end
 	else -- Castbar
 		self.Castbar = Progress;
