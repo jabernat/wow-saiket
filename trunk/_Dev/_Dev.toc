@@ -9,7 +9,7 @@
 ## X-Email: saiket.wow@gmail.com
 ## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons/Dev
 ## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Dev
-## X-RelSite-WoWI: 9333
+## X-WoWI-ID: 9333
 ## X-Localizations: enUS
 ## SavedVariables: _DevOptions
 ## LoadWith: Blizzard_DebugTools
