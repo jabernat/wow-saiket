@@ -9,7 +9,7 @@
 ## X-Email: saiket.wow@gmail.com
 ## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons/GridStatusHealthFade
 ## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:GridStatusHealthFade
-## X-RelSite-WoWI: 12309
+## X-WoWI-ID: 12309
 ## X-Localizations: enUS
 ## X-GridStatusModule: GridStatusHealthFade
 ## RequiredDeps: Grid
