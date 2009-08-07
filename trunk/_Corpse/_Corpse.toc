@@ -12,7 +12,7 @@
 ## X-Email: saiket.wow@gmail.com
 ## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons/Corpse
 ## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Corpse
-## X-RelSite-WoWI: 12901
+## X-WoWI-ID: 12901
 ## X-Localizations: enUS, koKR, zhCN, zhTW
 ## X-CompatibleLocales: deDE, enUS, esES, esMX, frFR, koKR, ruRU, zhCN, zhTW
 Locales.xml
