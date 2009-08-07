@@ -50,16 +50,31 @@ local MESSAGE_REMOVE = "NpcOverlay_Remove";
   * Description: Sets a triangle texture's texcoords to a set of real coords.  *
   ****************************************************************************]]
 do
-	local Det, AF, BF, CD, CE;
-	local function ApplyTransform( self, A, B, C, D, E, F )
-		Det = A * E - B * D;
-		AF, BF, CD, CE = A * F, B * F, C * D, C * E;
+	local ApplyTransform;
+	do
+		local Det, AF, BF, CD, CE;
+		local ULx, ULy, LLx, LLy, URx, URy, LRx, LRy;
+		function ApplyTransform( self, A, B, C, D, E, F )
+			Det = A * E - B * D;
+			AF, BF, CD, CE = A * F, B * F, C * D, C * E;
 
-		self:SetTexCoord(
-			( BF - CE ) / Det, ( CD - AF ) / Det,
-			( BF - CE - B ) / Det, ( CD - AF + A ) / Det,
-			( BF - CE + E ) / Det, ( CD - AF - D ) / Det,
-			( BF - CE + E - B ) / Det, ( CD - AF - D + A ) / Det );
+			ULx, ULy = ( BF - CE ) / Det, ( CD - AF ) / Det;
+			LLx, LLy = ( BF - CE - B ) / Det, ( CD - AF + A ) / Det;
+			URx, URy = ( BF - CE + E ) / Det, ( CD - AF - D ) / Det;
+			LRx, LRy = ( BF - CE + E - B ) / Det, ( CD - AF - D + A ) / Det;
+
+			-- Bounds to prevent "TexCoord out of range" errors
+			if ( ULx < -1e4 ) then ULx = -1e4; elseif ( ULx > 1e4 ) then ULx = 1e4; end
+			if ( ULy < -1e4 ) then ULy = -1e4; elseif ( ULy > 1e4 ) then ULy = 1e4; end
+			if ( LLx < -1e4 ) then LLx = -1e4; elseif ( LLx > 1e4 ) then LLx = 1e4; end
+			if ( LLy < -1e4 ) then LLy = -1e4; elseif ( LLy > 1e4 ) then LLy = 1e4; end
+			if ( URx < -1e4 ) then URx = -1e4; elseif ( URx > 1e4 ) then URx = 1e4; end
+			if ( URy < -1e4 ) then URy = -1e4; elseif ( URy > 1e4 ) then URy = 1e4; end
+			if ( LRx < -1e4 ) then LRx = -1e4; elseif ( LRx > 1e4 ) then LRx = 1e4; end
+			if ( LRy < -1e4 ) then LRy = -1e4; elseif ( LRy > 1e4 ) then LRy = 1e4; end
+
+			self:SetTexCoord( ULx, ULy, LLx, LLy, URx, URy, LRx, LRy );
+		end
 	end
 	local MinX, MinY, WindowX, WindowY;
 	local ABx, ABy, BCx, BCy;
