@@ -37,7 +37,7 @@ do
 			[ GROUP  ]  = "g";
 			[ RAID  ]   = "r";
 			[ PVP ]     = "p";
-			[ DUNGEON_DIFFICULTY2 ] = "h"; -- Heroic
+			[ ITEM_HEROIC ] = "h"; -- Heroic
 		};
 		QUESTLOG_DAILY_PATTERN = "^Daily (.*)$"; -- DAILY_QUEST_TAG_TEMPLATE
 		QUESTLOG_DAILY_FORMAT = "%s|cff71d5ff\226\151\138|r";
