@@ -181,7 +181,6 @@ do
 	local _, Class = UnitClass( "player" );
 	-- Optional low level baseline skills with greater than 28 yard range
 	HelpID = ( {
-		DEATHKNIGHT = 61999; -- Raise Ally
 		DRUID = 5185; -- Healing Touch
 		MAGE = 1459; -- Arcane Intellect
 		PALADIN = 635; -- Holy Light
