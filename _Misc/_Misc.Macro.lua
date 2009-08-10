@@ -199,6 +199,7 @@ end
   * Description: Uses the mount with the given name depending on location.     *
   ****************************************************************************]]
 do
+	local WintergraspName;
 	local GetCompanionInfo = GetCompanionInfo;
 	function me.Mount ( NameGround, NameFlying )
 		if ( IsMounted() ) then
@@ -209,7 +210,8 @@ do
 			end
 		elseif ( NameGround and IsOutdoors() ) then -- Can probably mount up
 			-- Find and use mount
-			local Name = ( IsFlyableArea() and NameFlying or NameGround ):trim():lower();
+			local Flyable = IsFlyableArea() and not ( GetRealZoneText() == WintergraspName and not GetWintergraspWaitTime() ); -- Excludes Wintergrasp while battles are active
+			local Name = ( Flyable and NameFlying or NameGround ):trim():lower();
 			local SpellID = tonumber( Name );
 			for Index = 1, GetNumCompanions( "MOUNT" ) do
 				local _, MountName, MountSpellID = GetCompanionInfo( "MOUNT", Index );
@@ -220,6 +222,17 @@ do
 					return true;
 				end
 			end
+		end
+	end
+
+	-- Find Wintergrasp's localized name
+	local NorthrendID = 4;
+	local Zones = { GetMapZones( NorthrendID ) };
+	for ZoneIndex, ZoneName in ipairs( Zones ) do
+		SetMapZoom( NorthrendID, ZoneIndex );
+		if ( GetMapInfo() == "LakeWintergrasp" ) then
+			WintergraspName = ZoneName;
+			break;
 		end
 	end
 end
