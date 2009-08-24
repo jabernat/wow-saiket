@@ -1,6 +1,6 @@
 -- Canvas.lua: A simple window with draggable points to test tri rendering functions.
 
-local me = _NPCScan.Overlay;
+local Overlay = _NPCScan.Overlay;
 local Window = CreateFrame( "Frame", nil, UIParent );
 
 Window.Title = Window:CreateFontString( nil, "ARTWORK", "GameFontHighlight" );
@@ -31,32 +31,21 @@ Window.Title:SetPoint( "TOPLEFT", Window, 11, -6 );
 
 
 
-local Canvas = CreateFrame( "Frame", "Canvas", Window );
+local Canvas = CreateFrame( "Frame", "_NPCScanOverlayCanvas", Window );
 Canvas:SetPoint( "BOTTOMLEFT", 8, 6 );
 Canvas:SetPoint( "RIGHT", -4, 0 );
 Canvas:SetPoint( "TOP", Window.Title, "BOTTOM", 0, -6 );
 
 local Buttons = {};
-
-Canvas:SetScript( "OnUpdate", function ( self, Elapsed )
-	if ( self.Changed ) then
-		self.Changed = nil;
-
-		me.PathRemoveAll( self );
-		me.TextureDraw( me.TextureAdd( self, nil, "ARTWORK", 1, 1, 1, 1, 1 ), Buttons.A.X, Buttons.A.Y, Buttons.B.X, Buttons.B.Y, Buttons.C.X, Buttons.C.Y );
+Canvas.Buttons = Buttons;
 
 
-		for Point, Button in pairs( Buttons ) do
-			Button:SetPoint( "CENTER", self, "TOPLEFT", Button.X * self:GetWidth(), -Button.Y * self:GetHeight() );
-		end
-	end
-end );
+
 
 local function OnChange ()
 	Canvas.Changed = true;
 end
-local function SetPoint( Point, X, Y )
-	local Button = Buttons[ Point ];
+local function SetPoint( Button, X, Y )
 	if ( Button.X ~= X or Button.Y ~= Y ) then
 		Button.X = X;
 		Button.Y = Y;
@@ -70,8 +59,7 @@ local function ButtonOnUpdate ( self, Elapsed )
 	X = ( X / Scale - Canvas:GetLeft() ) / Canvas:GetWidth();
 	Y = 1 - ( Y / Scale - Canvas:GetBottom() ) / Canvas:GetHeight();
 
-	--SetPoint( self.Point, max( 0, min( 1, X ) ), max( 0, min( 1, Y ) ) );
-	SetPoint( self.Point, X, Y );
+	SetPoint( self, X, Y );
 end
 local function ButtonOnMouseDown ( self )
 	self:SetScript( "OnUpdate", ButtonOnUpdate );
@@ -85,10 +73,12 @@ local function ButtonOnMouseUp ( self )
 	local Color = NORMAL_FONT_COLOR;
 	self.Text:SetVertexColor( Color.r, Color.g, Color.b );
 end
-local function CreateButton ( Point, DefaultX, DefaultY )
+local function CreateButton ( Label, DefaultX, DefaultY )
 	local Button = CreateFrame( "Button", nil, Canvas );
-	Button.Point = Point;
-	Buttons[ Point ] = Button;
+	local ID = #Buttons + 1;
+	Buttons[ ID ] = Button;
+	Button:SetID( ID );
+
 	Button:SetWidth( 14 );
 	Button:SetHeight( 14 );
 	Button:SetScript( "OnMouseDown", ButtonOnMouseDown );
@@ -98,16 +88,48 @@ local function CreateButton ( Point, DefaultX, DefaultY )
 	Button:SetFontString( Button.Text );
 	Button.Text:SetVertexColor( 1.0, 1.0, 0.1 );
 	Button.Text:SetPoint( "CENTER" );
-	Button:SetText( Point );
+	Button:SetText( Label );
 	Button.Icon = Button:CreateTexture( nil, "BORDER" );
 	Button.Icon:SetAllPoints();
 	Button.Icon:SetTexture( [[Interface\Buttons\UI-ColorPicker-Buttons]] );
 	Button.Icon:SetTexCoord( 0, 0.15625, 0, 0.625 );
 
-	SetPoint( Point, DefaultX, DefaultY );
+	SetPoint( Button, DefaultX, DefaultY );
 end
-CreateButton( "A", 0, 1 );
-CreateButton( "B", 0, 0 );
-CreateButton( "C", 1, 0 );
+
+
+local Points = {};
+local function ClearPointsTable ( ... )
+	wipe( Points );
+	return ...;
+end
+local function AddButtonPoints ( Button )
+	local X, Y = Button.X, Button.Y;
+	Button:SetPoint( "CENTER", Canvas, "TOPLEFT", X * Canvas:GetWidth(), -Y * Canvas:GetHeight() );
+	Points[ #Points + 1 ] = X;
+	Points[ #Points + 1 ] = Y;
+end
+Canvas:SetScript( "OnUpdate", function ( self, Elapsed )
+	if ( self.Changed ) then
+		self.Changed = nil;
+
+		for _, Button in ipairs( Buttons ) do
+			AddButtonPoints( Button );
+		end
+
+		Overlay.TextureRemoveAll( self );
+		self:Update( ClearPointsTable( unpack( Points, 1, 6 ) ) );
+	end
+end );
+
+
+function Canvas:Update ( ... )
+	Overlay.TextureAdd( self, "ARTWORK", 1, 1, 1, 1, ... );
+end
+
+
+CreateButton( "A", 0.1, 0.9 );
+CreateButton( "B", 0.1, 0.1 );
+CreateButton( "C", 0.9, 0.1 );
 
 OnChange();

@@ -36,8 +36,7 @@ me.Colors = {
 	RAID_CLASS_COLORS.PALADIN,
 };
 
-local TexturesUnused = {};
-local TexturesUsed = {};
+local TexturesUnused = CreateFrame( "Frame" );
 
 local MESSAGE_ADD = "NpcOverlay_Add";
 local MESSAGE_REMOVE = "NpcOverlay_Remove";
@@ -46,15 +45,36 @@ local MESSAGE_REMOVE = "NpcOverlay_Remove";
 
 
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay:TextureDraw                                     *
-  * Description: Sets a triangle texture's texcoords to a set of real coords.  *
+  * Function: _NPCScan.Overlay:TextureCreate                                   *
+  * Description: Prepares an unused texture on the given frame.                *
+  ****************************************************************************]]
+function me:TextureCreate ( Layer, R, G, B, A )
+	local Texture = #TexturesUnused > 0 and TexturesUnused[ #TexturesUnused ];
+	if ( Texture ) then
+		TexturesUnused[ #TexturesUnused ] = nil;
+		Texture:SetParent( self );
+		Texture:SetDrawLayer( Layer );
+		Texture:ClearAllPoints();
+		Texture:Show();
+	else
+		Texture = self:CreateTexture( nil, Layer );
+	end
+	Texture:SetVertexColor( R, G, B, A );
+
+	self[ #self + 1 ] = Texture;
+	return Texture;
+end
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay:TextureAdd                                      *
+  * Description: Draw a triangle texture with vertices at relative coords.     *
   ****************************************************************************]]
 do
 	local ApplyTransform;
+	local Texture;
 	do
 		local Det, AF, BF, CD, CE;
 		local ULx, ULy, LLx, LLy, URx, URy, LRx, LRy;
-		function ApplyTransform( self, A, B, C, D, E, F )
+		function ApplyTransform( A, B, C, D, E, F )
 			Det = A * E - B * D;
 			AF, BF, CD, CE = A * F, B * F, C * D, C * E;
 
@@ -73,7 +93,7 @@ do
 			if ( LRx < -1e4 ) then LRx = -1e4; elseif ( LRx > 1e4 ) then LRx = 1e4; end
 			if ( LRy < -1e4 ) then LRy = -1e4; elseif ( LRy > 1e4 ) then LRy = 1e4; end
 
-			self:SetTexCoord( ULx, ULy, LLx, LLy, URx, URy, LRx, LRy );
+			Texture:SetTexCoord( ULx, ULy, LLx, LLy, URx, URy, LRx, LRy );
 		end
 	end
 	local MinX, MinY, WindowX, WindowY;
@@ -81,7 +101,7 @@ do
 	local ScaleX, ScaleY, ShearFactor, Sin, Cos;
 	local Parent, Width, Height;
 	local BorderScale, BorderOffset = 256 / 254, -1 / 256; -- Removes one-pixel transparent border
-	function me:TextureDraw ( Ax, Ay, Bx, By, Cx, Cy )
+	function me:TextureAdd ( Layer, R, G, B, A, Ax, Ay, Bx, By, Cx, Cy )
 		--[[ Transform parallelogram so its corners lie on the tri's points:
 		1. Translate by BorderOffset to hide top and left transparent borders.
 		2. Scale by BorderScale to push bottom and left transparent borders out.
@@ -93,24 +113,35 @@ do
 		]]
 		ABx, ABy, BCx, BCy = Ax - Bx, Ay - By, Bx - Cx, By - Cy;
 		ScaleX = ( BCx * BCx + BCy * BCy ) ^ 0.5;
+		if ( ScaleX == 0 ) then
+			return;
+		end
 		ScaleY = ( ABx * BCy - BCx * ABy ) / ScaleX;
+		if ( ScaleY == 0 ) then
+			return;
+		end
 		ShearFactor = -( ABx * BCx + ABy * BCy ) / ( ScaleX * ScaleX );
 		Sin, Cos = BCy / ScaleX, -BCx / ScaleX;
+
+
+		-- Get a texture
+		Texture = me.TextureCreate( self, Layer, R, G, B, A );
+		Texture:SetTexture( [[Interface\AddOns\_NPCScan.Overlay\Skin\Triangle]] );
+
 
 		-- Note: The texture region is made as small as possible to improve framerates.
 		MinX, MinY = min( Ax, Bx, Cx ), min( Ay, By, Cy );
 		WindowX = max( Ax, Bx, Cx ) - MinX;
 		WindowY = max( Ay, By, Cy ) - MinY;
 
-		Parent = self:GetParent();
-		Width, Height = Parent:GetWidth(), Parent:GetHeight();
-		self:SetPoint( "TOPLEFT", MinX * Width, -MinY * Height );
-		self:SetWidth( WindowX * Width );
-		self:SetHeight( WindowY * Height );
+		Width, Height = self:GetWidth(), self:GetHeight();
+		Texture:SetPoint( "TOPLEFT", MinX * Width, -MinY * Height );
+		Texture:SetWidth( WindowX * Width );
+		Texture:SetHeight( WindowY * Height );
 
 		WindowX = BorderScale / WindowX;
 		WindowY = BorderScale / WindowY;
-		ApplyTransform( self,
+		ApplyTransform(
 			WindowX * Cos * ScaleX,
 			WindowX * ( Cos * ScaleX * ShearFactor + Sin * ScaleY ),
 			WindowX * ( Bx - MinX ) + BorderOffset,
@@ -120,63 +151,20 @@ do
 	end
 end
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay:TextureAdd                                      *
-  * Description: Gets an unused texture and adds it to the given frame.        *
+  * Function: _NPCScan.Overlay:TextureRemoveAll                                *
+  * Description: Removes all triangle textures from a frame.                   *
   ****************************************************************************]]
-function me:TextureAdd ( ID, Layer, R, G, B, A )
-	local Texture = TexturesUnused[ #TexturesUnused ];
-	if ( Texture ) then
-		TexturesUnused[ #TexturesUnused ] = nil;
-		Texture:SetParent( self );
-		Texture:Show();
-	else
-		Texture = self:CreateTexture();
-		Texture:SetTexture( [[Interface\AddOns\_NPCScan.Overlay\Skin\Triangle]] );
+function me:TextureRemoveAll ()
+	for Index = #self, 1, -1 do
+		local Texture = self[ Index ];
+		self[ Index ] = nil;
+		Texture:Hide();
+		Texture:SetParent( TexturesUnused );
+		TexturesUnused[ #TexturesUnused + 1 ] = Texture;
 	end
-	Texture:SetVertexColor( R, G, B, A );
-	Texture:SetDrawLayer( Layer );
-	Texture.ID = ID;
-
-	local UsedCache = TexturesUsed[ self ];
-	if ( not UsedCache ) then
-		UsedCache = {};
-		TexturesUsed[ self ] = UsedCache;
-	end
-	UsedCache[ #UsedCache + 1 ] = Texture;
-	return Texture;
 end
 
 
---[[****************************************************************************
-  * Function: _NPCScan.Overlay:PathRemoveAll                                   *
-  * Description: Removes all polygon artwork from a frame.                     *
-  ****************************************************************************]]
-function me:PathRemoveAll ()
-	if ( TexturesUsed[ self ] ) then
-		for _, Texture in ipairs( TexturesUsed[ self ] ) do
-			TexturesUnused[ #TexturesUnused + 1 ] = Texture;
-			Texture:Hide();
-		end
-		wipe( TexturesUsed[ self ] );
-	end
-end
---[[****************************************************************************
-  * Function: _NPCScan.Overlay:PathRemove                                      *
-  * Description: Reclaims all textures associated with an NPC's ID.            *
-  ****************************************************************************]]
-function me:PathRemove ( NpcID )
-	local UsedCache = TexturesUsed[ self ];
-	if ( UsedCache ) then
-		for Index = #UsedCache, 1, -1 do
-			local Texture = UsedCache[ Index ];
-			if ( Texture.ID == NpcID ) then
-				tremove( UsedCache, Index );
-				TexturesUnused[ #TexturesUnused + 1 ] = Texture;
-				Texture:Hide();
-			end
-		end
-	end
-end
 --[[****************************************************************************
   * Function: _NPCScan.Overlay:PathAdd                                         *
   * Description: Draws the given NPC's path onto a frame.                      *
@@ -184,19 +172,16 @@ end
 do
 	local Max = 2 ^ 16 - 1;
 	local Ax1, Ax2, Ay1, Ay2, Bx1, Bx2, By1, By2, Cx1, Cx2, Cy1, Cy2;
-	function me:PathAdd ( NpcID, Layer, R, G, B, A )
-		local PathData = me.PathData[ me.NPCMaps[ NpcID ] ][ NpcID ];
+	function me:PathAdd ( PathData, Layer, R, G, B, A )
 		for Index = 1, #PathData, 12 do
 			Ax1, Ax2, Ay1, Ay2, Bx1, Bx2, By1, By2, Cx1, Cx2, Cy1, Cy2 = PathData:byte( Index, Index + 11 );
-			me.TextureDraw( me.TextureAdd( self, NpcID, Layer, R, G, B, A ),
+			me.TextureAdd( self, Layer, R, G, B, A,
 				( Ax1 * 256 + Ax2 ) / Max, ( Ay1 * 256 + Ay2 ) / Max,
 				( Bx1 * 256 + Bx2 ) / Max, ( By1 * 256 + By2 ) / Max,
 				( Cx1 * 256 + Cx2 ) / Max, ( Cy1 * 256 + Cy2 ) / Max );
 		end
 	end
 end
-
-
 --[[****************************************************************************
   * Function: _NPCScan.Overlay.ApplyZone                                       *
   * Description: Passes the NpcID, color, PathData, ZoneWidth, and ZoneHeight  *
@@ -207,11 +192,11 @@ function me.ApplyZone ( Map, Callback )
 	if ( MapData ) then
 		local ColorIndex = 0;
 
-		for NpcID in pairs( MapData ) do
+		for NpcID, PathData in pairs( MapData ) do
 			ColorIndex = ColorIndex + 1;
 			if ( me.NPCsEnabled[ NpcID ] ) then
 				local Color = me.Colors[ ( ColorIndex - 1 ) % #me.Colors + 1 ];
-				Callback( NpcID, Color.r, Color.g, Color.b );
+				Callback( PathData, Color.r, Color.g, Color.b, NpcID );
 			end
 		end
 	end
