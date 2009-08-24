@@ -41,8 +41,8 @@ end
 do
 	local Count, Height, Width;
 	local NPCNames = {};
-	local function PaintPathAndKey ( NpcID, R, G, B )
-		Overlay.PathAdd( me, NpcID, "OVERLAY", R, G, B, 0.55 );
+	local function PaintPathAndKey ( PathData, R, G, B, NpcID )
+		Overlay.PathAdd( me, PathData, "OVERLAY", R, G, B, 0.55 );
 
 		Count = Count + 1;
 		local Line = Key[ Count ];
@@ -110,7 +110,7 @@ do
 		if ( Map ~= self.MapLast ) then
 			self.MapLast = Map;
 
-			Overlay.PathRemoveAll( self );
+			Overlay.TextureRemoveAll( self );
 			self:Repaint( Map );
 		end
 	end
@@ -160,7 +160,7 @@ end
 function me:Disable ()
 	self:UnregisterEvent( "WORLD_MAP_UPDATE" );
 	self:Hide();
-	Overlay.PathRemoveAll( self );
+	Overlay.TextureRemoveAll( self );
 end
 --[[****************************************************************************
   * Function: _NPCScan.Overlay.WorldMap:Enable                                 *
