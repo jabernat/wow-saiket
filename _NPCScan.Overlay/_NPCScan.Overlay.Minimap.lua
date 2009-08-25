@@ -4,6 +4,13 @@
   ****************************************************************************]]
 
 
+if ( IsAddOnLoaded( "Carbonite" ) ) then
+	local Success, MinimapDocked = pcall( function () return NxData.NXGOpts.MapMMOwn; end );
+	if ( Success and MinimapDocked ) then -- Minimap docked into WorldMap
+		return;
+	end
+end
+
 local L = _NPCScanLocalization.OVERLAY;
 local Overlay = _NPCScan.Overlay;
 local Minimap = Minimap;

@@ -3,7 +3,7 @@
 ## Notes: Adds mob patrol paths to your map.
 ## Author: Saiket
 ## Version: 3.2.0.1
-## X-Date: 2009-08-23
+## X-Date: 2009-08-24
 ## X-Category: Maps
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
@@ -11,6 +11,7 @@
 ## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:NPCScan.Overlay
 ## SavedVariables: _NPCScanOverlayOptions
 ## RequiredDeps: _NPCScan
+## OptionalDeps: Carbonite
 Locales.xml
 
 #Tools\Matrix.lua
@@ -25,3 +26,4 @@ _NPCScan.Overlay.ZoneData.lua
 _NPCScan.Overlay.Minimap.lua
 _NPCScan.Overlay.WorldMap.lua
 _NPCScan.Overlay.BattlefieldMinimap.lua
+_NPCScan.Overlay.Carbonite.lua
