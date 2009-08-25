@@ -214,16 +214,35 @@ function me.ModuleRegister ( Name, Module )
 	me.Config.ModuleRegister( Name, Module.Label );
 end
 --[[****************************************************************************
+  * Function: _NPCScan.Overlay.ModuleUnregister                                *
+  * Description: Disables the module for the session and disables its          *
+  *   configuration controls.                                                  *
+  ****************************************************************************]]
+function me.ModuleUnregister ( Name )
+	local Checkbox = me.Config.Modules[ Name ];
+	if ( Checkbox and Checkbox:IsEnabled() ) then
+		Checkbox:Disable();
+
+		if ( me.Options.Modules[ Name ] ) then
+			me.Modules[ Name ]:Disable();
+		end
+		return true;
+	end
+end
+--[[****************************************************************************
   * Function: _NPCScan.Overlay.ModuleEnable                                    *
   ****************************************************************************]]
 function me.ModuleEnable ( Name )
 	if ( not me.Options.Modules[ Name ] ) then
 		me.Options.Modules[ Name ] = true;
-		me.Config.Modules[ Name ]:SetChecked( true );
 
-		local Module = me.Modules[ Name ];
-		Module:Enable();
-		Module:Update();
+		local Checkbox = me.Config.Modules[ Name ];
+		Checkbox:SetChecked( true );
+		if ( Checkbox:IsEnabled() ) then -- Still registered
+			local Module = me.Modules[ Name ];
+			Module:Enable();
+			Module:Update();
+		end
 		return true;
 	end
 end
@@ -233,9 +252,12 @@ end
 function me.ModuleDisable ( Name )
 	if ( me.Options.Modules[ Name ] ) then
 		me.Options.Modules[ Name ] = nil;
-		me.Config.Modules[ Name ]:SetChecked( false );
 
-		me.Modules[ Name ]:Disable();
+		local Checkbox = me.Config.Modules[ Name ];
+		Checkbox:SetChecked( false );
+		if ( Checkbox:IsEnabled() ) then -- Still registered
+			me.Modules[ Name ]:Disable();
+		end
 		return true;
 	end
 end

@@ -82,7 +82,7 @@ end
 
 do
 	if ( NxData.NXGOpts.MapMMOwn ) then -- Minimap docked into WorldMap
-		-- Disable minimap module
+		Overlay.ModuleUnregister( "Minimap" );
 	end
 
 
