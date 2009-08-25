@@ -23,7 +23,8 @@ Tools\CanvasClip.lua
 _NPCScan.Overlay.PathData.lua
 _NPCScan.Overlay.ZoneData.lua
 
-_NPCScan.Overlay.Minimap.lua
-_NPCScan.Overlay.WorldMap.lua
-_NPCScan.Overlay.BattlefieldMinimap.lua
-_NPCScan.Overlay.Carbonite.lua
+# Canvas Modules
+Modules\_NPCScan.Overlay.Minimap.lua
+Modules\_NPCScan.Overlay.WorldMap.lua
+Modules\_NPCScan.Overlay.BattlefieldMinimap.lua
+Modules\_NPCScan.Overlay.Carbonite.lua
