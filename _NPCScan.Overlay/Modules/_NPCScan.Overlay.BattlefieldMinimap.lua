@@ -15,11 +15,22 @@ me.Label = _NPCScanLocalization.OVERLAY.MODULE_BATTLEFIELDMINIMAP;
 
 
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay.BattlefieldMinimap.Setup                        *
+  * Function: _NPCScan.Overlay.BattlefieldMinimap:Repaint                      *
   ****************************************************************************]]
-function me.Setup ()
-	me.Setup = nil;
+do
+	local function PaintPath ( PathData, R, G, B )
+		Overlay.PathAdd( me, PathData, "OVERLAY", R, G, B, 0.8 );
+	end
+	function me:Repaint ( Map )
+		Overlay.ApplyZone( Map, PaintPath );
+	end
+end
 
+
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.BattlefieldMinimap:OnLoad                       *
+  ****************************************************************************]]
+function me:OnLoad ()
 	me:SetParent( BattlefieldMinimap );
 
 	-- Inherit standard map update code from WorldMap module
@@ -34,51 +45,8 @@ function me.Setup ()
 	local Tile = _G[ "BattlefieldMinimap"..NUM_WORLDMAP_DETAIL_TILES ];
 	me:SetPoint( "BOTTOMRIGHT", Tile, -22 / 256 * Tile:GetWidth(), 100 / 256 * Tile:GetHeight() );
 
-	me:Enable();
-end
-
-
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.BattlefieldMinimap:Repaint                      *
-  ****************************************************************************]]
-do
-	local function PaintPath ( PathData, R, G, B )
-		Overlay.PathAdd( me, PathData, "OVERLAY", R, G, B, 0.8 );
-	end
-	function me:Repaint ( Map )
-		Overlay.ApplyZone( Map, PaintPath );
-	end
-end
-
-
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.BattlefieldMinimap:Update                       *
-  ****************************************************************************]]
-function me:Update ()
-end
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.BattlefieldMinimap:Disable                      *
-  ****************************************************************************]]
-function me:Disable ()
-	me:UnregisterEvent( "ADDON_LOADED" );
-end
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.BattlefieldMinimap:Enable                       *
-  ****************************************************************************]]
-do
-	local function ADDON_LOADED ( self, Event, AddOn )
-		if ( AddOn:lower() == "blizzard_battlefieldminimap" ) then
-			me:UnregisterEvent( "ADDON_LOADED" );
-			me.Setup();
-		end
-	end
-	function me:Enable ()
-		if ( IsAddOnLoaded( "Blizzard_BattlefieldMinimap" ) ) then
-			me.Setup();
-		else -- Register to wait until it loads
-			me:SetScript( "OnEvent", ADDON_LOADED );
-			me:RegisterEvent( "ADDON_LOADED" );
-		end
+	if ( Overlay.Options.Modules[ "BattlefieldMinimap" ] == true ) then
+		me:Enable();
 	end
 end
 
@@ -90,5 +58,5 @@ end
 -----------------------------
 
 do
-	Overlay.ModuleRegister( "BattlefieldMinimap", me );
+	Overlay.ModuleRegister( "BattlefieldMinimap", me, "Blizzard_BattlefieldMinimap" );
 end
