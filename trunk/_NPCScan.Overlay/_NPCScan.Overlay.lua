@@ -7,7 +7,9 @@
 local _NPCScan = _NPCScan;
 local me = {};
 _NPCScan.Overlay = me;
-me.Version = GetAddOnMetadata( "_NPCScan.Overlay", "Version" ):match( "^([%d.]+)" );
+
+local ADDON_NAME = "_NPCScan.Overlay";
+me.Version = GetAddOnMetadata( ADDON_NAME, "Version" ):match( "^([%d.]+)" );
 
 me.Options = {
 	Version = me.Version;
@@ -16,14 +18,12 @@ me.Options = {
 
 me.OptionsDefault = {
 	Version = me.Version;
-	Modules = {
-		[ "WorldMap" ] = true;
-		[ "BattlefieldMinimap" ] = true;
-	};
+	Modules = {};
 };
 
 
 me.Modules = {};
+me.ModuleInitializers = {}; -- [ ParentAddOn ] = Module;
 
 me.NPCMaps = {}; -- [ NpcID ] = MapName;
 me.NPCsEnabled = {};
@@ -209,9 +209,21 @@ end
   * Function: _NPCScan.Overlay.ModuleRegister                                  *
   * Description: Registers a canvas module to paint polygons on.               *
   ****************************************************************************]]
-function me.ModuleRegister ( Name, Module )
+function me.ModuleRegister ( Name, Module, ParentAddon )
 	me.Modules[ Name ] = Module;
-	me.Config.ModuleRegister( Name, Module.Label );
+	local Checkbox = me.Config.ModuleRegister( Name, Module.Label );
+
+	if ( ParentAddon ) then
+		if ( select( 6, GetAddOnInfo( ParentAddon ) ) == "MISSING" ) then
+			me.ModuleUnregister( Name );
+		elseif ( IsAddOnLoaded( ParentAddon ) ) then
+			Module:OnLoad();
+			Module.OnLoad = nil;
+		else
+			me.ModuleInitializers[ ParentAddon:upper() ] = Module;
+		end
+	end
+	return Checkbox;
 end
 --[[****************************************************************************
   * Function: _NPCScan.Overlay.ModuleUnregister                                *
@@ -222,8 +234,10 @@ function me.ModuleUnregister ( Name )
 	local Checkbox = me.Config.Modules[ Name ];
 	if ( Checkbox and Checkbox:IsEnabled() ) then
 		Checkbox:Disable();
+		local Color = GRAY_FONT_COLOR;
+		_G[ Checkbox:GetName().."Text" ]:SetTextColor( Color.r, Color.g, Color.b );
 
-		if ( me.Options.Modules[ Name ] ) then
+		if ( me.Options.Modules[ Name ] and me.Modules[ Name ].Disable ) then
 			me.Modules[ Name ]:Disable();
 		end
 		return true;
@@ -240,8 +254,12 @@ function me.ModuleEnable ( Name )
 		Checkbox:SetChecked( true );
 		if ( Checkbox:IsEnabled() ) then -- Still registered
 			local Module = me.Modules[ Name ];
-			Module:Enable();
-			Module:Update();
+			if ( Module.Enable ) then
+				Module:Enable();
+			end
+			if ( Module.Update ) then
+				Module:Update();
+			end
 		end
 		return true;
 	end
@@ -250,15 +268,30 @@ end
   * Function: _NPCScan.Overlay.ModuleDisable                                   *
   ****************************************************************************]]
 function me.ModuleDisable ( Name )
-	if ( me.Options.Modules[ Name ] ) then
-		me.Options.Modules[ Name ] = nil;
+	local Enabled = me.Options.Modules[ Name ];
+	if ( Enabled ~= false ) then -- True or nil, which defaults to enabled
+		me.Options.Modules[ Name ] = false;
 
-		local Checkbox = me.Config.Modules[ Name ];
-		Checkbox:SetChecked( false );
-		if ( Checkbox:IsEnabled() ) then -- Still registered
-			me.Modules[ Name ]:Disable();
+		if ( Enabled ~= nil ) then -- Was previously enabled
+			local Checkbox = me.Config.Modules[ Name ];
+			Checkbox:SetChecked( false );
+			if ( Checkbox:IsEnabled() and me.Modules[ Name ].Disable ) then -- Still registered
+				me.Modules[ Name ]:Disable();
+			end
 		end
 		return true;
+	end
+end
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay:ADDON_LOADED                                    *
+  ****************************************************************************]]
+function me:ADDON_LOADED ( _, Addon )
+	Addon = Addon:upper(); -- For case insensitive file systems (Windows')
+	local Module = me.ModuleInitializers[ Addon ];
+	if ( Module ) then
+		me.ModuleInitializers[ Addon ] = nil;
+		Module:OnLoad();
+		Module.OnLoad = nil;
 	end
 end
 
@@ -274,7 +307,10 @@ function me.NPCAdd ( NpcID )
 		me.NPCsEnabled[ NpcID ] = true;
 
 		for Name in pairs( me.Options.Modules ) do
-			me.Modules[ Name ]:Update( Map );
+			local Module = me.Modules[ Name ];
+			if ( Module.Update ) then
+				Module:Update( Map );
+			end
 		end
 		return true;
 	end
@@ -288,7 +324,10 @@ function me.NPCRemove ( NpcID )
 
 		local Map = me.NPCMaps[ NpcID ];
 		for Name in pairs( me.Options.Modules ) do
-			me.Modules[ Name ]:Update( Map );
+			local Module = me.Modules[ Name ];
+			if ( Module.Update ) then
+				Module:Update( Map );
+			end
 		end
 		return true;
 	end
@@ -319,14 +358,32 @@ function me.Synchronize ( Options )
 		Options = me.OptionsDefault;
 	end
 
-	for Name in pairs( me.Options.Modules ) do
-		me.ModuleDisable( Name );
-	end
 	for Name in pairs( me.Modules ) do
-		if ( Options.Modules[ Name ] ) then
+		if ( Options.Modules[ Name ] ~= false ) then -- New modules (nil) default to enabled
 			me.ModuleEnable( Name );
+		else
+			me.ModuleDisable( Name );
 		end
 	end
+end
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay:OnLoad                                          *
+  ****************************************************************************]]
+function me:OnLoad ()
+	-- Build a reverse lookup of NPC IDs to zones
+	for Map, MapData in pairs( me.PathData ) do
+		for NpcID in pairs( MapData ) do
+			me.NPCMaps[ NpcID ] = Map;
+		end
+	end
+
+	local Options = _NPCScanOverlayOptions;
+	_NPCScanOverlayOptions = me.Options;
+
+	me.Synchronize( Options ); -- Loads defaults if nil
+
+	me:RegisterMessage( MESSAGE_ADD );
+	me:RegisterMessage( MESSAGE_REMOVE );
 end
 
 
@@ -338,24 +395,7 @@ end
 
 do
 	LibStub( "AceEvent-3.0" ):Embed( me );
-	me:RegisterEvent( "ADDON_LOADED", function ( Event, AddOn )
-		if ( AddOn:lower() == "_npcscan.overlay" ) then
-			me:UnregisterEvent( Event );
+	me:RegisterEvent( "ADDON_LOADED" );
 
-			-- Build a reverse lookup of NPC IDs to zones
-			for Map, MapData in pairs( me.PathData ) do
-				for NpcID in pairs( MapData ) do
-					me.NPCMaps[ NpcID ] = Map;
-				end
-			end
-
-			local Options = _NPCScanOverlayOptions;
-			_NPCScanOverlayOptions = me.Options;
-
-			me.Synchronize( Options ); -- Loads defaults if nil
-
-			me:RegisterMessage( MESSAGE_ADD );
-			me:RegisterMessage( MESSAGE_REMOVE );
-		end
-	end );
+	me.ModuleInitializers[ ADDON_NAME:upper() ] = me;
 end
