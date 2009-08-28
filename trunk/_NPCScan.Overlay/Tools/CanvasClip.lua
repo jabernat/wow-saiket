@@ -2,13 +2,14 @@
 
 local Overlay = _NPCScan.Overlay;
 local Canvas = assert( _NPCScanOverlayCanvas, "Canvas tool must be loaded." );
+local Window = Canvas:GetParent();
 local me = Canvas;
 
 
 local GetShapeIndex, SetShapeIndex, GetMinimapShape;
 do
 	local ClipTextures = {};
-	local ClipTitle = Canvas:CreateFontString( nil, "OVERLAY", "NumberFontNormalSmallGray" );
+	local ClipTitle = Window:CreateFontString( nil, "OVERLAY", "NumberFontNormalSmallGray" );
 	local Shapes = {
 		"ROUND",
 		"SQUARE",
@@ -64,9 +65,9 @@ do
 		return Shapes[ GetShapeIndex() ];
 	end
 
-	Canvas:GetParent():SetHeight( Canvas:GetParent():GetHeight() + ( Canvas:GetWidth() - Canvas:GetHeight() ) ); -- Make square
+	Window:SetHeight( Window:GetHeight() + ( Canvas:GetWidth() - Canvas:GetHeight() ) ); -- Make square
 	for Index = 1, 4 do
-		local Texture = Canvas:CreateTexture( nil, "BACKGROUND" );
+		local Texture = Window:CreateTexture( nil, "ARTWORK" );
 		ClipTextures[ Index ] = Texture;
 		Texture:SetVertexColor( 0.2, 0.1, 0 ); -- Dark brown
 		local Left, Top = Index <= 2, Index % 2 == 1;
@@ -75,7 +76,7 @@ do
 		Texture:SetPoint( "TOP", Canvas, Top and "TOP" or "CENTER" );
 		Texture:SetPoint( "BOTTOM", Canvas, Top and "CENTER" or "BOTTOM" );
 	end
-	ClipTitle:SetPoint( "TOPLEFT" );
+	ClipTitle:SetPoint( "TOPLEFT", Canvas );
 end
 
 
@@ -86,13 +87,16 @@ Canvas:SetScript( "OnMouseWheel", function ( self, Delta )
 end );
 Canvas:EnableMouseWheel( true );
 
+Canvas.AlphaDefault = 0.3;
+Canvas:SetAlpha( 0.3 );
 
 
 
-local function DrawPoint ( X, Y, R, G, B, A )
-	Overlay.TextureAdd( Canvas, "OVERLAY", R, G, B, A,
+
+local function DrawPoint ( X, Y, R, G, B )
+	Overlay.TextureAdd( Canvas, "OVERLAY", R, G, B,
 		X + 0.008, Y, X, Y + 0.02, X, Y - 0.02 );
-	Overlay.TextureAdd( Canvas, "OVERLAY", R, G, B, A,
+	Overlay.TextureAdd( Canvas, "OVERLAY", R, G, B,
 		X, Y + 0.008, X + 0.02, Y, X - 0.02, Y );
 end
 
@@ -107,20 +111,22 @@ do
 			Label:Hide();
 		end
 	end
-	function DrawLabel ( X, Y, Text, ... )
+	function DrawLabel ( X, Y, Text, R, G, B )
 		local Label = next( LabelsUnused );
 		if ( Label ) then
 			LabelsUnused[ Label ] = nil;
 			Label:Show();
 		else
-			Label = Canvas:CreateFontString( nil, "OVERLAY", "NumberFontNormalSmallGray" );
+			Label = Window:CreateFontString( nil, "OVERLAY", "NumberFontNormalSmallGray" );
 		end
 		LabelsUsed[ Label ] = true;
 
 		Label:SetPoint( "TOPLEFT", Canvas, "TOPLEFT", Canvas:GetWidth() * X, -Canvas:GetHeight() * Y );
 		Label:SetText( Text );
-		if ( select( "#", ... ) >= 3 ) then
-			Label:SetVertexColor( ... );
+		if ( R ) then
+			Label:SetVertexColor( R, G, B );
+		else
+			Label:SetVertexColor( 1, 1, 1 );
 		end
 	end
 end
@@ -317,7 +323,7 @@ do
 			end
 
 			if ( AInside and BInside and CInside ) then -- No possible intersections
-				Overlay.TextureAdd( me, "ARTWORK", R, G, B, 0.55,
+				Overlay.TextureAdd( me, "ARTWORK", R, G, B,
 					Ax + 0.5, Ay + 0.5, Bx + 0.5, By + 0.5, Cx + 0.5, Cy + 0.5 );
 			else
 				ABx, ABy = Ax - Bx, Ay - By;
@@ -374,7 +380,7 @@ do
 
 					-- Draw tris between convex polygon vertices
 					for Index = #Points, 6, -2 do
-						Overlay.TextureAdd( me, "ARTWORK", R, G, B, 0.55,
+						Overlay.TextureAdd( me, "ARTWORK", R, G, B,
 							Points[ 1 ] + 0.5, Points[ 2 ] + 0.5, Points[ Index - 3 ] + 0.5, Points[ Index - 2 ] + 0.5, Points[ Index - 1 ] + 0.5, Points[ Index ] + 0.5 );
 					end
 				end
@@ -391,7 +397,7 @@ do
 
 					if ( U > 0 and V > 0 and U + V < 1 ) then -- Entire minimap is contained
 						for Index = 1, 4 do
-							Texture = Overlay.TextureCreate( me, "ARTWORK", R, G, B, 0.55 );
+							Texture = Overlay.TextureCreate( me, "ARTWORK", R, G, B );
 							Left, Top = Index == 2 or Index == 3, Index <= 2;
 							Texture:SetPoint( "LEFT", me, Left and "LEFT" or "CENTER" );
 							Texture:SetPoint( "RIGHT", me, Left and "CENTER" or "RIGHT" );
@@ -435,8 +441,8 @@ local MinimapShapes = { -- Credit to MobileMinimapButtons as seen at <http://www
 local LastQuadrants;
 
 local Cos, Sin = math.cos, math.sin;
-function Canvas:Update ( Ax, Ay, Bx, By, Cx, Cy )
-	Overlay.TextureAdd( self, "BORDER", 0.1, 1, 0.1, 0.25,
+function Canvas:Repaint ( Ax, Ay, Bx, By, Cx, Cy )
+	Overlay.TextureAdd( self, "BORDER", 0.1, 1, 0.1,
 		Ax, Ay, Bx, By, Cx, Cy );
 
 	ClearLabels();

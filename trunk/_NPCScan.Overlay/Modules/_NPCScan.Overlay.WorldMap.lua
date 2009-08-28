@@ -10,8 +10,9 @@ local me = CreateFrame( "Frame", nil, WorldMapDetailFrame );
 Overlay.WorldMap = me;
 
 me.Label = L.MODULE_WORLDMAP;
+me.AlphaDefault = 0.55;
 
-me.Key = CreateFrame( "Frame", nil, me );
+me.Key = CreateFrame( "Frame", nil, WorldMapDetailFrame );
 local Key = me.Key;
 
 me.AchievementNPCNames = {};
@@ -42,7 +43,7 @@ do
 	local Count, Height, Width;
 	local NPCNames = {};
 	local function PaintPathAndKey ( PathData, R, G, B, NpcID )
-		Overlay.PathAdd( me, PathData, "OVERLAY", R, G, B, 0.55 );
+		Overlay.PathAdd( me, PathData, "OVERLAY", R, G, B );
 
 		Count = Count + 1;
 		local Line = Key[ Count ];
@@ -160,6 +161,9 @@ end
 function me:Disable ()
 	self:UnregisterEvent( "WORLD_MAP_UPDATE" );
 	self:Hide();
+	if ( self.Key ) then
+		self.Key:Hide();
+	end
 	Overlay.TextureRemoveAll( self );
 end
 --[[****************************************************************************

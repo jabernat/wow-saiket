@@ -46,7 +46,7 @@ do
 		WorldMap:SetAllPoints();
 
 		local Key = WorldMap.Key;
-		Key:SetParent( WorldMap );
+		Key:SetParent( WorldMapDetailFrame );
 		Key:ClearAllPoints();
 		Key:SetPoint( KeyPointBackup );
 		Key:EnableMouse( true );

@@ -14,11 +14,13 @@ me.Version = GetAddOnMetadata( ADDON_NAME, "Version" ):match( "^([%d.]+)" );
 me.Options = {
 	Version = me.Version;
 	Modules = {};
+	ModulesAlpha = {};
 };
 
 me.OptionsDefault = {
 	Version = me.Version;
 	Modules = {};
+	ModulesAlpha = {};
 };
 
 
@@ -48,7 +50,7 @@ local MESSAGE_REMOVE = "NpcOverlay_Remove";
   * Function: _NPCScan.Overlay:TextureCreate                                   *
   * Description: Prepares an unused texture on the given frame.                *
   ****************************************************************************]]
-function me:TextureCreate ( Layer, R, G, B, A )
+function me:TextureCreate ( Layer, R, G, B )
 	local Texture = #TexturesUnused > 0 and TexturesUnused[ #TexturesUnused ];
 	if ( Texture ) then
 		TexturesUnused[ #TexturesUnused ] = nil;
@@ -59,7 +61,7 @@ function me:TextureCreate ( Layer, R, G, B, A )
 	else
 		Texture = self:CreateTexture( nil, Layer );
 	end
-	Texture:SetVertexColor( R, G, B, A );
+	Texture:SetVertexColor( R, G, B );
 
 	self[ #self + 1 ] = Texture;
 	return Texture;
@@ -101,7 +103,7 @@ do
 	local ScaleX, ScaleY, ShearFactor, Sin, Cos;
 	local Parent, Width, Height;
 	local BorderScale, BorderOffset = 256 / 254, -1 / 256; -- Removes one-pixel transparent border
-	function me:TextureAdd ( Layer, R, G, B, A, Ax, Ay, Bx, By, Cx, Cy )
+	function me:TextureAdd ( Layer, R, G, B, Ax, Ay, Bx, By, Cx, Cy )
 		--[[ Transform parallelogram so its corners lie on the tri's points:
 		1. Translate by BorderOffset to hide top and left transparent borders.
 		2. Scale by BorderScale to push bottom and left transparent borders out.
@@ -125,7 +127,7 @@ do
 
 
 		-- Get a texture
-		Texture = me.TextureCreate( self, Layer, R, G, B, A );
+		Texture = me.TextureCreate( self, Layer, R, G, B );
 		Texture:SetTexture( [[Interface\AddOns\_NPCScan.Overlay\Skin\Triangle]] );
 
 
@@ -172,10 +174,10 @@ end
 do
 	local Max = 2 ^ 16 - 1;
 	local Ax1, Ax2, Ay1, Ay2, Bx1, Bx2, By1, By2, Cx1, Cx2, Cy1, Cy2;
-	function me:PathAdd ( PathData, Layer, R, G, B, A )
+	function me:PathAdd ( PathData, Layer, R, G, B )
 		for Index = 1, #PathData, 12 do
 			Ax1, Ax2, Ay1, Ay2, Bx1, Bx2, By1, By2, Cx1, Cx2, Cy1, Cy2 = PathData:byte( Index, Index + 11 );
-			me.TextureAdd( self, Layer, R, G, B, A,
+			me.TextureAdd( self, Layer, R, G, B,
 				( Ax1 * 256 + Ax2 ) / Max, ( Ay1 * 256 + Ay2 ) / Max,
 				( Bx1 * 256 + Bx2 ) / Max, ( By1 * 256 + By2 ) / Max,
 				( Cx1 * 256 + Cx2 ) / Max, ( Cy1 * 256 + Cy2 ) / Max );
@@ -237,8 +239,14 @@ function me.ModuleUnregister ( Name )
 		local Color = GRAY_FONT_COLOR;
 		_G[ Checkbox:GetName().."Text" ]:SetTextColor( Color.r, Color.g, Color.b );
 
-		if ( me.Options.Modules[ Name ] and me.Modules[ Name ].Disable ) then
-			me.Modules[ Name ]:Disable();
+		local Module = me.Modules[ Name ];
+		Module.Update = nil;
+		Module.Enable = nil;
+		if ( Module.Disable ) then
+			if ( me.Options.Modules[ Name ] ) then
+				Module:Disable();
+			end
+			Module.Disable = nil;
 		end
 		return true;
 	end
@@ -279,6 +287,17 @@ function me.ModuleDisable ( Name )
 				me.Modules[ Name ]:Disable();
 			end
 		end
+		return true;
+	end
+end
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.ModuleSetAlpha                                  *
+  ****************************************************************************]]
+function me.ModuleSetAlpha ( Name, Alpha )
+	if ( Alpha ~= me.Options.ModulesAlpha[ Name ] ) then
+		me.Options.ModulesAlpha[ Name ] = Alpha;
+
+		me.Modules[ Name ]:SetAlpha( Alpha );
 		return true;
 	end
 end
@@ -358,12 +377,13 @@ function me.Synchronize ( Options )
 		Options = me.OptionsDefault;
 	end
 
-	for Name in pairs( me.Modules ) do
+	for Name, Module in pairs( me.Modules ) do
 		if ( Options.Modules[ Name ] ~= false ) then -- New modules (nil) default to enabled
 			me.ModuleEnable( Name );
 		else
 			me.ModuleDisable( Name );
 		end
+		me.ModuleSetAlpha( Name, Options.ModulesAlpha[ Name ] or Module.AlphaDefault );
 	end
 end
 --[[****************************************************************************

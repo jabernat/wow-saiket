@@ -17,6 +17,7 @@ Window:SetBackdrop( {
 	tile = true; tileSize = 32; edgeSize = 32;
 	insets = { left = 7; right = 5; top = 3; bottom = 6; };
 } );
+Window:Hide();
 -- Make dragable
 Window:SetMovable( true );
 Window:SetUserPlaced( true );
@@ -38,6 +39,19 @@ Canvas:SetPoint( "TOP", Window.Title, "BOTTOM", 0, -6 );
 
 local Buttons = {};
 Canvas.Buttons = Buttons;
+
+
+Canvas.Label = RED_FONT_COLOR_CODE.."Canvas Test";
+Canvas.AlphaDefault = 1;
+
+function Canvas:Enable ()
+	Window:Show();
+end
+function Canvas:Disable ()
+	Window:Hide();
+end
+
+Overlay.ModuleRegister( "CanvasTest", Canvas );
 
 
 
@@ -118,13 +132,13 @@ Canvas:SetScript( "OnUpdate", function ( self, Elapsed )
 		end
 
 		Overlay.TextureRemoveAll( self );
-		self:Update( ClearPointsTable( unpack( Points, 1, 6 ) ) );
+		self:Repaint( ClearPointsTable( unpack( Points, 1, 6 ) ) );
 	end
 end );
 
 
-function Canvas:Update ( ... )
-	Overlay.TextureAdd( self, "ARTWORK", 1, 1, 1, 1, ... );
+function Canvas:Repaint ( ... )
+	Overlay.TextureAdd( self, "ARTWORK", 1, 1, 1, ... );
 end
 
 
