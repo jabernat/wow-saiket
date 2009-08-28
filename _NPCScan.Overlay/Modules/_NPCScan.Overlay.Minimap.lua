@@ -11,6 +11,7 @@ local me = CreateFrame( "Frame", nil, Minimap );
 Overlay.Minimap = me;
 
 me.Label = L.MODULE_MINIMAP;
+me.AlphaDefault = 0.55;
 
 me.UpdateRate = 0.04;
 me.UpdateDistance = 0.5;
@@ -222,7 +223,7 @@ do
 					end
 
 					if ( AInside and BInside and CInside ) then -- No possible intersections
-						Overlay.TextureAdd( me, "ARTWORK", R, G, B, 0.55,
+						Overlay.TextureAdd( me, "ARTWORK", R, G, B,
 							Ax + 0.5, Ay + 0.5, Bx + 0.5, By + 0.5, Cx + 0.5, Cy + 0.5 );
 					else
 						ABx, ABy = Ax - Bx, Ay - By;
@@ -279,7 +280,7 @@ do
 
 							-- Draw tris between convex polygon vertices
 							for Index = #Points, 6, -2 do
-								Overlay.TextureAdd( me, "ARTWORK", R, G, B, 0.55,
+								Overlay.TextureAdd( me, "ARTWORK", R, G, B,
 									Points[ 1 ] + 0.5, Points[ 2 ] + 0.5, Points[ Index - 3 ] + 0.5, Points[ Index - 2 ] + 0.5, Points[ Index - 1 ] + 0.5, Points[ Index ] + 0.5 );
 							end
 						end
@@ -296,7 +297,7 @@ do
 
 							if ( U > 0 and V > 0 and U + V < 1 ) then -- Entire minimap is contained
 								for Index = 1, 4 do
-									Texture = Overlay.TextureCreate( me, "ARTWORK", R, G, B, 0.55 );
+									Texture = Overlay.TextureCreate( me, "ARTWORK", R, G, B );
 									Left, Top = Index == 2 or Index == 3, Index <= 2;
 									Texture:SetPoint( "LEFT", me, Left and "LEFT" or "CENTER" );
 									Texture:SetPoint( "RIGHT", me, Left and "CENTER" or "RIGHT" );

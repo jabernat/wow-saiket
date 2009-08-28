@@ -10,6 +10,7 @@ local me = CreateFrame( "Frame" );
 Overlay.BattlefieldMinimap = me;
 
 me.Label = _NPCScanLocalization.OVERLAY.MODULE_BATTLEFIELDMINIMAP;
+me.AlphaDefault = 0.8;
 
 
 
@@ -19,7 +20,7 @@ me.Label = _NPCScanLocalization.OVERLAY.MODULE_BATTLEFIELDMINIMAP;
   ****************************************************************************]]
 do
 	local function PaintPath ( PathData, R, G, B )
-		Overlay.PathAdd( me, PathData, "OVERLAY", R, G, B, 0.8 );
+		Overlay.PathAdd( me, PathData, "OVERLAY", R, G, B );
 	end
 	function me:Repaint ( Map )
 		Overlay.ApplyZone( Map, PaintPath );
