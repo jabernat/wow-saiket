@@ -213,7 +213,7 @@ end
   ****************************************************************************]]
 function me.ModuleRegister ( Name, Module, ParentAddon )
 	me.Modules[ Name ] = Module;
-	local Checkbox = me.Config.ModuleRegister( Name, Module.Label );
+	local Config = me.Config.ModuleRegister( Name, Module.Label );
 
 	if ( ParentAddon ) then
 		if ( select( 6, GetAddOnInfo( ParentAddon ) ) == "MISSING" ) then
@@ -225,7 +225,7 @@ function me.ModuleRegister ( Name, Module, ParentAddon )
 			me.ModuleInitializers[ ParentAddon:upper() ] = Module;
 		end
 	end
-	return Checkbox;
+	return Config;
 end
 --[[****************************************************************************
   * Function: _NPCScan.Overlay.ModuleUnregister                                *
@@ -233,21 +233,23 @@ end
   *   configuration controls.                                                  *
   ****************************************************************************]]
 function me.ModuleUnregister ( Name )
-	local Checkbox = me.Config.Modules[ Name ];
-	if ( Checkbox and Checkbox:IsEnabled() ) then
-		Checkbox:Disable();
-		local Color = GRAY_FONT_COLOR;
-		_G[ Checkbox:GetName().."Text" ]:SetTextColor( Color.r, Color.g, Color.b );
+	local Config = me.Config.Modules[ Name ];
+	if ( Config.Enabled:IsEnabled() == 1 ) then
+		Config.Enabled:SetEnabled( false );
 
 		local Module = me.Modules[ Name ];
-		Module.Update = nil;
-		Module.Enable = nil;
-		if ( Module.Disable ) then
-			if ( me.Options.Modules[ Name ] ) then
+		if ( me.Options.Modules[ Name ] ) then
+			for _, Control in ipairs( Config ) do
+				Control:SetEnabled( false );
+			end
+			if ( Module.Disable ) then
 				Module:Disable();
 			end
-			Module.Disable = nil;
 		end
+
+		Module.Update = nil;
+		Module.Enable = nil;
+		Module.Disable = nil;
 		return true;
 	end
 end
@@ -258,10 +260,13 @@ function me.ModuleEnable ( Name )
 	if ( not me.Options.Modules[ Name ] ) then
 		me.Options.Modules[ Name ] = true;
 
-		local Checkbox = me.Config.Modules[ Name ];
-		Checkbox:SetChecked( true );
-		if ( Checkbox:IsEnabled() ) then -- Still registered
+		local Config = me.Config.Modules[ Name ];
+		Config.Enabled:SetChecked( true );
+		if ( Config.Enabled:IsEnabled() == 1 ) then -- Still registered
 			local Module = me.Modules[ Name ];
+			for _, Control in ipairs( Config ) do
+				Control:SetEnabled( true );
+			end
 			if ( Module.Enable ) then
 				Module:Enable();
 			end
@@ -280,10 +285,14 @@ function me.ModuleDisable ( Name )
 	if ( Enabled ~= false ) then -- True or nil, which defaults to enabled
 		me.Options.Modules[ Name ] = false;
 
+		local Config = me.Config.Modules[ Name ];
+		for _, Control in ipairs( Config ) do
+			Control:SetEnabled( false );
+		end
+
 		if ( Enabled ~= nil ) then -- Was previously enabled
-			local Checkbox = me.Config.Modules[ Name ];
-			Checkbox:SetChecked( false );
-			if ( Checkbox:IsEnabled() and me.Modules[ Name ].Disable ) then -- Still registered
+			Config.Enabled:SetChecked( false );
+			if ( Config.Enabled:IsEnabled() == 1 and me.Modules[ Name ].Disable ) then -- Still registered
 				me.Modules[ Name ]:Disable();
 			end
 		end
@@ -297,6 +306,7 @@ function me.ModuleSetAlpha ( Name, Alpha )
 	if ( Alpha ~= me.Options.ModulesAlpha[ Name ] ) then
 		me.Options.ModulesAlpha[ Name ] = Alpha;
 
+		me.Config.Modules[ Name ].Alpha:SetValue( Alpha );
 		me.Modules[ Name ]:SetAlpha( Alpha );
 		return true;
 	end
