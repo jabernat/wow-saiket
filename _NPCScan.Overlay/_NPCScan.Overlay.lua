@@ -47,6 +47,23 @@ local MESSAGE_REMOVE = "NpcOverlay_Remove";
 
 
 --[[****************************************************************************
+  * Function: _NPCScan.Overlay.SafeCall                                        *
+  * Description: Catches errors and throws them without ending execution.      *
+  ****************************************************************************]]
+local SafeCall;
+do
+	local pcall = pcall;
+	function SafeCall ( Function, ... )
+		local Success, ErrorMessage = pcall( Function, ... );
+		if ( not Success ) then
+			geterrorhandler()( ErrorMessage );
+		end
+	end
+	me.SafeCall = SafeCall;
+end
+
+
+--[[****************************************************************************
   * Function: _NPCScan.Overlay:TextureCreate                                   *
   * Description: Prepares an unused texture on the given frame.                *
   ****************************************************************************]]
@@ -219,7 +236,7 @@ function me.ModuleRegister ( Name, Module, ParentAddon )
 		if ( select( 6, GetAddOnInfo( ParentAddon ) ) == "MISSING" ) then
 			me.ModuleUnregister( Name );
 		elseif ( IsAddOnLoaded( ParentAddon ) ) then
-			Module:OnLoad();
+			SafeCall( Module.OnLoad, Module );
 			Module.OnLoad = nil;
 		else
 			me.ModuleInitializers[ ParentAddon:upper() ] = Module;
@@ -243,7 +260,7 @@ function me.ModuleUnregister ( Name )
 				Control:SetEnabled( false );
 			end
 			if ( Module.Disable ) then
-				Module:Disable();
+				SafeCall( Module.Disable, Module );
 			end
 		end
 
@@ -268,10 +285,10 @@ function me.ModuleEnable ( Name )
 				Control:SetEnabled( true );
 			end
 			if ( Module.Enable ) then
-				Module:Enable();
+				SafeCall( Module.Enable, Module );
 			end
 			if ( Module.Update ) then
-				Module:Update();
+				SafeCall( Module.Update, Module );
 			end
 		end
 		return true;
@@ -292,8 +309,9 @@ function me.ModuleDisable ( Name )
 
 		if ( Enabled ~= nil ) then -- Was previously enabled
 			Config.Enabled:SetChecked( false );
-			if ( Config.Enabled:IsEnabled() == 1 and me.Modules[ Name ].Disable ) then -- Still registered
-				me.Modules[ Name ]:Disable();
+			local Module = me.Modules[ Name ];
+			if ( Config.Enabled:IsEnabled() == 1 and Module.Disable ) then -- Still registered
+				SafeCall( Module.Disable, Module );
 			end
 		end
 		return true;
@@ -319,7 +337,7 @@ function me:ADDON_LOADED ( _, Addon )
 	local Module = me.ModuleInitializers[ Addon ];
 	if ( Module ) then
 		me.ModuleInitializers[ Addon ] = nil;
-		Module:OnLoad();
+		SafeCall( Module.OnLoad, Module );
 		Module.OnLoad = nil;
 	end
 end
@@ -338,7 +356,7 @@ function me.NPCAdd ( NpcID )
 		for Name in pairs( me.Options.Modules ) do
 			local Module = me.Modules[ Name ];
 			if ( Module.Update ) then
-				Module:Update( Map );
+				SafeCall( Module.Update, Module, Map );
 			end
 		end
 		return true;
@@ -355,7 +373,7 @@ function me.NPCRemove ( NpcID )
 		for Name in pairs( me.Options.Modules ) do
 			local Module = me.Modules[ Name ];
 			if ( Module.Update ) then
-				Module:Update( Map );
+				SafeCall( Module.Update, Module, Map );
 			end
 		end
 		return true;
