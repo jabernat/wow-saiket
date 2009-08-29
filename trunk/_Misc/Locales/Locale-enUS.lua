@@ -36,6 +36,8 @@ do
 			[ LFG_TYPE_DUNGEON ] = "d"; -- Dungeon
 			[ GROUP  ]  = "g";
 			[ RAID  ]   = "r";
+			[ RAID.." (10)"  ]   = "r10";
+			[ RAID.." (25)"  ]   = "r25";
 			[ PVP ]     = "p";
 			[ ITEM_HEROIC ] = "h"; -- Heroic
 		};
