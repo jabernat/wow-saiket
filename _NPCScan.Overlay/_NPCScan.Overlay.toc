@@ -3,7 +3,7 @@
 ## Notes: Adds mob patrol paths to your map.
 ## Author: Saiket
 ## Version: 3.2.0.1
-## X-Date: 2009-08-28
+## X-Date: 2009-08-29
 ## X-Category: Maps
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
@@ -24,7 +24,7 @@ _NPCScan.Overlay.PathData.lua
 _NPCScan.Overlay.ZoneData.lua
 
 # Canvas Modules
-Modules\_NPCScan.Overlay.Minimap.lua
 Modules\_NPCScan.Overlay.WorldMap.lua
 Modules\_NPCScan.Overlay.BattlefieldMinimap.lua
+Modules\_NPCScan.Overlay.Minimap.lua
 Modules\_NPCScan.Overlay.Carbonite.lua
