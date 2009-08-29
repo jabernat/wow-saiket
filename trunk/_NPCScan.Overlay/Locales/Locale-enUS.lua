@@ -7,6 +7,8 @@
 do
 	_NPCScanLocalization.OVERLAY = setmetatable( {
 		CONFIG_TITLE = "Overlay";
+		CONFIG_ENABLE = ENABLE;
+		CONFIG_ALPHA = "Alpha";
 		CONFIG_DESC = "Control which maps will show mob path overlays.  Most map-modifying addons are controlled with the World Map option.";
 		CONFIG_ZONE = "Zone:";
 

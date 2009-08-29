@@ -16,37 +16,80 @@ me.Modules = {};
 
 
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay.Config:ModuleOnClick                            *
+  * Function: _NPCScan.Overlay.Config:ModuleCheckboxSetEnabled                 *
   ****************************************************************************]]
-function me:ModuleOnClick ( Enable )
+function me:ModuleCheckboxSetEnabled ( Enable )
+	( Enable and BlizzardOptionsPanel_CheckButton_Enable or BlizzardOptionsPanel_CheckButton_Disable )( self );
+end
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.Config:ModuleSliderSetEnabled                   *
+  ****************************************************************************]]
+function me:ModuleSliderSetEnabled ( Enable )
+	( Enable and BlizzardOptionsPanel_Slider_Enable or BlizzardOptionsPanel_Slider_Disable )( self );
+end
+
+
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.Config:ModuleEnabledOnClick                     *
+  ****************************************************************************]]
+function me:ModuleEnabledOnClick ( Enable )
 	local Enable = self:GetChecked() == 1;
 
 	PlaySound( Enable and "igMainMenuOptionCheckBoxOn" or "igMainMenuOptionCheckBoxOff" );
-	Overlay[ Enable and "ModuleEnable" or "ModuleDisable" ]( self.Name );
+	Overlay[ Enable and "ModuleEnable" or "ModuleDisable" ]( self:GetParent().Name );
+end
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.Config:ModuleAlphaOnValueChanged                *
+  ****************************************************************************]]
+function me:ModuleAlphaOnValueChanged ( Value )
+	Overlay.ModuleSetAlpha( self:GetParent().Name, Value );
 end
 --[[****************************************************************************
   * Function: _NPCScan.Overlay.Config.ModuleRegister                           *
   ****************************************************************************]]
 do
-	local LastCheckbox;
+	local LastFrame;
 	function me.ModuleRegister ( Name, Text )
-		local Checkbox = CreateFrame( "CheckButton", "_NPCScanOverlayModule"..Name, me, "UICheckButtonTemplate" );
-		me.Modules[ Name ] = Checkbox;
+		local Frame = CreateFrame( "Frame", "_NPCScanOverlayModule"..Name, me, "OptionsBoxTemplate" );
+		Frame.Name = Name;
+		me.Modules[ Name ] = Frame;
 
-		Checkbox.Name = Name;
-		Checkbox:SetWidth( 26 );
-		Checkbox:SetHeight( 26 );
-		Checkbox:SetScript( "OnClick", me.ModuleOnClick );
-		local Label = _G[ Checkbox:GetName().."Text" ];
-		Label:SetText( Text );
-		Checkbox:SetHitRectInsets( 4, 4 - Label:GetStringWidth(), 4, 4 );
-
-		if ( LastCheckbox ) then
-			Checkbox:SetPoint( "TOPLEFT", LastCheckbox, "BOTTOMLEFT", 0, 4 );
+		_G[ Frame:GetName().."Title" ]:SetText( Text );
+		Frame:SetPoint( "RIGHT", -8, 0 );
+		if ( LastFrame ) then
+			Frame:SetPoint( "TOPLEFT", LastFrame, "BOTTOMLEFT", 0, -16 );
 		else
-			Checkbox:SetPoint( "TOPLEFT", me.SubText, "BOTTOMLEFT", -2, -8 );
+			Frame:SetPoint( "TOPLEFT", me.SubText, "BOTTOMLEFT", -2, -16 );
 		end
-		LastCheckbox = Checkbox;
+		LastFrame = Frame;
+
+		local Enabled = CreateFrame( "CheckButton", "$parentEnabled", Frame, "UICheckButtonTemplate" );
+		Frame.Enabled = Enabled;
+		Enabled:SetPoint( "TOPLEFT", 2, -2 );
+		Enabled:SetWidth( 26 );
+		Enabled:SetHeight( 26 );
+		Enabled:SetScript( "OnClick", me.ModuleEnabledOnClick );
+		local Label = _G[ Enabled:GetName().."Text" ];
+		Label:SetText( L.CONFIG_ENABLE );
+		Enabled:SetHitRectInsets( 4, 4 - Label:GetStringWidth(), 4, 4 );
+		Enabled.SetEnabled = me.ModuleCheckboxSetEnabled;
+
+		local Alpha = CreateFrame( "Slider", "$parentAlpha", Frame, "OptionsSliderTemplate" );
+		Frame.Alpha = Alpha;
+		Alpha:SetPoint( "TOP", 0, -16 );
+		Alpha:SetPoint( "RIGHT", -8, 0 );
+		Alpha:SetPoint( "LEFT", Label, "RIGHT", 16, 0 );
+		Alpha:SetMinMaxValues( 0, 1 );
+		Alpha:SetScript( "OnValueChanged", me.ModuleAlphaOnValueChanged );
+		Alpha.SetEnabled = me.ModuleSliderSetEnabled;
+		tinsert( Frame, Alpha );
+		local AlphaName = Alpha:GetName();
+		_G[ AlphaName.."Text" ]:SetText( L.CONFIG_ALPHA );
+		_G[ AlphaName.."Low" ]:Hide();
+		_G[ AlphaName.."High" ]:Hide();
+
+		Frame:SetHeight( Alpha:GetHeight() + 16 + 4 );
+		return Frame;
 	end
 end
 
