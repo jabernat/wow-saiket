@@ -16,7 +16,10 @@ me.AlphaDefault = 0.55;
 me.UpdateRate = 0.04;
 me.UpdateDistance = 0.5;
 
-local UpdateForce, IsInside, RotateMinimap;
+me.RangeRing = CreateFrame( "Frame", nil, me ); -- [ Quadrant ] = Texture;
+me.RangeRing.Radius = 100; -- Visible range for mobs is ~100 yds
+
+local UpdateForce, IsInside, RotateMinimap, Radius, Quadrants;
 
 -- Lots of thanks to Routes (http://www.wowace.com/addons/routes/)
 
@@ -27,7 +30,7 @@ local UpdateForce, IsInside, RotateMinimap;
   * Function: _NPCScan.Overlay.Minimap:Repaint                                 *
   ****************************************************************************]]
 do
-	local SplitPoints, Quadrants = {};
+	local SplitPoints = {};
 	local X, Y, Facing, Width, Height;
 	local FacingSin, FacingCos;
 	local MaxDataValue = 2 ^ 16 - 1;
@@ -343,9 +346,12 @@ do
 	function me:Repaint ( Map, NewX, NewY, NewFacing )
 		Overlay.TextureRemoveAll( self );
 
+		local UpdateRangeRing;
+
 		Quadrants = MinimapShapes[ GetMinimapShape and GetMinimapShape() ] or MinimapShapes[ "ROUND" ];
 		if ( Quadrants ~= LastQuadrants ) then -- Minimap shape changed
 			LastQuadrants = Quadrants;
+			UpdateRangeRing = true;
 
 			-- Cache split points
 			wipe( SplitPoints );
@@ -369,7 +375,19 @@ do
 			end
 		end
 
-		local Side = ( IsInside and RadiiInside or RadiiOutside )[ Minimap:GetZoom() + 1 ] * 2;
+		if ( not Radius ) then -- Minimap radius changed
+			Radius = ( IsInside and RadiiInside or RadiiOutside )[ Minimap:GetZoom() + 1 ];
+			UpdateRangeRing = true;
+		end
+
+		if ( UpdateRangeRing ) then
+			me.RangeRing:Update();
+		end
+		if ( Overlay.Options.MinimapRangeRing ) then
+			me.RangeRing:Show();
+		end
+
+		local Side = Radius * 2;
 		Width, Height = Overlay.GetZoneSize( Map );
 		Width, Height = Width / MaxDataValue / Side, Height / MaxDataValue / Side; -- Simplifies data decompression
 		X = NewX / Side;
@@ -389,12 +407,60 @@ end
 
 
 --[[****************************************************************************
+  * Function: _NPCScan.Overlay.Minimap.RangeRing:Update                        *
+  ****************************************************************************]]
+function me.RangeRing:Update ()
+	local RingRadius = Radius / self.Radius / 2;
+	local Min, Max = 0.5 - RingRadius, 0.5 + RingRadius;
+
+	for Index = 1, 4 do
+		local Texture = me.RangeRing[ Index ];
+		if ( Quadrants[ Index ] and Radius < self.Radius ) then -- Round and too large to fit
+			Texture:Hide();
+		else
+			local Left, Top = Index == 2 or Index == 3, Index <= 2;
+			Texture:SetTexCoord( Left and Min or 0.5, Left and 0.5 or Max, Top and Min or 0.5, Top and 0.5 or Max );
+			Texture:Show();
+		end
+	end
+end
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.Minimap.RangeRing:CheckboxOnClick               *
+  ****************************************************************************]]
+function me.RangeRing:CheckboxOnClick ( Enable )
+	local Enable = self:GetChecked() == 1;
+
+	PlaySound( Enable and "igMainMenuOptionCheckBoxOn" or "igMainMenuOptionCheckBoxOff" );
+	me.RangeRing.SetEnabled( Enable );
+end
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.Minimap.RangeRing.SetEnabled                    *
+  ****************************************************************************]]
+function me.RangeRing.SetEnabled ( Enable )
+	if ( Enable ~= Overlay.Options.MinimapRangeRing ) then
+		Overlay.Options.MinimapRangeRing = Enable;
+
+		me.RangeRing.Checkbox:SetChecked( Enable );
+		if ( Enable ) then
+			UpdateForce = true;
+		else
+			me.RangeRing:Hide();
+		end
+		return true;
+	end
+end
+
+
+
+
+--[[****************************************************************************
   * Function: _NPCScan.Overlay.Minimap:SetZoom                                 *
   ****************************************************************************]]
 do
 	local Backup = Minimap.SetZoom;
 	function me:SetZoom ( Zoom, ... )
 		if ( self:GetZoom() ~= Zoom ) then
+			Radius = nil;
 			UpdateForce = true;
 		end
 		return Backup( Minimap, Zoom, ... );
@@ -412,6 +478,7 @@ function me:MINIMAP_UPDATE_ZOOM ()
 	end
 	IsInside = Minimap:GetZoom() == GetCVar( "minimapInsideZoom" ) + 0;
 	Minimap:SetZoom( Zoom );
+	Radius = nil;
 	UpdateForce = true;
 end
 --[[****************************************************************************
@@ -422,22 +489,6 @@ function me:ZONE_CHANGED_NEW_AREA ()
 	if ( not WorldMapFrame:IsVisible() ) then
 		SetMapToCurrentZone();
 	end
-end
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.Minimap:CVAR_UPDATE                             *
-  ****************************************************************************]]
-function me:CVAR_UPDATE ( _, CVar, Value )
-	if ( CVar == "ROTATE_MINIMAP" ) then
-		RotateMinimap = Value == "1";
-		UpdateForce = true;
-	end
-end
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.Minimap:PLAYER_LOGIN                            *
-  ****************************************************************************]]
-function me:PLAYER_LOGIN ()
-	RotateMinimap = GetCVarBool( "rotateMinimap" );
-	SetMapToCurrentZone();
 end
 --[[****************************************************************************
   * Function: _NPCScan.Overlay.Minimap:OnShow                                  *
@@ -451,28 +502,32 @@ end
 do
 	local GetPlayerMapPosition = GetPlayerMapPosition;
 	local GetRealZoneText = GetRealZoneText;
+	local GetCVarBool = GetCVarBool;
 	local GetPlayerFacing = GetPlayerFacing;
 	local GetMapInfo = GetMapInfo;
 	local UpdateNext = 0;
 	local LastX, LastY, LastFacing;
+	local Map, X, Y, Facing, Width, Height;
 	function me:OnUpdate ( Elapsed )
 		UpdateNext = UpdateNext - Elapsed;
 		if ( UpdateForce or UpdateNext <= 0 ) then
 			UpdateNext = self.UpdateRate;
 
-			local Map = Overlay.ZoneMaps[ GetRealZoneText() ];
-			local X, Y = GetPlayerMapPosition( "player" );
+			Map = Overlay.ZoneMaps[ GetRealZoneText() ];
+			X, Y = GetPlayerMapPosition( "player" );
 			if ( not Map or ( X == 0 and Y == 0 )
 				or X < 0 or X > 1 or Y < 0 or Y > 1
 				or Map ~= GetMapInfo() -- Coordinates will be for wrong map
 			) then
 				UpdateForce = nil;
+				me.RangeRing:Hide();
 				Overlay.TextureRemoveAll( self );
 				return;
 			end
 
-			local Facing = RotateMinimap and GetPlayerFacing() or 0;
-			local Width, Height = Overlay.GetZoneSize( Map );
+			RotateMinimap = GetCVarBool( "rotateMinimap" );
+			Facing = RotateMinimap and GetPlayerFacing() or 0;
+			Width, Height = Overlay.GetZoneSize( Map );
 			X = X * Width;
 			Y = Y * Height;
 
@@ -526,11 +581,47 @@ do
 	me:SetScript( "OnEvent", _NPCScan.OnEvent );
 	me:RegisterEvent( "MINIMAP_UPDATE_ZOOM" );
 	me:RegisterEvent( "ZONE_CHANGED_NEW_AREA" );
-	me:RegisterEvent( "CVAR_UPDATE" );
-	me:RegisterEvent( "PLAYER_LOGIN" );
+
+
+	-- Setup the range ring's textures
+	local RangeRing = me.RangeRing;
+	RangeRing:SetAllPoints();
+	local Color = NORMAL_FONT_COLOR;
+	for Index = 1, 4 do
+		local Texture = RangeRing:CreateTexture();
+		RangeRing[ Index ] = Texture;
+
+		local Left, Top = Index == 2 or Index == 3, Index <= 2;
+		Texture:SetPoint( "LEFT", RangeRing, Left and "LEFT" or "CENTER" );
+		Texture:SetPoint( "RIGHT", RangeRing, Left and "CENTER" or "RIGHT" );
+		Texture:SetPoint( "TOP", RangeRing, Top and "TOP" or "CENTER" );
+		Texture:SetPoint( "BOTTOM", RangeRing, Top and "CENTER" or "BOTTOM" );
+		Texture:SetTexture( [[SPELLS\CIRCLE]] );
+		Texture:SetBlendMode( "ADD" );
+		Texture:SetVertexColor( Color.r, Color.g, Color.b );
+	end
 
 	Minimap.SetZoom = me.SetZoom;
 	WorldMapFrame:HookScript( "OnHide", SetMapToCurrentZone );
+	SetMapToCurrentZone();
 
-	Overlay.ModuleRegister( "Minimap", me );
+
+	-- Register and create GUI for the range ring option
+	local Config = Overlay.ModuleRegister( "Minimap", me );
+
+	local Checkbox = CreateFrame( "CheckButton", "$parentRangeRing", Config, "UICheckButtonTemplate" );
+	me.RangeRing.Checkbox = Checkbox;
+	Config.RangeRing = Checkbox;
+	tinsert( Config, Checkbox );
+
+	Checkbox:SetPoint( "TOPLEFT", Config.Enabled, "BOTTOMLEFT" );
+	Checkbox:SetWidth( 26 );
+	Checkbox:SetHeight( 26 );
+	Checkbox:SetScript( "OnClick", me.RangeRing.CheckboxOnClick );
+	local Label = _G[ Checkbox:GetName().."Text" ];
+	Label:SetFormattedText( L.MODULE_MINIMAP_RANGERING_FORMAT, me.RangeRing.Radius );
+	Checkbox:SetHitRectInsets( 4, 4 - Label:GetStringWidth(), 4, 4 );
+	Checkbox.SetEnabled = Overlay.Config.ModuleCheckboxSetEnabled;
+
+	Config:SetHeight( Config:GetHeight() + Checkbox:GetHeight() );
 end
