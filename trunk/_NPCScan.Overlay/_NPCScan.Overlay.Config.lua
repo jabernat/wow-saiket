@@ -32,7 +32,7 @@ end
 --[[****************************************************************************
   * Function: _NPCScan.Overlay.Config:ModuleEnabledOnClick                     *
   ****************************************************************************]]
-function me:ModuleEnabledOnClick ( Enable )
+function me:ModuleEnabledOnClick ()
 	local Enable = self:GetChecked() == 1;
 
 	PlaySound( Enable and "igMainMenuOptionCheckBoxOn" or "igMainMenuOptionCheckBoxOff" );
@@ -65,7 +65,7 @@ do
 
 		local Enabled = CreateFrame( "CheckButton", "$parentEnabled", Frame, "UICheckButtonTemplate" );
 		Frame.Enabled = Enabled;
-		Enabled:SetPoint( "TOPLEFT", 2, -2 );
+		Enabled:SetPoint( "TOPLEFT", 6, -6 );
 		Enabled:SetWidth( 26 );
 		Enabled:SetHeight( 26 );
 		Enabled:SetScript( "OnClick", me.ModuleEnabledOnClick );
