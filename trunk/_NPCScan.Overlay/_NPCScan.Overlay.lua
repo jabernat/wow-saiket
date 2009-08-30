@@ -21,6 +21,7 @@ me.OptionsDefault = {
 	Version = me.Version;
 	Modules = {};
 	ModulesAlpha = {};
+	MinimapRangeRing = true;
 };
 
 
@@ -413,6 +414,7 @@ function me.Synchronize ( Options )
 		end
 		me.ModuleSetAlpha( Name, Options.ModulesAlpha[ Name ] or Module.AlphaDefault );
 	end
+	me.Minimap.RangeRing.SetEnabled( Options.MinimapRangeRing );
 end
 --[[****************************************************************************
   * Function: _NPCScan.Overlay:OnLoad                                          *

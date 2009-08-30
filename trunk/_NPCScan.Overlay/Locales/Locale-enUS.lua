@@ -17,5 +17,6 @@ do
 		MODULE_WORLDMAP_KEY = "_|cffCCCC88NPCScan|r.Overlay";
 		MODULE_WORLDMAP_KEY_FORMAT = "\226\151\143 %s";
 		MODULE_MINIMAP = "Minimap";
+		MODULE_MINIMAP_RANGERING_FORMAT = "Show %dyd ring for approximate detection range";
 	}, getmetatable( _NPCScanLocalization ) );
 end
