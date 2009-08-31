@@ -16,6 +16,25 @@ me.Modules = {};
 
 
 --[[****************************************************************************
+  * Function: _NPCScan.Overlay.Config:ControlOnEnter                           *
+  * Description: Shows the control's tooltip.                                  *
+  ****************************************************************************]]
+function me:ControlOnEnter ()
+	if ( self.tooltipText ) then
+		GameTooltip:SetOwner( self, "ANCHOR_TOPLEFT" );
+		GameTooltip:SetText( self.tooltipText, nil, nil, nil, nil, 1 );
+	end
+end
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.Config:ControlOnLeave                           *
+  * Description: Hides the control's tooltip.                                  *
+  ****************************************************************************]]
+function me:ControlOnLeave ()
+	GameTooltip:Hide();
+end
+
+
+--[[****************************************************************************
   * Function: _NPCScan.Overlay.Config:ModuleCheckboxSetEnabled                 *
   ****************************************************************************]]
 function me:ModuleCheckboxSetEnabled ( Enable )

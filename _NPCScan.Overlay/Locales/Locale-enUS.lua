@@ -18,5 +18,6 @@ do
 		MODULE_WORLDMAP_KEY_FORMAT = "\226\151\143 %s";
 		MODULE_MINIMAP = "Minimap";
 		MODULE_MINIMAP_RANGERING_FORMAT = "Show %dyd ring for approximate detection range";
+		MODULE_MINIMAP_RANGERING_DESC = "Note: The range ring only appears in zones with tracked rares.";
 	}, getmetatable( _NPCScanLocalization ) );
 end

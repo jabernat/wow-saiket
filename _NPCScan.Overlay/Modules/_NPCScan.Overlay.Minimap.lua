@@ -622,6 +622,9 @@ do
 	Label:SetFormattedText( L.MODULE_MINIMAP_RANGERING_FORMAT, me.RangeRing.Radius );
 	Checkbox:SetHitRectInsets( 4, 4 - Label:GetStringWidth(), 4, 4 );
 	Checkbox.SetEnabled = Overlay.Config.ModuleCheckboxSetEnabled;
+	Checkbox.tooltipText = L.MODULE_MINIMAP_RANGERING_DESC;
+	Checkbox:SetScript( "OnEnter", Overlay.Config.ControlOnEnter );
+	Checkbox:SetScript( "OnLeave", Overlay.Config.ControlOnLeave );
 
 	Config:SetHeight( Config:GetHeight() + Checkbox:GetHeight() );
 end
