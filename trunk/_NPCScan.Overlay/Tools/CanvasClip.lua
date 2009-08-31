@@ -5,6 +5,8 @@ local Canvas = assert( _NPCScanOverlayCanvas, "Canvas tool must be loaded." );
 local Window = Canvas:GetParent();
 local me = Canvas;
 
+local ROUNT_TEXTURE_PATH = [[Interface\CHARACTERFRAME\TempPortraitAlphaMask]];
+
 
 local GetShapeIndex, SetShapeIndex, GetMinimapShape;
 do
@@ -53,7 +55,7 @@ do
 
 		for Index, Texture in ipairs( ClipTextures ) do
 			if ( ShapeQuadrants[ Shape ][ Index ] ) then -- Rounded
-				Texture:SetTexture( [[Interface\CHARACTERFRAME\TempPortraitAlphaMask]] );
+				Texture:SetTexture( ROUNT_TEXTURE_PATH );
 				local Left, Top = Index <= 2, Index % 2 == 1;
 				Texture:SetTexCoord( Left and 0 or 0.5, Left and 0.5 or 1, Top and 0 or 0.5, Top and 0.5 or 1 );
 			else -- Square
@@ -80,7 +82,7 @@ do
 end
 
 
-SetShapeIndex( 7 );
+SetShapeIndex( 1 );
 Canvas:SetScript( "OnMouseWheel", function ( self, Delta )
 	SetShapeIndex( GetShapeIndex() + Delta );
 	self.Changed = true;
@@ -148,18 +150,87 @@ do
 			 or ( X >= 0 and 4 or 3 ) ];
 	end
 	local Points, LastExitPoint, IsClockwise = {};
+	local LastRoundX, LastRoundY;
+
+	local AddRoundSplit; -- Adds rounded areas clipped in round minimap segments
+	do
+		local StartX, StartY;
+		local Dx, Dy, Side;
+		local Texture;
+		function AddRoundSplit ( EndX, EndY )
+			if ( IsClockwise ) then
+				StartX, StartY = EndX, EndY;
+				EndX, EndY = LastRoundX, LastRoundY;
+			else
+				StartX, StartY = LastRoundX, LastRoundY;
+			end
+			LastRoundX, LastRoundY = nil;
+
+			Dx, Dy = EndX - StartX, EndY - StartY;
+			if ( Dx == 0 ) then -- Draw with horizontal texture
+				Texture = Overlay.TextureCreate( me, "ARTWORK", 1, 1, 1 );
+				Texture:SetTexture( ROUNT_TEXTURE_PATH );
+
+				Texture:SetAllPoints();
+				Dx = 0.5 + StartX; -- TexCoord end position
+				if ( Dy > 0 ) then
+					Texture:SetPoint( "BOTTOMRIGHT", me:GetWidth() * ( StartX - 0.5 ), 0 );
+					Texture:SetTexCoord( 0, Dx, 0, 1 );
+				else
+					Texture:SetPoint( "TOPLEFT", me:GetWidth() * Dx, 0 );
+					Texture:SetTexCoord( Dx, 1, 0, 1 );
+				end
+			elseif ( Dy == 0 ) then -- Draw with vertical texture
+				Texture = Overlay.TextureCreate( me, "ARTWORK", 1, 1, 1 );
+				Texture:SetTexture( ROUNT_TEXTURE_PATH );
+
+				Texture:SetAllPoints();
+				Dy = 0.5 + StartY; -- TexCoord end position
+				if ( Dx > 0 ) then
+					Texture:SetPoint( "TOPLEFT", 0, me:GetHeight() * -Dy );
+					Texture:SetTexCoord( 0, 1, Dy, 1 );
+				else
+					Texture:SetPoint( "BOTTOMRIGHT", 0, me:GetHeight() * ( 0.5 - StartY ) );
+					Texture:SetTexCoord( 0, 1, 0, Dy );
+				end
+			else
+				Side = ( EndX - StartX ) * StartY - ( EndY - StartY ) * StartX;
+				if ( Side <= 0 ) then -- Center of circle inside clipped region; at least half of circle to draw
+					--NOTE(Draw using two circular textures and a triangle.)
+				else
+					--NOTE(Have to split up into tris)
+				end
+			end
+		end
+	end
 
 	local AddSplitPoints; -- Adds split points between the last exit intersection and the most recent entrance intersection
 	do
 		local StartX, StartY;
+		local StartXReal, StartYReal;
+		local EndX, EndY;
 		local SplitX, SplitY, Side;
 		local StartDistance2, StartPoint;
 		local NearestDistance2, NearestPoint;
 		local Distance2;
 		local ForStart, ForEnd, ForStep;
-		function AddSplitPoints ( EndX, EndY, WrapToStart )
+		function AddSplitPoints ( EndXReal, EndYReal, WrapToStart )
+			StartXReal, StartYReal = Points[ LastExitPoint ], Points[ LastExitPoint + 1 ];
+
+			if ( IsQuadrantRound( StartXReal, StartYReal ) ) then
+				LastRoundX, LastRoundY = StartXReal, StartYReal;
+			else
+				LastRoundX, LastRoundY = nil;
+			end
+
 			if ( #SplitPoints > 0 ) then
-				StartX, StartY = Points[ LastExitPoint ], Points[ LastExitPoint + 1 ];
+				if ( IsClockwise ) then
+					StartX, StartY = EndXReal, EndYReal;
+					EndX, EndY = StartXReal, StartYReal;
+				else
+					StartX, StartY = StartXReal, StartYReal;
+					EndX, EndY = EndXReal, EndYReal;
+				end
 
 				-- Find first split point after start
 				StartDistance2, StartPoint = math.huge;
@@ -167,16 +238,14 @@ do
 				ForEnd, ForStep = #SplitPoints - 1, IsClockwise and -2 or 2;
 				for Index = IsClockwise and ForEnd or 1, IsClockwise and 1 or ForEnd, ForStep do
 					SplitX, SplitY = SplitPoints[ Index ], SplitPoints[ Index + 1 ];
-					Side = IsClockwise
-						and ( StartX - EndX ) * ( SplitY - EndY ) - ( StartY - EndY ) * ( SplitX - EndX )
-						 or ( EndX - StartX ) * ( SplitY - StartY ) - ( EndY - StartY ) * ( SplitX - StartX );
+					Side = ( EndX - StartX ) * ( SplitY - StartY ) - ( EndY - StartY ) * ( SplitX - StartX );
 
 					if ( Side > 0 ) then -- Valid split point
-						Distance2 = ( StartX - SplitX ) ^ 2 + ( StartY - SplitY ) ^ 2;
+						Distance2 = ( StartXReal - SplitX ) ^ 2 + ( StartYReal - SplitY ) ^ 2;
 						if ( Distance2 < NearestDistance2 ) then
 							NearestPoint, NearestDistance2 = Index, Distance2;
 						end
-						if ( Distance2 < StartDistance2 and Distance2 < ( EndX - SplitX ) ^ 2 + ( EndY - SplitY ) ^ 2 ) then
+						if ( Distance2 < StartDistance2 and Distance2 < ( EndXReal - SplitX ) ^ 2 + ( EndYReal - SplitY ) ^ 2 ) then
 							StartPoint, StartDistance2 = Index, Distance2;
 						end
 					end
@@ -187,31 +256,46 @@ do
 
 				-- Add all split points after start
 				if ( StartPoint ) then
-					Points[ #Points + 1 ] = SplitPoints[ StartPoint ];
-					Points[ #Points + 1 ] = SplitPoints[ StartPoint + 1 ];
+					SplitX, SplitY = SplitPoints[ StartPoint ], SplitPoints[ StartPoint + 1 ];
+					Points[ #Points + 1 ] = SplitX;
+					Points[ #Points + 1 ] = SplitY;
+
+					if ( LastRoundX ) then
+						AddRoundSplit( SplitX, SplitY );
+					elseif ( SplitX == 0 or SplitY == 0 ) then
+						LastRoundX, LastRoundY = SplitX, SplitY;
+					end
 
 					ForStart, ForEnd = StartPoint + 2, StartPoint + #SplitPoints - 2;
 					for Index = IsClockwise and ForEnd or ForStart, IsClockwise and ForStart or ForEnd, ForStep do
 						SplitX, SplitY = SplitPoints[ ( Index - 1 ) % #SplitPoints + 1 ], SplitPoints[ Index % #SplitPoints + 1 ];
-						Side = IsClockwise
-							and ( StartX - EndX ) * ( SplitY - EndY ) - ( StartY - EndY ) * ( SplitX - EndX )
-							 or ( EndX - StartX ) * ( SplitY - StartY ) - ( EndY - StartY ) * ( SplitX - StartX );
+						Side = ( EndX - StartX ) * ( SplitY - StartY ) - ( EndY - StartY ) * ( SplitX - StartX );
 
 						if ( Side > 0 ) then -- Valid split point
 							Points[ #Points + 1 ] = SplitX;
 							Points[ #Points + 1 ] = SplitY;
+
+							if ( LastRoundX ) then
+								AddRoundSplit( SplitX, SplitY );
+							elseif ( SplitX == 0 or SplitY == 0 ) then
+								LastRoundX, LastRoundY = SplitX, SplitY;
+							end
 						else
 							break;
 						end
 					end
 				end
 			end
+
+			if ( LastRoundX ) then
+				AddRoundSplit( EndXReal, EndYReal );
+			end
 			LastExitPoint = nil;
 
 			if ( not WrapToStart ) then
 				-- Add re-entry point
-				Points[ #Points + 1 ] = EndX;
-				Points[ #Points + 1 ] = EndY;
+				Points[ #Points + 1 ] = EndXReal;
+				Points[ #Points + 1 ] = EndYReal;
 			end
 		end
 	end
@@ -404,7 +488,7 @@ do
 							Texture:SetPoint( "TOP", me, Top and "TOP" or "CENTER" );
 							Texture:SetPoint( "BOTTOM", me, Top and "CENTER" or "BOTTOM" );
 							if ( Quadrants[ Index ] ) then -- Rounded
-								Texture:SetTexture( [[Interface\CHARACTERFRAME\TempPortraitAlphaMask]] );
+								Texture:SetTexture( ROUNT_TEXTURE_PATH );
 								Texture:SetTexCoord( Left and 0 or 0.5, Left and 0.5 or 1, Top and 0 or 0.5, Top and 0.5 or 1 );
 							else -- Square
 								Texture:SetTexture( [[Interface\Buttons\WHITE8X8]] );
@@ -454,19 +538,20 @@ function Canvas:Repaint ( Ax, Ay, Bx, By, Cx, Cy )
 		-- Cache split points
 		wipe( SplitPoints );
 		for Index = 1, 4 do
+			local Left, Top = Index == 2 or Index == 3, Index <= 2;
 			if ( Quadrants[ Index ] ) then -- Round
+				-- Note: Cos/sin avoided for accuracy
 				if ( not Quadrants[ ( Index - 2 ) % 4 + 1 ] ) then -- Transition from previous
-					local Angle = ( Index - 1 ) * math.pi / 2;
-					SplitPoints[ #SplitPoints + 1 ] = Cos( Angle ) * 0.5;
-					SplitPoints[ #SplitPoints + 1 ] = Sin( Angle ) * -0.5;
+					-- 0.5*(Cos|-Sin) of angle ( Index - 1 ) * math.pi / 2
+					SplitPoints[ #SplitPoints + 1 ] = ( Top and 0.5 or 0 ) - ( Left and 0.5 or 0 );
+					SplitPoints[ #SplitPoints + 1 ] = ( Top and 0 or 0.5 ) - ( Left and 0.5 or 0 );
 				end
 				if ( not Quadrants[ Index % 4 + 1 ] ) then -- Transition to next
-					local Angle = Index * math.pi / 2;
-					SplitPoints[ #SplitPoints + 1 ] = Cos( Angle ) * 0.5;
-					SplitPoints[ #SplitPoints + 1 ] = Sin( Angle ) * -0.5;
+					-- 0.5*(Cos|-Sin) of angle Index * math.pi / 2
+					SplitPoints[ #SplitPoints + 1 ] = ( Top and 0 or 0.5 ) - ( Left and 0.5 or 0 );
+					SplitPoints[ #SplitPoints + 1 ] = ( Top and 0 or 0.5 ) - ( Left and 0 or 0.5 );
 				end
 			else -- Square
-				local Left, Top = Index == 2 or Index == 3, Index <= 2;
 				SplitPoints[ #SplitPoints + 1 ] = Left and -0.5 or 0.5;
 				SplitPoints[ #SplitPoints + 1 ] = Top and -0.5 or 0.5;
 			end
