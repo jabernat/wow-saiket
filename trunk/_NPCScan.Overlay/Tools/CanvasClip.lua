@@ -155,8 +155,12 @@ do
 	local AddRoundSplit; -- Adds rounded areas clipped in round minimap segments
 	do
 		local StartX, StartY;
-		local Dx, Dy, Side;
+		local Dx, Dy;
 		local Texture;
+		local AngleStart, AngleEnd;
+		local LastX, LastY, CurrentX, CurrentY;
+		local AngleIncrement, TwoPi = math.pi / 20, math.pi * 2;
+		local Atan2, Cos, Sin = math.atan2, math.cos, math.sin;
 		function AddRoundSplit ( EndX, EndY )
 			if ( IsClockwise ) then
 				StartX, StartY = EndX, EndY;
@@ -194,11 +198,19 @@ do
 					Texture:SetTexCoord( 0, 1, 0, Dy );
 				end
 			else
-				Side = ( EndX - StartX ) * StartY - ( EndY - StartY ) * StartX;
-				if ( Side <= 0 ) then -- Center of circle inside clipped region; at least half of circle to draw
-					--NOTE(Draw using two circular textures and a triangle.)
-				else
-					--NOTE(Have to split up into tris)
+				-- Fill the circular section with triangles
+				AngleStart, AngleEnd = Atan2( -StartY, StartX ), Atan2( -EndY, EndX );
+				if ( AngleEnd < AngleStart ) then
+					AngleEnd = AngleEnd + TwoPi;
+				end
+
+				LastX, LastY = StartX + 0.5, StartY + 0.5;
+				EndX, EndY = EndX + 0.5, EndY + 0.5;
+				for Angle = AngleStart, AngleEnd, AngleIncrement do
+					CurrentX, CurrentY = Cos( Angle ) / 2 + 0.5, -Sin( Angle ) / 2 + 0.5;
+					Overlay.TextureAdd( me, "ARTWORK", 0.5, 0.5, 1,
+						EndX, EndY, LastX, LastY, CurrentX, CurrentY );
+					LastX, LastY = CurrentX, CurrentY;
 				end
 			end
 		end
