@@ -370,6 +370,7 @@ do
 	end
 
 	local wipe = wipe;
+	local Area;
 	local ABx, ABy, BCx, BCy, ACx, ACy;
 	local AInside, BInside, CInside;
 	local IntersectPos, PerpX, PerpY;
@@ -378,6 +379,11 @@ do
 	local Denominator, U, V;
 	local Texture, Left, Top;
 	function RepaintTriangle ( Ax, Ay, Bx, By, Cx, Cy )
+		Area = Ax * ( By - Cy ) + Bx * ( Cy - Ay ) + Cx * ( Ay - By );
+		if ( Area >= -1e-6 and Area <= 1e-6 ) then -- Collinear or concurrent points
+			return;
+		end
+
 		if ( RotateMinimap ) then
 			Ax, Ay = Ax * FacingCos - Ay * FacingSin, Ax * FacingSin + Ay * FacingCos;
 			Bx, By = Bx * FacingCos - By * FacingSin, Bx * FacingSin + By * FacingCos;
