@@ -13,8 +13,10 @@ Overlay.Minimap = me;
 me.Label = L.MODULE_MINIMAP;
 me.AlphaDefault = 0.55;
 
-me.UpdateRate = 0.04;
 me.UpdateDistance = 0.5;
+me.UpdateRateDefault  = 0.04;
+me.UpdateRateRotating = 0.02; -- Faster so that spinning the minimap appears smooth
+local UpdateRate = me.UpdateRateDefault;
 
 me.RangeRing = CreateFrame( "Frame", nil, me ); -- [ Quadrant ] = Texture;
 me.RangeRing.Radius = 100; -- Visible range for mobs is ~100 yds
@@ -511,7 +513,7 @@ do
 	function me:OnUpdate ( Elapsed )
 		UpdateNext = UpdateNext - Elapsed;
 		if ( UpdateForce or UpdateNext <= 0 ) then
-			UpdateNext = self.UpdateRate;
+			UpdateNext = UpdateRate;
 
 			Map = Overlay.ZoneMaps[ GetRealZoneText() ];
 			X, Y = GetPlayerMapPosition( "player" );
@@ -526,6 +528,8 @@ do
 			end
 
 			RotateMinimap = GetCVarBool( "rotateMinimap" );
+			UpdateRate = me[ RotateMinimap and "UpdateRateRotating" or "UpdateRateDefault" ];
+
 			Facing = RotateMinimap and GetPlayerFacing() or 0;
 			Width, Height = Overlay.GetZoneSize( Map );
 			X = X * Width;
