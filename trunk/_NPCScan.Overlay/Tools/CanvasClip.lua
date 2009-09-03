@@ -5,8 +5,6 @@ local Canvas = assert( _NPCScanOverlayCanvas, "Canvas tool must be loaded." );
 local Window = Canvas:GetParent();
 local me = Canvas;
 
-local ROUNT_TEXTURE_PATH = [[Interface\CHARACTERFRAME\TempPortraitAlphaMask]];
-
 
 local GetShapeIndex, SetShapeIndex, GetMinimapShape;
 do
@@ -55,7 +53,7 @@ do
 
 		for Index, Texture in ipairs( ClipTextures ) do
 			if ( ShapeQuadrants[ Shape ][ Index ] ) then -- Rounded
-				Texture:SetTexture( ROUNT_TEXTURE_PATH );
+				Texture:SetTexture( [[Interface\CHARACTERFRAME\TempPortraitAlphaMask]] );
 				local Left, Top = Index <= 2, Index % 2 == 1;
 				Texture:SetTexCoord( Left and 0 or 0.5, Left and 0.5 or 1, Top and 0 or 0.5, Top and 0.5 or 1 );
 			else -- Square
@@ -471,7 +469,7 @@ do
 							Texture:SetPoint( "TOP", me, Top and "TOP" or "CENTER" );
 							Texture:SetPoint( "BOTTOM", me, Top and "CENTER" or "BOTTOM" );
 							if ( Quadrants[ Index ] ) then -- Rounded
-								Texture:SetTexture( ROUNT_TEXTURE_PATH );
+								Texture:SetTexture( [[Interface\CHARACTERFRAME\TempPortraitAlphaMask]] );
 								Texture:SetTexCoord( Left and 0 or 0.5, Left and 0.5 or 1, Top and 0 or 0.5, Top and 0.5 or 1 );
 							else -- Square
 								Texture:SetTexture( [[Interface\Buttons\WHITE8X8]] );
