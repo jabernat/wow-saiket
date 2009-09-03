@@ -155,63 +155,28 @@ do
 	local AddRoundSplit; -- Adds rounded areas clipped in round minimap segments
 	do
 		local StartX, StartY;
-		local Dx, Dy;
-		local Texture;
-		local AngleStart, AngleEnd;
-		local LastX, LastY, CurrentX, CurrentY;
-		local AngleIncrement, TwoPi = math.pi / 20, math.pi * 2;
+		local AngleStart, AngleEnd, AngleIncrement;
+		local ArcSegmentLength, TwoPi = math.pi / 20, math.pi * 2;
 		local Atan2, Cos, Sin = math.atan2, math.cos, math.sin;
 		function AddRoundSplit ( EndX, EndY )
-			if ( IsClockwise ) then
-				StartX, StartY = EndX, EndY;
-				EndX, EndY = LastRoundX, LastRoundY;
-			else
-				StartX, StartY = LastRoundX, LastRoundY;
-			end
+			AngleStart, AngleEnd = Atan2( -LastRoundY, LastRoundX ), Atan2( -EndY, EndX );
 			LastRoundX, LastRoundY = nil;
 
-			Dx, Dy = EndX - StartX, EndY - StartY;
-			if ( Dx == 0 ) then -- Draw with horizontal texture
-				Texture = Overlay.TextureCreate( me, "ARTWORK", 1, 1, 1 );
-				Texture:SetTexture( ROUNT_TEXTURE_PATH );
-
-				Texture:SetAllPoints();
-				Dx = 0.5 + StartX; -- TexCoord end position
-				if ( Dy > 0 ) then
-					Texture:SetPoint( "BOTTOMRIGHT", me:GetWidth() * ( StartX - 0.5 ), 0 );
-					Texture:SetTexCoord( 0, Dx, 0, 1 );
-				else
-					Texture:SetPoint( "TOPLEFT", me:GetWidth() * Dx, 0 );
-					Texture:SetTexCoord( Dx, 1, 0, 1 );
-				end
-			elseif ( Dy == 0 ) then -- Draw with vertical texture
-				Texture = Overlay.TextureCreate( me, "ARTWORK", 1, 1, 1 );
-				Texture:SetTexture( ROUNT_TEXTURE_PATH );
-
-				Texture:SetAllPoints();
-				Dy = 0.5 + StartY; -- TexCoord end position
-				if ( Dx > 0 ) then
-					Texture:SetPoint( "TOPLEFT", 0, me:GetHeight() * -Dy );
-					Texture:SetTexCoord( 0, 1, Dy, 1 );
-				else
-					Texture:SetPoint( "BOTTOMRIGHT", 0, me:GetHeight() * ( 0.5 - StartY ) );
-					Texture:SetTexCoord( 0, 1, 0, Dy );
+			if ( IsClockwise ) then
+				AngleIncrement = -ArcSegmentLength;
+				if ( AngleStart < AngleEnd ) then
+					AngleStart = AngleStart + TwoPi;
 				end
 			else
-				-- Fill the circular section with triangles
-				AngleStart, AngleEnd = Atan2( -StartY, StartX ), Atan2( -EndY, EndX );
+				AngleIncrement = ArcSegmentLength;
 				if ( AngleEnd < AngleStart ) then
 					AngleEnd = AngleEnd + TwoPi;
 				end
+			end
 
-				LastX, LastY = StartX + 0.5, StartY + 0.5;
-				EndX, EndY = EndX + 0.5, EndY + 0.5;
-				for Angle = AngleStart, AngleEnd, AngleIncrement do
-					CurrentX, CurrentY = Cos( Angle ) / 2 + 0.5, -Sin( Angle ) / 2 + 0.5;
-					Overlay.TextureAdd( me, "ARTWORK", 0.5, 0.5, 1,
-						EndX, EndY, LastX, LastY, CurrentX, CurrentY );
-					LastX, LastY = CurrentX, CurrentY;
-				end
+			for Angle = AngleStart + AngleIncrement, AngleEnd - AngleIncrement / 2, AngleIncrement do
+				Points[ #Points + 1 ] = Cos( Angle ) / 2;
+				Points[ #Points + 1 ] = -Sin( Angle ) / 2;
 			end
 		end
 	end
@@ -228,6 +193,7 @@ do
 		local ForStart, ForEnd, ForStep;
 		function AddSplitPoints ( EndXReal, EndYReal, WrapToStart )
 			StartXReal, StartYReal = Points[ LastExitPoint ], Points[ LastExitPoint + 1 ];
+			LastExitPoint = nil;
 
 			if ( IsQuadrantRound( StartXReal, StartYReal ) ) then
 				LastRoundX, LastRoundY = StartXReal, StartYReal;
@@ -302,7 +268,6 @@ do
 			if ( LastRoundX ) then
 				AddRoundSplit( EndXReal, EndYReal );
 			end
-			LastExitPoint = nil;
 
 			if ( not WrapToStart ) then
 				-- Add re-entry point
