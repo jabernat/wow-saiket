@@ -150,10 +150,14 @@ end
 
 
 assert( loadfile( RoutesDataFilename ) )();
-local Outfile = io.open( OutputFilename, "w+" );
+local Success, DB = pcall( function ()
+	return RoutesDB.global.routes;
+end );
+assert( Success and DB, "Couldn't find path data in Routes saved variables." );
+local Outfile = assert( io.open( OutputFilename, "w+" ) );
 
 local Zones = {};
-for ZoneName in pairs( RoutesDB.global.routes ) do
+for ZoneName in pairs( DB ) do
 	Zones[ #Zones + 1 ] = ZoneName;
 end
 table.sort( Zones );
