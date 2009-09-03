@@ -538,6 +538,11 @@ function me:MINIMAP_UPDATE_ZOOM ()
 	Minimap:SetZoom( Zoom );
 	Radius = nil;
 	UpdateForce = true;
+
+	-- Update indoor alpha value
+	if ( self.Alpha ) then
+		self:SetAlpha( self.Alpha );
+	end
 end
 --[[****************************************************************************
   * Function: _NPCScan.Overlay.Minimap:ZONE_CHANGED_NEW_AREA                   *
@@ -603,6 +608,21 @@ do
 	end
 end
 
+
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.Minimap:SetAlpha                                *
+  * Description: Uses half opacity when indoors.                               *
+  ****************************************************************************]]
+do
+	local SetAlphaBackup = me.SetAlpha;
+	function me:SetAlpha ( Alpha, ... )
+		self.Alpha = Alpha;
+		if ( IsInside ) then
+			Alpha = Alpha / 3;
+		end
+		return SetAlphaBackup( self, Alpha, ... );
+	end
+end
 
 --[[****************************************************************************
   * Function: _NPCScan.Overlay.Minimap:Update                                  *
