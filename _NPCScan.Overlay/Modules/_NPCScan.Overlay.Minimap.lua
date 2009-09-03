@@ -45,18 +45,65 @@ do
 				 or ( X >= 0 and 4 or 3 ) ];
 		end
 		local Points, LastExitPoint, IsClockwise = {};
+		local LastRoundX, LastRoundY;
 
-		local AddSplitPoints; -- Adds split points between the last exit intersection and the most recent entrance intersection
+		local AddRoundSplit; -- Adds rounded areas clipped in round minimap segments
 		do
 			local StartX, StartY;
+			local AngleStart, AngleEnd, AngleIncrement;
+			local ArcSegmentLength, TwoPi = math.pi / 20, math.pi * 2;
+			local Atan2, Cos, Sin = math.atan2, math.cos, math.sin;
+			function AddRoundSplit ( EndX, EndY )
+
+				AngleStart, AngleEnd = Atan2( -LastRoundY, LastRoundX ), Atan2( -EndY, EndX );
+				LastRoundX, LastRoundY = nil;
+
+				if ( IsClockwise ) then
+					AngleIncrement = -ArcSegmentLength;
+					if ( AngleStart < AngleEnd ) then
+						AngleStart = AngleStart + TwoPi;
+					end
+				else
+					AngleIncrement = ArcSegmentLength;
+					if ( AngleEnd < AngleStart ) then
+						AngleEnd = AngleEnd + TwoPi;
+					end
+				end
+
+				for Angle = AngleStart + AngleIncrement, AngleEnd - AngleIncrement / 2, AngleIncrement do
+					Points[ #Points + 1 ] = Cos( Angle ) / 2;
+					Points[ #Points + 1 ] = -Sin( Angle ) / 2;
+				end
+			end
+		end
+
+		local AddSplit; -- Adds split points between the last exit intersection and the most recent entrance intersection
+		do
+			local StartX, StartY;
+			local Ax, Ay, Bx, By;
 			local SplitX, SplitY, Side;
 			local StartDistance2, StartPoint;
 			local NearestDistance2, NearestPoint;
 			local Distance2;
 			local ForStart, ForEnd, ForStep;
-			function AddSplitPoints ( EndX, EndY, WrapToStart )
+			function AddSplit ( EndX, EndY, WrapToStart )
+				StartX, StartY = Points[ LastExitPoint ], Points[ LastExitPoint + 1 ];
+				LastExitPoint = nil;
+
+				if ( IsQuadrantRound( StartX, StartY ) ) then
+					LastRoundX, LastRoundY = StartX, StartY;
+				else
+					LastRoundX, LastRoundY = nil;
+				end
+
 				if ( #SplitPoints > 0 ) then
-					StartX, StartY = Points[ LastExitPoint ], Points[ LastExitPoint + 1 ];
+					if ( IsClockwise ) then -- Split points to the right of line AB are valid
+						Ax, Ay = EndX, EndY;
+						Bx, By = StartX, StartY;
+					else
+						Ax, Ay = StartX, StartY;
+						Bx, By = EndX, EndY;
+					end
 
 					-- Find first split point after start
 					StartDistance2, StartPoint = math.huge;
@@ -64,9 +111,7 @@ do
 					ForEnd, ForStep = #SplitPoints - 1, IsClockwise and -2 or 2;
 					for Index = IsClockwise and ForEnd or 1, IsClockwise and 1 or ForEnd, ForStep do
 						SplitX, SplitY = SplitPoints[ Index ], SplitPoints[ Index + 1 ];
-						Side = IsClockwise
-							and ( StartX - EndX ) * ( SplitY - EndY ) - ( StartY - EndY ) * ( SplitX - EndX )
-							 or ( EndX - StartX ) * ( SplitY - StartY ) - ( EndY - StartY ) * ( SplitX - StartX );
+						Side = ( Bx - Ax ) * ( SplitY - Ay ) - ( By - Ay ) * ( SplitX - Ax );
 
 						if ( Side > 0 ) then -- Valid split point
 							Distance2 = ( StartX - SplitX ) ^ 2 + ( StartY - SplitY ) ^ 2;
@@ -84,17 +129,26 @@ do
 
 					-- Add all split points after start
 					if ( StartPoint ) then
-						Points[ #Points + 1 ] = SplitPoints[ StartPoint ];
-						Points[ #Points + 1 ] = SplitPoints[ StartPoint + 1 ];
+						SplitX, SplitY = SplitPoints[ StartPoint ], SplitPoints[ StartPoint + 1 ];
+						if ( LastRoundX ) then
+							AddRoundSplit( SplitX, SplitY );
+						elseif ( SplitX == 0 or SplitY == 0 ) then
+							LastRoundX, LastRoundY = SplitX, SplitY;
+						end
+						Points[ #Points + 1 ] = SplitX;
+						Points[ #Points + 1 ] = SplitY;
 
 						ForStart, ForEnd = StartPoint + 2, StartPoint + #SplitPoints - 2;
 						for Index = IsClockwise and ForEnd or ForStart, IsClockwise and ForStart or ForEnd, ForStep do
 							SplitX, SplitY = SplitPoints[ ( Index - 1 ) % #SplitPoints + 1 ], SplitPoints[ Index % #SplitPoints + 1 ];
-							Side = IsClockwise
-								and ( StartX - EndX ) * ( SplitY - EndY ) - ( StartY - EndY ) * ( SplitX - EndX )
-								 or ( EndX - StartX ) * ( SplitY - StartY ) - ( EndY - StartY ) * ( SplitX - StartX );
+							Side = ( Bx - Ax ) * ( SplitY - Ay ) - ( By - Ay ) * ( SplitX - Ax );
 
 							if ( Side > 0 ) then -- Valid split point
+								if ( LastRoundX ) then
+									AddRoundSplit( SplitX, SplitY );
+								elseif ( SplitX == 0 or SplitY == 0 ) then
+									LastRoundX, LastRoundY = SplitX, SplitY;
+								end
 								Points[ #Points + 1 ] = SplitX;
 								Points[ #Points + 1 ] = SplitY;
 							else
@@ -103,8 +157,10 @@ do
 						end
 					end
 				end
-				LastExitPoint = nil;
 
+				if ( LastRoundX ) then
+					AddRoundSplit( EndX, EndY );
+				end
 				if ( not WrapToStart ) then
 					-- Add re-entry point
 					Points[ #Points + 1 ] = EndX;
@@ -158,7 +214,7 @@ do
 					if ( PerpDist2 < 0.25 ) then
 						Length = ABx * ABx + ABy * ABy;
 						Temp = ABx * Bx + ABy * By;
-
+	
 						IntersectPos = ( ( Temp * Temp - Length * ( Bx * Bx + By * By - 0.25 ) ) ^ 0.5 - Temp ) / Length;
 						if ( IntersectPos >= 0 and IntersectPos <= 1 ) then
 							PointX, PointY = Bx + ABx * IntersectPos, By + ABy * IntersectPos;
@@ -171,7 +227,7 @@ do
 				end
 
 				if ( LastExitPoint ) then
-					AddSplitPoints( PointX, PointY );
+					AddSplit( PointX, PointY );
 				else
 					if ( IsExiting ) then
 						LastExitPoint = #Points + 1;
@@ -280,7 +336,7 @@ do
 								AddIntersection( Cx, Cy, Ax, Ay, ACPerpDist2 );
 							end
 							if ( LastExitPoint ) then -- Final split points between C and A
-								AddSplitPoints( Points[ 1 ], Points[ 2 ], true );
+								AddSplit( Points[ 1 ], Points[ 2 ], true );
 							end
 
 							-- Draw tris between convex polygon vertices
