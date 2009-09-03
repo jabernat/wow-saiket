@@ -17,8 +17,8 @@ Locales.xml
 #Tools\Matrix.lua
 _NPCScan.Overlay.lua
 _NPCScan.Overlay.Config.lua
-Tools\Canvas.lua
-Tools\CanvasClip.lua
+#Tools\Canvas.lua
+#Tools\CanvasClip.lua
 
 _NPCScan.Overlay.PathData.lua
 _NPCScan.Overlay.ZoneData.lua
