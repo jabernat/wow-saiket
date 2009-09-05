@@ -4,7 +4,7 @@
   ****************************************************************************]]
 
 
-local MAJOR, MINOR = "LibCamera-1.0", 5;
+local MAJOR, MINOR = "LibCamera-1.0", 6;
 
 local lib = LibStub:NewLibrary( MAJOR, MINOR );
 if ( not lib ) then
@@ -41,10 +41,12 @@ do
 	local SaveView = SaveView;
 	local IsMouselooking = IsMouselooking;
 	local GetPlayerFacing = GetPlayerFacing;
+	local IsFlying = IsFlying;
 	local GetCVar = GetCVar;
 	local SetCVar = SetCVar;
 	local tonumber = tonumber;
 	local abs = abs;
+	local Cos = math.cos;
 
 	local Changed, NewPitch, NewYaw, NewDistance;
 	local OriginalPitch, OriginalYaw, OriginalDistance;
@@ -59,27 +61,38 @@ do
 
 		-- Cache current camera information
 		SaveView( 5 );
+
+		NewYaw = DegreesToRadians * GetCVar( "cameraYawE" ) + YawOffset;
+		if ( not ( IsCameraMoving or IsMouselooking() ) ) then -- Camera angle relative to player face
+			NewYaw = NewYaw + GetPlayerFacing();
+		end
+
 		NewPitch = DegreesToRadians * GetCVar( "cameraPitchE" );
+		if ( not IsFlying() ) then -- Upside-down cameras only allowed while flying
+			if ( Cos( NewPitch ) < 0 ) then -- Flipped
+				NewPitch = PI / 2 - ( NewPitch + PI / 2 ) % PI;
+				NewYaw = NewYaw + PI;
+			end
+		end
 		-- Note: A pitch of zero (exactly) indicates an error related to pitchLimit CVar, so disregard
 		if ( not Pitch or ( NewPitch ~= 0 and abs( NewPitch - Pitch ) >= AngleMinDelta ) ) then
 			Pitch = NewPitch;
 			Changed = true;
 		end
-		NewYaw = DegreesToRadians * GetCVar( "cameraYawE" ) + YawOffset;
-		if ( not ( IsCameraMoving or IsMouselooking() ) ) then -- Camera angle relative to player face
-			NewYaw = NewYaw + GetPlayerFacing();
-		end
+
 		NewYaw = NewYaw % ( PI * 2 );
 		if ( not Yaw or abs( NewYaw - Yaw ) >= AngleMinDelta ) then
 			Yaw = NewYaw;
 			Changed = true;
 		end
+
 		NewDistance = tonumber( GetCVar( "cameraDistanceE" ) );
 		if ( NewDistance ~= Distance ) then
 			Distance = NewDistance;
 			Changed = true;
 			lib:OnChangedDistance();
 		end
+
 
 		-- Restore original camera data
 		SetCVar( "cameraPitchE", OriginalPitch );
