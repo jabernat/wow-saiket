@@ -49,7 +49,6 @@ do
 
 		local AddRoundSplit; -- Adds rounded areas clipped in round minimap segments
 		do
-			local StartX, StartY;
 			local AngleStart, AngleEnd, AngleIncrement;
 			local ArcSegmentLength, TwoPi = math.pi / 20, math.pi * 2;
 			local Atan2, Cos, Sin = math.atan2, math.cos, math.sin;
@@ -623,6 +622,12 @@ do
 		return SetAlphaBackup( self, Alpha, ... );
 	end
 end
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.Minimap:Synchronize                             *
+  ****************************************************************************]]
+function me:Synchronize ( Options )
+	me.RangeRing.SetEnabled( Options.MinimapRangeRing );
+end
 
 --[[****************************************************************************
   * Function: _NPCScan.Overlay.Minimap:Update                                  *
@@ -661,6 +666,7 @@ do
 	me:SetScript( "OnEvent", _NPCScan.OnEvent );
 	me:RegisterEvent( "MINIMAP_UPDATE_ZOOM" );
 	me:RegisterEvent( "ZONE_CHANGED_NEW_AREA" );
+	Overlay.OptionsDefault.MinimapRangeRing = true;
 
 
 	-- Setup the range ring's textures
@@ -699,10 +705,10 @@ do
 	Checkbox:SetHeight( 26 );
 	Checkbox:SetScript( "OnClick", me.RangeRing.CheckboxOnClick );
 	local Label = _G[ Checkbox:GetName().."Text" ];
-	Label:SetFormattedText( L.MODULE_MINIMAP_RANGERING_FORMAT, me.RangeRing.Radius );
+	Label:SetFormattedText( L.MODULE_RANGERING_FORMAT, me.RangeRing.Radius );
 	Checkbox:SetHitRectInsets( 4, 4 - Label:GetStringWidth(), 4, 4 );
 	Checkbox.SetEnabled = Overlay.Config.ModuleCheckboxSetEnabled;
-	Checkbox.tooltipText = L.MODULE_MINIMAP_RANGERING_DESC;
+	Checkbox.tooltipText = L.MODULE_RANGERING_DESC;
 	Checkbox:SetScript( "OnEnter", Overlay.Config.ControlOnEnter );
 	Checkbox:SetScript( "OnLeave", Overlay.Config.ControlOnLeave );
 

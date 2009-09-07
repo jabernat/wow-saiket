@@ -21,7 +21,6 @@ me.OptionsDefault = {
 	Version = me.Version;
 	Modules = {};
 	ModulesAlpha = {};
-	MinimapRangeRing = true;
 };
 
 
@@ -338,8 +337,10 @@ function me:ADDON_LOADED ( _, Addon )
 	local Module = me.ModuleInitializers[ Addon ];
 	if ( Module ) then
 		me.ModuleInitializers[ Addon ] = nil;
-		SafeCall( Module.OnLoad, Module );
-		Module.OnLoad = nil;
+		if ( Module.OnLoad ) then
+			SafeCall( Module.OnLoad, Module );
+			Module.OnLoad = nil;
+		end
 	end
 end
 
@@ -413,8 +414,10 @@ function me.Synchronize ( Options )
 			me.ModuleDisable( Name );
 		end
 		me.ModuleSetAlpha( Name, Options.ModulesAlpha[ Name ] or Module.AlphaDefault );
+		if ( Module.Synchronize ) then
+			SafeCall( Module.Synchronize, Module, Options );
+		end
 	end
-	me.Minimap.RangeRing.SetEnabled( Options.MinimapRangeRing );
 end
 --[[****************************************************************************
   * Function: _NPCScan.Overlay:OnLoad                                          *
