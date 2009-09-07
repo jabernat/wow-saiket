@@ -48,6 +48,7 @@ function me:OnLoad ()
 
 	if ( Overlay.Options.Modules[ "BattlefieldMinimap" ] == true ) then
 		me:Enable();
+		me:Update();
 	end
 end
 
