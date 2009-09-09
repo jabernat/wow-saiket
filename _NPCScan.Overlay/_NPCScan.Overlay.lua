@@ -390,7 +390,7 @@ end
 function me.NPCFound ( NpcID )
 	local Map = me.NPCMaps[ NpcID ];
 	if ( Map ) then
-		if ( Overlay.ZoneMaps[ GetRealZoneText() ] == Map ) then -- In correct zone
+		if ( me.ZoneMaps[ GetRealZoneText() ] == Map ) then -- In correct zone
 			if ( Map ~= GetMapInfo() ) then -- Coordinates will be for wrong zone
 				SetMapToCurrentZone();
 			end
