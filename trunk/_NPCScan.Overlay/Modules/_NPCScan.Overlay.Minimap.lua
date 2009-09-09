@@ -246,7 +246,7 @@ do
 		local Dot00, Dot01, Dot02, Dot11, Dot12;
 		local Denominator, U, V;
 		local Texture, Left, Top;
-		function RepaintPathData ( PathData, R, G, B )
+		function RepaintPathData ( PathData, FoundX, FoundY, R, G, B )
 			for Index = 1, #PathData, 12 do
 				Ax, Ax2, Ay, Ay2, Bx, Bx2, By, By2, Cx, Cx2, Cy, Cy2 = PathData:byte( Index, Index + 11 );
 				Ax, Ay = ( Ax * 256 + Ax2 ) * Width - X, ( Ay * 256 + Ay2 ) * Height - Y;

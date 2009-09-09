@@ -19,7 +19,7 @@ me.AlphaDefault = 0.8;
   * Function: _NPCScan.Overlay.BattlefieldMinimap:Repaint                      *
   ****************************************************************************]]
 do
-	local function PaintPath ( PathData, R, G, B )
+	local function PaintPath ( PathData, FoundX, FoundY, R, G, B )
 		Overlay.PathAdd( me, PathData, "OVERLAY", R, G, B );
 	end
 	function me:Repaint ( Map )
