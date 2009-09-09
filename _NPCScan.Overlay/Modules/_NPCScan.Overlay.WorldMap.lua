@@ -42,7 +42,7 @@ end
 do
 	local Count, Height, Width;
 	local NPCNames = {};
-	local function PaintPathAndKey ( PathData, R, G, B, NpcID )
+	local function PaintPathAndKey ( PathData, FoundX, FoundY, R, G, B, NpcID )
 		Overlay.PathAdd( me, PathData, "OVERLAY", R, G, B );
 
 		Count = Count + 1;

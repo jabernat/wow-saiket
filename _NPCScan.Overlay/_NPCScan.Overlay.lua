@@ -29,6 +29,8 @@ me.ModuleInitializers = {}; -- [ ParentAddOn ] = Module;
 
 me.NPCMaps = {}; -- [ NpcID ] = MapName;
 me.NPCsEnabled = {};
+me.NPCsFoundX = {};
+me.NPCsFoundY = {};
 
 me.Colors = {
 	RAID_CLASS_COLORS.SHAMAN,
@@ -42,6 +44,7 @@ local TexturesUnused = CreateFrame( "Frame" );
 
 local MESSAGE_ADD = "NpcOverlay_Add";
 local MESSAGE_REMOVE = "NpcOverlay_Remove";
+local MESSAGE_FOUND = "NpcOverlay_Found";
 
 
 
@@ -215,7 +218,7 @@ function me.ApplyZone ( Map, Callback )
 			ColorIndex = ColorIndex + 1;
 			if ( me.NPCsEnabled[ NpcID ] ) then
 				local Color = me.Colors[ ( ColorIndex - 1 ) % #me.Colors + 1 ];
-				Callback( PathData, Color.r, Color.g, Color.b, NpcID );
+				Callback( PathData, me.NPCsFoundX[ NpcID ], me.NPCsFoundY[ NpcID ], Color.r, Color.g, Color.b, NpcID );
 			end
 		end
 	end
@@ -382,6 +385,30 @@ function me.NPCRemove ( NpcID )
 	end
 end
 --[[****************************************************************************
+  * Function: _NPCScan.Overlay.NPCFound                                        *
+  ****************************************************************************]]
+function me.NPCFound ( NpcID )
+	local Map = me.NPCMaps[ NpcID ];
+	if ( Map ) then
+		if ( Overlay.ZoneMaps[ GetRealZoneText() ] == Map ) then -- In correct zone
+			if ( Map ~= GetMapInfo() ) then -- Coordinates will be for wrong zone
+				SetMapToCurrentZone();
+			end
+
+			me.NPCsFoundX[ NpcID ], me.NPCsFoundY[ NpcID ] = GetPlayerMapPosition( "player" );
+
+			for Name in pairs( me.Options.Modules ) do
+				local Module = me.Modules[ Name ];
+				if ( Module.Update ) then
+					SafeCall( Module.Update, Module, Map );
+				end
+			end
+
+			return true;
+		end
+	end
+end
+--[[****************************************************************************
   * Function: _NPCScan.Overlay[ MESSAGE_ADD ]                                  *
   ****************************************************************************]]
 me[ MESSAGE_ADD ] = function ( _, _, NpcID )
@@ -392,6 +419,12 @@ end;
   ****************************************************************************]]
 me[ MESSAGE_REMOVE ] = function ( _, _, NpcID )
 	me.NPCRemove( NpcID );
+end;
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay[ MESSAGE_FOUND ]                                *
+  ****************************************************************************]]
+me[ MESSAGE_FOUND ] = function ( _, _, NpcID )
+	me.NPCFound( NpcID );
 end;
 
 
@@ -437,6 +470,7 @@ function me:OnLoad ()
 
 	me:RegisterMessage( MESSAGE_ADD );
 	me:RegisterMessage( MESSAGE_REMOVE );
+	me:RegisterMessage( MESSAGE_FOUND );
 end
 
 
