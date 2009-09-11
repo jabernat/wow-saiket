@@ -7,7 +7,7 @@
 local L = _NPCScanLocalization.OVERLAY;
 local Overlay = _NPCScan.Overlay;
 local Minimap = Minimap;
-local me = CreateFrame( "Frame", nil, Minimap );
+local me = CreateFrame( "Frame" );
 Overlay.Minimap = me;
 
 me.Label = L.MODULE_MINIMAP;
@@ -19,7 +19,6 @@ me.UpdateRateRotating = 0.02; -- Faster so that spinning the minimap appears smo
 local UpdateRate = me.UpdateRateDefault;
 
 me.RangeRing = CreateFrame( "Frame", nil, me ); -- [ Quadrant ] = Texture;
-me.RangeRing.Radius = 100; -- Visible range for mobs is ~100 yds
 
 local UpdateForce, IsInside, RotateMinimap, Radius, Quadrants;
 
@@ -247,6 +246,12 @@ do
 		local Denominator, U, V;
 		local Texture, Left, Top;
 		function RepaintPathData ( PathData, FoundX, FoundY, R, G, B )
+			if ( FoundX ) then
+				Overlay.DrawFound( me,
+					FoundX * MaxDataValue * Width - X + 0.5, FoundY * MaxDataValue * Height - Y + 0.5,
+					Overlay.DetectionRadius / ( Radius * 2 ), "OVERLAY", R, G, B );
+			end
+
 			for Index = 1, #PathData, 12 do
 				Ax, Ax2, Ay, Ay2, Bx, Bx2, By, By2, Cx, Cx2, Cy, Cy2 = PathData:byte( Index, Index + 11 );
 				Ax, Ay = ( Ax * 256 + Ax2 ) * Width - X, ( Ay * 256 + Ay2 ) * Height - Y;
@@ -467,12 +472,12 @@ end
   * Function: _NPCScan.Overlay.Minimap.RangeRing:Update                        *
   ****************************************************************************]]
 function me.RangeRing:Update ()
-	local RingRadius = Radius / self.Radius / 2;
+	local RingRadius = Radius / Overlay.DetectionRadius / 2;
 	local Min, Max = 0.5 - RingRadius, 0.5 + RingRadius;
 
 	for Index = 1, 4 do
 		local Texture = me.RangeRing[ Index ];
-		if ( Quadrants[ Index ] and Radius < self.Radius ) then -- Round and too large to fit
+		if ( Quadrants[ Index ] and Radius < Overlay.DetectionRadius ) then -- Round and too large to fit
 			Texture:Hide();
 		else
 			local Left, Top = Index == 2 or Index == 3, Index <= 2;
@@ -659,6 +664,10 @@ end
 -----------------------------
 
 do
+	local ScrollFrame = CreateFrame( "ScrollFrame", nil, Minimap );
+	ScrollFrame:SetAllPoints();
+	ScrollFrame:SetScrollChild( me );
+
 	me:Hide();
 	me:SetAllPoints();
 	me:SetScript( "OnShow", me.OnShow );
@@ -705,7 +714,7 @@ do
 	Checkbox:SetHeight( 26 );
 	Checkbox:SetScript( "OnClick", me.RangeRing.CheckboxOnClick );
 	local Label = _G[ Checkbox:GetName().."Text" ];
-	Label:SetFormattedText( L.MODULE_RANGERING_FORMAT, me.RangeRing.Radius );
+	Label:SetFormattedText( L.MODULE_RANGERING_FORMAT, Overlay.DetectionRadius );
 	Checkbox:SetHitRectInsets( 4, 4 - Label:GetStringWidth(), 4, 4 );
 	Checkbox.SetEnabled = Overlay.Config.ModuleCheckboxSetEnabled;
 	Checkbox.tooltipText = L.MODULE_RANGERING_DESC;

@@ -31,6 +31,9 @@ me.NPCMaps = {}; -- [ NpcID ] = MapName;
 me.NPCsEnabled = {};
 me.NPCsFoundX = {};
 me.NPCsFoundY = {};
+me.NPCsFoundIgnored = {
+	[ 32487 ] = true; -- Putridus the Ancient
+};
 
 me.Colors = {
 	RAID_CLASS_COLORS.SHAMAN,
@@ -39,6 +42,8 @@ me.Colors = {
 	RAID_CLASS_COLORS.DRUID,
 	RAID_CLASS_COLORS.PALADIN,
 };
+
+me.DetectionRadius = 100; -- yards
 
 local TexturesUnused = CreateFrame( "Frame" );
 
@@ -70,7 +75,7 @@ end
   * Function: _NPCScan.Overlay:TextureCreate                                   *
   * Description: Prepares an unused texture on the given frame.                *
   ****************************************************************************]]
-function me:TextureCreate ( Layer, R, G, B )
+function me:TextureCreate ( Layer, R, G, B, A )
 	local Texture = #TexturesUnused > 0 and TexturesUnused[ #TexturesUnused ];
 	if ( Texture ) then
 		TexturesUnused[ #TexturesUnused ] = nil;
@@ -81,7 +86,8 @@ function me:TextureCreate ( Layer, R, G, B )
 	else
 		Texture = self:CreateTexture( nil, Layer );
 	end
-	Texture:SetVertexColor( R, G, B );
+	Texture:SetVertexColor( R, G, B, A or 1 );
+	Texture:SetBlendMode( "BLEND" );
 
 	self[ #self + 1 ] = Texture;
 	return Texture;
@@ -188,13 +194,13 @@ end
 
 
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay:PathAdd                                         *
+  * Function: _NPCScan.Overlay:DrawPath                                        *
   * Description: Draws the given NPC's path onto a frame.                      *
   ****************************************************************************]]
 do
 	local Max = 2 ^ 16 - 1;
 	local Ax1, Ax2, Ay1, Ay2, Bx1, Bx2, By1, By2, Cx1, Cx2, Cy1, Cy2;
-	function me:PathAdd ( PathData, Layer, R, G, B )
+	function me:DrawPath ( PathData, Layer, R, G, B )
 		for Index = 1, #PathData, 12 do
 			Ax1, Ax2, Ay1, Ay2, Bx1, Bx2, By1, By2, Cx1, Cx2, Cy1, Cy2 = PathData:byte( Index, Index + 11 );
 			me.TextureAdd( self, Layer, R, G, B,
@@ -202,6 +208,38 @@ do
 				( Bx1 * 256 + Bx2 ) / Max, ( By1 * 256 + By2 ) / Max,
 				( Cx1 * 256 + Cx2 ) / Max, ( Cy1 * 256 + Cy2 ) / Max );
 		end
+	end
+end
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay:DrawFound                                       *
+  * Description: Adds a found NPC's range circle onto a frame.                 *
+  ****************************************************************************]]
+do
+	local RingWidth = 1.14; -- Ratio of texture width to ring width
+	local GlowWidth = 1.25;
+	local Width, Height, Size;
+	local Texture;
+	function me:DrawFound ( X, Y, RadiusX, Layer, R, G, B )
+		Width, Height = self:GetWidth(), self:GetHeight();
+
+		X, Y = X * Width, -Y * Height;
+		Size = RadiusX * 2 * Width;
+
+		Texture = me.TextureCreate( self, Layer, R, G, B );
+		Texture:SetTexture( [[Interface\Minimap\Ping\ping2]] );
+		Texture:SetTexCoord( 0, 1, 0, 1 );
+		Texture:SetBlendMode( "ADD" );
+		Texture:SetPoint( "CENTER", self, "TOPLEFT", X, Y );
+		Texture:SetWidth( Size * RingWidth );
+		Texture:SetHeight( Size * RingWidth );
+
+		Texture = me.TextureCreate( self, Layer, R, G, B, 0.5 );
+		Texture:SetTexture( [[Textures\SunCenter]] );
+		Texture:SetTexCoord( 0, 1, 0, 1 );
+		Texture:SetBlendMode( "ADD" );
+		Texture:SetPoint( "CENTER", self, "TOPLEFT", X, Y );
+		Texture:SetWidth( Size * GlowWidth );
+		Texture:SetHeight( Size * GlowWidth );
 	end
 end
 --[[****************************************************************************
@@ -389,22 +427,23 @@ end
   ****************************************************************************]]
 function me.NPCFound ( NpcID )
 	local Map = me.NPCMaps[ NpcID ];
-	if ( Map ) then
-		if ( me.ZoneMaps[ GetRealZoneText() ] == Map ) then -- In correct zone
-			if ( Map ~= GetMapInfo() ) then -- Coordinates will be for wrong zone
-				SetMapToCurrentZone();
-			end
+	if ( Map and not me.NPCsFoundIgnored[ NpcID ] ) then
+		SetMapToCurrentZone();
 
-			me.NPCsFoundX[ NpcID ], me.NPCsFoundY[ NpcID ] = GetPlayerMapPosition( "player" );
+		if ( Map == GetMapInfo() ) then
+			local X, Y = GetPlayerMapPosition( "player" );
+			if ( X ~= 0 and Y ~= 0 ) then
+				me.NPCsFoundX[ NpcID ], me.NPCsFoundY[ NpcID ] = X, Y;
 
-			for Name in pairs( me.Options.Modules ) do
-				local Module = me.Modules[ Name ];
-				if ( Module.Update ) then
-					SafeCall( Module.Update, Module, Map );
+				for Name in pairs( me.Options.Modules ) do
+					local Module = me.Modules[ Name ];
+					if ( Module.Update ) then
+						SafeCall( Module.Update, Module, Map );
+					end
 				end
-			end
 
-			return true;
+				return true;
+			end
 		end
 	end
 end
