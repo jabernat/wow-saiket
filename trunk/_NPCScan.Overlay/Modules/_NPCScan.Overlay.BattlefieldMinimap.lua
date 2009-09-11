@@ -19,8 +19,11 @@ me.AlphaDefault = 0.8;
   * Function: _NPCScan.Overlay.BattlefieldMinimap:Repaint                      *
   ****************************************************************************]]
 do
-	local function PaintPath ( PathData, FoundX, FoundY, R, G, B )
-		Overlay.PathAdd( me, PathData, "OVERLAY", R, G, B );
+	local function PaintPath ( PathData, FoundX, FoundY, R, G, B, NpcID )
+		Overlay.DrawPath( me, PathData, "ARTWORK", R, G, B );
+		if ( FoundX ) then
+			Overlay.DrawFound( me, FoundX, FoundY, Overlay.DetectionRadius / Overlay.GetZoneSize( Overlay.NPCMaps[ NpcID ] ), "OVERLAY", R, G, B );
+		end
 	end
 	function me:Repaint ( Map )
 		Overlay.ApplyZone( Map, PaintPath );

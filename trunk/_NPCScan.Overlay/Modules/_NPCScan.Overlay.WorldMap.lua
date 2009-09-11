@@ -43,7 +43,10 @@ do
 	local Count, Height, Width;
 	local NPCNames = {};
 	local function PaintPathAndKey ( PathData, FoundX, FoundY, R, G, B, NpcID )
-		Overlay.PathAdd( me, PathData, "OVERLAY", R, G, B );
+		Overlay.DrawPath( me, PathData, "ARTWORK", R, G, B );
+		if ( FoundX ) then
+			Overlay.DrawFound( me, FoundX, FoundY, Overlay.DetectionRadius / Overlay.GetZoneSize( Overlay.NPCMaps[ NpcID ] ), "OVERLAY", R, G, B );
+		end
 
 		Count = Count + 1;
 		local Line = Key[ Count ];
