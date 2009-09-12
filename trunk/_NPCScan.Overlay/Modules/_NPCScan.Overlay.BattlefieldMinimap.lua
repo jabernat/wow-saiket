@@ -36,6 +36,7 @@ end
   ****************************************************************************]]
 function me:OnLoad ()
 	me:SetParent( BattlefieldMinimap );
+	me:SetAllPoints();
 
 	-- Inherit standard map update code from WorldMap module
 	local WorldMap = Overlay.WorldMap;
@@ -43,11 +44,6 @@ function me:OnLoad ()
 	me.Disable = WorldMap.Disable;
 	me.Update = WorldMap.Update;
 	WorldMap.OnLoad( me );
-
-	me:ClearAllPoints();
-	me:SetPoint( "TOPLEFT" );
-	local Tile = _G[ "BattlefieldMinimap"..NUM_WORLDMAP_DETAIL_TILES ];
-	me:SetPoint( "BOTTOMRIGHT", Tile, -22 / 256 * Tile:GetWidth(), 100 / 256 * Tile:GetHeight() );
 
 	if ( Overlay.Options.Modules[ "BattlefieldMinimap" ] == true ) then
 		me:Enable();
