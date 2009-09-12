@@ -247,9 +247,12 @@ do
 		local Texture, Left, Top;
 		function RepaintPathData ( PathData, FoundX, FoundY, R, G, B )
 			if ( FoundX ) then
-				Overlay.DrawFound( me,
-					FoundX * MaxDataValue * Width - X + 0.5, FoundY * MaxDataValue * Height - Y + 0.5,
-					Overlay.DetectionRadius / ( Radius * 2 ), "OVERLAY", R, G, B );
+				FoundX, FoundY = FoundX * MaxDataValue * Width - X, FoundY * MaxDataValue * Height - Y;
+				if ( RotateMinimap ) then
+					FoundX, FoundY = FoundX * FacingCos - FoundY * FacingSin, FoundX * FacingSin + FoundY * FacingCos;
+				end
+
+				Overlay.DrawFound( me, FoundX + 0.5, FoundY + 0.5, Overlay.DetectionRadius / ( Radius * 2 ), "OVERLAY", R, G, B );
 			end
 
 			for Index = 1, #PathData, 12 do
@@ -258,7 +261,7 @@ do
 				Bx, By = ( Bx * 256 + Bx2 ) * Width - X, ( By * 256 + By2 ) * Height - Y;
 				Cx, Cy = ( Cx * 256 + Cx2 ) * Width - X, ( Cy * 256 + Cy2 ) * Height - Y;
 
-				
+
 				if ( RotateMinimap ) then
 					Ax, Ay = Ax * FacingCos - Ay * FacingSin, Ax * FacingSin + Ay * FacingCos;
 					Bx, By = Bx * FacingCos - By * FacingSin, Bx * FacingSin + By * FacingCos;
