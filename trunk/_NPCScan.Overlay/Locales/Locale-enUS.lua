@@ -15,7 +15,7 @@ do
 		MODULE_BATTLEFIELDMINIMAP = "Battlefield-Minimap Popout";
 		MODULE_WORLDMAP = "Main World Map";
 		MODULE_WORLDMAP_KEY = "_|cffCCCC88NPCScan|r.Overlay";
-		MODULE_WORLDMAP_KEY_FORMAT = "\226\151\143 %s";
+		MODULE_WORLDMAP_KEY_FORMAT = "\226\128\162 %s";
 		MODULE_MINIMAP = "Minimap";
 		MODULE_RANGERING_FORMAT = "Show %dyd ring for approximate detection range";
 		MODULE_RANGERING_DESC = "Note: The range ring only appears in zones with tracked rares.";
