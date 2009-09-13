@@ -3,12 +3,13 @@
 ## Notes: Adds mob patrol paths to your map.
 ## Author: Saiket
 ## Version: 3.2.0.2
-## X-Date: 2009-09-11
+## X-Date: 2009-09-12
 ## X-Category: Maps
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
-## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons/NPCScan.Overlay
+## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons/NPCScanOverlay
 ## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:NPCScan.Overlay
+## X-WoWI-ID: 14686
 ## SavedVariables: _NPCScanOverlayOptions
 ## RequiredDeps: _NPCScan
 ## OptionalDeps: Carbonite
