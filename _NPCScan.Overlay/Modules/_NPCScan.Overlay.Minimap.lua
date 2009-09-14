@@ -28,7 +28,7 @@ local UpdateForce, IsInside, RotateMinimap, Radius, Quadrants;
 
 
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay.Minimap:Repaint                                 *
+  * Function: _NPCScan.Overlay.Minimap:Paint                                   *
   ****************************************************************************]]
 do
 	local SplitPoints = {};
@@ -36,7 +36,7 @@ do
 	local FacingSin, FacingCos;
 	local MaxDataValue = 2 ^ 16 - 1;
 
-	local RepaintPathData;
+	local PaintPath;
 	do
 		local function IsQuadrantRound ( X, Y ) -- Returns true if the quadrant is rounded
 			return Quadrants[ Y <= 0 -- Y-axis is flipped
@@ -245,14 +245,14 @@ do
 		local Dot00, Dot01, Dot02, Dot11, Dot12;
 		local Denominator, U, V;
 		local Texture, Left, Top;
-		function RepaintPathData ( PathData, FoundX, FoundY, R, G, B )
+		function PaintPath ( self, PathData, FoundX, FoundY, R, G, B )
 			if ( FoundX ) then
 				FoundX, FoundY = FoundX * MaxDataValue * Width - X, FoundY * MaxDataValue * Height - Y;
 				if ( RotateMinimap ) then
 					FoundX, FoundY = FoundX * FacingCos - FoundY * FacingSin, FoundX * FacingSin + FoundY * FacingCos;
 				end
 
-				Overlay.DrawFound( me, FoundX + 0.5, FoundY + 0.5, Overlay.DetectionRadius / ( Radius * 2 ), "OVERLAY", R, G, B );
+				Overlay.DrawFound( self, FoundX + 0.5, FoundY + 0.5, Overlay.DetectionRadius / ( Radius * 2 ), "OVERLAY", R, G, B );
 			end
 
 			for Index = 1, #PathData, 12 do
@@ -291,7 +291,7 @@ do
 					end
 
 					if ( AInside and BInside and CInside ) then -- No possible intersections
-						Overlay.TextureAdd( me, "ARTWORK", R, G, B,
+						Overlay.TextureAdd( self, "ARTWORK", R, G, B,
 							Ax + 0.5, Ay + 0.5, Bx + 0.5, By + 0.5, Cx + 0.5, Cy + 0.5 );
 					else
 						ABx, ABy = Ax - Bx, Ay - By;
@@ -348,7 +348,7 @@ do
 
 							-- Draw tris between convex polygon vertices
 							for Index = #Points, 6, -2 do
-								Overlay.TextureAdd( me, "ARTWORK", R, G, B,
+								Overlay.TextureAdd( self, "ARTWORK", R, G, B,
 									Points[ 1 ] + 0.5, Points[ 2 ] + 0.5, Points[ Index - 3 ] + 0.5, Points[ Index - 2 ] + 0.5, Points[ Index - 1 ] + 0.5, Points[ Index ] + 0.5 );
 							end
 						end
@@ -365,12 +365,12 @@ do
 
 							if ( U > 0 and V > 0 and U + V < 1 ) then -- Entire minimap is contained
 								for Index = 1, 4 do
-									Texture = Overlay.TextureCreate( me, "ARTWORK", R, G, B );
+									Texture = Overlay.TextureCreate( self, "ARTWORK", R, G, B );
 									Left, Top = Index == 2 or Index == 3, Index <= 2;
-									Texture:SetPoint( "LEFT", me, Left and "LEFT" or "CENTER" );
-									Texture:SetPoint( "RIGHT", me, Left and "CENTER" or "RIGHT" );
-									Texture:SetPoint( "TOP", me, Top and "TOP" or "CENTER" );
-									Texture:SetPoint( "BOTTOM", me, Top and "CENTER" or "BOTTOM" );
+									Texture:SetPoint( "LEFT", self, Left and "LEFT" or "CENTER" );
+									Texture:SetPoint( "RIGHT", self, Left and "CENTER" or "RIGHT" );
+									Texture:SetPoint( "TOP", self, Top and "TOP" or "CENTER" );
+									Texture:SetPoint( "BOTTOM", self, Top and "CENTER" or "BOTTOM" );
 									if ( Quadrants[ Index ] ) then -- Rounded
 										Texture:SetTexture( [[Interface\CHARACTERFRAME\TempPortraitAlphaMask]] );
 										Texture:SetTexCoord( Left and 0 or 0.5, Left and 0.5 or 1, Top and 0 or 0.5, Top and 0.5 or 1 );
@@ -408,7 +408,7 @@ do
 	local RadiiInside = { 150, 120, 90, 60, 40, 25 };
 	local RadiiOutside = { 233 + 1 / 3, 200, 166 + 2 / 3, 133 + 1 / 3, 100, 66 + 2 / 3 };
 	local Cos, Sin = math.cos, math.sin;
-	function me:Repaint ( Map, NewX, NewY, NewFacing )
+	function me:Paint ( Map, NewX, NewY, NewFacing )
 		Overlay.TextureRemoveAll( self );
 
 		local UpdateRangeRing;
@@ -446,10 +446,10 @@ do
 		end
 
 		if ( UpdateRangeRing ) then
-			me.RangeRing:Update();
+			self.RangeRing:Update();
 		end
 		if ( Overlay.Options.MinimapRangeRing ) then
-			me.RangeRing:Show();
+			self.RangeRing:Show();
 		end
 
 		local Side = Radius * 2;
@@ -464,7 +464,7 @@ do
 			FacingCos = Cos( Facing );
 		end
 
-		Overlay.ApplyZone( Map, RepaintPathData );
+		Overlay.ApplyZone( self, Map, PaintPath );
 	end
 end
 
@@ -609,7 +609,7 @@ do
 				LastY = Y;
 				LastFacing = Facing;
 
-				self:Repaint( Map, X, Y, Facing );
+				self:Paint( Map, X, Y, Facing );
 			end
 		end
 	end

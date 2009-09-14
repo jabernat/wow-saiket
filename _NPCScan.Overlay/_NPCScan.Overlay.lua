@@ -243,11 +243,11 @@ do
 	end
 end
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay.ApplyZone                                       *
+  * Function: _NPCScan.Overlay:ApplyZone                                       *
   * Description: Passes the NpcID, color, PathData, ZoneWidth, and ZoneHeight  *
   *   of all NPCs in a zone to a callback function.                            *
   ****************************************************************************]]
-function me.ApplyZone ( Map, Callback )
+function me:ApplyZone ( Map, Callback )
 	local MapData = me.PathData[ Map ];
 	if ( MapData ) then
 		local ColorIndex = 0;
@@ -256,7 +256,7 @@ function me.ApplyZone ( Map, Callback )
 			ColorIndex = ColorIndex + 1;
 			if ( me.NPCsEnabled[ NpcID ] ) then
 				local Color = me.Colors[ ( ColorIndex - 1 ) % #me.Colors + 1 ];
-				Callback( PathData, me.NPCsFoundX[ NpcID ], me.NPCsFoundY[ NpcID ], Color.r, Color.g, Color.b, NpcID );
+				Callback( self, PathData, me.NPCsFoundX[ NpcID ], me.NPCsFoundY[ NpcID ], Color.r, Color.g, Color.b, NpcID );
 			end
 		end
 	end
@@ -274,11 +274,14 @@ function me.ModuleRegister ( Name, Module, ParentAddon )
 	local Config = me.Config.ModuleRegister( Name, Module.Label );
 
 	if ( ParentAddon ) then
-		if ( select( 6, GetAddOnInfo( ParentAddon ) ) == "MISSING" ) then
+		local Reason = select( 6, GetAddOnInfo( ParentAddon ) );
+		if ( Reason and not ( Reason == "DISABLED" and IsAddOnLoadOnDemand( ParentAddon ) ) ) then
 			me.ModuleUnregister( Name );
 		elseif ( IsAddOnLoaded( ParentAddon ) ) then
-			SafeCall( Module.OnLoad, Module );
-			Module.OnLoad = nil;
+			if ( Module.OnLoad ) then
+				SafeCall( Module.OnLoad, Module );
+				Module.OnLoad = nil;
+			end
 		else
 			me.ModuleInitializers[ ParentAddon:upper() ] = Module;
 		end
@@ -294,12 +297,12 @@ function me.ModuleUnregister ( Name )
 	local Config = me.Config.Modules[ Name ];
 	if ( Config.Enabled:IsEnabled() == 1 ) then
 		Config.Enabled:SetEnabled( false );
+		for _, Control in ipairs( Config ) do
+			Control:SetEnabled( false );
+		end
 
 		local Module = me.Modules[ Name ];
 		if ( me.Options.Modules[ Name ] ) then
-			for _, Control in ipairs( Config ) do
-				Control:SetEnabled( false );
-			end
 			if ( Module.Disable ) then
 				SafeCall( Module.Disable, Module );
 			end
@@ -308,6 +311,7 @@ function me.ModuleUnregister ( Name )
 		Module.Update = nil;
 		Module.Enable = nil;
 		Module.Disable = nil;
+		Module.OnLoad = nil;
 		return true;
 	end
 end
