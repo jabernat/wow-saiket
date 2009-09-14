@@ -12,7 +12,7 @@
 ## X-WoWI-ID: 14686
 ## SavedVariables: _NPCScanOverlayOptions
 ## RequiredDeps: _NPCScan
-## OptionalDeps: AlphaMap, Carbonite
+## OptionalDeps: AlphaMap, Carbonite, LibRareSpawns
 Locales.xml
 
 #Tools\Matrix.lua
