@@ -13,7 +13,6 @@ me.Label = L.MODULE_WORLDMAP;
 me.AlphaDefault = 0.55;
 
 me.Key = CreateFrame( "Frame", nil, WorldMapDetailFrame );
-local Key = me.Key;
 
 me.AchievementNPCNames = {};
 
@@ -26,36 +25,27 @@ me.AchievementNPCNames = {};
 do
 	local Points = { "BOTTOMLEFT", "BOTTOMRIGHT", "TOPRIGHT" };
 	local Point = 0;
-	function Key:OnEnter ()
+	function me.Key:OnEnter ()
 		self:ClearAllPoints();
 		self:SetPoint( Points[ Point % #Points + 1 ] );
 		Point = Point + 1;
 	end
 end
-
-
-
-
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay.WorldMap:Repaint                                *
+  * Function: _NPCScan.Overlay.WorldMap.Key:Paint                              *
   ****************************************************************************]]
 do
 	local Count, Height, Width;
 	local NPCNames = {};
-	local function PaintPathAndKey ( PathData, FoundX, FoundY, R, G, B, NpcID )
-		Overlay.DrawPath( me, PathData, "ARTWORK", R, G, B );
-		if ( FoundX ) then
-			Overlay.DrawFound( me, FoundX, FoundY, Overlay.DetectionRadius / Overlay.GetZoneSize( Overlay.NPCMaps[ NpcID ] ), "OVERLAY", R, G, B );
-		end
-
+	local function PaintKey ( self, PathData, FoundX, FoundY, R, G, B, NpcID )
 		Count = Count + 1;
-		local Line = Key[ Count ];
+		local Line = self[ Count ];
 		if ( not Line ) then
-			Line = Key.Body:CreateFontString( nil, "OVERLAY", "ChatFontNormal" );
-			Line:SetPoint( "TOPLEFT", Count == 1 and Key.Title or Key[ Count - 1 ], "BOTTOMLEFT" );
-			Line:SetPoint( "RIGHT", Key.Title );
+			Line = self.Body:CreateFontString( nil, "OVERLAY", "ChatFontNormal" );
+			Line:SetPoint( "TOPLEFT", Count == 1 and self.Title or self[ Count - 1 ], "BOTTOMLEFT" );
+			Line:SetPoint( "RIGHT", self.Title );
 			Line:SetJustifyH( "LEFT" );
-			Key[ Count ] = Line;
+			self[ Count ] = Line;
 		else
 			Line:Show();
 		end
@@ -76,28 +66,46 @@ do
 			end
 		end
 	end
-	function me:Repaint ( Map )
+	function me.Key:Paint ( Map )
 		if ( MapHasNPCs( Map ) ) then
-			Width = Key.Title:GetStringWidth();
-			Height = Key.Title:GetStringHeight();
+			Width = self.Title:GetStringWidth();
+			Height = self.Title:GetStringHeight();
 			Count = 0;
 
 			-- Cache custom mob names
 			for Name, NpcID in pairs( _NPCScan.OptionsCharacter.NPCs ) do
 				NPCNames[ NpcID ] = Name;
 			end
-			Overlay.ApplyZone( Map, PaintPathAndKey );
+			Overlay.ApplyZone( self, Map, PaintKey );
 			wipe( NPCNames );
 
-			for Index = Count + 1, #Key do
-				Key[ Index ]:Hide();
+			for Index = Count + 1, #self do
+				self[ Index ]:Hide();
 			end
-			Key:SetWidth( Width + 32 );
-			Key:SetHeight( Height + 32 );
-			Key:Show();
+			self:SetWidth( Width + 32 );
+			self:SetHeight( Height + 32 );
+			self:Show();
 		else
-			Key:Hide();
+			self:Hide();
 		end
+	end
+end
+
+
+
+
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.WorldMap:Paint                                  *
+  ****************************************************************************]]
+do
+	local function PaintPath ( self, PathData, FoundX, FoundY, R, G, B, NpcID )
+		Overlay.DrawPath( self, PathData, "ARTWORK", R, G, B );
+		if ( FoundX ) then
+			Overlay.DrawFound( self, FoundX, FoundY, Overlay.DetectionRadius / Overlay.GetZoneSize( Overlay.NPCMaps[ NpcID ] ), "OVERLAY", R, G, B );
+		end
+	end
+	function me:Paint ( Map )
+		Overlay.ApplyZone( self, Map, PaintPath );
 	end
 end
 
@@ -115,7 +123,10 @@ do
 			self.MapLast = Map;
 
 			Overlay.TextureRemoveAll( self );
-			self:Repaint( Map );
+			self:Paint( Map );
+			if ( self.Key ) then
+				self.Key:Paint( Map );
+			end
 		end
 	end
 	function MapUpdate ( self, Force )
@@ -185,6 +196,7 @@ end
 -----------------------------
 
 do
+	local Key = me.Key;
 	Key:SetScript( "OnEnter", Key.OnEnter );
 	Key:OnEnter();
 	Key:EnableMouse( true );

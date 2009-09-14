@@ -12,7 +12,7 @@
 ## X-WoWI-ID: 14686
 ## SavedVariables: _NPCScanOverlayOptions
 ## RequiredDeps: _NPCScan
-## OptionalDeps: Carbonite
+## OptionalDeps: AlphaMap, Carbonite
 Locales.xml
 
 #Tools\Matrix.lua
@@ -28,4 +28,5 @@ _NPCScan.Overlay.ZoneData.lua
 Modules\_NPCScan.Overlay.WorldMap.lua
 Modules\_NPCScan.Overlay.BattlefieldMinimap.lua
 Modules\_NPCScan.Overlay.Minimap.lua
+Modules\_NPCScan.Overlay.AlphaMap.lua
 Modules\_NPCScan.Overlay.Carbonite.lua

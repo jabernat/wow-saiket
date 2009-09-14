@@ -1,25 +1,24 @@
 --[[****************************************************************************
   * _NPCScan.Overlay by Saiket                                                 *
-  * _NPCScan.Overlay.BattlefieldMinimap.lua - Canvas for the                   *
-  *   Blizzard_BattlefieldMinimap addon.                                       *
+  * _NPCScan.Overlay.AlphaMap.lua - Canvas for the AlphaMap addon.             *
   ****************************************************************************]]
 
 
 local Overlay = _NPCScan.Overlay;
 local me = CreateFrame( "Frame" );
-Overlay.BattlefieldMinimap = me;
+Overlay.AlphaMap = me;
 
-me.Label = _NPCScanLocalization.OVERLAY.MODULE_BATTLEFIELDMINIMAP;
+me.Label = _NPCScanLocalization.OVERLAY.MODULE_ALPHAMAP;
 me.AlphaDefault = 0.8;
 
 
 
 
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay.BattlefieldMinimap:OnLoad                       *
+  * Function: _NPCScan.Overlay.AlphaMap:OnLoad                                 *
   ****************************************************************************]]
 function me:OnLoad ()
-	me:SetParent( BattlefieldMinimap );
+	me:SetParent( AlphaMapDetailFrame );
 	me:SetAllPoints();
 
 	-- Inherit standard map update code from WorldMap module
@@ -30,7 +29,7 @@ function me:OnLoad ()
 	me.Update = WorldMap.Update;
 	WorldMap.OnLoad( me );
 
-	if ( Overlay.Options.Modules[ "BattlefieldMinimap" ] == true ) then
+	if ( Overlay.Options.Modules[ "AlphaMap" ] == true ) then
 		me:Enable();
 		me:Update();
 	end
@@ -44,5 +43,5 @@ end
 -----------------------------
 
 do
-	Overlay.ModuleRegister( "BattlefieldMinimap", me, "Blizzard_BattlefieldMinimap" );
+	Overlay.ModuleRegister( "AlphaMap", me, "AlphaMap" );
 end
