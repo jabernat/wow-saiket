@@ -12,6 +12,11 @@ Overlay.Config = me;
 
 me.Modules = {};
 
+local LibRareSpawnsData;
+if ( IsAddOnLoaded( "LibRareSpawns" ) ) then
+	LibRareSpawnsData = LibRareSpawns.ByNPCID;
+end
+
 
 
 
@@ -116,6 +121,32 @@ end
 
 
 --[[****************************************************************************
+  * Function: _NPCScan.Overlay.Config:TableRowOnEnter                          *
+  * Description: Adds mob info from LibRareSpawns.                             *
+  ****************************************************************************]]
+if ( LibRareSpawnsData ) then
+	local MaxSize = 160;
+	function me:TableRowOnEnter ()
+		local Data = LibRareSpawnsData[ select( 4, self:GetData() ) ];
+		if ( Data ) then
+			local Width, Height = Data.PortraitWidth, Data.PortraitHeight;
+			if ( Width > MaxSize ) then
+				Height = Height * ( MaxSize / Width );
+				Width = MaxSize;
+			end
+			if ( Height > MaxSize ) then
+				Width = Width * ( MaxSize / Height );
+				Height = MaxSize;
+			end
+
+			GameTooltip:SetOwner( self, "ANCHOR_TOPRIGHT" );
+			GameTooltip:SetText( L.CONFIG_IMAGE_FORMAT:format( Data.Portrait, Height, Width ) );
+			GameTooltip:AddLine( L.CONFIG_LEVEL_TYPE_FORMAT:format( Data.Level, Data.MonsterType ) );
+			GameTooltip:Show();
+		end
+	end
+end
+--[[****************************************************************************
   * Function: _NPCScan.Overlay.Config:TableSetHeader                           *
   ****************************************************************************]]
 do
@@ -137,13 +168,21 @@ do
 --[[****************************************************************************
   * Function: _NPCScan.Overlay.Config:TableAddRow                              *
   ****************************************************************************]]
+	local function AddTooltipHooks( Row, ... )
+		if ( LibRareSpawnsData ) then
+			Row:SetScript( "OnEnter", me.TableRowOnEnter );
+			Row:SetScript( "OnLeave", me.ControlOnLeave );
+		end
+		return Row, ...;
+	end
+
 	local AddRowBackup;
 	function me:TableAddRow ( ... )
 		local Map = Overlay.NPCMaps[ select( 4, ... ) ]; -- Arg 4 is NpcID
 		if ( Map ) then
-			return AddRowBackup( self, Append( Overlay.GetZoneName( Map ), ... ) );
+			return AddTooltipHooks( AddRowBackup( self, Append( Overlay.GetZoneName( Map ), ... ) ) );
 		else
-			return AddRowBackup( self, ... );
+			return AddTooltipHooks( AddRowBackup( self, ... ) );
 		end
 	end
 --[[****************************************************************************
