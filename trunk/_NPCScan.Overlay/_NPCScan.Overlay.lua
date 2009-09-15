@@ -128,17 +128,9 @@ do
 	local ABx, ABy, BCx, BCy;
 	local ScaleX, ScaleY, ShearFactor, Sin, Cos;
 	local Parent, Width, Height;
-	local BorderScale, BorderOffset = 256 / 254, -1 / 256; -- Removes one-pixel transparent border
+	local SinScaleX, SinScaleY, CosScaleX, CosScaleY;
+	local BorderScale, BorderOffset = 512 / 510, -1 / 512; -- Removes one-pixel transparent border
 	function me:TextureAdd ( Layer, R, G, B, Ax, Ay, Bx, By, Cx, Cy )
-		--[[ Transform parallelogram so its corners lie on the tri's points:
-		1. Translate by BorderOffset to hide top and left transparent borders.
-		2. Scale by BorderScale to push bottom and left transparent borders out.
-		3. Scale to counter the effects of resizing the image.
-		4. Translate to negate moving the image region relative to its parent.
-		5. Rotate so point A lies on a line parallel to line BC.
-		6. Scale X by the length of line BC, and Y by the length of the perpendicular line from BC to point A.
-		7. Shear the image so its bottom left corner aligns with point A.
-		]]
 		ABx, ABy, BCx, BCy = Ax - Bx, Ay - By, Bx - Cx, By - Cy;
 		ScaleX = ( BCx * BCx + BCy * BCy ) ^ 0.5;
 		if ( ScaleX == 0 ) then
@@ -159,23 +151,42 @@ do
 
 		-- Note: The texture region is made as small as possible to improve framerates.
 		MinX, MinY = min( Ax, Bx, Cx ), min( Ay, By, Cy );
-		WindowX = max( Ax, Bx, Cx ) - MinX;
-		WindowY = max( Ay, By, Cy ) - MinY;
+		WindowX, WindowY = max( Ax, Bx, Cx ) - MinX, max( Ay, By, Cy ) - MinY;
 
 		Width, Height = self:GetWidth(), self:GetHeight();
 		Texture:SetPoint( "TOPLEFT", MinX * Width, -MinY * Height );
 		Texture:SetWidth( WindowX * Width );
 		Texture:SetHeight( WindowY * Height );
 
-		WindowX = BorderScale / WindowX;
-		WindowY = BorderScale / WindowY;
+
+		--[[ Transform parallelogram so its corners lie on the tri's points:
+		local Matrix = Identity;
+		-- Remove transparent border
+		Matrix = Matrix:Scale( BorderScale, BorderScale );
+		Matrix = Matrix:Translate( BorderOffset, BorderOffset );
+
+		Matrix = Matrix:Shear( ShearFactor ); -- Shear the image so its bottom left corner aligns with point A
+		Matrix = Matrix:Scale( ScaleX, ScaleY ); -- Scale X by the length of line BC, and Y by the length of the perpendicular line from BC to point A
+		Matrix = Matrix:Rotate( Sin, Cos ); -- Align the top of the triangle with line BC.
+		
+		Matrix = Matrix:Translate( Bx - MinX, By - MinY ); -- Move origin to overlap point B
+		Matrix = Matrix:Scale( 1 / WindowX, 1 / WindowY ); -- Adjust for change in texture size
+
+		ApplyTransform( unpack( Matrix, 1, 6 ) );
+		]]
+
+		-- Common operations
+		WindowX, WindowY = BorderScale / WindowX, BorderScale / WindowY;
+		SinScaleX, SinScaleY = -Sin * ScaleX, Sin * ScaleY;
+		CosScaleX, CosScaleY =  Cos * ScaleX, Cos * ScaleY;
+
 		ApplyTransform(
-			WindowX * Cos * ScaleX,
-			WindowX * ( Cos * ScaleX * ShearFactor + Sin * ScaleY ),
-			WindowX * ( Bx - MinX ) + BorderOffset,
-			WindowY * -Sin * ScaleX,
-			WindowY * ( Cos * ScaleY - Sin * ScaleX * ShearFactor ),
-			WindowY * ( By - MinY ) + BorderOffset );
+			WindowX * CosScaleX,
+			WindowX * ( SinScaleY + CosScaleX * ShearFactor ),
+			WindowX * ( ( SinScaleY + CosScaleX * ( 1 + ShearFactor ) ) * BorderOffset + Bx - MinX ) / BorderScale,
+			WindowY * SinScaleX,
+			WindowY * ( CosScaleY + SinScaleX * ShearFactor ),
+			WindowY * ( ( CosScaleY + SinScaleX * ( 1 + ShearFactor ) ) * BorderOffset + By - MinY ) / BorderScale );
 	end
 end
 --[[****************************************************************************
