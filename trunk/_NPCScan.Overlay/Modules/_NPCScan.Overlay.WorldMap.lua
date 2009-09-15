@@ -26,8 +26,9 @@ do
 	local Points = { "BOTTOMLEFT", "BOTTOMRIGHT", "TOPRIGHT" };
 	local Point = 0;
 	function me.Key:OnEnter ()
+		local AnchorTarget = select( 2, self:GetPoint() );
 		self:ClearAllPoints();
-		self:SetPoint( Points[ Point % #Points + 1 ] );
+		self:SetPoint( Points[ Point % #Points + 1 ], AnchorTarget );
 		Point = Point + 1;
 	end
 end
