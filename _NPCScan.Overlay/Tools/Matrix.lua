@@ -1,4 +1,4 @@
--- Matrix.lua: A simple (and inefficient) implementation of 3x3 transformation matrices.
+-- Matrix.lua: A simple (and inefficient) implementation of affine (3x3) transformation matrices.
 
 do
 	local TransformMeta = { __index = {};	};
@@ -24,19 +24,23 @@ do
 		end
 		return Result;
 	end
+
 	function TransformMeta.__index:Translate ( X, Y )
-		return self * self:New( 1, 0, X, 0, 1, Y );
+		return self:New( 1, 0, X, 0, 1, Y ) * self;
 	end
 	function TransformMeta.__index:Scale ( ScaleX, ScaleY )
-		return self * self:New( ScaleX, 0, 0, 0, ScaleY, 0 );
+		return self:New( ScaleX, 0, 0, 0, ScaleY, 0 ) * self;
 	end
-	function TransformMeta.__index:Rotate ( Angle )
-		local Sin = math.sin( Angle );
-		local Cos = math.cos( Angle );
-		return self * self:New( Cos, Sin, 0, -Sin, Cos, 0 );
+	function TransformMeta.__index:Rotate ( Sin, Cos )
+		if ( not Cos ) then
+			local Angle = Sin;
+			Sin = math.sin( Angle );
+			Cos = math.cos( Angle );
+		end
+		return self:New( Cos, Sin, 0, -Sin, Cos, 0 ) * self;
 	end
 	function TransformMeta.__index:Shear ( FactorX, FactorY )
-		return self * self:New( 1, FactorX or 0, 0, FactorY or 0, 1, 0 );
+		return self:New( 1, FactorX or 0, 0, FactorY or 0, 1, 0 ) * self;
 	end
 	Identity = TransformMeta.__index.New();
 
