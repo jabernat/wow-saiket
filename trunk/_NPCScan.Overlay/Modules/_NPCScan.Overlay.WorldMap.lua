@@ -198,6 +198,7 @@ end
 
 do
 	local Key = me.Key;
+	Key:SetPoint( "BOTTOMLEFT" );
 	Key:SetScript( "OnEnter", Key.OnEnter );
 	Key:OnEnter();
 	Key:EnableMouse( true );
