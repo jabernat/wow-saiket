@@ -15,6 +15,9 @@ local WorldMap = Overlay.WorldMap;
 local me = CreateFrame( "Frame", nil, CarboniteMap.Frm );
 Overlay.Carbonite = me;
 
+me.KeyHidden = false;
+local Key = WorldMap.Key;
+
 
 
 
@@ -26,7 +29,7 @@ function me:OnUpdate ()
 	CarboniteMap:CZF( CarboniteMap.Con, CarboniteMap.Zon, WorldMap, 1 );
 
 	-- Fade the key frame out on mouseover with the rest of the map's buttons
-	WorldMap.Key:SetAlpha( NxMap1.NxW.BaF );
+	Key:SetAlpha( NxMap1.NxW.BaF );
 end
 
 
@@ -36,40 +39,59 @@ end
   * Function: _NPCScan.Overlay.Carbonite:WorldMapFrameOnShow                   *
   * Description: Set up the module to paint to the WorldMapFrame.              *
   ****************************************************************************]]
-do
-	local KeyPointBackup = "BOTTOMLEFT";
-	function me:WorldMapFrameOnShow ()
-		me:SetScript( "OnUpdate", nil );
+function me:WorldMapFrameOnShow ()
+	me:SetScript( "OnUpdate", nil );
 
-		WorldMap:SetScale( 1 );
-		WorldMap:SetParent( WorldMapDetailFrame );
-		WorldMap:SetAllPoints();
+	WorldMap:SetScale( 1 );
+	WorldMap:SetParent( WorldMapDetailFrame );
+	WorldMap:SetAllPoints();
 
-		local Key = WorldMap.Key;
-		Key:SetParent( WorldMapDetailFrame );
-		Key:ClearAllPoints();
-		Key:SetPoint( KeyPointBackup );
-		Key:EnableMouse( true );
-		Key:SetAlpha( 1 );
+	Key:SetParent( WorldMapDetailFrame );
+	Key:SetPoint( ( Key:GetPoint() ) );
+	Key:SetAlpha( 1 );
 
-		WorldMap:Update();
-	end
+	WorldMap.Key = Key; -- Temporarily allow updates to the key
+	WorldMap:Update();
+end
 --[[****************************************************************************
   * Function: _NPCScan.Overlay.Carbonite:WorldMapFrameOnHide                   *
   * Description: Set up the module to paint to Carbonite's map.                *
   ****************************************************************************]]
-	function me:WorldMapFrameOnHide ()
-		me:SetScript( "OnUpdate", me.OnUpdate );
+function me:WorldMapFrameOnHide ()
+	me:SetScript( "OnUpdate", me.OnUpdate );
 
-		WorldMap:SetParent( CarboniteMap.TeF ); -- ScrollChild
-		WorldMap:SetAllPoints();
+	WorldMap:SetParent( CarboniteMap.TeF ); -- ScrollChild
+	WorldMap:SetAllPoints();
 
-		local Key = WorldMap.Key;
-		KeyPointBackup = Key:GetPoint();
-		Key:SetParent( CarboniteMap.TeF );
-		Key:ClearAllPoints();
-		Key:SetPoint( "BOTTOMLEFT", CarboniteMap.Frm );
-		Key:EnableMouse( false );
+	Key:SetParent( CarboniteMap.TeF );
+	Key:SetPoint( Key:GetPoint(), CarboniteMap.Frm );
+
+	if ( me.KeyHidden ) then -- Re-disable key
+		me.SetSizeNormal();
+	end
+end
+
+
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.Carbonite.SetSizeMax                            *
+  * Description: Shows the key when Carbonite is in "Max size" mode.           *
+  ****************************************************************************]]
+function me.SetSizeMax ()
+	me.KeyHidden = false;
+	if ( not WorldMapFrame:IsVisible() ) then
+		WorldMap.Key = Key;
+		WorldMap:Update(); -- Show if necessary
+	end
+end
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.Carbonite.SetSizeNormal                         *
+  * Description: Hides the key when Carbonite is in normal size mode.          *
+  ****************************************************************************]]
+function me.SetSizeNormal ()
+	me.KeyHidden = true;
+	if ( not WorldMapFrame:IsVisible() ) then
+		WorldMap.Key = nil; -- Prevents updates from re-showing it
+		Key:Hide();
 	end
 end
 
@@ -88,6 +110,11 @@ do
 
 	WorldMap:SetWidth( WorldMapDetailFrame:GetWidth() );
 	WorldMap:SetHeight( WorldMapDetailFrame:GetHeight() );
+
+	-- Hooks to swap between Carbonite's normal and max sizes
+	hooksecurefunc( Nx.Map, "MaS1", me.SetSizeMax );
+	hooksecurefunc( Nx.Map, "ReS1", me.SetSizeNormal );
+	me[ Nx.Map:GeM( 1 ).Win1:ISM() and "SetSizeMax" or "SetSizeNormal" ]();
 
 	-- Hooks to swap between Carbonite's map mode and the default UI map mode
 	WorldMapFrame:HookScript( "OnShow", me.WorldMapFrameOnShow );
