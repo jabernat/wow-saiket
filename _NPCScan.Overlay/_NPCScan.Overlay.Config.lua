@@ -1,5 +1,5 @@
 --[[****************************************************************************
-  * _NPCScan by Saiket                                                         *
+  * _NPCScan.Overlay by Saiket                                                 *
   * _NPCScan.Overlay.Config.lua - Adds a configuration pane to enable and      *
   *   disable display modules like the WorldMap and BattlefieldMinimap.        *
   ****************************************************************************]]
