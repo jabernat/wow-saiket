@@ -507,6 +507,18 @@ function me.Synchronize ( Options )
 	end
 end
 --[[****************************************************************************
+  * Function: _NPCScan.Overlay:PLAYER_ENTERING_WORLD                           *
+  ****************************************************************************]]
+function me:PLAYER_ENTERING_WORLD ( Event )
+	me[ Event ] = nil;
+	me:UnregisterEvent( Event );
+
+	local Options = _NPCScanOverlayOptions;
+	_NPCScanOverlayOptions = me.Options;
+
+	me.Synchronize( Options ); -- Loads defaults if nil
+end
+--[[****************************************************************************
   * Function: _NPCScan.Overlay:OnLoad                                          *
   ****************************************************************************]]
 function me:OnLoad ()
@@ -516,11 +528,6 @@ function me:OnLoad ()
 			me.NPCMaps[ NpcID ] = Map;
 		end
 	end
-
-	local Options = _NPCScanOverlayOptions;
-	_NPCScanOverlayOptions = me.Options;
-
-	me.Synchronize( Options ); -- Loads defaults if nil
 
 	me:RegisterMessage( MESSAGE_ADD );
 	me:RegisterMessage( MESSAGE_REMOVE );
@@ -537,6 +544,7 @@ end
 do
 	LibStub( "AceEvent-3.0" ):Embed( me );
 	me:RegisterEvent( "ADDON_LOADED" );
+	me:RegisterEvent( "PLAYER_ENTERING_WORLD" );
 
 	me.ModuleInitializers[ ADDON_NAME:upper() ] = me;
 end
