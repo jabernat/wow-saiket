@@ -531,13 +531,6 @@ do
 		return Backup( Minimap, Zoom, ... );
 	end
 end
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.Minimap.SetMapToCurrentZone                     *
-  * Description: Force an update when the map is returned to the player.       *
-  ****************************************************************************]]
-function me.SetMapToCurrentZone ()
-	UpdateForce = true;
-end
 
 --[[****************************************************************************
   * Function: _NPCScan.Overlay.Minimap:MINIMAP_UPDATE_ZOOM                     *
@@ -709,7 +702,6 @@ do
 	Minimap.SetZoom = me.SetZoom;
 	WorldMapFrame:HookScript( "OnHide", SetMapToCurrentZone );
 	SetMapToCurrentZone();
-	hooksecurefunc( "SetMapToCurrentZone", me.SetMapToCurrentZone );
 
 
 	-- Register and create GUI for the range ring option
