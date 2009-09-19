@@ -2,8 +2,8 @@
 ## Title: _|cffCCCC88NPCScan|r.Overlay
 ## Notes: Adds mob patrol paths to your map.
 ## Author: Saiket
-## Version: 3.2.0.3
-## X-Date: 2009-09-14
+## Version: 3.2.0.4
+## X-Date: 2009-09-18
 ## X-Category: Maps
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
@@ -12,7 +12,7 @@
 ## X-WoWI-ID: 14686
 ## SavedVariables: _NPCScanOverlayOptions
 ## RequiredDeps: _NPCScan
-## OptionalDeps: AlphaMap, Carbonite, LibRareSpawns
+## OptionalDeps: AlphaMap, Carbonite, Cartographer3, LibRareSpawns
 Locales.xml
 
 #Tools\Matrix.lua
@@ -29,4 +29,6 @@ Modules\_NPCScan.Overlay.WorldMap.lua
 Modules\_NPCScan.Overlay.BattlefieldMinimap.lua
 Modules\_NPCScan.Overlay.Minimap.lua
 Modules\_NPCScan.Overlay.AlphaMap.lua
+# Pseudo-modules
 Modules\_NPCScan.Overlay.Carbonite.lua
+Modules\_NPCScan.Overlay.Cartographer3.lua
