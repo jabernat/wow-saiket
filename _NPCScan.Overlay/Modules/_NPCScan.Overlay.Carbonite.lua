@@ -119,5 +119,5 @@ do
 	-- Hooks to swap between Carbonite's map mode and the default UI map mode
 	WorldMapFrame:HookScript( "OnShow", me.WorldMapFrameOnShow );
 	WorldMapFrame:HookScript( "OnHide", me.WorldMapFrameOnHide );
-	me[ WorldMapFrame:IsVisible() and "WorldMapFrameOnShow" or "WorldMapFrameOnHide" ]( me );
+	me[ WorldMapFrame:IsVisible() and "WorldMapFrameOnShow" or "WorldMapFrameOnHide" ]( WorldMapFrame );
 end
