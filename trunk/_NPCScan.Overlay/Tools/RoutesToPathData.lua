@@ -1,9 +1,6 @@
 --[[ Tools/RoutesToPathData.lua - Converts all recognized Routes paths to
      compatible pathdata used by _NPCScan.Overlay.
 
-IMPORTANT: Replace "{Account Name}" in RoutesDataFilename below so the script
-can find your saved Routes variables.
-
 1. Install Routes addon by Xinhuan. <http://wow.curse.com/downloads/wow-addons/details/routes.aspx>
 2. Create a blank path in the desired zone, named with a format
    "Overlay:{NPC ID}:{NPC Name}[:{Region Number}]".  Region Number is optional,
@@ -22,7 +19,8 @@ out" (traced counter-clockwise) or overlaps itself.
 
 
 
-local RoutesDataFilename = [[..\..\..\..\WTF\Account\{Account Name}\SavedVariables\Routes.lua]];
+local AccountName = assert( assert( io.open( "AccountName.txt" ) ):read(), "AccountName.txt must have account name on first line." );
+local RoutesDataFilename = [[..\..\..\..\WTF\Account\]]..AccountName..[[\SavedVariables\Routes.lua]];
 local OutputFilename = [[..\_NPCScan.Overlay.PathData.lua]];
 
 require( "bit" );
