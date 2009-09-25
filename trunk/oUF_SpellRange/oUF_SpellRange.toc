@@ -3,12 +3,13 @@
 ## Notes: Range element for oUF that works for non-group members
 ## Author: Saiket
 ## Version: 3.2.0.2
-## X-Date: 2009-08-08
+## X-Date: 2009-09-25
 ## X-Category: UnitFrame
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
 ## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons/oUF_SpellRange
 ## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:oUF_SpellRange
 ## X-WoWI-ID: 12839
+## X-Curse-Project-ID: ouf_spellrange
 ## RequiredDeps: oUF
 oUF_SpellRange.lua
