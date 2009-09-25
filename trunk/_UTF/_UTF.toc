@@ -3,13 +3,14 @@
 ## Notes: Unicode input dialog and text replacement.
 ## Author: Saiket
 ## Version: 3.2.0.1
-## X-Date: 2009-06-25
+## X-Date: 2009-09-25
 ## X-Category: Chat/Communication
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
 ## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons/UTF
 ## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:UTF
 ## X-WoWI-ID: 9336
+## X-Curse-Project-ID: utf
 ## X-Localizations: enUS
 ## X-Embeds: LibTextTable-1.0
 ## SavedVariables: _UTFOptions
