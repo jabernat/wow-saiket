@@ -51,7 +51,7 @@ end
 -- Function Hooks / Execution
 -----------------------------
 
-if ( select( 6, GetAddOnInfo( "PallyPower" ) ) ~= "MISSING" ) then
+do
 	_Clean.RegisterAddOnInitializer( "PallyPower", function ()
 		me.IterateButtons( function ( Button, Type )
 			local Name = Button:GetName();
@@ -72,5 +72,9 @@ if ( select( 6, GetAddOnInfo( "PallyPower" ) ) ~= "MISSING" ) then
 		if ( PallyPower.opt.skin ) then
 			me.ApplySkin( PallyPower, PallyPower.opt.skin );
 		end
+
+		PallyPowerFrame:ClearAllPoints();
+		PallyPowerFrame:SetPoint( "TOPRIGHT", Dominos.Frame:Get( 3 ), "TOPRIGHT", -6, 40 * 3 - 18 ); -- Leave room for three buttons
+		PallyPowerFrame.SetPoint = _Clean.NilFunction;
 	end );
 end
