@@ -3,13 +3,14 @@
 ## Notes: Special tools useful for debugging the UI.
 ## Author: Saiket
 ## Version: 3.2.0.1
-## X-Date: 2009-07-13
+## X-Date: 2009-09-25
 ## X-Category: Development Tools
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
 ## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons/Dev
 ## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Dev
 ## X-WoWI-ID: 9333
+## X-Curse-Project-ID: dev
 ## X-Localizations: enUS
 ## SavedVariables: _DevOptions
 ## LoadWith: Blizzard_DebugTools
