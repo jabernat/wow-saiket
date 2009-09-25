@@ -3,13 +3,14 @@
 ## Notes: Keeps track of where your camera is.
 ## Author: Saiket
 ## Version: 1.0
-## X-Date: 2009-09-04
+## X-Date: 2009-09-25
 ## X-Category: Library
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
 ## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons/LibCamera-1-0
 ## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:LibCamera
 ## X-WoWI-ID: 10008
+## X-Curse-Project-ID: libcamera-1-0
 ## LoadOnDemand: 1
 LibStub\LibStub.lua
 CallbackHandler-1.0\CallbackHandler-1.0.lua
