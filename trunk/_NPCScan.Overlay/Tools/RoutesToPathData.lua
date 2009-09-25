@@ -19,7 +19,7 @@ out" (traced counter-clockwise) or overlaps itself.
 
 
 
-local AccountName = assert( assert( io.open( "AccountName.txt" ) ):read(), "AccountName.txt must have account name on first line." );
+local AccountName = assert( assert( io.open( "AccountName.dat" ) ):read(), "AccountName.dat must have account name on first line." );
 local RoutesDataFilename = [[..\..\..\..\WTF\Account\]]..AccountName..[[\SavedVariables\Routes.lua]];
 local OutputFilename = [[..\_NPCScan.Overlay.PathData.lua]];
 
