@@ -243,6 +243,42 @@ end
 function me.MountSlashCommand ( Input )
 	me.Mount( ( "," ):split( SecureCmdOptionParse( Input ) ) );
 end
+--[[****************************************************************************
+  * Function: _Misc.Macro.PallyPowerLoadSlashCommand                           *
+  * Description: Slash command chat handler to update PallyPower.              *
+  ****************************************************************************]]
+if ( select( 2, UnitClass( "player" ) ) == "PALADIN" ) then
+	function me.PallyPowerLoadSlashCommand ( Input )
+		local Preset, Seal, Aura, RighteousFury = ( "," ):split( ( SecureCmdOptionParse( Input ) or "" ):trim() );
+
+		if ( Preset ~= "" ) then
+			-- Note: See PallyPowerValues.lua for these IDs
+			Seal, Aura = tonumber( Seal ), tonumber( Aura );
+			RighteousFury = RighteousFury and RighteousFury ~= "";
+
+			local Success, Reason = LoadAddOn( "PallyPower" );
+			if ( not Success ) then
+				error( _G[ "ADDON_"..Reason ] );
+			end
+
+
+			-- Assignments
+			PallyPower:LoadPreset( Preset );
+			if ( Seal ) then
+				PallyPower:SealAssign( Seal );
+			end
+			if ( Aura ) then
+				local Name = UnitName( "player" );
+				PallyPower_AuraAssignments[ Name ] = Aura;
+				PallyPower:SendMessage( "AASSIGN "..Name.." "..Aura );
+			end
+			PallyPower.opt.rf = RighteousFury;
+			PallyPower:RFAssign();
+
+			PallyPower:ButtonsUpdate();
+		end
+	end
+end
 
 
 
@@ -266,4 +302,6 @@ do
 	SlashCmdList[ "ERR" ] = me.EnableErrorsSlashCommand;
 
 	SlashCmdList[ "MOUNT" ] = me.MountSlashCommand;
+
+	SlashCmdList[ "PALLYPOWERLOAD" ] = me.PallyPowerLoadSlashCommand;
 end
