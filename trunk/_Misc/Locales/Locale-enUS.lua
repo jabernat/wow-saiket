@@ -98,5 +98,6 @@ do
 	SLASH_ALERT1 = "/alert";
 	SLASH_ERR1 = "/err";
 	SLASH_MOUNT1 = "/mount";
+	SLASH_MOUNT2 = "/mnt";
 	SLASH_PALLYPOWERLOAD1 = "/ppload";
 end
