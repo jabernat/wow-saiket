@@ -212,7 +212,7 @@ do
 			-- Find and use mount
 			local Flyable = IsFlyableArea() and not ( GetRealZoneText() == WintergraspName and not GetWintergraspWaitTime() ); -- Excludes Wintergrasp while battles are active
 			local Name = ( Flyable and NameFlying or NameGround ):trim():lower();
-			local SpellID = tonumber( Name );
+			local SpellID = tonumber( Name, 16 );
 			for Index = 1, GetNumCompanions( "MOUNT" ) do
 				local _, MountName, MountSpellID = GetCompanionInfo( "MOUNT", Index );
 				if ( SpellID and SpellID == MountSpellID
