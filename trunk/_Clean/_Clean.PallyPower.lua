@@ -8,7 +8,7 @@ if ( select( 6, GetAddOnInfo( "PallyPower" ) ) == "MISSING" ) then
 	return;
 end
 local _Clean = _Clean;
-local me = {};
+local me = CreateFrame( "Frame" );
 _Clean.PallyPower = me;
 
 
@@ -43,6 +43,14 @@ do
 		me.IterateButtons( Apply );
 	end
 end
+--[[****************************************************************************
+  * Function: _Clean.PallyPower:PLAYER_LOGIN                                   *
+  * Description: Undoes saved frame positions for the buff frame.              *
+  ****************************************************************************]]
+function me:PLAYER_LOGIN ()
+	PallyPowerFrame:ClearAllPoints();
+	PallyPowerFrame:SetPoint( "TOPRIGHT", Dominos.Frame:Get( 3 ), "TOPRIGHT", -6, 40 * 3 - 18 ); -- Leave room for three buttons
+end
 
 
 
@@ -73,8 +81,8 @@ do
 			me.ApplySkin( PallyPower, PallyPower.opt.skin );
 		end
 
-		PallyPowerFrame:ClearAllPoints();
-		PallyPowerFrame:SetPoint( "TOPRIGHT", Dominos.Frame:Get( 3 ), "TOPRIGHT", -6, 40 * 3 - 18 ); -- Leave room for three buttons
-		PallyPowerFrame.SetPoint = _Clean.NilFunction;
+		PallyPowerFrame:SetUserPlaced( false );
+		me:SetScript( "OnEvent", _Clean.OnEvent );
+		me:RegisterEvent( "PLAYER_LOGIN" );
 	end );
 end
