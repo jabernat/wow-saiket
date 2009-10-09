@@ -7,9 +7,6 @@
 local L = _CorpseLocalization;
 local me = CreateFrame( "Frame", "_Corpse" );
 
-local ShowHookFrame = CreateFrame( "Frame" );
-me.ShowHookFrame = ShowHookFrame;
-
 local Enemies = {};   -- Name-indexed hash of connection status
 me.Enemies = Enemies; -- Values: false = Unknown, 0 = Offline, 1 = Online
 local Allies = {};
@@ -25,6 +22,8 @@ me.RemoveFriendSwapLast = nil;
 me.AddFriendSwapLast = nil;
 
 me.UIErrorsFrameOnEventBackup = UIErrorsFrame:GetScript( "OnEvent" );
+
+local GameTooltip = GetClickFrame( "GameTooltip" ); -- Gets the original frame named "GameTooltip", in case the global is overriden
 
 
 
@@ -64,13 +63,17 @@ end
   * Function: _Corpse.GetCorpseName                                            *
   * Description: Gets the name from a corpse's tooltip, or nil of no corpse.   *
   ****************************************************************************]]
-function me.GetCorpseName ()
-	if ( not UnitExists( "mouseover" ) and GetMouseFocus() == WorldFrame and GameTooltip:IsVisible() and GameTooltip:NumLines() <= 2 ) then
-		local Text = GameTooltipTextLeft1:GetText();
-		if ( Text ) then
-			Text = Text:match( L.CORPSE_PATTERN );
+do
+	local UnitExists = UnitExists;
+	local GetMouseFocus = GetMouseFocus;
+	function me.GetCorpseName ()
+		if ( not UnitExists( "mouseover" ) and GetMouseFocus() == WorldFrame and GameTooltip:IsVisible() and GameTooltip:NumLines() <= 2 ) then
+			local Text = GameTooltipTextLeft1:GetText();
 			if ( Text ) then
-				return L.SERVER_DELIMITER:split( Text );
+				Text = Text:match( L.CORPSE_PATTERN );
+				if ( Text ) then
+					return L.SERVER_DELIMITER:split( Text );
+				end
 			end
 		end
 	end
@@ -288,7 +291,7 @@ end
 function me:CHAT_MSG_SYSTEM ( _, Message )
 	if ( me.AddFriendLast or me.AddFriendSwapLast ) then
 		if ( Message == L.FRIEND_IS_ENEMY ) then
-			-- Add failed (Ambiguous); horde
+			-- Add failed (Ambiguous); enemy
 			Enemies[ me.AddFriendLast ] = false;
 			if ( me.AddFriendLast == me.GetCorpseName() ) then -- Tooltip still up
 				me.BuildCorpseTooltip( true, me.AddFriendLast, nil, nil, nil, false );
@@ -320,7 +323,7 @@ function me:CHAT_MSG_SYSTEM ( _, Message )
 		local Name = Message:match( L.ENEMY_OFFLINE_PATTERN );
 		if ( Name ) then
 			if ( Name == me.InviteUnitLast ) then
-				-- Horde player is offline
+				-- Enemy player is offline
 				if ( Enemies[ Name ] ~= 0 ) then
 					Enemies[ Name ] = 0;
 					if ( Name == me.GetCorpseName() ) then -- Tooltip still up
@@ -351,7 +354,7 @@ end
   ****************************************************************************]]
 function me:UI_ERROR_MESSAGE ( _, Message )
 	if ( me.InviteUnitLast and Message == L.ENEMY_ONLINE ) then
-		-- Horde player is online (Ambiguous)
+		-- Enemy player is online (Ambiguous)
 		if ( Enemies[ me.InviteUnitLast ] ~= 1 ) then -- Changed
 			Enemies[ me.InviteUnitLast ] = 1;
 			if ( me.InviteUnitLast == me.GetCorpseName() ) then -- Tooltip still up
@@ -439,21 +442,12 @@ end
 
 
 --[[****************************************************************************
-  * Function: _Corpse:ShowHookOnShow                                           *
+  * Function: _Corpse:GameTooltipOnShow                                        *
   * Description: Hook called when GameTooltip updates.                         *
   ****************************************************************************]]
-function me:ShowHookOnShow ()
+function me:GameTooltipOnShow ()
 	-- Tooltip was cleared; read it before next draw
 	me:Show();
-end
---[[****************************************************************************
-  * Function: _Corpse.ShowHookUpdate                                           *
-  * Description: Resets _Corpse's hook to react to updates in the tooltip      *
-  *   found in GameTooltip.  Use if an addon completely replaces the default   *
-  *   tooltip.                                                                 *
-  ****************************************************************************]]
-function me.ShowHookUpdate ()
-	ShowHookFrame:SetParent( GameTooltip );
 end
 
 
@@ -510,8 +504,7 @@ do
 	me:SetScript( "OnEvent", me.OnEvent );
 	me:RegisterEvent( "PLAYER_ENTERING_WORLD" );
 
-	ShowHookFrame:SetScript( "OnShow", me.ShowHookOnShow );
-	me.ShowHookUpdate();
+	GameTooltip:HookScript( "OnShow", me.GameTooltipOnShow );
 
 	UIErrorsFrame:SetScript( "OnEvent", me.UIErrorsFrameOnEvent );
 	ChatFrame_AddMessageEventFilter( "CHAT_MSG_SYSTEM", me.MessageEventHandler );
