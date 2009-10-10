@@ -8,17 +8,17 @@ if ( select( 6, GetAddOnInfo( "BugSack" ) ) == "MISSING" ) then
 	return;
 end
 local _Clean = _Clean;
-local me = {};
+local me = CreateFrame( "Frame" );
 _Clean.BugSack = me;
 
 
 
 
 --[[****************************************************************************
-  * Function: _Clean.BugSack.OnUpdate                                          *
+  * Function: _Clean.BugSack.LDBUpdate                                         *
   * Description: Keeps the button disabled and transparent when empty.         *
   ****************************************************************************]]
-function me.OnUpdate ()
+function me.LDBUpdate ()
 	if ( me.Frame ) then
 		if ( #BugSack:GetErrors( "session" ) == 0 ) then -- Clean
 			me.Frame:SetAlpha( 0.75 );
@@ -30,35 +30,35 @@ function me.OnUpdate ()
 	end
 end
 --[[****************************************************************************
-  * Function: _Clean.BugSack.LibDBIconRegister                                 *
+  * Function: _Clean.BugSack:PLAYER_LOGIN                                      *
   * Description: Skins the minimap button when it is created.                  *
   ****************************************************************************]]
-function me:LibDBIconRegister ( Name, Object, DB )
-	if ( Name == "BugSack" ) then
-		local Frame = self.objects[ Name ];
-		me.Frame = Frame;
+function me:PLAYER_LOGIN ()
+	me.PLAYER_LOGIN = nil;
 
-		Frame:ClearAllPoints();
-		Frame:SetPoint( "TOPRIGHT", Minimap );
-		Frame:SetWidth( 16 );
-		Frame:SetHeight( 16 );
-		Frame:RegisterForDrag();
-		Frame.icon:SetAllPoints( Frame );
-		-- Hide the unnamed border texture
-		for _, Region in ipairs( { Frame:GetRegions() } ) do
-			if ( Region:IsObjectType( "Texture" ) and Region:GetTexture() == "Interface\\Minimap\\MiniMap-TrackingBorder" ) then
-				Region:Hide();
-				break;
-			end
+	local Frame = assert( LibStub( "LibDBIcon-1.0" ):IsRegistered( "BugSack" ), "LibDBIcon button not registered." );
+	me.Frame = Frame;
+
+	Frame:ClearAllPoints();
+	Frame:SetPoint( "TOPRIGHT", Minimap );
+	Frame:SetWidth( 16 );
+	Frame:SetHeight( 16 );
+	Frame:RegisterForDrag();
+	Frame.icon:SetAllPoints( Frame );
+	-- Hide the unnamed border texture
+	for _, Region in ipairs( { Frame:GetRegions() } ) do
+		if ( Region:IsObjectType( "Texture" ) and Region:GetTexture() == "Interface\\Minimap\\MiniMap-TrackingBorder" ) then
+			Region:Hide();
+			break;
 		end
-
-		local Background = _Clean.Colors.Background;
-		local Highlight = _Clean.Colors.Highlight;
-		Frame.icon:SetGradientAlpha( "VERTICAL", Highlight.r, Highlight.g, Highlight.b, Highlight.a, Background.r, Background.g, Background.b, Background.a );
-
-		me.OnUpdate();
-		Frame.SetPoint = _Clean.NilFunction;
 	end
+
+	local Background = _Clean.Colors.Background;
+	local Highlight = _Clean.Colors.Highlight;
+	Frame.icon:SetGradientAlpha( "VERTICAL", Highlight.r, Highlight.g, Highlight.b, Highlight.a, Background.r, Background.g, Background.b, Background.a );
+
+	me.LDBUpdate();
+	Frame.SetPoint = _Clean.NilFunction;
 end
 
 
@@ -70,8 +70,13 @@ end
 
 do
 	_Clean.RegisterAddOnInitializer( "BugSack", function ()
-		hooksecurefunc( LibStub( "LibDBIcon-1.0" ), "Register", me.LibDBIconRegister );
-		hooksecurefunc( BugSackLDB, "Update", me.OnUpdate );
+		if ( IsLoggedIn() ) then
+			me:PLAYER_LOGIN();
+		else
+			me:SetScript( "OnEvent", _Clean.OnEvent );
+			me:RegisterEvent( "PLAYER_LOGIN" );
+		end
+		hooksecurefunc( LibStub( "LibDataBroker-1.1" ):GetDataObjectByName( "BugSack" ), "Update", me.LDBUpdate );
 
 
 		-- Reskin error frame
