@@ -35,21 +35,25 @@ function me.ReplaceEditBoxText ( EditBox )
 		local OldText = EditBox:GetText();
 		local Command = OldText:match( "^(/%S+)" );
 		if ( not ( Command and IsSecureCmd( Command ) ) ) then
-			local NewText = _UTF.ReplaceCharacterReferences( OldText );
+			local NewText, CursorPosition = _UTF.ReplaceCharacterReferences( OldText, EditBox:GetCursorPosition() );
 			if ( OldText ~= NewText ) then
 				EditBox:SetText( NewText );
+				EditBox:SetCursorPosition( CursorPosition );
 				return true;
 			end
 		end
 	end
 end
 --[[****************************************************************************
-  * Function: _UTF.Chat.ChatEditCustomTabPressed                               *
+  * Function: _UTF.Chat:ChatEditCustomTabPressed                               *
   * Description: Replaces references when tab is pressed in an edit box.       *
   ****************************************************************************]]
-function me.ChatEditCustomTabPressed ()
-	local BackupReturn = me.ChatEditCustomTabPressedBackup();
-	return me.ReplaceEditBoxText( this ) or BackupReturn;
+function me:ChatEditCustomTabPressed ()
+	if ( not self ) then
+		self = this;
+	end
+	local BackupReturn = me.ChatEditCustomTabPressedBackup( self );
+	return me.ReplaceEditBoxText( self ) or BackupReturn;
 end
 
 

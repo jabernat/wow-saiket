@@ -120,14 +120,15 @@ end
 
 
 --[[****************************************************************************
-  * Function: _UTF.GsubReplaceCharacterReferences                              *
-  * Description: Gsub handler function to replace character entities.          *
+  * Function: _UTF.ReplaceCharacterReferences                                  *
+  * Description: Replaces character entity references with Unicode characters. *
   ****************************************************************************]]
 do
+	local CursorPosition, CursorDelta;
 	local HexToDec = me.HexToDec;
 	local DecToUTF = me.DecToUTF;
 	local tonumber = tonumber;
-	function me.GsubReplaceCharacterReferences ( Flags, Name )
+	local function GsubReplace ( Start, Flags, Name, End )
 		local CodePoint;
 	
 		if ( #Flags == 0 ) then -- Character entity
@@ -140,14 +141,20 @@ do
 		end
 	
 		if ( CodePoint ) then
-			return DecToUTF( CodePoint );
+			CodePoint = DecToUTF( CodePoint );
+			if ( CursorPosition ) then
+				if ( CursorPosition >= End - 1 ) then
+					CursorDelta = CursorDelta - ( End - Start ) + #CodePoint; -- Shift left to account for removed reference
+				elseif ( CursorPosition >= Start ) then
+					CursorDelta = CursorDelta - ( CursorPosition - Start + 1 ) + #CodePoint; -- Move cursor to after the replacement glyph
+				end
+			end
+			return CodePoint;
 		end
 	end
-end
---[[****************************************************************************
-  * Function: _UTF.ReplaceCharacterReferences                                  *
-  * Description: Replaces character entity references with Unicode characters. *
-  ****************************************************************************]]
-function me.ReplaceCharacterReferences ( Text )
-	return ( Text:gsub( "&(#?[Xx]?)(%w+);", me.GsubReplaceCharacterReferences ) );
+	function me.ReplaceCharacterReferences ( Text, ... )
+		CursorPosition, CursorDelta = ..., 0;
+		Text = Text:gsub( "()&(#?[Xx]?)(%w+);()", GsubReplace );
+		return Text, ( CursorPosition or 0 ) + CursorDelta;
+	end
 end
