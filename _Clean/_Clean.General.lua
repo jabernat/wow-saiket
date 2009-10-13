@@ -36,7 +36,7 @@ do
 
 	-- Move and shrink the GM ticket frame
 	TicketStatusFrame:ClearAllPoints();
-	TicketStatusFrame:SetPoint( "TOPRIGHT", Minimap, "TOPLEFT", -8, 0 );
+	TicketStatusFrame:SetPoint( "TOPRIGHT", MinimapCluster, "TOPLEFT", -8, 0 );
 	TicketStatusFrame:SetScale( 0.85 );
 	TicketStatusFrame:SetAlpha( 0.75 );
 

@@ -70,13 +70,15 @@ end
 
 do
 	_Clean.RegisterAddOnInitializer( "BugSack", function ()
-		if ( IsLoggedIn() ) then
-			me:PLAYER_LOGIN();
-		else
-			me:SetScript( "OnEvent", _Clean.OnEvent );
-			me:RegisterEvent( "PLAYER_LOGIN" );
+		if ( not IsAddOnLoaded( "Carbonite" ) ) then
+			if ( IsLoggedIn() ) then
+				me:PLAYER_LOGIN();
+			else
+				me:SetScript( "OnEvent", _Clean.OnEvent );
+				me:RegisterEvent( "PLAYER_LOGIN" );
+			end
+			hooksecurefunc( LibStub( "LibDataBroker-1.1" ):GetDataObjectByName( "BugSack" ), "Update", me.LDBUpdate );
 		end
-		hooksecurefunc( LibStub( "LibDataBroker-1.1" ):GetDataObjectByName( "BugSack" ), "Update", me.LDBUpdate );
 
 
 		-- Reskin error frame
