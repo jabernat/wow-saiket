@@ -1,12 +1,12 @@
 --[[****************************************************************************
   * _Misc by Saiket                                                            *
   * _Misc.Minimap.lua - Modifies the minimap frame.                            *
-  *                                                                            *
-  * + Removes the zoom buttons from the minimap and enables the mousewheel.    *
-  * + Adds the name of who pings the minimap to the ping itself.               *
-  * + Keeps the ping visible for 30 seconds after it appears.                  *
   ****************************************************************************]]
 
+
+if ( IsAddOnLoaded( "Carbonite" ) ) then
+	return;
+end
 
 local _Misc = _Misc;
 local me = {
