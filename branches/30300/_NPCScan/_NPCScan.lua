@@ -48,7 +48,7 @@ me.Achievements = { -- Criteria data for each achievement
 };
 me.CriteriaUpdateRequested = nil;
 
-me.IDMax = 0xFFFFFF; -- Largest ID that will fit in a GUID's 24-bit NPC ID field
+me.IDMax = 0xFFFFF; -- Largest ID that will fit in a GUID's 20-bit NPC ID field
 me.UpdateRate = 0.1;
 
 
@@ -106,7 +106,7 @@ do
 	Tooltip:AddFontStrings( Text, Tooltip:CreateFontString( "$parentTextRight1", nil, "GameTooltipText" ) );
 	function me.TestID ( ID )
 		Tooltip:SetOwner( WorldFrame, "ANCHOR_NONE" );
-		Tooltip:SetHyperlink( ( "unit:0xF530%06X000000" ):format( ID ) );
+		Tooltip:SetHyperlink( ( "unit:0xF53%05X00000000" ):format( ID ) );
 		if ( Tooltip:IsShown() ) then
 			return Text:GetText();
 		end
