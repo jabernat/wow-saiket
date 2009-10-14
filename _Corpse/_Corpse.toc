@@ -20,4 +20,7 @@
 Locales.xml
 
 _Corpse.lua
+
+# Modules
+_Corpse.Standard.lua
 _Corpse.Battlegrounds.lua

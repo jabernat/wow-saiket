@@ -1,16 +1,14 @@
 --[[****************************************************************************
   * _Corpse by Saiket                                                          *
-  * _Corpse.Battlegrounds.lua - Update handler for battlegrounds that reads    *
-  *   information directly from the scoreboard.                                *
+  * _Corpse.Battlegrounds.lua - Uses the BG scoreboard to get corpse info.     *
   ****************************************************************************]]
 
 
-local _Corpse = _Corpse;
 local L = _CorpseLocalization;
-local me = {};
+local _Corpse = _Corpse;
+local me = CreateFrame( "Frame", nil, _Corpse );
 _Corpse.Battlegrounds = me;
 
-me.Enabled = false;
 me.RequestBattlefieldScoreDataLast = 0;
 
 me.UpdateInterval = 5; -- Seconds
@@ -53,70 +51,40 @@ end
 function me:UPDATE_BATTLEFIELD_SCORE ()
 	local Name, Server = _Corpse.GetCorpseName();
 	if ( Name and Name ~= UnitName( "player" ) ) then -- Found corpse tooltip
-		_Corpse.BuildCorpseTooltip( me.GetBattlefieldInfo( Name, Server ) );
+		_Corpse.BuildCorpseTooltip( self.GetBattlefieldInfo( Name, Server ) );
 	end
 end
 
 
---[[****************************************************************************
-  * Function: _Corpse.Battlegrounds:OnUpdate                                   *
-  * Description: Global update handler for battlegrounds.                      *
-  ****************************************************************************]]
-function me:OnUpdate ()
-	local Name, Server = _Corpse.GetCorpseName();
-	if ( Name ) then -- Found corpse tooltip
 
-		local PlayerName = UnitName( "player" );
-		if ( Name == PlayerName ) then -- Our own corpse
-			_Corpse.BuildCorpseTooltip( false, PlayerName,
-				UnitLevel( "player" ), UnitClass( "player" ), GetRealZoneText(), 1,
-				( UnitIsAFK( "player" ) and L.AFK ) or ( UnitIsDND( "player" ) and L.DND ) );
-		else
-			if ( GetTime() - me.RequestBattlefieldScoreDataLast > me.UpdateInterval ) then
-				RequestBattlefieldScoreData();
-			end
-			_Corpse.BuildCorpseTooltip( me.GetBattlefieldInfo( Name, Server ) );
+
+--[[****************************************************************************
+  * Function: _Corpse.Battlegrounds:Update                                     *
+  ****************************************************************************]]
+function me:Update ( Name, Server )
+	local PlayerName = UnitName( "player" );
+	if ( Name == PlayerName ) then -- Our own corpse
+		_Corpse.BuildCorpseTooltip( false, PlayerName,
+			UnitLevel( "player" ), UnitClass( "player" ), GetRealZoneText(), 1,
+			( UnitIsAFK( "player" ) and CHAT_FLAG_AFK ) or ( UnitIsDND( "player" ) and CHAT_FLAG_DND ) );
+	else
+		if ( GetTime() - self.RequestBattlefieldScoreDataLast > self.UpdateInterval ) then
+			RequestBattlefieldScoreData();
 		end
-	end
-
-	_Corpse:Hide();
-end
-
-
-
-
---[[****************************************************************************
-  * Function: _Corpse.Battlegrounds.Enable                                     *
-  * Description: Enables events and hooks.                                     *
-  ****************************************************************************]]
-function me.Enable ()
-	if ( not me.Enabled ) then
-		me.Enabled = true;
-
-		_Corpse.Disable();
-		_Corpse:Hide();
-		_Corpse:SetScript( "OnUpdate", me.OnUpdate );
-
-		_Corpse:RegisterEvent( "UPDATE_BATTLEFIELD_SCORE" );
-
-		return true;
+		_Corpse.BuildCorpseTooltip( self.GetBattlefieldInfo( Name, Server ) );
 	end
 end
 --[[****************************************************************************
-  * Function: _Corpse.Battlegrounds.Disable                                    *
-  * Description: Disables events and hooks.                                    *
+  * Function: _Corpse.Battlegrounds:Enable                                     *
   ****************************************************************************]]
-function me.Disable ()
-	if ( me.Enabled ) then
-		me.Enabled = false;
-
-		_Corpse:Hide();
-		_Corpse:SetScript( "OnUpdate", nil );
-
-		_Corpse:UnregisterEvent( "UPDATE_BATTLEFIELD_SCORE" );
-
-		return true;
-	end
+function me:Enable ()
+	self:RegisterEvent( "UPDATE_BATTLEFIELD_SCORE" );
+end
+--[[****************************************************************************
+  * Function: _Corpse.Battlegrounds:Disable                                    *
+  ****************************************************************************]]
+function me:Disable ()
+	self:UnregisterEvent( "UPDATE_BATTLEFIELD_SCORE" );
 end
 
 
@@ -127,7 +95,7 @@ end
 -----------------------------
 
 do
-	_Corpse.UPDATE_BATTLEFIELD_SCORE = me.UPDATE_BATTLEFIELD_SCORE;
+	me:SetScript( "OnEvent", _Corpse.OnEvent );
 
 	hooksecurefunc( "RequestBattlefieldScoreData", me.RequestBattlefieldScoreData );
 end
