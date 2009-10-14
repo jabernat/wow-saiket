@@ -507,6 +507,7 @@ do
 		Tab:SetScript( "OnClick", me.TabOnClick );
 		Tab:SetScript( "OnEnter", me.TabOnEnter );
 		Tab:SetScript( "OnLeave", _NPCScan.Config.ControlOnLeave );
+		Tab:SetMotionScriptsWhileDisabled( true ); -- Allow tooltip while active
 
 		if ( type( ID ) == "number" ) then -- AchievementID
 			local Size = select( 2, Tab:GetFontString():GetFont() ) + 4;
