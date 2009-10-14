@@ -1,13 +1,12 @@
 --[[****************************************************************************
   * _Misc by Saiket                                                            *
   * _Misc.QuestLog.lua - Modifies the quest log frame.                         *
-  *                                                                            *
-  * + Adds the levels of quests to the quest log and quests linked to chat.    *
-  *   The type of quest is also represented by a one letter abbreviation, such *
-  *   as "r" for raidable quests.                                              *
-  * + Allows for more of the quest title text to be visible in the log.        *
   ****************************************************************************]]
 
+
+if ( IsAddOnLoaded( "Carbonite" ) ) then
+	return;
+end
 
 local _Misc = _Misc;
 local L = _MiscLocalization;

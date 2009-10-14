@@ -10,7 +10,9 @@
 -- Function Hooks / Execution
 -----------------------------
 
-if ( select( 6, GetAddOnInfo( "ItemRack" ) ) ~= "MISSING" ) then
+if ( select( 6, GetAddOnInfo( "ItemRack" ) ) ~= "MISSING"
+	and not IsAddOnLoaded( "Carbonite" )
+) then
 	_Clean.RegisterAddOnInitializer( "ItemRack", function ()
 		ItemRackMinimapFrame:RegisterForDrag();
 		ItemRackMinimapFrame:DisableDrawLayer( "ARTWORK" );

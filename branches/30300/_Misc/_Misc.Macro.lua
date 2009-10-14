@@ -241,7 +241,7 @@ end
   * Description: Slash command chat handler for _Misc.Macro.Mount.             *
   ****************************************************************************]]
 function me.MountSlashCommand ( Input )
-	me.Mount( ( "," ):split( SecureCmdOptionParse( Input ) ) );
+	me.Mount( ( "," ):split( SecureCmdOptionParse( Input ) or "" ) );
 end
 --[[****************************************************************************
   * Function: _Misc.Macro.PallyPowerLoadSlashCommand                           *

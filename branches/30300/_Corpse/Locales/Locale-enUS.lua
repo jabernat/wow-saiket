@@ -20,9 +20,6 @@ do
 
 		ENEMY_ONLINE = ERR_PLAYER_WRONG_FACTION;
 		ENEMY_OFFLINE_PATTERN = "^Cannot find player '([^%s%p%d%c]+)'%.$"; -- Based on ERR_BAD_PLAYER_NAME_S
-
-		AFK = CHAT_FLAG_AFK;
-		DND = CHAT_FLAG_DND;
 	}, {
 		__index = function ( self, Key )
 			if ( Key ~= nil ) then

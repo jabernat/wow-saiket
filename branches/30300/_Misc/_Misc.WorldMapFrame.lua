@@ -1,10 +1,12 @@
 --[[****************************************************************************
   * _Misc by Saiket                                                            *
   * _Misc.WorldMapFrame.lua - Modifies the WorldMap frame.                     *
-  *                                                                            *
-  * + Adds a tooltip to show the TLoc of the cursor when over the world map.   *
   ****************************************************************************]]
 
+
+if ( IsAddOnLoaded( "Carbonite" ) ) then
+	return;
+end
 
 local _Misc = _Misc;
 local L = _MiscLocalization;

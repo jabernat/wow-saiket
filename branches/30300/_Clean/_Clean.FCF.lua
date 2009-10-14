@@ -52,7 +52,7 @@ function me:Expand ( Expand )
 
 		if ( ID == 1 or ID == 2 ) then
 			_Clean:RunProtectedFunction( function ()
-				self:SetPoint( "TOP", Minimap, "BOTTOM" );
+				self:SetPoint( "TOP", MinimapCluster, "BOTTOM" );
 			end, self:IsProtected() );
 		end
 	else -- Contract and restore old alpha
