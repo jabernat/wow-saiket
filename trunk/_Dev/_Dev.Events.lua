@@ -226,12 +226,12 @@ end
   ****************************************************************************]]
 do
 	local EscapeString = _Dev.Dump.EscapeString;
-	local Print = _Dev.Print;
+	local Print, tostring = _Dev.Print, tostring;
 	function AddOnChat.AddMessage ( Prefix, Message, Type, Sender )
 		local Color = ChatTypeInfo[ Type ];
 		local Message = L.ADDONCHAT_MSG_FORMAT:format( L.ADDONCHAT_TYPES[ Type ],
 			Type == "WHISPER_INFORM" and L.ADDONCHAT_OUTBOUND or "",
-			Sender, EscapeString( Prefix ), EscapeString( Message ) );
+			Sender, EscapeString( tostring( Prefix ) ), EscapeString( tostring( Message ) ) );
 		if ( Type == "WHISPER_INFORM" ) then
 			Type = "WHISPER";
 		end
@@ -259,7 +259,7 @@ do
 	local AddMessage = AddOnChat.AddMessage;
 	local strupper = strupper;
 	function AddOnChat.SendAddonMessage ( Prefix, Message, Type, Target )
-		if ( Type:upper() == "WHISPER" ) then
+		if ( Type:upper() == "WHISPER" and AddOnChat:IsEventRegistered( "CHAT_MSG_ADDON" ) ) then
 			AddMessage( Prefix, Message, "WHISPER_INFORM", Target:lower():gsub( "^%a", strupper ) );
 		end
 	end
