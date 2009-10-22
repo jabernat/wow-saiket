@@ -31,11 +31,6 @@ me.OptionsCharacterDefault = {
 		[ L.NPCS[ "Gondria" ]:trim():lower() ] = 33776;
 		[ L.NPCS[ "Skoll" ]:trim():lower() ] = 35189;
 		[ L.NPCS[ "Time-Lost Proto Drake" ]:trim():lower() ] = 32491;
-
-		[ L.NPCS[ "Dart" ]:trim():lower() ] = 14232;
-		[ L.NPCS[ "Takk the Leaper" ]:trim():lower() ] = 5842;
-		[ L.NPCS[ "Ravasaur Matriarch" ]:trim():lower() ] = 6581;
-		[ L.NPCS[ "Razormaw Matriarch" ]:trim():lower() ] = 1140;
 	};
 	Achievements = {}; -- Filled with all entries in me.Achievements
 };
@@ -504,10 +499,7 @@ function me.OnLoad ()
 			OptionsCharacter.Version = "3.1.0.1";
 		end
 		if ( OptionsCharacter.Version == "3.1.0.1" ) then -- 3.2.0.1: Added default scans for rare raptors in 3.2
-			OptionsCharacter.NPCs[ L.NPCS[ "Dart" ]:trim():lower() ] = 14232;
-			OptionsCharacter.NPCs[ L.NPCS[ "Takk the Leaper" ]:trim():lower() ] = 5842;
-			OptionsCharacter.NPCs[ L.NPCS[ "Ravasaur Matriarch" ]:trim():lower() ] = 6581;
-			OptionsCharacter.NPCs[ L.NPCS[ "Razormaw Matriarch" ]:trim():lower() ] = 1140;
+			-- 3.3: Raptors are no longer defaults since they don't drop pets
 			OptionsCharacter.Version = "3.2.0.2"; -- No change from 3.2.0.1
 		end
 		if ( OptionsCharacter.Version == "3.2.0.2" ) then -- 3.2.0.2: Added default scans for Skoll
