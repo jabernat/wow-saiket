@@ -4,6 +4,7 @@
   ****************************************************************************]]
 
 
+local AddOnName = ...;
 _LatencyOptions = {
 	IsEnabled = true;
 	IsLocked = false;
@@ -211,7 +212,7 @@ end
   * Function: _Latency:ADDON_LOADED                                            *
   ****************************************************************************]]
 function me:ADDON_LOADED ( _, AddOn )
-	if ( AddOn:lower() == "_latency" ) then
+	if ( AddOn:lower() == AddOnName:lower() ) then
 		me:UnregisterEvent( "ADDON_LOADED" );
 		me.ADDON_LOADED = nil;
 
