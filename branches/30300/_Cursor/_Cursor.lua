@@ -4,7 +4,8 @@
   ****************************************************************************]]
 
 
-local Version = GetAddOnMetadata( "_Cursor", "Version" ):match( "^([%d.]+)" );
+local AddOnName = ...;
+local Version = GetAddOnMetadata( AddOnName, "Version" ):match( "^([%d.]+)" );
 _CursorOptions = nil;
 _CursorOptionsCharacter = {
 	Cursors = {};
@@ -394,7 +395,7 @@ do
 		return #Version1 - #Version2;
 	end
 	function me:ADDON_LOADED ( _, AddOn )
-		if ( AddOn:lower() == "_cursor" ) then
+		if ( AddOn:lower() == AddOnName:lower() ) then
 			me:UnregisterEvent( "ADDON_LOADED" );
 			me.ADDON_LOADED = nil;
 	
