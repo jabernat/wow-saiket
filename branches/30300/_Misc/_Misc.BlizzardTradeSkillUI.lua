@@ -1,10 +1,6 @@
 --[[****************************************************************************
   * _Misc by Saiket                                                            *
   * _Misc.BlizzardTradeSkillUI.lua - Modifies the Blizzard_TradeSkillUI addon. *
-  *                                                                            *
-  * + If you click a reagent for a craftable item and the reagent itself is    *
-  *   craftable by the same profession, that skill will be displayed.          *
-  * + Expands the list to show 24 items per screen.                            *
   ****************************************************************************]]
 
 

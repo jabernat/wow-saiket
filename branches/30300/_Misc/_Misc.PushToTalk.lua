@@ -1,8 +1,6 @@
 --[[****************************************************************************
   * _Misc by Saiket                                                            *
   * _Misc.PushToTalk.lua - Voice chat indicator frame.                         *
-  *                                                                            *
-  * + Adds a voice transmitting icon to the center of the screen.              *
   ****************************************************************************]]
 
 
@@ -53,11 +51,6 @@ function me:MODIFIER_STATE_CHANGED ( _, Modifier, State )
 		self:UpdateIcon();
 	end
 end
---[[****************************************************************************
-  * Function: _Misc.PushToTalk:OnEvent                                         *
-  * Description: Keeps track of whether voice is transmitting or not.          *
-  ****************************************************************************]]
-me.OnEvent = _Misc.OnEvent;
 
 
 
@@ -67,7 +60,7 @@ me.OnEvent = _Misc.OnEvent;
 -----------------------------
 
 do
-	me:SetScript( "OnEvent", me.OnEvent );
+	me:SetScript( "OnEvent", _Misc.OnEvent );
 	me:RegisterEvent( "VOICE_PUSH_TO_TALK_START" );
 	me:RegisterEvent( "VOICE_PUSH_TO_TALK_STOP" );
 	me:RegisterEvent( "MODIFIER_STATE_CHANGED" );

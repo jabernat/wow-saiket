@@ -1,8 +1,6 @@
 --[[****************************************************************************
   * _Misc by Saiket                                                            *
   * _Misc.BlizzardTimeManager.lua - Modifies the Blizzard_TimeManager addon.   *
-  *                                                                            *
-  * + Moves the small time plate from the minimap.                             *
   ****************************************************************************]]
 
 

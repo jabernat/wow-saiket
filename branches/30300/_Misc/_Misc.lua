@@ -1,14 +1,6 @@
 --[[****************************************************************************
   * _Misc by Saiket                                                            *
   * _Misc.lua - Common functions and global events/updates.                    *
-  *                                                                            *
-  * + The RaidWarning frame remembers 5 lines of text and shows the author of  *
-  *   the messages similarly to /rs.                                           *
-  * + The faction watch bar will automatically show the most recently active   *
-  *   faction.                                                                 *
-  * + Adds a status label to the middle of the screen indicating when the      *
-  *   player goes AFK or DND.                                                  *
-  * + Autoloots all quality fishing loot.                                      *
   ****************************************************************************]]
 
 
@@ -384,11 +376,10 @@ do
 	Button:SetHeight( 22 );
 	Button:SetPoint( "RIGHT", Button:GetParent():GetName().."ResetButton", "LEFT" );
 	Button:SetText( L.UNDRESS_LABEL );
-	Button:SetScript( "OnClick",
-		function () 
-			DressUpModel:Undress();
-			PlaySound( "gsTitleOptionOK" );
-		end );
+	Button:SetScript( "OnClick", function () 
+		DressUpModel:Undress();
+		PlaySound( "gsTitleOptionOK" );
+	end );
 
 
 	-- Allow ctrl-left click to focus units

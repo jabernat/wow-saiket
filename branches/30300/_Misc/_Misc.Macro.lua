@@ -1,101 +1,12 @@
 --[[****************************************************************************
   * _Misc by Saiket                                                            *
-  * _Misc.Macro.lua - Changes to make macros easier to manage.                 *
-  *                                                                            *
-  * + Adds /print for executing LUA by command line. It executes its argument  *
-  *   and displays the returned value in a chat window formatted with          *
-  *   tostring(). The argument should be an RValue.                            *
-  *   + Pipes typed into the command will be unescaped to allow manual         *
-  *     construction of color and link tags.                                   *
-  * + /alert will display your message like /print, but in the center of the   *
-  *   screen with a warning sound.                                             *
-  *   + Pipes typed into the command will be unescaped to allow manual         *
-  *     construction of color and link tags.                                   *
-  *   + The function alert(message, [color], [duration]) works like the slash  *
-  *     command and can optionally specify the color and duration to use.      *
+  * _Misc.Macro.lua - Custom slash commands and shortcuts.                     *
   ****************************************************************************]]
 
 
 local _Misc = _Misc;
 local me = {};
 _Misc.Macro = me;
-
-
-
-
---[[****************************************************************************
-  * Function: _Misc.Macro.UnitInGroup                                          *
-  * Description: Returns true if the specified unit is in the party.           *
-  ****************************************************************************]]
-function me.UnitInGroup ( Unit )
-	return UnitPlayerOrPetInRaid( Unit )
-		or UnitPlayerOrPetInParty( Unit )
-		or UnitIsUnit( Unit, "player" )
-		or UnitIsUnit( Unit, "pet" );
-end
---[[****************************************************************************
-  * Function: _Misc.Macro.UnitIsCastable                                       *
-  * Description: Returns true if the specified unit can be cast upon.          *
-  ****************************************************************************]]
-function me.UnitIsCastable ( Unit )
-	return UnitIsFriend( "player", Unit )
-		and not UnitIsDeadOrGhost( Unit )
-		and UnitIsConnected( Unit )
-		and UnitIsVisible( Unit )
-		and UnitInRange( Unit );
-end
---[[****************************************************************************
-  * Function: _Misc.Macro.ItemUsable                                           *
-  * Description: Returns true if an item is usable.                            *
-  ****************************************************************************]]
-do
-	local GetItemInfo = GetItemInfo;
-	local GetItemCount = GetItemCount;
-	local IsUsableItem = IsUsableItem;
-	local GetItemCooldown = GetItemCooldown;
-	local ItemHasRange = ItemHasRange;
-	local IsItemInRange = IsItemInRange;
-	function me.ItemUsable ( Item, Unit )
-		if ( type( Item ) == "number" ) then
-			Item = "item:"..Item;
-		end
-
-		return GetItemInfo( Item )
-			and GetItemCount( Item ) > 0
-			and IsUsableItem( Item )
-			and GetItemCooldown( Item ) == 0
-			and ( not ItemHasRange( Item ) or IsItemInRange( Item, Unit or "target" ) == 1 );
-	end
-end
---[[****************************************************************************
-  * Function: _Misc.Macro.GarbleGsub                                           *
-  * Description: Gsub replace function used by Garble.                         *
-  ****************************************************************************]]
-function me.GarbleGsub ( Character )
-	return "\31"..Character;
-end
---[[****************************************************************************
-  * Function: _Misc.Macro.Garble                                               *
-  * Description: Garbles the text in a string.                                 *
-  ****************************************************************************]]
-function me.Garble ( Text )
-	return Text:gsub( "[\33-\128]", me.GarbleGsub );
-end
---[[****************************************************************************
-  * Function: _Misc.Macro.Truncate                                             *
-  * Description: Shortens a string to a given length and adds an ellipsis.     *
-  ****************************************************************************]]
-function me.Truncate ( Text, MaxLength )
-	if ( #Text > MaxLength ) then
-		if ( MaxLength >= 3 ) then
-			return Text:sub( 1, MaxLength - 3 ).."\226\128\166";
-		else -- Not enough room for ellipsis
-			return Text:sub( 1, MaxLength );
-		end
-	else
-		return Text;
-	end
-end
 
 
 
@@ -110,20 +21,6 @@ function me.Alert ( Message, Color )
 	end
 	RaidNotice_AddMessage( RaidWarningFrame, "|TInterface\\DialogFrame\\DialogAlertIcon:48|t"..tostring( Message ), Color );
 	PlaySound( "RaidWarning" );
-end
---[[****************************************************************************
-  * Function: _Misc.Macro.PrintSlashCommand                                    *
-  * Description: Slash command chat handler for the _Misc.Print function.      *
-  ****************************************************************************]]
-function me.PrintSlashCommand ( Input )
-	if ( Input and not Input:find( "^%s*$" ) ) then
-		local Success, Output = _Misc.Exec( Input:gsub( "||", "|" ) );
-		if ( Success ) then
-			_Misc.Print( Output );
-		else
-			geterrorhandler()( Output );
-		end
-	end
 end
 --[[****************************************************************************
   * Function: _Misc.Macro.AlertSlashCommand                                    *
@@ -288,13 +185,6 @@ end
 -----------------------------
 
 do
-	UnitInGroup = me.UnitInGroup;
-	UnitIsCastable = me.UnitIsCastable;
-	garble = me.Garble;
-	usable = me.ItemUsable;
-	trunc = me.Truncate;
-
-	SlashCmdList[ "PRINT" ] = me.PrintSlashCommand;
 	alert = me.Alert;
 	SlashCmdList[ "ALERT" ] = me.AlertSlashCommand;
 

@@ -1,10 +1,6 @@
 --[[****************************************************************************
   * _Misc by Saiket                                                            *
   * _Misc.BlizzardCombatText.lua - Modifies the Blizzard_CombatText addon.     *
-  *                                                                            *
-  * + Allows up to 40 messages at once.                                        *
-  * + Adds overhealing to heal messages.                                       *
-  * + Displays messages for your heals on others.                              *
   ****************************************************************************]]
 
 
@@ -54,7 +50,7 @@ do
 	local ByMe, OnMe;
 	local IgnoredSpells = {
 		[ 20267 ] = true; -- Judgement of Light
-		[ 20167 ] = true; -- Seal of Light
+		--[ 20167 ] = true; -- Seal of Light
 		[ 54968 ] = true; -- Glyph of Holy Light
 		[ 15290 ] = true; -- Vampiric Embrace
 

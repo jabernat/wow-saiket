@@ -1,8 +1,6 @@
 --[[****************************************************************************
   * _Misc by Saiket                                                            *
   * _Misc.ColorPickerFrame.lua - Modifies the color picker frame.              *
-  *                                                                            *
-  * + Adds an editbox to modify the color with a hex triplet.                  *
   ****************************************************************************]]
 
 

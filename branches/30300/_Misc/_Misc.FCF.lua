@@ -1,18 +1,6 @@
 --[[****************************************************************************
   * _Misc by Saiket                                                            *
   * _Misc.FCF.lua - Floating Chat Frame modifications.                         *
-  *                                                                            *
-  * + Adds font sizes 8 through 10 to the chat frame's options dropdown.       *
-  * + Recognizes URLs in chat frames and makes them clickable links.           *
-  * + Enables the mousewheel for chat frames.                                  *
-  *   + Support for keyboard speed modifiers. Use <Ctrl> to jump a full page   *
-  *     up or down, and <Alt> to jump to the top or bottom.                    *
-  *   + <Shift+MouseWheel> overrides scrolling.                                *
-  *   + While mouselooking, <MouseWheelUp/Down> bindings will always override  *
-  *     scrolling to support the default zooming binds.                        *
-  * + The yell, channel and officer chat modes stick between messages.         *
-  * + If guilded when you log in, guild chat will be the default channel.      *
-  * + Chat and combat logging will be enabled by default.                      *
   ****************************************************************************]]
 
 

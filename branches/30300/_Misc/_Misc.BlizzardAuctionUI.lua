@@ -1,10 +1,6 @@
 --[[****************************************************************************
   * _Misc by Saiket                                                            *
   * _Misc.BlizzardAuctionUI.lua - Modifies the Blizzard_AuctionUI addon.       *
-  *                                                                            *
-  * + When the auction frame is open, <Alt+Click> on items will seach for      *
-  *   them.                                                                    *
-  * + The default auction length is set to 24 hours.                           *
   ****************************************************************************]]
 
 

@@ -1,8 +1,6 @@
 --[[****************************************************************************
   * _Misc by Saiket                                                            *
   * _Misc.CastingBar.lua - Modifies the casting bar.                           *
-  *                                                                            *
-  * + Adds a label to the casting bar that shows cast time remaining.          *
   ****************************************************************************]]
 
 

@@ -1,9 +1,6 @@
 --[[****************************************************************************
   * _Misc by Saiket                                                            *
   * _Misc.GameTooltip.lua - Modifies the tooltip frames.                       *
-  *                                                                            *
-  * + Adds players' guild names to their unit tooltips.                        *
-  * + Adds the icon of items and spells to the left of ItemRefTooltip.         *
   ****************************************************************************]]
 
 

@@ -1,9 +1,6 @@
 --[[****************************************************************************
   * _Misc by Saiket                                                            *
   * _Misc.Camera.lua - Adds new bindings for positioning the camera.           *
-  *                                                                            *
-  * + Unlike the default UI's version, the binding to flip the camera 180      *
-  *   degrees will spring back when released.                                  *
   ****************************************************************************]]
 
 
