@@ -1,9 +1,9 @@
-## Interface: 30200
+## Interface: 30300
 ## Title: _|cffCCCC88UTF|r
 ## Notes: Unicode input dialog and text replacement.
 ## Author: Saiket
-## Version: 3.2.0.1
-## X-Date: 2009-10-09
+## Version: 3.3.0.1
+## X-Date: 2009-10-22
 ## X-Category: Chat/Communication
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com

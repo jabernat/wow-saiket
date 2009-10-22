@@ -4,6 +4,7 @@
   ****************************************************************************]]
 
 
+local AddOnName = ...;
 local _UTF = _UTF;
 local L = _UTFLocalization;
 local me = CreateFrame( "Frame" );
@@ -25,7 +26,7 @@ end
   * Description: Updates configuration options on load.                        *
   ****************************************************************************]]
 function me:OnEvent ( _, AddOn )
-	if ( AddOn:upper() == "_UTF" ) then
+	if ( AddOn:lower() == AddOnName:lower() ) then
 		self:UnregisterEvent( "ADDON_LOADED" );
 		self.Update();
 	end
