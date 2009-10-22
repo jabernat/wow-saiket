@@ -1,9 +1,9 @@
-## Interface: 30200
+## Interface: 30300
 ## Title: _|cffCCCC88NPCScan|r.|cff888888Tools|r
 ## Notes: Tools to construct path data from mob position data for _|cffCCCC88NPCScan|r.Overlay.
 ## Author: Saiket
-## Version: 3.2.0.1
-## X-Date: 2009-09-27
+## Version: 3.3.0.1
+## X-Date: 2009-10-22
 ## X-Category: Maps, Development Tools, Data Export
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
