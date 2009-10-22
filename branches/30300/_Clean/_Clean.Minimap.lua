@@ -85,7 +85,6 @@ do
 
 
 		-- Move default buttons that sit around the minimap
-		MinimapToggleButton:Hide();
 		MinimapBorderTop:Hide();
 		MinimapBorderTop:SetTexture();
 		MinimapBorder:Hide();
@@ -137,6 +136,8 @@ do
 		MiniMapBattlefieldIcon:SetGradientAlpha( "VERTICAL", Background.r, Background.g, Background.b, Background.a, Foreground.r, Foreground.g, Foreground.b, Foreground.a );
 		BattlegroundShine:SetAllPoints( MiniMapBattlefieldFrame );
 
+		assert( not MiniMapMeetingStoneFrame, "MiniMapMeetingStoneFrame is back." );
+		--[[ NOTE(LFM interface omitted from PTR build.)
 		MiniMapMeetingStoneFrame:ClearAllPoints();
 		MiniMapMeetingStoneFrame:SetPoint( "RIGHT", MiniMapBattlefieldFrame, "LEFT" );
 		MiniMapMeetingStoneFrame:SetWidth( 20 );
@@ -145,6 +146,7 @@ do
 		MiniMapMeetingStoneBorder:SetTexture();
 		MiniMapMeetingStoneFrameIcon:SetAllPoints( MiniMapMeetingStoneFrame );
 		MiniMapMeetingStoneFrameIconTexture:SetGradientAlpha( "VERTICAL", Background.r, Background.g, Background.b, Background.a, Foreground.r, Foreground.g, Foreground.b, Foreground.a );
+		]]
 
 
 		-- Move the zone text inside of the square
