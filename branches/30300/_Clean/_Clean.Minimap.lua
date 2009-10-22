@@ -136,17 +136,14 @@ do
 		MiniMapBattlefieldIcon:SetGradientAlpha( "VERTICAL", Background.r, Background.g, Background.b, Background.a, Foreground.r, Foreground.g, Foreground.b, Foreground.a );
 		BattlegroundShine:SetAllPoints( MiniMapBattlefieldFrame );
 
-		assert( not MiniMapMeetingStoneFrame, "MiniMapMeetingStoneFrame is back." );
-		--[[ NOTE(LFM interface omitted from PTR build.)
-		MiniMapMeetingStoneFrame:ClearAllPoints();
-		MiniMapMeetingStoneFrame:SetPoint( "RIGHT", MiniMapBattlefieldFrame, "LEFT" );
-		MiniMapMeetingStoneFrame:SetWidth( 20 );
-		MiniMapMeetingStoneFrame:SetHeight( 20 );
-		MiniMapMeetingStoneBorder:Hide();
-		MiniMapMeetingStoneBorder:SetTexture();
-		MiniMapMeetingStoneFrameIcon:SetAllPoints( MiniMapMeetingStoneFrame );
-		MiniMapMeetingStoneFrameIconTexture:SetGradientAlpha( "VERTICAL", Background.r, Background.g, Background.b, Background.a, Foreground.r, Foreground.g, Foreground.b, Foreground.a );
-		]]
+		MiniMapLFGFrame:ClearAllPoints();
+		MiniMapLFGFrame:SetPoint( "RIGHT", MiniMapBattlefieldFrame, "LEFT" );
+		MiniMapLFGFrame:SetWidth( 24 );
+		MiniMapLFGFrame:SetHeight( 24 );
+		MiniMapLFGFrameBorder:Hide();
+		MiniMapLFGFrameBorder:SetTexture();
+		MiniMapLFGFrameIcon:SetAllPoints( MiniMapLFGFrame );
+		MiniMapLFGFrameIconTexture:SetGradientAlpha( "VERTICAL", Background.r, Background.g, Background.b, Background.a, Foreground.r, Foreground.g, Foreground.b, Foreground.a );
 
 
 		-- Move the zone text inside of the square
