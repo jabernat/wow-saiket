@@ -6,7 +6,7 @@
 
 local L = _NPCScanLocalization;
 local me = CreateFrame( "Frame", "_NPCScan" );
-me.Version = GetAddOnMetadata( "_NPCScan", "Version" ):match( "^([%d.]+)" );
+me.Version = GetAddOnMetadata( ..., "Version" ):match( "^([%d.]+)" );
 
 me.Options = {
 	Version = me.Version;
