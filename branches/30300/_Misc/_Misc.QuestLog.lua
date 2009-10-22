@@ -24,14 +24,19 @@ _Misc.QuestLog = me;
 do
 	local GetQuestLogTitle = GetQuestLogTitle;
 	function me.QuestLogUpdate ()
+		if ( not QuestLogFrame:IsShown() ) then
+			return;
+		end
+
 		for _, Button in ipairs( QuestLogScrollFrame.buttons ) do
 			if ( not Button:IsShown() ) then
 				break;
 			end
-			local Index = Button:GetID();
 
-			local Title, Level, Tag, _, IsHeader, _, Completed, IsDaily = GetQuestLogTitle( Index );
-			if ( not IsHeader ) then
+			if ( not Button.isHeader ) then
+				local Index = Button:GetID();
+
+				local Title, Level, Tag, _, _, _, Completed, IsDaily = GetQuestLogTitle( Index );
 				if ( Tag ) then
 					Tag = L.QUESTLOG_QUESTTAGS[ Tag:match( L.QUESTLOG_DAILY_PATTERN ) or Tag ] or Tag;
 				end
