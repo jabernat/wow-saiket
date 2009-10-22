@@ -18,10 +18,11 @@
   ****************************************************************************]]
 
 
+local AddOnName = ...;
 local _DevOptionsOriginal = {
 	PrintLuaErrors = true;
 
-	Version = GetAddOnMetadata( "_Dev", "Version" ):match( "^([%d.]+)" );
+	Version = GetAddOnMetadata( AddOnName, "Version" ):match( "^([%d.]+)" );
 };
 _DevOptions = _DevOptionsOriginal;
 
@@ -240,7 +241,7 @@ end
   * Function: _Dev:ADDON_LOADED                                                *
   ****************************************************************************]]
 function me:ADDON_LOADED ( _, AddOn )
-	if ( AddOn:lower() == "_dev" ) then
+	if ( AddOn:lower() == AddOnName:lower() ) then
 		me:UnregisterEvent( "ADDON_LOADED" );
 		me.ADDON_LOADED = nil;
 
