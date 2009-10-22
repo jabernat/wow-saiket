@@ -7,8 +7,7 @@
 _CleanOptions = {};
 
 
-local me = CreateFrame( "Frame" );
-_Clean = me;
+local me = CreateFrame( "Frame", "_Clean" );
 
 local AddOnInitializers = {};
 me.AddOnInitializers = AddOnInitializers;

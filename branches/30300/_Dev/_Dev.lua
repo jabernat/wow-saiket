@@ -28,8 +28,7 @@ _DevOptions = _DevOptionsOriginal;
 
 
 local L = _DevLocalization;
-local me = CreateFrame( "Frame" );
-_Dev = me;
+local me = CreateFrame( "Frame", "_Dev" );
 
 local ScrollingMessageFrames = {};
 me.ScrollingMessageFrames = ScrollingMessageFrames;

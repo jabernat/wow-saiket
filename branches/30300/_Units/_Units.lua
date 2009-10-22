@@ -4,8 +4,7 @@
   ****************************************************************************]]
 
 
-local me = CreateFrame( "Frame" );
-_Units = me;
+local me = CreateFrame( "Frame", "_Units" );
 
 local AddOnInitializers = {};
 me.AddOnInitializers = AddOnInitializers;

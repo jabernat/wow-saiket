@@ -8,8 +8,7 @@ _MiscOptions = {};
 
 
 local L = _MiscLocalization;
-local me = CreateFrame( "Frame" );
-_Misc = me;
+local me = CreateFrame( "Frame", "_Misc" );
 
 local AddOnInitializers = {};
 me.AddOnInitializers = AddOnInitializers;
