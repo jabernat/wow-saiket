@@ -1,10 +1,10 @@
-## Interface: 30200
+## Interface: 30300
 ## Title: _|cffCCCC88VirtualMap|r
 ## Notes: Virtual 3D map overlay for GatherMate.
 ## Author: Saiket
 ## X-Credits: GatherHud by Grum and Xinhuan
-## Version: 3.2.0.1
-## X-Date: 2009-06-25
+## Version: 3.3.0.1
+## X-Date: 2009-10-22
 ## X-Category: Map
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
