@@ -90,7 +90,9 @@ do
 		CMD_ADD = "ADD";
 		CMD_REMOVE = "REMOVE";
 		CMD_REMOVENOTFOUND_FORMAT = "NPC "..LDQuo.."%s"..RDQuo.." not found.";
-		CMD_HELP = "Commands are "..LDQuo.."/npcscan add <NpcID> <Name>"..RDQuo..", "..LDQuo.."/npcscan remove <Name>"..RDQuo..", and simply "..LDQuo.."/npcscan"..RDQuo.." for the options menu.";
+		CMD_CACHE = "CACHE";
+		CMD_CACHE_EMPTY = "None of the mobs being searched for are cached.";
+		CMD_HELP = "Commands are "..LDQuo.."/npcscan add <NpcID> <Name>"..RDQuo..", "..LDQuo.."/npcscan remove <Name>"..RDQuo..", "..LDQuo.."/npcscan cache"..RDQuo.." to list cached mobs, and simply "..LDQuo.."/npcscan"..RDQuo.." for the options menu.";
 	}, Metatable );
 
 

@@ -90,6 +90,7 @@ do
 				FirstPrint = false;
 			end
 			wipe( CacheList );
+			return true;
 		end
 	end
 end
@@ -573,6 +574,54 @@ end
 
 
 
+--[[****************************************************************************
+  * Function: _NPCScan.SlashCommand                                            *
+  * Description: Slash command chat handler to open the options pane.  Also    *
+  *   supports various subcommands for managing the NPC list.                  *
+  ****************************************************************************]]
+function me.SlashCommand ( Input )
+	local Command, Arguments = Input:match( "^(%S+)%s*(.-)%s*$" );
+	if ( Command ) then
+		Command = Command:upper();
+		if ( Command == L.CMD_ADD ) then
+			local ID, Name = Arguments:match( "^(%d+)%s+(.+)$" );
+			if ( ID ) then
+				me.NPCRemove( Name );
+				if ( me.NPCAdd( Name, ID ) ) then
+					me.CacheListPrint( true );
+				end
+				return;
+			end
+		elseif ( Command == L.CMD_REMOVE ) then
+			if ( not me.NPCRemove( Arguments ) ) then
+				me.Message( L.CMD_REMOVENOTFOUND_FORMAT:format( Arguments ), RED_FONT_COLOR );
+			end
+			return;
+		elseif ( Command == L.CMD_CACHE ) then
+			for Name, ID in pairs( me.OptionsCharacter.NPCs ) do
+				me.NPCRemove( Name, ID );
+				me.NPCAdd( Name, ID );
+			end
+			for AchievementID in pairs( me.OptionsCharacter.Achievements ) do
+				me.AchievementRemove( AchievementID );
+				me.AchievementAdd( AchievementID );
+			end
+			if ( not me.CacheListPrint( true ) ) then -- Nothing in cache
+				me.Message( L.CMD_CACHE_EMPTY, GREEN_FONT_COLOR );
+			end
+			return;
+		end
+		-- Invalid subcommand
+		me.Message( L.CMD_HELP );
+
+	else -- No subcommand
+		InterfaceOptionsFrame_OpenToCategory( me.Config.Search );
+	end
+end
+
+
+
+
 --------------------------------------------------------------------------------
 -- Function Hooks / Execution
 -----------------------------
@@ -586,6 +635,8 @@ do
 	else -- Zone information is known
 		me:ZONE_CHANGED_NEW_AREA( "ZONE_CHANGED_NEW_AREA" );
 	end
+
+	SlashCmdList[ "_NPCSCAN" ] = me.SlashCommand;
 
 
 	-- Save achievement criteria data
