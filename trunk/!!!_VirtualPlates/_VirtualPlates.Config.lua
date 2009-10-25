@@ -116,7 +116,7 @@ do
 
 
 	-- Scale factor options section
-	ScaleFactorOptions:SetPoint( "TOPLEFT", me.MinScale, "BOTTOMLEFT", -4, -32 );
+	ScaleFactorOptions:SetPoint( "TOPLEFT", me.MinScale, "BOTTOMLEFT", -4, -40 );
 	ScaleFactorOptions:SetPoint( "BOTTOMRIGHT", -14, 16 );
 	_G[ ScaleFactorOptions:GetName().."Title" ]:SetText( L.CONFIG_SCALEFACTOR1 );
 
