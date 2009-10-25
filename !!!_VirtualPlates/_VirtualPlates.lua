@@ -5,6 +5,7 @@
 
 
 local me = CreateFrame( "Frame", "_VirtualPlates" );
+me.Version = GetAddOnMetadata( "!!!_VirtualPlates", "Version" ):match( "^([%d.]+)" );
 
 local Plates = {};
 me.Plates = Plates;
@@ -12,12 +13,23 @@ local PlatesVisible = {};
 me.PlatesVisible = PlatesVisible;
 
 
-me.ScaleFactor = 10; -- Nameplates this number of yards away will be scaled to
-                     -- their normal size (i.e. larger number = larger nameplates)
+me.OptionsCharacter = {
+	Version = me.Version;
+};
+me.OptionsCharacterDefault = {
+	Version = me.Version;
+	MinScale = 0;
+	ScaleFactor1 = 10;
+	ScaleFactor2 = 30;
+	ScaleFactor2Enabled = false;
+};
+
+
 me.CameraClip = 4; -- Yards from camera when nameplates begin fading out
 
 
 local InCombat = false;
+local DepthCamera = 0;
 
 local WorldFrameGetChildren = WorldFrame.GetChildren;
 local PlateOverrides = {}; -- [ MethodName ] = Function overrides for Visuals
@@ -138,7 +150,8 @@ do
 	local SetAlpha = me.SetAlpha; -- Backup since plate SetAlpha methods are overridden
 	local sort, wipe = sort, wipe;
 	local select, ipairs = select, ipairs;
-	local Depth, Visual, Level, Scale
+	local Depth, Visual, Level, Scale;
+	local MinScale, ScaleFactor;
 	function PlatesUpdate ()
 		for Plate, Visual in pairs( PlatesVisible ) do
 			Depth = Plate:GetEffectiveDepth();
@@ -152,6 +165,12 @@ do
 
 
 		if ( #SortOrder > 0 ) then
+			MinScale = me.OptionsCharacter.MinScale;
+			ScaleFactor = me.OptionsCharacter.ScaleFactor1;
+			if ( me.OptionsCharacter.ScaleFactor2Enabled ) then -- Adjust with camera zoom
+				ScaleFactor = ScaleFactor + ( me.OptionsCharacter.ScaleFactor2 - ScaleFactor ) * DepthCamera / 50
+			end
+
 			sort( SortOrder, SortFunc );
 			for Index, Plate in ipairs( SortOrder ) do
 				Depth, Visual = Depths[ Plate ], Plates[ Plate ];
@@ -168,7 +187,11 @@ do
 				for Index = 1, Plate.ChildCount do
 					Plate[ Index ]:SetFrameLevel( Level );
 				end
-				Scale = me.ScaleFactor / Depth;
+
+				Scale = ScaleFactor / Depth;
+				if ( Scale < MinScale ) then
+					Scale = MinScale;
+				end
 				Visual:SetScale( Scale );
 				if ( not InCombat ) then
 					Plate:SetWidth( Visual:GetWidth() * Scale );
@@ -184,11 +207,29 @@ end
 
 
 --[[****************************************************************************
-  * Function: _VirtualPlates:PLAYER_LOGIN                                      *
+  * Function: _VirtualPlates:LibCamera_UpdateDistance                          *
   ****************************************************************************]]
-function me:PLAYER_LOGIN ()
+function me:LibCamera_UpdateDistance ( Event, NewDepth )
+	DepthCamera = NewDepth;
+end
+--[[****************************************************************************
+  * Function: _VirtualPlates:VARIABLES_LOADED                                  *
+  ****************************************************************************]]
+function me:VARIABLES_LOADED ()
+	me.VARIABLES_LOADED = nil;
+
 	-- Don't throw an error if the client doesn't have this CVar yet
 	pcall( SetCVar, "nameplateAllowOverlap", 1 );
+
+
+	local OptionsCharacter = _VirtualPlatesOptionsCharacter;
+	_VirtualPlatesOptionsCharacter = me.OptionsCharacter;
+
+	if ( OptionsCharacter and OptionsCharacter.Version ~= me.Version ) then -- Update settings of old versions
+		OptionsCharacter.Version = me.Version;
+	end
+
+	me.Synchronize( OptionsCharacter ); -- Loads defaults if either are nil
 end
 --[[****************************************************************************
   * Function: _VirtualPlates:PLAYER_REGEN_ENABLED                              *
@@ -260,6 +301,78 @@ end
 
 
 
+--[[****************************************************************************
+  * Function: _VirtualPlates.SetMinScale                                       *
+  * Description: Sets the minimum scale plates will be shrunk to.              *
+  ****************************************************************************]]
+function me.SetMinScale ( Value )
+	if ( Value ~= me.OptionsCharacter.MinScale ) then
+		me.OptionsCharacter.MinScale = Value;
+
+		me.Config.MinScale:SetValue( Value );
+		return true;
+	end
+end
+--[[****************************************************************************
+  * Function: _VirtualPlates.SetScaleFactor1                                   *
+  * Description: Sets the normal scale factor.                                 *
+  ****************************************************************************]]
+function me.SetScaleFactor1 ( Value )
+	if ( Value ~= me.OptionsCharacter.ScaleFactor1 ) then
+		me.OptionsCharacter.ScaleFactor1 = Value;
+
+		me.Config.ScaleFactor1:SetValue( Value );
+		return true;
+	end
+end
+--[[****************************************************************************
+  * Function: _VirtualPlates.SetScaleFactor2                                   *
+  * Description: Sets the scale factor used at max camera zoom.                *
+  ****************************************************************************]]
+function me.SetScaleFactor2 ( Value )
+	if ( Value ~= me.OptionsCharacter.ScaleFactor2 ) then
+		me.OptionsCharacter.ScaleFactor2 = Value;
+
+		me.Config.ScaleFactor2:SetValue( Value );
+		return true;
+	end
+end
+--[[****************************************************************************
+  * Function: _VirtualPlates.SetScaleFactor2Enabled                            *
+  * Description: Enables increasing scale factor based on camera zoom.         *
+  ****************************************************************************]]
+function me.SetScaleFactor2Enabled ( Enable )
+	if ( Enable ~= me.OptionsCharacter.ScaleFactor2Enabled ) then
+		me.OptionsCharacter.ScaleFactor2Enabled = Enable;
+
+		me.Config.ScaleFactor2Enabled:SetChecked( Enable );
+		me.Config.ScaleFactor2Enabled.setFunc( Enable and "1" or "0" );
+
+		LibStub( "LibCamera-1.0" )[ Enable and "RegisterCallback" or "UnregisterCallback" ]( me, "LibCamera_UpdateDistance" );
+		return true;
+	end
+end
+
+
+--[[****************************************************************************
+  * Function: _VirtualPlates.Synchronize                                       *
+  * Description: Synchronizes addon settings with an options table.            *
+  ****************************************************************************]]
+function me.Synchronize ( OptionsCharacter )
+	-- Load defaults if settings omitted
+	if ( not OptionsCharacter ) then
+		OptionsCharacter = me.OptionsCharacterDefault;
+	end
+
+	me.SetMinScale( OptionsCharacter.MinScale );
+	me.SetScaleFactor1( OptionsCharacter.ScaleFactor1 );
+	me.SetScaleFactor2( OptionsCharacter.ScaleFactor2 );
+	me.SetScaleFactor2Enabled( OptionsCharacter.ScaleFactor2Enabled );
+end
+
+
+
+
 --------------------------------------------------------------------------------
 -- Function Hooks / Execution
 -----------------------------
@@ -267,7 +380,7 @@ end
 do
 	me:SetScript( "OnEvent", me.OnEvent );
 	me:SetScript( "OnUpdate", me.OnUpdate );
-	me:RegisterEvent( "PLAYER_LOGIN" );
+	me:RegisterEvent( "VARIABLES_LOADED" );
 	me:RegisterEvent( "PLAYER_REGEN_DISABLED" );
 	me:RegisterEvent( "PLAYER_REGEN_ENABLED" );
 
