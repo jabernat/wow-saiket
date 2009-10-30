@@ -19,6 +19,8 @@ me.OptionsCharacter = {
 me.OptionsCharacterDefault = {
 	Version = me.Version;
 	MinScale = 0;
+	MaxScale = 3;
+	MaxScaleEnabled = false;
 	ScaleFactor1 = 10;
 	ScaleFactor2 = 30;
 	ScaleFactor2Enabled = false;
@@ -151,7 +153,7 @@ do
 	local sort, wipe = sort, wipe;
 	local select, ipairs = select, ipairs;
 	local Depth, Visual, Level, Scale;
-	local MinScale, ScaleFactor;
+	local MinScale, MaxScale, ScaleFactor;
 	function PlatesUpdate ()
 		for Plate, Visual in pairs( PlatesVisible ) do
 			Depth = Plate:GetEffectiveDepth();
@@ -165,7 +167,7 @@ do
 
 
 		if ( #SortOrder > 0 ) then
-			MinScale = me.OptionsCharacter.MinScale;
+			MinScale, MaxScale = me.OptionsCharacter.MinScale, me.OptionsCharacter.MaxScaleEnabled and me.OptionsCharacter.MaxScale;
 			ScaleFactor = me.OptionsCharacter.ScaleFactor1;
 			if ( me.OptionsCharacter.ScaleFactor2Enabled ) then -- Adjust with camera zoom
 				ScaleFactor = ScaleFactor + ( me.OptionsCharacter.ScaleFactor2 - ScaleFactor ) * DepthCamera / 50
@@ -191,6 +193,8 @@ do
 				Scale = ScaleFactor / Depth;
 				if ( Scale < MinScale ) then
 					Scale = MinScale;
+				elseif ( MaxScale and Scale > MaxScale ) then
+					Scale = MaxScale;
 				end
 				Visual:SetScale( Scale );
 				if ( not InCombat ) then
@@ -226,6 +230,12 @@ function me:VARIABLES_LOADED ()
 	_VirtualPlatesOptionsCharacter = me.OptionsCharacter;
 
 	if ( OptionsCharacter and OptionsCharacter.Version ~= me.Version ) then -- Update settings of old versions
+		local Version = OptionsCharacter.Version;
+		if ( Version == "3.2.2.1" or Version == "3.2.2.2" or Version == "3.2.2.3" ) then
+			Version = "3.2.2.4"; -- Added max scale option
+			OptionsCharacter.MaxScale = 3;
+			OptionsCharacter.MaxScaleEnabled = false;
+		end
 		OptionsCharacter.Version = me.Version;
 	end
 
@@ -314,6 +324,31 @@ function me.SetMinScale ( Value )
 	end
 end
 --[[****************************************************************************
+  * Function: _VirtualPlates.SetMaxScale                                       *
+  * Description: Sets the maximum scale plates will grow to.                   *
+  ****************************************************************************]]
+function me.SetMaxScale ( Value )
+	if ( Value ~= me.OptionsCharacter.MaxScale ) then
+		me.OptionsCharacter.MaxScale = Value;
+
+		me.Config.MaxScale:SetValue( Value );
+		return true;
+	end
+end
+--[[****************************************************************************
+  * Function: _VirtualPlates.SetMaxScaleEnabled                                *
+  * Description: Enables clamping nameplates to a maximum scale.               *
+  ****************************************************************************]]
+function me.SetMaxScaleEnabled ( Enable )
+	if ( Enable ~= me.OptionsCharacter.MaxScaleEnabled ) then
+		me.OptionsCharacter.MaxScaleEnabled = Enable;
+
+		me.Config.MaxScaleEnabled:SetChecked( Enable );
+		me.Config.MaxScaleEnabled.setFunc( Enable and "1" or "0" );
+		return true;
+	end
+end
+--[[****************************************************************************
   * Function: _VirtualPlates.SetScaleFactor1                                   *
   * Description: Sets the normal scale factor.                                 *
   ****************************************************************************]]
@@ -365,6 +400,8 @@ function me.Synchronize ( OptionsCharacter )
 	end
 
 	me.SetMinScale( OptionsCharacter.MinScale );
+	me.SetMaxScale( OptionsCharacter.MaxScale );
+	me.SetMaxScaleEnabled( OptionsCharacter.MaxScaleEnabled );
 	me.SetScaleFactor1( OptionsCharacter.ScaleFactor1 );
 	me.SetScaleFactor2( OptionsCharacter.ScaleFactor2 );
 	me.SetScaleFactor2Enabled( OptionsCharacter.ScaleFactor2Enabled );
