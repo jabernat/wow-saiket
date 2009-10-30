@@ -2,8 +2,8 @@
 ## Title: _|cffCCCC88VirtualPlates|r
 ## Notes: Gives nameplates depth.
 ## Author: Saiket
-## Version: 3.2.2.3
-## X-Date: 2009-10-24
+## Version: 3.2.2.4
+## X-Date: 2009-10-30
 ## X-Category: UnitFrame
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
