@@ -12,6 +12,14 @@ me.AddOnInitializers = AddOnInitializers;
 
 me.DropDown = CreateFrame( "Frame", "_UnitsDropDown", UIParent, "UIDropDownMenuTemplate" );
 
+me.PowerColors = setmetatable( {
+	MANA   = { 0.2, 0.4, 0.7 };
+	RAGE   = { 0.6, 0.2, 0.3 };
+	ENERGY = { 0.6, 0.6, 0.3 };
+}, { __index = oUF.colors.power; } );
+me.PowerColors.RUNIC_POWER = me.PowerColors.RAGE;
+me.PowerColors.FUEL = me.PowerColors.ENERGY;
+
 
 
 

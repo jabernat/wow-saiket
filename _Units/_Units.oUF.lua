@@ -23,19 +23,13 @@ local Colors = setmetatable( {
 		0.6, 0.6, 0.0, --  50%
 		0.0, 0.4, 0.0  -- 100%
 	};
-	power = setmetatable( {
-		MANA   = { 0.2, 0.4, 0.7 };
-		RAGE   = { 0.6, 0.2, 0.3 };
-		ENERGY = { 0.6, 0.6, 0.3 };
-	}, { __index = oUF.colors.power; } );
+	power = _Units.PowerColors;
 
 	cast = { 0.6, 0.6, 0.3 };
 	experience = oUF.colors.reaction[ 5 ]; -- Friendly
 	experience_rested = { 0.2, 0.4, 0.7, 0.6 };
 }, { __index = oUF.colors; } );
 me.Colors = Colors;
-Colors.power.RUNIC_POWER = Colors.power.RAGE;
-Colors.power.FUEL = Colors.power.ENERGY;
 
 me.StyleMeta = {
 	__index = { -- Defaults
