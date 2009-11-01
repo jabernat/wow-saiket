@@ -14,6 +14,7 @@ _Units.StatusMonitor = me;
 
 me.Alpha = 0.5;
 me.RowHeight = 14;
+me.UpdateRate = 0.1;
 
 
 me.Columns = {};
@@ -28,26 +29,24 @@ me.Units = {};
   ****************************************************************************]]
 do
 	local UnitIsPlayer = UnitIsPlayer;
-	local UnitIsConnected = UnitIsConnected;
 	local UnitName, UnitClass = UnitName, UnitClass;
 	local select = select;
+	local unpack = unpack;
 
-	local Field, Color;
+	local Field;
+	local Color, R, G, B;
 	function me.UnitUpdateName ( UnitID )
 		if ( UnitID ~= "player" ) then -- Never display the player's name
 			Field = me.Units[ UnitID ][ "Name" ];
 			Field:SetText( UnitName( UnitID ) );
 
 			if ( UnitIsPlayer( UnitID ) ) then
-				if ( UnitIsConnected( UnitID ) ) then
-					Color = oUF.colors.class[ select( 2, UnitClass( UnitID ) ) ];
-				else
-					Color = oUF.colors.disconnected;
-				end
+				R, G, B = unpack( _Units.ClassColors[ select( 2, UnitClass( UnitID ) ) ] );
 			else
 				Color = NORMAL_FONT_COLOR;
+				R, G, B = Color.r, Color.g, Color.b;
 			end
-			Field:SetTextColor( Color.r, Color.g, Color.b );
+			Field:SetTextColor( R, G, B );
 		end
 	end
 end
@@ -61,46 +60,41 @@ do
 	local UnitIsDeadOrGhost = UnitIsDeadOrGhost;
 	local UnitHealth, UnitHealthMax = UnitHealth, UnitHealthMax;
 	local ceil = ceil;
-	local UnitIsFeignDeath = UnitIsFeignDeath;
-	local UnitIsGhost = UnitIsGhost;
-	local UnitIsDead = UnitIsDead;
 
-	local Field;
-	local Health, Disconnected;
+	local Field, Value;
+	local Health;
 	local R, G, B;
 	function me.UnitUpdateHealth ( UnitID )
-		Field, Disconnected = me.Units[ UnitID ][ "Health" ], UnitIsPlayer( UnitID ) and not UnitIsConnected( UnitID );
+		Field = me.Units[ UnitID ][ "Health" ];
 
-		if ( Disconnected or UnitIsDeadOrGhost( UnitID ) ) then
-			Health = 0;
+		if ( ( UnitIsPlayer( UnitID ) and not UnitIsConnected( UnitID ) ) or UnitIsDeadOrGhost( UnitID ) ) then
+			Value, Health = 0, 0;
 		else
 			Health = UnitHealth( UnitID ) / UnitHealthMax( UnitID );
+			Value = ceil( 100 * Health ); -- Never rounds to 0
 		end
-		Field:SetText( ceil( Health * 100 ) ); -- Never rounds to 0
-		me.RequestColumnAutosize( "Health" );
+		if ( Field.Value ~= Value ) then
+			Field.Value = Value;
+			Field:SetText( Value );
+			me.RequestColumnAutosize( "Health" );
 
-		-- Calculate color
-		if ( Health == 1 ) then -- 100%
-			R, G, B = 1, 1, 1;
-		elseif ( Health == 0 ) then
-			R, G, B = 0.5, 0.5, 0.5;
-		else
-			B = 0;
-			if ( Health > 0.5 ) then
-				R = ( 1 - Health ) * 2;
-				G = 1;
-			else -- Health > 0
-				R = 1;
-				G = Health * 2;
+			-- Calculate color
+			if ( Health == 1 ) then -- 100%
+				R, G, B = 1, 1, 1;
+			elseif ( Health == 0 ) then
+				R, G, B = 0.5, 0.5, 0.5;
+			else
+				B = 0;
+				if ( Health > 0.5 ) then
+					R = ( 1 - Health ) * 2;
+					G = 1;
+				else -- Health > 0
+					R = 1;
+					G = Health * 2;
+				end
 			end
+			Field:SetTextColor( R, G, B );
 		end
-		Field:SetTextColor( R, G, B );
-
-		me.Units[ UnitID ][ "Condition" ]:SetText( L[
-			( Disconnected and "OFFLINE" )
-			or ( UnitIsFeignDeath( UnitID ) and "FEIGN" )
-			or ( UnitIsGhost( UnitID ) and "GHOST" )
-			or ( UnitIsDead( UnitID ) and "DEAD" ) ] );
 	end
 end
 --[[****************************************************************************
@@ -120,36 +114,62 @@ do
 		FOCUS = true;
 		HAPPINESS = true;
 	};
-	local Field, _;
-	local Power, PowerMax, PowerType;
-	local R, G, B;
+	local Field, Value;
+	local Power, PowerMax, PowerType, _;
+	local R, G, B, Color2;
 	function me.UnitUpdatePower ( UnitID )
 		Field = me.Units[ UnitID ][ "Power" ];
 
-		PowerMax, _, PowerType = UnitPowerMax( UnitID ), UnitPowerType( UnitID );
+		PowerMax, _, PowerType, R, G, B = UnitPowerMax( UnitID ), UnitPowerType( UnitID );
 		if ( PowerMax == 0 or IgnoredPowerTypes[ PowerType ] ) then
-			Power = 0;
-			Field:SetText( L.STATUSMONITOR_POWER_IGNORED );
+			Value = false;
 		else
 			if ( ( UnitIsPlayer( UnitID ) and not UnitIsConnected( UnitID ) ) or UnitIsDeadOrGhost( UnitID ) ) then
-				Power = 0;
+				Value, Power = 0, 0;
 			else
 				Power = UnitPower( UnitID ) / PowerMax;
+				Value = ceil( 100 * Power ); -- Never rounds to 0
 			end
-			Field:SetText( ceil( Power * 100 ) ); -- Never rounds to 0
 		end
-		me.RequestColumnAutosize( "Power" );
+		if ( Field.Value ~= Value ) then
+			Field.Value = Value;
+			Field:SetText( Value or L.STATUSMONITOR_POWER_IGNORED );
+			me.RequestColumnAutosize( "Power" );
 
-		-- Calculate color
-		if ( Power == 0 ) then
-			R, G, B = 0.5, 0.5, 0.5;
-		elseif ( Power == 1 ) then -- 100%
-			R, G, B = 1, 1, 1;
-		else
-			local Color, Color2 = _Units.PowerColors[ PowerType ], 0.5 * ( 1 - Power );
-			R, G, B = Color2 + Color[ 1 ] * Power, Color2 + Color[ 2 ] * Power, Color2 + Color[ 3 ] * Power;
+			-- Calculate color
+			if ( not Value or Power == 0 ) then
+				R, G, B = 0.5, 0.5, 0.5;
+			elseif ( Power == 1 ) then -- 100%
+				R, G, B = 1, 1, 1;
+			else -- Blend
+				if ( not R ) then -- Power type doesn't have a custom color
+					R, G, B = unpack( _Units.PowerColors[ PowerType ] or _Units.PowerColors[ "MANA" ] );
+				end
+				Color2 = 0.5 * ( 1 - Power );
+				R, G, B = Color2 + R * Power, Color2 + G * Power, Color2 + B * Power;
+			end
+			Field:SetTextColor( R, G, B );
 		end
-		Field:SetTextColor( R, G, B );
+	end
+end
+--[[****************************************************************************
+  * Function: _Units.StatusMonitor.UnitUpdateCondition                         *
+  * Description: Updates the given unit's condition label.                     *
+  ****************************************************************************]]
+do
+	local UnitIsPlayer = UnitIsPlayer;
+	local UnitIsConnected = UnitIsConnected;
+	local UnitBuff = UnitBuff;
+	local UnitIsGhost = UnitIsGhost;
+	local UnitIsDead = UnitIsDead;
+
+	local FeignDeath = GetSpellInfo( 28728 );
+	function me.UnitUpdateCondition ( UnitID )
+		me.Units[ UnitID ][ "Condition" ]:SetText( L[
+			( UnitIsPlayer( UnitID ) and not UnitIsConnected( UnitID ) and "OFFLINE" )
+			or ( UnitBuff( UnitID, FeignDeath ) and "FEIGN" )
+			or ( UnitIsGhost( UnitID ) and "GHOST" )
+			or ( UnitIsDead( UnitID ) and "DEAD" ) ] );
 	end
 end
 --[[****************************************************************************
@@ -165,6 +185,7 @@ do
 			me.UnitUpdateName( UnitID );
 			me.UnitUpdateHealth( UnitID );
 			me.UnitUpdatePower( UnitID );
+			me.UnitUpdateCondition( UnitID );
 		else
 			Row:Hide();
 		end
@@ -177,6 +198,7 @@ end
   ****************************************************************************]]
 function me:UnitOnShow ()
 	self:SetHeight( me.RowHeight + ( self.Margin or 0 ) );
+	self.NextUpdate = 0;
 end
 --[[****************************************************************************
   * Function: _Units.StatusMonitor:UnitOnHide                                  *
@@ -184,7 +206,24 @@ end
 function me:UnitOnHide ()
 	self:SetHeight( 1e-4 ); -- Not a noticeable height, but renders properly
 	for Name in pairs( me.Columns ) do
+		self[ Name ].Value = nil;
 		me.RequestColumnAutosize( Name );
+	end
+end
+--[[****************************************************************************
+  * Function: _Units.StatusMonitor:UnitOnUpdate                                *
+  ****************************************************************************]]
+do
+	local UnitID;
+	function me:UnitOnUpdate ( Elapsed )
+		self.NextUpdate = self.NextUpdate - Elapsed;
+		if ( self.NextUpdate <= 0 ) then
+			self.NextUpdate = me.UpdateRate;
+
+			UnitID = self.UnitID;
+			me.UnitUpdateHealth( UnitID );
+			me.UnitUpdatePower( UnitID );
+		end
 	end
 end
 
@@ -204,27 +243,17 @@ end
   ****************************************************************************]]
 function me:UNIT_HEALTH ( _, UnitID )
 	if ( me.Units[ UnitID ] ) then
-		me.UnitUpdateHealth( UnitID );
+		me.UnitUpdateCondition( UnitID );
 	end
 end
+--[[****************************************************************************
+  * Function: _Units.StatusMonitor:UNIT_MAXHEALTH                              *
+  ****************************************************************************]]
 me.UNIT_MAXHEALTH = me.UNIT_HEALTH;
 --[[****************************************************************************
-  * Function: _Units.StatusMonitor:UNIT_DISPLAYPOWER                           *
-  * Description: Fired when a unit's power type changes.                       *
+  * Function: _Units.StatusMonitor:UNIT_AURA                                   *
   ****************************************************************************]]
-function me:UNIT_DISPLAYPOWER ( _, UnitID )
-	if ( me.Units[ UnitID ] ) then
-		me.UnitUpdatePower( UnitID );
-	end
-end
-me.UNIT_ENERGY = me.UNIT_DISPLAYPOWER;
-me.UNIT_MANA = me.UNIT_DISPLAYPOWER;
-me.UNIT_RAGE = me.UNIT_DISPLAYPOWER;
-me.UNIT_RUNIC_POWER = me.UNIT_DISPLAYPOWER;
-me.UNIT_MAXENERGY = me.UNIT_DISPLAYPOWER;
-me.UNIT_MAXMANA = me.UNIT_DISPLAYPOWER;
-me.UNIT_MAXRAGE = me.UNIT_DISPLAYPOWER;
-me.UNIT_MAXRUNIC_POWER = me.UNIT_DISPLAYPOWER;
+me.UNIT_AURA = me.UNIT_HEALTH;
 
 
 --[[****************************************************************************
@@ -250,22 +279,6 @@ function me:PLAYER_FOCUS_CHANGED ()
 	me.UnitUpdate( "focus" );
 end
 
---[[****************************************************************************
-  * Function: _Units.StatusMonitor:PLAYER_ALIVE                                *
-  * Description: Fired when releasing spirit or when rezzed before releasing.  *
-  ****************************************************************************]]
-function me:PLAYER_ALIVE ()
-	me.UnitUpdate( "player" );
-end
---[[****************************************************************************
-  * Function: _Units.StatusMonitor:PLAYER_DEAD                                 *
-  ****************************************************************************]]
-me.PLAYER_DEAD = me.PLAYER_ALIVE;
---[[****************************************************************************
-  * Function: _Units.StatusMonitor:PLAYER_UNGHOST                              *
-  * Description: Fired when your ghost rezzes.                                 *
-  ****************************************************************************]]
-me.PLAYER_UNGHOST = me.PLAYER_ALIVE;
 --[[****************************************************************************
   * Function: _Units.StatusMonitor:PLAYER_ENTERING_WORLD                       *
   * Description: Refresh everything.                                           *
@@ -293,18 +306,20 @@ end
   *   unhooks itself.                                                          *
   ****************************************************************************]]
 do
+	local pairs = pairs;
 	local max = max;
+	local MaxWidth;
 	function me:OnUpdate ()
 		for Name, Column in pairs( me.Columns ) do
 			if ( Column.Autosize ) then
-				local Max = 1;
+				MaxWidth, Column.Autosize = 1;
 				for _, Row in pairs( me.Units ) do
 					if ( Row:IsShown() ) then
-						Max = max( Max, Row[ Name ]:GetStringWidth() );
+						MaxWidth = max( MaxWidth, Row[ Name ]:GetStringWidth() );
 					end
 				end
 
-				Column:SetWidth( Max );
+				Column:SetWidth( MaxWidth );
 			end
 		end
 		self:SetScript( "OnUpdate", nil );
@@ -330,21 +345,10 @@ do
 	me:RegisterEvent( "UNIT_NAME_UPDATE" );
 	me:RegisterEvent( "UNIT_HEALTH" );
 	me:RegisterEvent( "UNIT_MAXHEALTH" );
-	me:RegisterEvent( "UNIT_ENERGY" );
-	me:RegisterEvent( "UNIT_MANA" );
-	me:RegisterEvent( "UNIT_RAGE" );
-	me:RegisterEvent( "UNIT_RUNIC_POWER" );
-	me:RegisterEvent( "UNIT_MAXENERGY" );
-	me:RegisterEvent( "UNIT_MAXMANA" );
-	me:RegisterEvent( "UNIT_MAXRAGE" );
-	me:RegisterEvent( "UNIT_MAXRUNIC_POWER" );
-	me:RegisterEvent( "UNIT_DISPLAYPOWER" );
+	me:RegisterEvent( "UNIT_AURA" );
 	me:RegisterEvent( "PLAYER_TARGET_CHANGED" );
 	me:RegisterEvent( "PLAYER_FOCUS_CHANGED" );
 	me:RegisterEvent( "UNIT_PET" );
-	me:RegisterEvent( "PLAYER_ALIVE" ); -- From corpse to ghost/alive
-	me:RegisterEvent( "PLAYER_DEAD" ); -- Alive to corpse
-	me:RegisterEvent( "PLAYER_UNGHOST" ); -- From ghost to alive
 	me:RegisterEvent( "PLAYER_ENTERING_WORLD" );
 
 
@@ -370,13 +374,14 @@ do
 	local function CreateRow ( UnitID, Margin )
 		local Frame = CreateFrame( "Frame", nil, me );
 		me.Units[ UnitID ] = Frame;
+		Frame.UnitID = UnitID;
 		Frame.Margin = Margin;
 
 		Frame:SetScript( "OnShow", me.UnitOnShow );
 		Frame:SetScript( "OnHide", me.UnitOnHide );
+		Frame:SetScript( "OnUpdate", me.UnitOnUpdate );
 
 		Frame:SetWidth( 1 );
-		Frame:Hide();
 
 		-- Create all fields
 		for Name, Column in pairs( me.Columns ) do
@@ -387,6 +392,7 @@ do
 		end
 		local Color = GRAY_FONT_COLOR;
 		Frame[ "Condition" ]:SetTextColor( Color.r, Color.g, Color.b );
+		Frame:Hide();
 
 		return Frame;
 	end
