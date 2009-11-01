@@ -35,7 +35,7 @@ me.StyleMeta = {
 	__index = { -- Defaults
 		PortraitSide = "RIGHT"; -- "LEFT"/"RIGHT"/false
 		HealthText = "Small"; -- "Full"/"Small"/"Tiny"
-		PowerText  = "Full"; -- Same as Health
+		PowerText  = "Small"; -- Same as Health
 		NameFont = me.FontNormal;
 		BarValueFont = me.FontTiny;
 		CastTime = true;
@@ -132,32 +132,52 @@ end
   * Description: Formats bar text depending on the bar's style.                *
   ****************************************************************************]]
 do
+	local Format;
 	local NumberFormats = {
-		[ "Full" ] = function ( Value )
-			return Value;
+		[ "Full" ] = function ( Value, ValueMax )
+			return "%d/%d", Value, ValueMax;
 		end;
-		[ "Small" ] = function ( Value )
+		[ "Small" ] = function ( Value, ValueMax )
 			if ( Value >= 1e6 ) then
-				return ( "%.1fm" ):format( Value / 1e6 );
+				Format, Value = "%.1fm", Value / 1e6;
 			elseif ( Value >= 1e3 ) then
-				return ( "%.1fk" ):format( Value / 1e3 );
+				Format, Value = "%.1fk", Value / 1e3;
 			else
-				return Value;
+				Format = "%d";
 			end
+
+			if ( ValueMax >= 1e6 ) then
+				Format, ValueMax = Format.."/%.1fm", ValueMax / 1e6;
+			elseif ( ValueMax >= 1e3 ) then
+				Format, ValueMax = Format.."/%.1fk", ValueMax / 1e3;
+			else
+				Format = Format.."/%d";
+			end
+
+			return Format, Value, ValueMax;
 		end;
-		[ "Tiny" ] = function ( Value )
+		[ "Tiny" ] = function ( Value, ValueMax )
 			if ( Value >= 1e6 ) then
-				return ( "%.0fm" ):format( Value / 1e6 );
+				Format, Value = "%.0fm", Value / 1e6;
 			elseif ( Value >= 1e3 ) then
-				return ( "%.0fk" ):format( Value / 1e3 );
+				Format, Value = "%.0fk", Value / 1e3;
 			else
-				return Value;
+				Format = "%d";
 			end
+
+			if ( ValueMax >= 1e6 ) then
+				Format, ValueMax = Format.."/%.0fm", ValueMax / 1e6;
+			elseif ( ValueMax >= 1e3 ) then
+				Format, ValueMax = Format.."/%.0fk", ValueMax / 1e3;
+			else
+				Format = Format.."/%d";
+			end
+
+			return Format, Value, ValueMax;
 		end;
 	};
 	function me:BarFormatValue ( Value, ValueMax )
-		local Format = NumberFormats[ self.ValueLength ];
-		self.Value:SetFormattedText( "%s/%s", Format( Value ), Format( ValueMax ) );
+		self.Value:SetFormattedText( NumberFormats[ self.ValueLength ]( Value, ValueMax ) );
 	end
 end
 
@@ -725,7 +745,7 @@ do
 		[ "initial-width" ] = 130;
 		[ "initial-height" ] = 50;
 		PortraitSide = false;
-		HealthText = "Small";
+		HealthText = "Full";
 		PowerText  = "Full";
 		CastTime = false;
 		DebuffHighlight = "ALL";
@@ -735,7 +755,6 @@ do
 		[ "initial-height" ] = 50;
 		PortraitSide = "LEFT";
 		HealthText = "Tiny";
-		PowerText  = "Small";
 		NameFont = me.FontTiny;
 		CastTime = false;
 		AuraSize = 10;
