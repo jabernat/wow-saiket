@@ -14,7 +14,7 @@ do
 		OFFLINE = "OFFLINE";
 		FEIGN   = "FEIGN";
 
-		STATUSMONITOR_POWER_IGNORED = "N/A";
+		STATUSMONITOR_IGNORED = "N/A";
 
 		GRID_LAYOUT_GROUP = Title..": Groups";
 		GRID_LAYOUT_CLASS = Title..": Classes";

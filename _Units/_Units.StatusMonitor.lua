@@ -61,36 +61,38 @@ do
 	local UnitHealth, UnitHealthMax = UnitHealth, UnitHealthMax;
 	local ceil = ceil;
 
-	local Field, Value;
-	local Health;
+	local Field, Value, Max;
 	local R, G, B;
-	function me.UnitUpdateHealth ( UnitID )
+	function me.UnitUpdateHealth ( UnitID, Force )
 		Field = me.Units[ UnitID ][ "Health" ];
 
-		if ( ( UnitIsPlayer( UnitID ) and not UnitIsConnected( UnitID ) ) or UnitIsDeadOrGhost( UnitID ) ) then
-			Value, Health = 0, 0;
+		Max = UnitHealthMax( UnitID );
+		if ( Max == 0 ) then
+			Value = false;
 		else
-			Health = UnitHealth( UnitID ) / UnitHealthMax( UnitID );
-			Value = ceil( 100 * Health ); -- Never rounds to 0
+			if ( ( UnitIsPlayer( UnitID ) and not UnitIsConnected( UnitID ) ) or UnitIsDeadOrGhost( UnitID ) ) then
+				Value = 0;
+			else
+				Value = ceil( 100 * UnitHealth( UnitID ) / Max ); -- Never rounds to 0
+			end
 		end
-		if ( Field.Value ~= Value ) then
+		if ( Force or Field.Value ~= Value ) then
 			Field.Value = Value;
-			Field:SetText( Value );
+			Field:SetText( Value or L.STATUSMONITOR_IGNORED );
 			me.RequestColumnAutosize( "Health" );
 
 			-- Calculate color
-			if ( Health == 1 ) then -- 100%
-				R, G, B = 1, 1, 1;
-			elseif ( Health == 0 ) then
+			if ( not Value or Value == 0 ) then
 				R, G, B = 0.5, 0.5, 0.5;
-			else
+			elseif ( Value == 100 ) then
+				R, G, B = 1, 1, 1;
+			else -- Blend
+				Value = Value / 100;
 				B = 0;
-				if ( Health > 0.5 ) then
-					R = ( 1 - Health ) * 2;
-					G = 1;
-				else -- Health > 0
-					R = 1;
-					G = Health * 2;
+				if ( Value > 0.5 ) then
+					R, G = ( 1 - Value ) * 2, 1;
+				else
+					R, G = 1, Value * 2;
 				end
 			end
 			Field:SetTextColor( R, G, B );
@@ -114,39 +116,39 @@ do
 		FOCUS = true;
 		HAPPINESS = true;
 	};
-	local Field, Value;
-	local Power, PowerMax, PowerType, _;
+	local Field, Value, Max;
+	local PowerType, _;
 	local R, G, B, Color2;
-	function me.UnitUpdatePower ( UnitID )
+	function me.UnitUpdatePower ( UnitID, Force )
 		Field = me.Units[ UnitID ][ "Power" ];
 
-		PowerMax, _, PowerType, R, G, B = UnitPowerMax( UnitID ), UnitPowerType( UnitID );
-		if ( PowerMax == 0 or IgnoredPowerTypes[ PowerType ] ) then
+		Max, _, PowerType, R, G, B = UnitPowerMax( UnitID ), UnitPowerType( UnitID );
+		if ( Max == 0 or IgnoredPowerTypes[ PowerType ] ) then
 			Value = false;
 		else
 			if ( ( UnitIsPlayer( UnitID ) and not UnitIsConnected( UnitID ) ) or UnitIsDeadOrGhost( UnitID ) ) then
-				Value, Power = 0, 0;
+				Value = 0;
 			else
-				Power = UnitPower( UnitID ) / PowerMax;
-				Value = ceil( 100 * Power ); -- Never rounds to 0
+				Value = ceil( 100 * UnitPower( UnitID ) / Max ); -- Never rounds to 0
 			end
 		end
-		if ( Field.Value ~= Value ) then
+		if ( Force or Field.Value ~= Value ) then
 			Field.Value = Value;
-			Field:SetText( Value or L.STATUSMONITOR_POWER_IGNORED );
+			Field:SetText( Value or L.STATUSMONITOR_IGNORED );
 			me.RequestColumnAutosize( "Power" );
 
 			-- Calculate color
-			if ( not Value or Power == 0 ) then
+			if ( not Value or Value == 0 ) then
 				R, G, B = 0.5, 0.5, 0.5;
-			elseif ( Power == 1 ) then -- 100%
+			elseif ( Value == 100 ) then
 				R, G, B = 1, 1, 1;
 			else -- Blend
 				if ( not R ) then -- Power type doesn't have a custom color
 					R, G, B = unpack( _Units.PowerColors[ PowerType ] or _Units.PowerColors[ "MANA" ] );
 				end
-				Color2 = 0.5 * ( 1 - Power );
-				R, G, B = Color2 + R * Power, Color2 + G * Power, Color2 + B * Power;
+				Value = Value / 100;
+				Color2 = 0.5 * ( 1 - Value );
+				R, G, B = Color2 + R * Value, Color2 + G * Value, Color2 + B * Value;
 			end
 			Field:SetTextColor( R, G, B );
 		end
@@ -183,8 +185,8 @@ do
 		if ( UnitExists( UnitID ) and UnitName( UnitID ) ) then
 			Row:Show();
 			me.UnitUpdateName( UnitID );
-			me.UnitUpdateHealth( UnitID );
-			me.UnitUpdatePower( UnitID );
+			me.UnitUpdateHealth( UnitID, true ); -- Force health and power to recolor
+			me.UnitUpdatePower( UnitID, true );
 			me.UnitUpdateCondition( UnitID );
 		else
 			Row:Hide();
