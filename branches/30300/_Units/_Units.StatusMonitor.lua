@@ -1,7 +1,7 @@
 --[[****************************************************************************
   * _Units by Saiket                                                           *
   * _Units.StatusMonitor.lua - Displays a table with health and mana values of *
-  *   the current target, player, the player's pet, and party members. This    *
+  *   the current target, player, the player's pet, and focus unit. This       *
   *   table sits in the middle of the screen to make the job of a healer a     *
   *   little easier, although it should prove useful for any class.            *
   ****************************************************************************]]
@@ -12,192 +12,251 @@ local _Units = _Units;
 local me = CreateFrame( "Frame", nil, UIParent );
 _Units.StatusMonitor = me;
 
-local UnitFrame = {
-	Height = 14;
-	Alpha = 0.5;
-};
-me.UnitFrame = UnitFrame;
+me.Alpha = 0.5;
+me.RowHeight = 14;
+me.UpdateRate = 0.1;
 
 
-local Columns = {
-	--[[ Contains configuration and data for each data column.
-	Fields:
-	  "Position": The column's position in the table; "0" is the center, where
-      positive indexes grow to the right and negative ones to the left.
-		"Align": Text alignment of column's text fields.
-		"Offset": Distance between column and next closest column to the middle.
-	]]
-	[ "Name" ]      = { Position = -2; Align = "RIGHT"; Offset = 16; };
-	[ "Health" ]    = { Position = -1; Align = "RIGHT"; Offset =  4; };
-	[ "Mana" ]      = { Position =  1; Align = "RIGHT"; Offset =  4; };
-	[ "Condition" ] = { Position =  2; Align =  "LEFT"; Offset = 16; };
-};
-me.Columns = Columns;
-
-local Units = {
-	--[[ Contains configuration and data for each unit frame.
-	Fields:
-	  "Position": Where the unit should be ordered in the list (>=1); "TOP" places
-	    the unit above the table flow.
-	  "Margin": Margin above the unit's row.
-	  "Party": True if should update with generic party update events.
-	  "Scale": Frame scale of the row.
-	  "Offset": Margin below the unit's row.
-	Each element is given the same fields as those in the Columns table above,
-	  which point to those specific frames for the row.
-	]]
-	[ "target" ] = { Position = "TOP"; Offset = 8; }; -- Only one Top unit at a time!
-	[ "player" ] = { Position = 1; };
-	[ "pet" ]    = { Position = 2; Margin = -4; Scale = 0.8; };
-	[ "focus" ]  = { Position = 3; Margin =  8; };
-};
-me.Units = Units;
-local UnitsParty = {}; -- Compiled automatically based on Party flag
-me.UnitsParty = UnitsParty;
+me.Columns = {};
+me.Units = {};
 
 
 
 
 --[[****************************************************************************
-  * Function: _Units.StatusMonitor.UnitIsDisconnected                          *
-  * Description: Returns true if a unit is a disconnected player.              *
+  * Function: _Units.StatusMonitor.UnitUpdateName                              *
+  * Description: Updates the given unit's name.                                *
   ****************************************************************************]]
-function me.UnitIsDisconnected ( UnitID )
-	return UnitIsPlayer( UnitID ) and not UnitIsConnected( UnitID );
-end
-local UnitIsDisconnected = me.UnitIsDisconnected;
+do
+	local UnitIsPlayer = UnitIsPlayer;
+	local UnitName, UnitClass = UnitName, UnitClass;
+	local select = select;
+	local unpack = unpack;
 
+	local Field;
+	local Color, R, G, B;
+	function me.UnitUpdateName ( UnitID )
+		if ( UnitID ~= "player" ) then -- Never display the player's name
+			Field = me.Units[ UnitID ][ "Name" ];
+			Field:SetText( UnitName( UnitID ) );
 
---[[****************************************************************************
-  * Function: _Units.StatusMonitor.ColumnAutosize                              *
-  * Description: Resizes a column anchor to the width of its largest element.  *
-  ****************************************************************************]]
-function me.ColumnAutosize ( Column )
-	local Max = 0;
-	for _, UnitData in pairs( Units ) do
-		if ( UnitData:IsShown() ) then
-			Max = max( Max, UnitData[ Column ]:GetStringWidth() );
+			if ( UnitIsPlayer( UnitID ) ) then
+				R, G, B = unpack( _Units.ClassColors[ select( 2, UnitClass( UnitID ) ) ] );
+			else
+				Color = NORMAL_FONT_COLOR;
+				R, G, B = Color.r, Color.g, Color.b;
+			end
+			Field:SetTextColor( R, G, B );
 		end
 	end
+end
+--[[****************************************************************************
+  * Function: _Units.StatusMonitor.UnitUpdateHealth                            *
+  * Description: Updates the given unit's health along with its condition.     *
+  ****************************************************************************]]
+do
+	local UnitIsPlayer = UnitIsPlayer;
+	local UnitIsConnected = UnitIsConnected;
+	local UnitIsDeadOrGhost = UnitIsDeadOrGhost;
+	local UnitHealth, UnitHealthMax = UnitHealth, UnitHealthMax;
+	local ceil = ceil;
 
-	Columns[ Column ]:SetWidth( Max );
-end
---[[****************************************************************************
-  * Function: _Units.StatusMonitor.RequestColumnAutosize                       *
-  * Description: Queues a column to be autosized next frame.                   *
-  ****************************************************************************]]
-function me.RequestColumnAutosize ( Column )
-	Columns[ Column ].Autosize = true;
-	me:SetScript( "OnUpdate", me.OnUpdate );
-end
---[[****************************************************************************
-  * Function: _Units.StatusMonitor.ArrangeUnits                                *
-  * Description: Sets the position of all unit frames.                         *
-  ****************************************************************************]]
-function me.ArrangeUnits ()
-	-- Generate a list of unit frames in their display order
-	local UnitOrder = {};
-	for UnitID, UnitData in pairs( Units ) do
-		if ( UnitData.Position ~= "TOP" ) then -- Place in normal order
-			UnitOrder[ UnitData.Position ] = UnitData;
-		else -- Special top unit; position it now
-			UnitData:SetPoint( "BOTTOM", me, "TOP", 0, UnitData.Offset or 0 );
+	local Field, Value, Max;
+	local R, G, B;
+	function me.UnitUpdateHealth ( UnitID, Force )
+		Field = me.Units[ UnitID ][ "Health" ];
+
+		Max = UnitHealthMax( UnitID );
+		if ( Max == 0 ) then
+			Value = false;
+		else
+			if ( ( UnitIsPlayer( UnitID ) and not UnitIsConnected( UnitID ) ) or UnitIsDeadOrGhost( UnitID ) ) then
+				Value = 0;
+			else
+				Value = ceil( 100 * UnitHealth( UnitID ) / Max ); -- Never rounds to 0
+			end
+		end
+		if ( Force or Field.Value ~= Value ) then
+			Field.Value = Value;
+			Field:SetText( Value or L.STATUSMONITOR_IGNORED );
+			me.RequestColumnAutosize( "Health" );
+
+			-- Calculate color
+			if ( not Value or Value == 0 ) then
+				R, G, B = 0.5, 0.5, 0.5;
+			elseif ( Value == 100 ) then
+				R, G, B = 1, 1, 1;
+			else -- Blend
+				Value = Value / 100;
+				B = 0;
+				if ( Value > 0.5 ) then
+					R, G = ( 1 - Value ) * 2, 1;
+				else
+					R, G = 1, Value * 2;
+				end
+			end
+			Field:SetTextColor( R, G, B );
 		end
 	end
-
-	-- Position unit frames
-	local LastFrame = me;
-	for _, UnitData in ipairs( UnitOrder ) do
-		UnitData:SetPoint( "TOP", LastFrame, "BOTTOM", 0, UnitData.Offset or 0 );
-		LastFrame = UnitData;
-	end
 end
 --[[****************************************************************************
-  * Function: _Units.StatusMonitor.ArrangeColumns                              *
-  * Description: Sets the position of columns.                                 *
+  * Function: _Units.StatusMonitor.UnitUpdatePower                             *
+  * Description: Updates the given unit's power (mana/rage/etc).               *
   ****************************************************************************]]
-function me.ArrangeColumns ()
-	-- Generate a list of columns in their display order
-	local ColumnOrder = {
-		[ 0 ] = me;
+do
+	local UnitIsPlayer = UnitIsPlayer;
+	local UnitIsConnected = UnitIsConnected;
+	local UnitIsDeadOrGhost = UnitIsDeadOrGhost;
+	local UnitPower, UnitPowerMax = UnitPower, UnitPowerMax;
+	local UnitPowerType = UnitPowerType;
+	local ceil = ceil;
+	local unpack = unpack;
+
+	local IgnoredPowerTypes = {
+		FOCUS = true;
+		HAPPINESS = true;
 	};
-	for Column, ColumnFrame in pairs( Columns ) do
-		-- Align column text from unit frames
-		for _, UnitData in pairs( Units ) do
-			local ColumnText = UnitData[ Column ];
-			ColumnText:ClearAllPoints();
-			ColumnText:SetPoint( "BOTTOM" );
-			ColumnText:SetPoint( ColumnFrame.Align, ColumnFrame );
+	local Field, Value, Max;
+	local PowerType, _;
+	local R, G, B, Color2;
+	function me.UnitUpdatePower ( UnitID, Force )
+		Field = me.Units[ UnitID ][ "Power" ];
+
+		Max, _, PowerType, R, G, B = UnitPowerMax( UnitID ), UnitPowerType( UnitID );
+		if ( Max == 0 or IgnoredPowerTypes[ PowerType ] ) then
+			Value = false;
+		else
+			if ( ( UnitIsPlayer( UnitID ) and not UnitIsConnected( UnitID ) ) or UnitIsDeadOrGhost( UnitID ) ) then
+				Value = 0;
+			else
+				Value = ceil( 100 * UnitPower( UnitID ) / Max ); -- Never rounds to 0
+			end
 		end
-		ColumnOrder[ ColumnFrame.Position ] = ColumnFrame;
-	end
+		if ( Force or Field.Value ~= Value ) then
+			Field.Value = Value;
+			Field:SetText( Value or L.STATUSMONITOR_IGNORED );
+			me.RequestColumnAutosize( "Power" );
 
-	-- Position right-hand columns
-	local Index = 1;
-	while ColumnOrder[ Index ] do
-		ColumnOrder[ Index ]:SetPoint( "LEFT", ColumnOrder[ Index - 1 ], "RIGHT",
-			ColumnOrder[ Index ].Offset or 0, 0 );
-		Index = Index + 1;
-	end
-	-- Left-hand columns
-	Index = -1;
-	while ColumnOrder[ Index ] do
-		ColumnOrder[ Index ]:SetPoint( "RIGHT", ColumnOrder[ Index + 1 ], "LEFT",
-			-( ColumnOrder[ Index ].Offset or 0 ), 0 );
-		Index = Index - 1;
+			-- Calculate color
+			if ( not Value or Value == 0 ) then
+				R, G, B = 0.5, 0.5, 0.5;
+			elseif ( Value == 100 ) then
+				R, G, B = 1, 1, 1;
+			else -- Blend
+				if ( not R ) then -- Power type doesn't have a custom color
+					R, G, B = unpack( _Units.PowerColors[ PowerType ] or _Units.PowerColors[ "MANA" ] );
+				end
+				Value = Value / 100;
+				Color2 = 0.5 * ( 1 - Value );
+				R, G, B = Color2 + R * Value, Color2 + G * Value, Color2 + B * Value;
+			end
+			Field:SetTextColor( R, G, B );
+		end
 	end
 end
 --[[****************************************************************************
-  * Function: _Units.StatusMonitor.UpdateAllUnits                              *
-  * Description: Updates stats of all unit frames.                             *
+  * Function: _Units.StatusMonitor.UnitUpdateCondition                         *
+  * Description: Updates the given unit's condition label.                     *
   ****************************************************************************]]
-function me.UpdateAllUnits ()
-	for UnitID in pairs( Units ) do
-		UnitFrame.Update( UnitID );
+do
+	local UnitIsPlayer = UnitIsPlayer;
+	local UnitIsConnected = UnitIsConnected;
+	local UnitBuff = UnitBuff;
+	local UnitIsGhost = UnitIsGhost;
+	local UnitIsDead = UnitIsDead;
+
+	local FeignDeath = GetSpellInfo( 28728 );
+	function me.UnitUpdateCondition ( UnitID )
+		me.Units[ UnitID ][ "Condition" ]:SetText( L[
+			( UnitIsPlayer( UnitID ) and not UnitIsConnected( UnitID ) and "OFFLINE" )
+			or ( UnitBuff( UnitID, FeignDeath ) and "FEIGN" )
+			or ( UnitIsGhost( UnitID ) and "GHOST" )
+			or ( UnitIsDead( UnitID ) and "DEAD" ) ] );
+	end
+end
+--[[****************************************************************************
+  * Function: _Units.StatusMonitor.UnitUpdate                                  *
+  * Description: Updates every stat for the given unit.                        *
+  ****************************************************************************]]
+do
+	local UnitExists, UnitName = UnitExists, UnitName;
+	function me.UnitUpdate ( UnitID )
+		local Row = me.Units[ UnitID ];
+		if ( UnitExists( UnitID ) and UnitName( UnitID ) ) then
+			Row:Show();
+			me.UnitUpdateName( UnitID );
+			me.UnitUpdateHealth( UnitID, true ); -- Force health and power to recolor
+			me.UnitUpdatePower( UnitID, true );
+			me.UnitUpdateCondition( UnitID );
+		else
+			Row:Hide();
+		end
 	end
 end
 
 
 --[[****************************************************************************
-  * Function: _Units.StatusMonitor:UNIT_HEALTH                                 *
+  * Function: _Units.StatusMonitor:UnitOnShow                                  *
   ****************************************************************************]]
-function me:UNIT_HEALTH ( _, UnitID )
-	if ( Units[ UnitID ] ) then
-		UnitFrame.UpdateHealth( UnitID );
+function me:UnitOnShow ()
+	self:SetHeight( me.RowHeight + ( self.Margin or 0 ) );
+	self.NextUpdate = 0;
+end
+--[[****************************************************************************
+  * Function: _Units.StatusMonitor:UnitOnHide                                  *
+  ****************************************************************************]]
+function me:UnitOnHide ()
+	self:SetHeight( 1e-4 ); -- Not a noticeable height, but renders properly
+	for Name in pairs( me.Columns ) do
+		self[ Name ].Value = nil;
+		me.RequestColumnAutosize( Name );
 	end
 end
 --[[****************************************************************************
-  * Function: _Units.StatusMonitor:UNIT_HEALTHMAX                              *
+  * Function: _Units.StatusMonitor:UnitOnUpdate                                *
   ****************************************************************************]]
-me.UNIT_HEALTHMAX = me.UNIT_HEALTH;
---[[****************************************************************************
-  * Function: _Units.StatusMonitor:UNIT_MANA                                   *
-  ****************************************************************************]]
-function me:UNIT_MANA ( _, UnitID )
-	if ( Units[ UnitID ] ) then
-		UnitFrame.UpdateMana( UnitID );
+do
+	local UnitID;
+	function me:UnitOnUpdate ( Elapsed )
+		self.NextUpdate = self.NextUpdate - Elapsed;
+		if ( self.NextUpdate <= 0 ) then
+			self.NextUpdate = me.UpdateRate;
+
+			UnitID = self.UnitID;
+			me.UnitUpdateHealth( UnitID );
+			me.UnitUpdatePower( UnitID );
+		end
 	end
 end
---[[****************************************************************************
-  * Function: _Units.StatusMonitor:UNIT_MANAMAX                                *
-  ****************************************************************************]]
-me.UNIT_MANAMAX = me.UNIT_MANA;
+
+
+
+
 --[[****************************************************************************
   * Function: _Units.StatusMonitor:UNIT_NAME_UPDATE                            *
   ****************************************************************************]]
 function me:UNIT_NAME_UPDATE ( _, UnitID )
-	if ( Units[ UnitID ] ) then
-		UnitFrame.UpdateName( UnitID );
+	if ( me.Units[ UnitID ] ) then
+		me.UnitUpdateName( UnitID );
 	end
 end
 --[[****************************************************************************
-  * Function: _Units.StatusMonitor:UNIT_DISPLAYPOWER                           *
+  * Function: _Units.StatusMonitor:UNIT_HEALTH                                 *
   ****************************************************************************]]
-function me:UNIT_DISPLAYPOWER ( _, UnitID )
-	if ( Units[ UnitID ] ) then
-		UnitFrame.UpdateMana( UnitID );
+function me:UNIT_HEALTH ( _, UnitID )
+	if ( me.Units[ UnitID ] ) then
+		me.UnitUpdateCondition( UnitID );
 	end
 end
+--[[****************************************************************************
+  * Function: _Units.StatusMonitor:UNIT_MAXHEALTH                              *
+  ****************************************************************************]]
+me.UNIT_MAXHEALTH = me.UNIT_HEALTH;
+--[[****************************************************************************
+  * Function: _Units.StatusMonitor:UNIT_AURA                                   *
+  ****************************************************************************]]
+me.UNIT_AURA = me.UNIT_HEALTH;
+
 
 --[[****************************************************************************
   * Function: _Units.StatusMonitor:UNIT_PET                                    *
@@ -205,241 +264,67 @@ end
   ****************************************************************************]]
 function me:UNIT_PET ( _, UnitID )
 	UnitID = UnitID == "player" and "pet" or UnitID.."pet";
-	if ( Units[ UnitID ] ) then
-		UnitFrame.Update( UnitID );
+	if ( me.Units[ UnitID ] ) then
+		me.UnitUpdate( UnitID );
 	end
 end
 --[[****************************************************************************
   * Function: _Units.StatusMonitor:PLAYER_TARGET_CHANGED                       *
   ****************************************************************************]]
 function me:PLAYER_TARGET_CHANGED ()
-	UnitFrame.Update( "target" );
+	me.UnitUpdate( "target" );
 end
 --[[****************************************************************************
   * Function: _Units.StatusMonitor:PLAYER_FOCUS_CHANGED                        *
   ****************************************************************************]]
 function me:PLAYER_FOCUS_CHANGED ()
-	UnitFrame.Update( "focus" );
-end
---[[****************************************************************************
-  * Function: _Units.StatusMonitor:PARTY_MEMBERS_CHANGED                       *
-  * Description: Refreshes whole party.                                        *
-  ****************************************************************************]]
-function me:PARTY_MEMBERS_CHANGED ()
-	for UnitID, UnitData in pairs( UnitsParty ) do
-		UnitFrame.Update( UnitID );
-	end
+	me.UnitUpdate( "focus" );
 end
 
---[[****************************************************************************
-  * Function: _Units.StatusMonitor:PARTY_MEMBER_ENABLE                         *
-  * Description: Fired when one of the party members come online.              *
-  ****************************************************************************]]
-function me:PARTY_MEMBER_ENABLE ()
-	for UnitID, UnitData in pairs( UnitsParty ) do
-		UnitFrame.Update( UnitID );
-	end
-end
---[[****************************************************************************
-  * Function: _Units.StatusMonitor:PARTY_MEMBER_DISABLE                        *
-  * Description: Fired when one of the party members go offline or die.        *
-  ****************************************************************************]]
-me.PARTY_MEMBER_DISABLE = me.PARTY_MEMBER_ENABLE;
---[[****************************************************************************
-  * Function: _Units.StatusMonitor:PLAYER_ALIVE                                *
-  * Description: Fired when releasing spirit or when rezzed before releasing.  *
-  ****************************************************************************]]
-function me:PLAYER_ALIVE ()
-	UnitFrame.Update( "player" );
-end
---[[****************************************************************************
-  * Function: _Units.StatusMonitor:PLAYER_DEAD                                 *
-  ****************************************************************************]]
-me.PLAYER_DEAD = me.PLAYER_ALIVE;
---[[****************************************************************************
-  * Function: _Units.StatusMonitor:PLAYER_UNGHOST                              *
-  * Description: Fired when your ghost rezzes.                                 *
-  ****************************************************************************]]
-me.PLAYER_UNGHOST = me.PLAYER_ALIVE;
 --[[****************************************************************************
   * Function: _Units.StatusMonitor:PLAYER_ENTERING_WORLD                       *
   * Description: Refresh everything.                                           *
   ****************************************************************************]]
 function me:PLAYER_ENTERING_WORLD ()
-	self.UpdateAllUnits();
+	for UnitID in pairs( me.Units ) do
+		me.UnitUpdate( UnitID );
+	end
 end
 
+
+
+
 --[[****************************************************************************
-  * Function: _Units.StatusMonitor:OnEvent                                     *
-  * Description: Updates unit visibility and stat values.                      *
+  * Function: _Units.StatusMonitor.RequestColumnAutosize                       *
+  * Description: Queues a column to be autosized next frame.                   *
   ****************************************************************************]]
-me.OnEvent = _Units.OnEvent;
+function me.RequestColumnAutosize ( Column )
+	me.Columns[ Column ].Autosize = true;
+	me:SetScript( "OnUpdate", me.OnUpdate );
+end
 --[[****************************************************************************
   * Function: _Units.StatusMonitor:OnUpdate                                    *
   * Description: Autosizes all columns that need it on frame draw and then     *
   *   unhooks itself.                                                          *
   ****************************************************************************]]
-function me:OnUpdate ()
-	for Column, ColumnFrame in pairs( Columns ) do
-		if ( ColumnFrame.Autosize ) then
-			self.ColumnAutosize( Column );
+do
+	local pairs = pairs;
+	local max = max;
+	local MaxWidth;
+	function me:OnUpdate ()
+		for Name, Column in pairs( me.Columns ) do
+			if ( Column.Autosize ) then
+				MaxWidth, Column.Autosize = 1;
+				for _, Row in pairs( me.Units ) do
+					if ( Row:IsShown() ) then
+						MaxWidth = max( MaxWidth, Row[ Name ]:GetStringWidth() );
+					end
+				end
+
+				Column:SetWidth( MaxWidth );
+			end
 		end
-	end
-	self:SetScript( "OnUpdate", nil );
-end
-
-
-
-
---------------------------------------------------------------------------------
--- _Units.StatusMonitor.UnitFrame
----------------------------------
-
---[[****************************************************************************
-  * Function: _Units.StatusMonitor.UnitFrame.Show                              *
-  * Description: Enables display of a unit.                                    *
-  ****************************************************************************]]
-function UnitFrame.Show ( UnitID )
-	local Frame = Units[ UnitID ];
-	Frame:SetHeight( UnitFrame.Height + ( Frame.Margin or 0 ) );
-	Frame:Show();
-end
---[[****************************************************************************
-  * Function: _Units.StatusMonitor.UnitFrame.Hide                              *
-  * Description: Disables display of a unit.                                   *
-  ****************************************************************************]]
-function UnitFrame.Hide ( UnitID )
-	local Frame = Units[ UnitID ];
-	Frame:SetHeight( 0.0001 ); -- Not a noticeable height, but renders properly
-	Frame:Hide();
-end
---[[****************************************************************************
-  * Function: _Units.StatusMonitor.UnitFrame.Create                            *
-  * Description: Creates a new unit structure and allocates a display frame.   *
-  ****************************************************************************]]
-function UnitFrame.Create ( UnitID )
-	local UnitData = Units[ UnitID ];
-	local Frame = CreateFrame( "Frame", nil, me );
-	UnitData[ 0 ] = Frame[ 0 ];
-	setmetatable( UnitData, getmetatable( Frame ) );
-
-	-- Position and configuration
-	UnitData:SetWidth( 1 );
-	UnitData:SetHeight( UnitFrame.Height + ( UnitData.Margin or 0 ) );
-	if ( UnitData.Scale ) then
-		UnitData:SetScale( UnitData.Scale );
-	end
-	UnitData:SetAlpha( UnitFrame.Alpha );
-	UnitFrame.Hide( UnitID );
-
-	-- Create all column fields
-	for Column, ColumnFrame in pairs( Columns ) do
-		UnitData[ Column ] = UnitData:CreateFontString( nil, "ARTWORK", "NumberFontNormalLarge" );
-	end
-	local Color = GRAY_FONT_COLOR;
-	UnitData.Condition:SetTextColor( Color.r, Color.g, Color.b );
-end
-
---[[****************************************************************************
-  * Function: _Units.StatusMonitor.UnitFrame.UpdateName                        *
-  * Description: Updates the given unit's name.                                *
-  ****************************************************************************]]
-function UnitFrame.UpdateName ( UnitID )
-	if ( UnitID ~= "player" ) then
-		local NameString = Units[ UnitID ].Name;
-		local Color = UnitIsPlayer( UnitID )
-			and ( UnitIsConnected( UnitID ) and RAID_CLASS_COLORS[ select( 2, UnitClass( UnitID ) ) ] or GRAY_FONT_COLOR )
-			or NORMAL_FONT_COLOR;
-
-		NameString:SetText( UnitName( UnitID ) );
-		NameString:SetTextColor( Color.r, Color.g, Color.b );
-	end
-end
---[[****************************************************************************
-  * Function: _Units.StatusMonitor.UnitFrame.UpdateHealth                      *
-  * Description: Updates the given unit's health along with its condition.     *
-  ****************************************************************************]]
-function UnitFrame.UpdateHealth ( UnitID )
-	local HealthString = Units[ UnitID ].Health;
-
-	-- Update health percentage
-	local Health = ( UnitIsDisconnected( UnitID ) or UnitIsDeadOrGhost( UnitID ) )
-		and 0
-		or UnitHealth( UnitID ) / UnitHealthMax( UnitID );
-	HealthString:SetText( ceil( Health * 100 ) ); -- Ceil makes sure low health never rounds to 0
-	me.RequestColumnAutosize( "Health" );
-
-	-- Calculate health color
-	local R, G, B;
-	if ( Health == 1 ) then
-		R, G, B = 1, 1, 1;
-	elseif ( Health == 0 ) then
-		R, G, B = 0.5, 0.5, 0.5;
-	else -- Somewhat hurt
-		B = 0;
-		if ( Health > 0.5 ) then
-			R = ( 1 - Health ) * 2;
-			G = 1;
-		else -- Health > 0
-			R = 1;
-			G = Health * 2;
-		end
-	end
-	HealthString:SetTextColor( R, G, B );
-
-	-- Determine condition text
-	local Condition = ( UnitIsDisconnected( UnitID ) and "OFFLINE" )
-		or ( UnitIsFeignDeath( UnitID ) and "FEIGN" )
-		or ( UnitIsGhost( UnitID ) and "GHOST" )
-		or ( UnitIsDead( UnitID ) and "DEAD" );
-	Units[ UnitID ].Condition:SetText( L[ Condition ] );
-end
---[[****************************************************************************
-  * Function: _Units.StatusMonitor.UnitFrame.UpdateMana                        *
-  * Description: Updates the given unit's mana.                                *
-  ****************************************************************************]]
-function UnitFrame.UpdateMana ( UnitID )
-	local ManaString = Units[ UnitID ].Mana;
-
-	-- Update mana percentage
-	local ManaMax = UnitManaMax( UnitID );
-	local Mana;
-	if ( ManaMax == 0 or UnitPowerType( UnitID ) ~= 0 ) then
-		Mana = 0;
-		ManaString:SetText( L.STATUSMONITOR_MANA_NOT_AVAILABLE );
-	else
-		Mana = ( UnitIsDisconnected( UnitID ) or UnitIsDeadOrGhost( UnitID ) )
-			and 0
-			or UnitMana( UnitID ) / ManaMax;
-		ManaString:SetText( ceil( Mana * 100 ) ); -- Ceil makes sure low mana never rounds to 0
-	end
-	me.RequestColumnAutosize( "Mana" );
-
-	-- Calculate energy color
-	local R, G, B;
-	if ( Mana == 0 ) then -- Traps not UsesMana also
-		R, G, B = 0.5, 0.5, 0.5;
-	elseif ( Mana == 1 ) then
-		R, G, B = 1, 1, 1;
-	else -- Mana: light teal to dark blue
-		R, G, B = 0, Mana / 2 + 0.25, Mana / 2 + 0.5;
-	end
-	ManaString:SetTextColor( R, G, B );
-end
---[[****************************************************************************
-  * Function: _Units.StatusMonitor.UnitFrame.Update                            *
-  * Description: Updates every stat for the given unit.                        *
-  ****************************************************************************]]
-function UnitFrame.Update ( UnitID )
-	if ( UnitExists( UnitID ) and UnitName( UnitID ) ) then
-		UnitFrame.Show( UnitID );
-		UnitFrame.UpdateName( UnitID );
-		UnitFrame.UpdateHealth( UnitID );
-		UnitFrame.UpdateMana( UnitID );
-	else
-		UnitFrame.Hide( UnitID );
-		me.RequestColumnAutosize( "Health" );
-		me.RequestColumnAutosize( "Mana" );
+		self:SetScript( "OnUpdate", nil );
 	end
 end
 
@@ -451,62 +336,72 @@ end
 -----------------------------
 
 do
-	-- Compile table of party-related units
-	for UnitID, UnitData in pairs( Units ) do
-		if ( UnitData.Party ) then
-			UnitsParty[ UnitID ] = UnitData;
-		end
-	end
-
-
 	me:SetWidth( 1 );
 	me:SetHeight( 1 );
 	me:SetPoint( "CENTER" );
-	me:SetFrameStrata( "LOW" );
-	me:EnableMouse( false );
+	me:SetFrameStrata( "BACKGROUND" );
+	me:SetAlpha( me.Alpha );
 
-	me:SetScript( "OnEvent", me.OnEvent );
+	me:SetScript( "OnEvent", _Units.OnEvent );
 	me:SetScript( "OnUpdate", me.OnUpdate );
-	me:RegisterEvent( "PLAYER_ENTERING_WORLD" );
-	me:RegisterEvent( "PLAYER_TARGET_CHANGED" );
-	me:RegisterEvent( "PLAYER_FOCUS_CHANGED" );
-	me:RegisterEvent( "PLAYER_ALIVE" ); -- From corpse to ghost/alive
-	me:RegisterEvent( "PLAYER_DEAD" ); -- Alive to corpse
-	me:RegisterEvent( "PLAYER_UNGHOST" ); -- From ghost to alive
 	me:RegisterEvent( "UNIT_NAME_UPDATE" );
 	me:RegisterEvent( "UNIT_HEALTH" );
 	me:RegisterEvent( "UNIT_MAXHEALTH" );
-	me:RegisterEvent( "UNIT_MANA" );
-	me:RegisterEvent( "UNIT_MAXMANA" );
-	me:RegisterEvent( "UNIT_DISPLAYPOWER" );
-	if ( next( UnitsParty ) ) then -- At least one party related unit
-		me:RegisterEvent( "PARTY_MEMBERS_CHANGED" );
-		me:RegisterEvent( "PARTY_MEMBER_ENABLE" );  -- Connected
-		me:RegisterEvent( "PARTY_MEMBER_DISABLE" ); -- Offline/dead
-	end
-	for UnitID in pairs( Units ) do
-		if ( UnitID:match( "pet$" ) ) then -- Has a pet
-			me:RegisterEvent( "UNIT_PET" );
-			break;
-		end
-	end
+	me:RegisterEvent( "UNIT_AURA" );
+	me:RegisterEvent( "PLAYER_TARGET_CHANGED" );
+	me:RegisterEvent( "PLAYER_FOCUS_CHANGED" );
+	me:RegisterEvent( "UNIT_PET" );
+	me:RegisterEvent( "PLAYER_ENTERING_WORLD" );
 
 
-	-- Allocate and position unit frames
-	for UnitID, UnitData in pairs( Units ) do
-		UnitFrame.Create( UnitID );
-	end
-	me.ArrangeUnits();
-
-	-- Allocate and position all columns
-	for Column, ColumnData in pairs( Columns ) do
+	-- Setup all columns
+	local function CreateColumn ( Name, Align )
 		local Frame = CreateFrame( "Frame", nil, me );
-		ColumnData[ 0 ] = Frame[ 0 ];
-		setmetatable( ColumnData, getmetatable( Frame ) );
-		ColumnData:SetWidth( 1 );
-		ColumnData:SetHeight( 1 );
-	end
-	me.ArrangeColumns();
+		me.Columns[ Name ] = Frame;
+		Frame.Align = Align;
 
-	me.UpdateAllUnits();
+		Frame:SetWidth( 1 );
+		Frame:SetHeight( 1 );
+
+		return Frame;
+	end
+
+	CreateColumn( "Name", "RIGHT" ):SetPoint( "RIGHT", me, "LEFT", -16, 0 );
+	CreateColumn( "Health", "RIGHT" ):SetPoint( "LEFT", me, "RIGHT", 4, 0 );
+	CreateColumn( "Power", "RIGHT" ):SetPoint( "LEFT", me.Columns[ "Health" ], "RIGHT", 4, 0 );
+	CreateColumn( "Condition", "LEFT" ):SetPoint( "LEFT", me.Columns[ "Power" ], "RIGHT", 16, 0 );
+
+
+	-- Setup all rows
+	local function CreateRow ( UnitID, Margin )
+		local Frame = CreateFrame( "Frame", nil, me );
+		me.Units[ UnitID ] = Frame;
+		Frame.UnitID = UnitID;
+		Frame.Margin = Margin;
+
+		Frame:SetScript( "OnShow", me.UnitOnShow );
+		Frame:SetScript( "OnHide", me.UnitOnHide );
+		Frame:SetScript( "OnUpdate", me.UnitOnUpdate );
+
+		Frame:SetWidth( 1 );
+
+		-- Create all fields
+		for Name, Column in pairs( me.Columns ) do
+			local Field = Frame:CreateFontString( nil, "ARTWORK", "NumberFontNormalLarge" );
+			Frame[ Name ] = Field;
+			Field:SetPoint( "BOTTOM" );
+			Field:SetPoint( Column.Align, Column );
+		end
+		local Color = GRAY_FONT_COLOR;
+		Frame[ "Condition" ]:SetTextColor( Color.r, Color.g, Color.b );
+		Frame:Hide();
+
+		return Frame;
+	end
+
+	CreateRow( "target" ):SetPoint( "BOTTOM", me, "TOP", 0, 16 );
+	CreateRow( "player" ):SetPoint( "TOP", me, "BOTTOM" );
+	CreateRow( "pet", -4 ):SetPoint( "TOP", me.Units[ "player" ], "BOTTOM" );
+	me.Units[ "pet" ]:SetScale( 0.8 );
+	CreateRow( "focus", 8 ):SetPoint( "TOP", me.Units[ "pet" ], "BOTTOM", 0, -8 );
 end
