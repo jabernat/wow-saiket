@@ -419,6 +419,7 @@ do
 	local pairs = pairs;
 	local Name;
 	local LastUpdate = 0;
+	local ZoneIDBackup;
 	function me:OnUpdate ( Elapsed )
 		if ( me.CriteriaUpdateRequested ) then -- CRITERIA_UPDATE bucket
 			me.CriteriaUpdateRequested = nil;
@@ -436,23 +437,44 @@ do
 					me.ScanRemoveAll( ID );
 					me.Config.Search.UpdateTab();
 
-					local TamableLocation, InvalidMessage = me.TamableIDs[ ID ];
-					if ( TamableLocation == true ) then -- Tamable, but expected zone is unknown (instance mob, etc.)
+					local ZoneIDExpected, InvalidMessage = me.TamableIDs[ ID ];
+					if ( ZoneIDExpected == true ) then -- Tamable, but expected zone is unknown (instance mob, etc.)
 						if ( IsResting() ) then -- Most likely a hunter pet in town
 							InvalidMessage = L.FOUND_TAMABLE_RESTING_FORMAT:format( Name );
 						end
-					elseif ( TamableLocation ) then -- Is a string; Expected zone of the mob is known
-						local CurrentLocation = GetRealZoneText();
-						if ( TamableLocation ~= CurrentLocation ) then -- Definitely a pet; Found in wrong zone
-							InvalidMessage = L.FOUND_TAMABLE_WRONGZONE_FORMAT:format( Name, CurrentLocation, TamableLocation );
+					elseif ( ZoneIDExpected ) then -- Expected zone of the mob is known
+						if ( not ZoneIDBackup ) then
+							ZoneIDBackup = GetCurrentMapAreaID() - 1;
+						end
+						SetMapToCurrentZone();
+						if ( GetCurrentMapAreaID() - 1 ~= ZoneIDExpected ) then -- Definitely a pet; Found in wrong zone
+							-- Find the name of the expected zone
+							local ZoneTextExpected;
+							SetMapByID( ZoneIDExpected );
+							local Continent = GetCurrentMapContinent();
+							if ( Continent >= 1 ) then
+								local Zone = GetCurrentMapZone();
+								if ( Zone == 0 ) then
+									ZoneTextExpected = select( Continent, GetMapContinents() );
+								else
+									ZoneTextExpected = select( Zone, GetMapZones( Continent ) );
+								end
+							end
+							InvalidMessage = L.FOUND_TAMABLE_WRONGZONE_FORMAT:format( Name, GetZoneText(),
+								ZoneTextExpected or L.FOUND_ZONE_UNKNOWN, ZoneIDExpected );
 						end
 					end
 
-					me.Message( InvalidMessage or L[ TamableLocation and "FOUND_TAMABLE_FORMAT" or "FOUND_FORMAT" ]:format( Name ), GREEN_FONT_COLOR );
+					me.Message( InvalidMessage or L[ ZoneIDExpected and "FOUND_TAMABLE_FORMAT" or "FOUND_FORMAT" ]:format( Name ), GREEN_FONT_COLOR );
 					if ( not InvalidMessage ) then
 						me.Button.SetNPC( Name, ID );
 					end
 				end
+			end
+
+			if ( ZoneIDBackup ) then -- Restore previous map view
+				SetMapByID( ZoneIDBackup );
+				ZoneIDBackup = nil;
 			end
 		end
 	end
@@ -479,7 +501,8 @@ function me.OnLoad ()
 	end
 	-- Character settings
 	if ( OptionsCharacter ) then
-		if ( OptionsCharacter.Version == "3.0.9.2" ) then -- 3.1.0.1: Remove NPCs that are duplicated by achievements
+		local Version = OptionsCharacter.Version;
+		if ( Version == "3.0.9.2" ) then -- 3.1.0.1: Remove NPCs that are duplicated by achievements
 			local NPCs = OptionsCharacter.IDs;
 			OptionsCharacter.IDs = nil;
 			OptionsCharacter.NPCs = NPCs;
@@ -496,15 +519,12 @@ function me.OnLoad ()
 					OptionsCharacter.Achievements[ AchievementNPCs[ ID ] ] = true;
 				end
 			end
-			OptionsCharacter.Version = "3.1.0.1";
+			Version = "3.1.0.1";
 		end
-		if ( OptionsCharacter.Version == "3.1.0.1" ) then -- 3.2.0.1: Added default scans for rare raptors in 3.2
-			-- 3.3: Raptors are no longer defaults since they don't drop pets
-			OptionsCharacter.Version = "3.2.0.2"; -- No change from 3.2.0.1
-		end
-		if ( OptionsCharacter.Version == "3.2.0.2" ) then -- 3.2.0.2: Added default scans for Skoll
+		if ( Version == "3.1.0.1" or Version == "3.2.0.1" or Version == "3.2.0.2" ) then
+			-- 3.2.0.3: Added default scans for Skoll
 			OptionsCharacter.NPCs[ L.NPCS[ "Skoll" ]:trim():lower() ] = 35189;
-			OptionsCharacter.Version = "3.2.0.3";
+			Version = "3.2.0.3";
 		end
 		OptionsCharacter.Version = me.Version;
 	end
@@ -622,7 +642,7 @@ do
 	me:SetScript( "OnEvent", me.OnEvent );
 	me:RegisterEvent( "PLAYER_ENTERING_WORLD" );
 	-- Set OnUpdate script after zone info loads
-	if ( GetRealZoneText() == "" ) then -- Zone information unknown (initial login)
+	if ( GetZoneText() == "" ) then -- Zone information unknown (initial login)
 		me:RegisterEvent( "ZONE_CHANGED_NEW_AREA" );
 	else -- Zone information is known
 		me:ZONE_CHANGED_NEW_AREA( "ZONE_CHANGED_NEW_AREA" );

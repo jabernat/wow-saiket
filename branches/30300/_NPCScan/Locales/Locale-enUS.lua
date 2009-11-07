@@ -23,8 +23,9 @@ do
 		MESSAGE_FORMAT = Title..": %s";
 
 		FOUND_FORMAT = "Found "..LDQuo.."%s"..RDQuo.."!";
+		FOUND_ZONE_UNKNOWN = UNKNOWN;
 		FOUND_TAMABLE_FORMAT = "Found "..LDQuo.."%s"..RDQuo.."!  "..RED_FONT_COLOR_CODE.."(Note: Tamable mob, may only be a pet.)|r";
-		FOUND_TAMABLE_WRONGZONE_FORMAT = RED_FONT_COLOR_CODE.."False alarm:|r Found tamable mob "..LDQuo.."%s"..RDQuo.." in %s instead of %s; Definitely a pet."; -- Name, CurrentZone, ExpectedZone
+		FOUND_TAMABLE_WRONGZONE_FORMAT = RED_FONT_COLOR_CODE.."False alarm:|r Found tamable mob "..LDQuo.."%s"..RDQuo.." in %s instead of %s (ID %d); Definitely a pet."; -- Name, CurrentZone, ExpectedZone, ExpectedZoneID
 		FOUND_TAMABLE_RESTING_FORMAT = RED_FONT_COLOR_CODE.."False alarm:|r Found tamable mob "..LDQuo.."%s"..RDQuo.." while resting; Probably a pet.";
 		BUTTON_FOUND = "NPC found!";
 
