@@ -24,14 +24,6 @@ local SortedNames = {}; -- Used to sort text tables
 
 
 --[[****************************************************************************
-  * Function: _NPCScan.Config.Search.FindTamableOnClick                        *
-  ****************************************************************************]]
-function me.FindTamableOnClick ( Enable )
-	if ( _NPCScan.SetFindTamable( Enable == "1" ) ) then
-		_NPCScan.CacheListPrint( true );
-	end
-end
---[[****************************************************************************
   * Function: _NPCScan.Config.Search.AchievementAddFoundOnClick                *
   ****************************************************************************]]
 function me.AchievementAddFoundOnClick ( Enable )
@@ -190,7 +182,7 @@ function me:NPCUpdate ()
 		local Cached = _NPCScan.TestID( ID );
 		me.Table:AddRow( Name,
 			L[ Cached and "SEARCH_CACHED_YES" or "SEARCH_CACHED_NO" ], Name, ID );
-		if ( Cached or ( _NPCScan.TamableIDs[ ID ] and not _NPCScan.Options.FindTamable ) ) then
+		if ( Cached ) then
 			me.Table.Rows[ #me.Table.Rows ]:SetAlpha( me.InactiveAlpha );
 		end
 	end
@@ -365,19 +357,9 @@ do
 
 
 	-- Settings checkboxes
-	local FindTamableCheckbox = CreateFrame( "CheckButton", "_NPCScanSearchFindTamableCheckbox", me, "InterfaceOptionsCheckButtonTemplate" );
-	me.FindTamableCheckbox = FindTamableCheckbox;
-	FindTamableCheckbox:SetPoint( "TOPLEFT", SubText, "BOTTOMLEFT", -2, -8 );
-	FindTamableCheckbox.setFunc = me.FindTamableOnClick;
-	FindTamableCheckbox.tooltipText = L.SEARCH_FINDTAMABLE_DESC;
-	FindTamableCheckbox.tooltipRequirement = L.SEARCH_FINDTAMABLE_WARNING;
-	local Label = _G[ FindTamableCheckbox:GetName().."Text" ];
-	Label:SetText( L.SEARCH_FINDTAMABLE );
-	FindTamableCheckbox:SetHitRectInsets( 4, 4 - Label:GetStringWidth(), 4, 4 );
-
 	local AddFoundCheckbox = CreateFrame( "CheckButton", "_NPCScanSearchAchievementAddFoundCheckbox", me, "InterfaceOptionsCheckButtonTemplate" );
 	me.AddFoundCheckbox = AddFoundCheckbox;
-	AddFoundCheckbox:SetPoint( "TOPLEFT", FindTamableCheckbox, "BOTTOMLEFT", 0, 4 );
+	AddFoundCheckbox:SetPoint( "TOPLEFT", SubText, "BOTTOMLEFT", -2, -8 );
 	AddFoundCheckbox.setFunc = me.AchievementAddFoundOnClick;
 	AddFoundCheckbox.tooltipText = L.SEARCH_ACHIEVEMENTADDFOUND_DESC;
 	local Label = _G[ AddFoundCheckbox:GetName().."Text" ];

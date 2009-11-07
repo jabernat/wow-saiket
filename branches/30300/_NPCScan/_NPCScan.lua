@@ -20,7 +20,6 @@ me.OptionsCharacter = {
 me.OptionsDefault = {
 	Version = me.Version;
 	CacheWarnings = true;
-	FindTamable = true;
 	AchievementsAddFound = nil;
 	AlertSoundUnmute = nil;
 	AlertSound = nil; -- Default sound
@@ -115,19 +114,17 @@ end
   * Description: Begins searching for an NPC ID.                               *
   ****************************************************************************]]
 function me.ScanAdd ( ID )
-	if ( me.Options.FindTamable or not me.TamableIDs[ ID ] ) then
-		local FoundName = me.TestID( ID );
-		if ( FoundName ) then -- Already seen
-			me.CacheListAdd( FoundName );
-		else -- Increment
-			if ( me.ScanIDs[ ID ] ) then
-				me.ScanIDs[ ID ] = me.ScanIDs[ ID ] + 1;
-			else
-				me.ScanIDs[ ID ] = 1;
-				me.Overlays.Add( ID );
-			end
-			return true;
+	local FoundName = me.TestID( ID );
+	if ( FoundName ) then -- Already seen
+		me.CacheListAdd( FoundName );
+	else -- Increment
+		if ( me.ScanIDs[ ID ] ) then
+			me.ScanIDs[ ID ] = me.ScanIDs[ ID ] + 1;
+		else
+			me.ScanIDs[ ID ] = 1;
+			me.Overlays.Add( ID );
 		end
+		return true;
 	end
 end
 --[[****************************************************************************
@@ -135,17 +132,15 @@ end
   * Description: Stops searching for an NPC ID.                                *
   ****************************************************************************]]
 function me.ScanRemove ( ID )
-	if ( me.Options.FindTamable or not me.TamableIDs[ ID ] ) then
-		local Count = me.ScanIDs[ ID ];
-		if ( Count ) then -- Decrement
-			if ( Count > 1 ) then
-				me.ScanIDs[ ID ] = Count - 1;
-			else
-				me.ScanIDs[ ID ] = nil;
-				me.Overlays.Remove( ID );
-			end
-			return true;
+	local Count = me.ScanIDs[ ID ];
+	if ( Count ) then -- Decrement
+		if ( Count > 1 ) then
+			me.ScanIDs[ ID ] = Count - 1;
+		else
+			me.ScanIDs[ ID ] = nil;
+			me.Overlays.Remove( ID );
 		end
+		return true;
 	end
 end
 --[[****************************************************************************
@@ -283,44 +278,6 @@ function me.SetCacheWarnings ( Enable )
 	end
 end
 --[[****************************************************************************
-  * Function: _NPCScan.SetFindTamable                                          *
-  * Description: Enables tracking of tamable NPCs.                             *
-  ****************************************************************************]]
-do
-	local NPCsTemp = {};
-	local AchievementsTemp = {};
-	function me.SetFindTamable ( Enable )
-		if ( not Enable ~= not me.Options.FindTamable ) then
-			-- Remove all pet scans
-			for Name, ID in pairs( me.OptionsCharacter.NPCs ) do
-				if ( me.TamableIDs[ ID ] ) then
-					NPCsTemp[ Name ] = ID;
-					me.NPCRemove( Name );
-				end
-			end
-			for AchievementID in pairs( me.OptionsCharacter.Achievements ) do
-				AchievementsTemp[ AchievementID ] = true;
-				me.AchievementRemove( AchievementID );
-			end
-
-			me.Options.FindTamable = Enable or nil;
-			me.Config.Search.FindTamableCheckbox:SetChecked( Enable );
-
-			-- Re-add the scans
-			for Name, ID in pairs( NPCsTemp ) do
-				NPCsTemp[ Name ] = nil;
-				me.NPCAdd( Name, ID );
-			end
-			for AchievementID in pairs( AchievementsTemp ) do
-				AchievementsTemp[ AchievementID ] = nil;
-				me.AchievementAdd( AchievementID );
-			end
-
-			return true;
-		end
-	end
-end
---[[****************************************************************************
   * Function: _NPCScan.SetAchievementsAddFound                                 *
   * Description: Enables tracking of unneeded achievement NPCs.                *
   ****************************************************************************]]
@@ -394,7 +351,6 @@ function me.Synchronize ( Options, OptionsCharacter )
 	end
 
 	me.SetCacheWarnings( Options.CacheWarnings );
-	me.SetFindTamable( Options.FindTamable );
 	me.SetAchievementsAddFound( Options.AchievementsAddFound );
 	me.SetAlertSoundUnmute( Options.AlertSoundUnmute );
 	me.SetAlertSound( Options.AlertSound );
