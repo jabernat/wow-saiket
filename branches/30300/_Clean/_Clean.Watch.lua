@@ -12,17 +12,6 @@ _Clean.Watch = me;
 
 
 --[[****************************************************************************
-  * Function: _Clean.Watch:CollapseButtonEnable                                *
-  * Description: Completely disables the collapse button when "hidden".        *
-  ****************************************************************************]]
-function me:CollapseButtonEnable ()
-	local Enable = self:IsEnabled() == 1;
-	self:EnableMouse( Enable );
-	WatchFrameTitleButton:EnableMouse( Enable );
-end
-
-
---[[****************************************************************************
   * Function: _Clean.Watch:WatchHeaderOnLeftClick                              *
   * Description: Stops tracking if shift is held.                              *
   ****************************************************************************]]
@@ -47,13 +36,6 @@ do
 	end
 end
 --[[****************************************************************************
-  * Function: _Clean.Watch.WatchHeaderHookFrame                                *
-  ****************************************************************************]]
-function me.WatchHeaderHookFrame ( Frame )
-	_Clean.AddLockedButton( Frame );
-	Frame:RegisterForClicks( "LeftButtonUp" );
-end
---[[****************************************************************************
   * Function: _Clean.Watch:WatchHeaderGetFrame                                 *
   * Description: Hooks newly made header buttons.                              *
   ****************************************************************************]]
@@ -64,10 +46,32 @@ do
 		local Frame = Backup( self, ... );
 
 		if ( NumFrames ~= self.numFrames ) then -- Created new frame
-			me.WatchHeaderHookFrame( Frame )
+			_Clean.AddLockedButton( Frame )
 		end
 
 		return Frame;
+	end
+end
+--[[****************************************************************************
+  * Function: _Clean.Watch.WatchFrameReposition                                *
+  ****************************************************************************]]
+function me.WatchFrameReposition ()
+	WatchFrame:ClearAllPoints();
+	WatchFrame:SetPoint( "TOPRIGHT", MinimapCluster, "BOTTOMRIGHT", 0, -8 );
+	WatchFrame:SetPoint( "BOTTOM", Dominos.Frame:Get( 3 ), "TOP" );
+end
+--[[****************************************************************************
+  * Function: _Clean.Watch.WatchFrameUpdateQuests                              *
+  * Description: Repositions parts of the watch frame.                         *
+  ****************************************************************************]]
+function me.WatchFrameUpdateQuests ()
+	for Index = 1, WATCHFRAME_NUM_ITEMS do
+		local Button = _G[ "WatchFrameItem"..Index ];
+		if ( Button:IsShown() ) then
+			Button:SetPoint( "TOPRIGHT", ( select( 2, Button:GetPoint( 1 ) ) ) );
+		else
+			break;
+		end
 	end
 end
 
@@ -79,16 +83,27 @@ end
 -----------------------------
 
 do
-	hooksecurefunc( WatchFrameCollapseExpandButton, "Enable", me.CollapseButtonEnable );
-	hooksecurefunc( WatchFrameCollapseExpandButton, "Disable", me.CollapseButtonEnable );
+	-- Right-align the header text
+	WatchFrameTitle:SetPoint( "RIGHT", WatchFrameCollapseExpandButton, "LEFT", -8, 0 );
+	WatchFrameTitle:SetJustifyH( "RIGHT" );
+
+	-- Reposition list
+	WatchFrameLines:SetPoint( "BOTTOMRIGHT" );
+	hooksecurefunc( "UIParent_ManageFramePositions", me.WatchFrameReposition );
+	local Backup = WatchFrame_DisplayTrackedQuests;
+	hooksecurefunc( "WatchFrame_DisplayTrackedQuests", me.WatchFrameUpdateQuests );
+	if ( WatchFrame_RemoveObjectiveHandler( Backup ) ) then
+		WatchFrame_AddObjectiveHandler( WatchFrame_DisplayTrackedQuests );
+	end
+
 
 	WatchFrameLinkButtonTemplate_OnLeftClick = me.WatchHeaderOnLeftClick;
 
 	WatchFrame.buttonCache.GetFrame = me.WatchHeaderGetFrame;
 	for _, Frame in ipairs( WatchFrame.buttonCache.frames ) do
-		me.WatchHeaderHookFrame( Frame );
+		_Clean.AddLockedButton( Frame );
 	end
 	for _, Frame in ipairs( WatchFrame.buttonCache.usedFrames ) do
-		me.WatchHeaderHookFrame( Frame );
+		_Clean.AddLockedButton( Frame );
 	end
 end
