@@ -28,4 +28,3 @@ _Dev.Stats.lua
 
 _Dev.Options.lua
 _Dev.Outline.xml
-_Dev.Events.xml
