@@ -109,19 +109,19 @@ end
   * Function: ItemRackTitles:OnEvent                                           *
   * Description: Watches for ItemRackOptions to load and adds controls.        *
   ****************************************************************************]]
-function me:OnEvent ( Event, AddOn )
+function me:OnEvent ( Event, ... )
 	if ( Event == "ADDON_LOADED" ) then
-		if ( AddOn:lower() == "itemrackoptions" ) then
+		if ( ( ... ):lower() == "itemrackoptions" ) then
 			me:UnregisterEvent( Event );
 			if ( me.SafeCall( Options.OnLoad ) ) then
 				Options.OnLoad = nil; -- Garbage collect and cause Options.IsLoaded to return true
 			end
 		end
-	elseif ( Event == "OLD_TITLE_LOST" ) then
-		me.ValidateSets();
-		Options.UpdateTitleDropdown();
-	elseif ( Event == "NEW_TITLE_EARNED" ) then
-		Options.UpdateTitleDropdown();
+	elseif ( Event == "KNOWN_TITLES_UPDATE" ) then
+		if ( ... == "player" ) then
+			me.ValidateSets();
+			Options.UpdateTitleDropdown();
+		end
 	elseif ( Event == "PLAYER_LOGIN" ) then
 		me.ValidateSets();
 	end
@@ -401,6 +401,5 @@ end ) ) then
 	me:SetScript( "OnEvent", me.OnEvent );
 	me:RegisterEvent( "ADDON_LOADED" );
 	me:RegisterEvent( "PLAYER_LOGIN" );
-	me:RegisterEvent( "OLD_TITLE_LOST" );
-	me:RegisterEvent( "NEW_TITLE_EARNED" );
+	me:RegisterEvent( "KNOWN_TITLES_UPDATE" );
 end
