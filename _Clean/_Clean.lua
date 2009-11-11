@@ -257,9 +257,18 @@ do
 
 	local Normal = me.Colors.Normal;
 	GameFontNormal:SetTextColor( Normal.r, Normal.g, Normal.b );
+	GameFontNormalMed3:SetTextColor( Normal.r, Normal.g, Normal.b );
 	GameFontNormalSmall:SetTextColor( Normal.r, Normal.g, Normal.b );
 	GameFontNormalLarge:SetTextColor( Normal.r, Normal.g, Normal.b );
 	GameFontNormalHuge:SetTextColor( Normal.r, Normal.g, Normal.b );
+	BossEmoteNormalHuge:SetTextColor( Normal.r, Normal.g, Normal.b );
+	NumberFontNormalRightYellow:SetTextColor( Normal.r, Normal.g, Normal.b );
 	NumberFontNormalYellow:SetTextColor( Normal.r, Normal.g, Normal.b );
+	NumberFontNormalLargeRightYellow:SetTextColor( Normal.r, Normal.g, Normal.b );
+	NumberFontNormalLargeYellow:SetTextColor( Normal.r, Normal.g, Normal.b );
 	DialogButtonNormalText:SetTextColor( Normal.r, Normal.g, Normal.b );
+	CombatTextFont:SetTextColor( Normal.r, Normal.g, Normal.b );
+	AchievementPointsFont:SetTextColor( Normal.r, Normal.g, Normal.b );
+	AchievementPointsFontSmall:SetTextColor( Normal.r, Normal.g, Normal.b );
+	AchievementDateFont:SetTextColor( Normal.r, Normal.g, Normal.b );
 end
