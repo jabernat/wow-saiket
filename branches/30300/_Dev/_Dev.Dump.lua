@@ -141,9 +141,9 @@ end
   * Description: Prints the contents of a variable to the default chat frame.  *
   ****************************************************************************]]
 do
-	local Depth = nil; -- Private: Depth of recursion; nil if first call.
-	local EndTime = nil; -- Private: Set to the cutoff execution time when limited.
-	local OverTime = false; -- Private: Boolean, true when ran out of time.
+	local Depth = nil; -- Depth of recursion; nil if first call.
+	local EndTime = nil; -- Set to the cutoff execution time when limited.
+	local OverTime = false; -- Boolean, true when ran out of time.
 
 	local ToString = me.ToString;
 	local AddHistory = me.AddHistory;
@@ -166,7 +166,7 @@ do
 				Temp[ "table" ][ getfenv( 0 ) ] = L.DUMP_GLOBALENV;
 			end
 			LValueString = LValueString
-				and "("..LValueString..")" or L.DUMP_LVALUE_DEFAULT;
+				and "("..tostring( LValueString )..")" or L.DUMP_LVALUE_DEFAULT;
 			OverTime = false;
 			EndTime = _DevOptions.Dump.MaxExploreTime
 				and ( _DevOptions.Dump.MaxExploreTime + GetTime() ) or nil;

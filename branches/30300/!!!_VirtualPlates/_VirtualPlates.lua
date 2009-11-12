@@ -4,8 +4,8 @@
   ****************************************************************************]]
 
 
-local me = CreateFrame( "Frame", "_VirtualPlates" );
-me.Version = GetAddOnMetadata( "!!!_VirtualPlates", "Version" ):match( "^([%d.]+)" );
+local me = CreateFrame( "Frame", "_VirtualPlates", WorldFrame );
+me.Version = GetAddOnMetadata( ... or "!!!_VirtualPlates", "Version" ):match( "^([%d.]+)" );
 
 local Plates = {};
 me.Plates = Plates;
@@ -28,6 +28,7 @@ me.OptionsCharacterDefault = {
 
 
 me.CameraClip = 4; -- Yards from camera when nameplates begin fading out
+me.PlateLevels = 3; -- Frame level difference between plates so one plate's children don't overlap the next closest plate
 
 
 local InCombat = false;
@@ -81,14 +82,24 @@ end
 local PlateAdd;
 do
 	local select = select;
-	local function ReparentRegions ( Plate, ... ) -- Also saves a list of all original regions into the plate frame
+	local function ReparentChildren ( Plate, ... ) -- Also saves a list of all original regions into the plate frame
+		local Visual = Plates[ Plate ];
+		for Index = 1, select( "#", ... ) do
+			local Child = select( Index, ... );
+			if ( Child ~= Visual ) then
+				local LevelOffset = Child:GetFrameLevel() - Plate:GetFrameLevel();
+				Child:SetParent( Visual );
+				Child:SetFrameLevel( Visual:GetFrameLevel() + LevelOffset ); -- Maintain relative frame levels
+				Plate[ #Plate + 1 ] = Child;
+			end
+		end
+	end
+	local function ReparentRegions ( Plate, ... )
 		local Visual = Plates[ Plate ];
 		for Index = 1, select( "#", ... ) do
 			local Region = select( Index, ... );
-			if ( Region ~= Visual ) then
-				Region:SetParent( Visual );
-				Plate[ #Plate + 1 ] = Region;
-			end
+			Region:SetParent( Visual );
+			Plate[ #Plate + 1 ] = Region;
 		end
 	end
 
@@ -100,8 +111,7 @@ do
 		Visual:SetWidth( Plate:GetWidth() );
 		Visual:SetHeight( Plate:GetHeight() );
 
-		ReparentRegions( Plate, Plate:GetChildren() );
-		Plate.ChildCount = #Plate;
+		ReparentChildren( Plate, Plate:GetChildren() );
 		ReparentRegions( Plate, Plate:GetRegions() );
 		Visual:EnableDrawLayer( "HIGHLIGHT" ); -- Allows the highlight to show without enabling mouse events
 
@@ -152,7 +162,7 @@ do
 	local SetAlpha = me.SetAlpha; -- Backup since plate SetAlpha methods are overridden
 	local sort, wipe = sort, wipe;
 	local select, ipairs = select, ipairs;
-	local Depth, Visual, Level, Scale;
+	local Depth, Visual, Scale;
 	local MinScale, MaxScale, ScaleFactor;
 	function PlatesUpdate ()
 		for Plate, Visual in pairs( PlatesVisible ) do
@@ -183,12 +193,7 @@ do
 					SetAlpha( Visual, 1 );
 				end
 
-				Level = Index * 2;
-				Visual:SetFrameLevel( Level );
-				Level = Level - 1; -- Bars must be *behind* the parent plate
-				for Index = 1, Plate.ChildCount do
-					Plate[ Index ]:SetFrameLevel( Level );
-				end
+				Visual:SetFrameLevel( Index * me.PlateLevels );
 
 				Scale = ScaleFactor / Depth;
 				if ( Scale < MinScale ) then
@@ -416,7 +421,7 @@ end
 
 do
 	me:SetScript( "OnEvent", me.OnEvent );
-	me:SetScript( "OnUpdate", me.OnUpdate );
+	WorldFrame:HookScript( "OnUpdate", me.OnUpdate ); -- First OnUpdate handler to run
 	me:RegisterEvent( "VARIABLES_LOADED" );
 	me:RegisterEvent( "PLAYER_REGEN_DISABLED" );
 	me:RegisterEvent( "PLAYER_REGEN_ENABLED" );
