@@ -50,7 +50,7 @@ function me:PlateOnShow ()
 		Plate:SetHeight( PlateHeight );
 	end
 
-	if ( not self:GetParent():MouseIsOver() ) then -- Note: Fix for bug where highlights get stuck in default UI
+	if ( not self:GetParent():IsMouseOver() ) then -- Note: Fix for bug where highlights get stuck in default UI
 		self.Highlight:Hide();
 	end
 	self.Highlight:SetPoint( "TOPLEFT", self, -PlateBorder, PlateBorder );
@@ -182,8 +182,8 @@ do
 	function me:PlateUpdateClassification ( Force )
 		local Health = self.Health;
 		R, G, B = Health:GetStatusBarColor();
-		if ( Force or Health.R ~= R or Health.G ~= G or Health.B ~= B ) then
-			Health.R, Health.G, Health.B = R, G, B; -- Save for future comparison
+		if ( Force or Health[ 1 ] ~= R or Health[ 2 ] ~= G or Health[ 3 ] ~= B ) then
+			Health[ 1 ], Health[ 2 ], Health[ 3 ] = R, G, B; -- Save for future comparison
 
 			self.Reaction, self.IsPlayer, self.Class = GetClassification();
 			Health.IsHealerMode = self.Reaction > 4 and self.IsPlayer; -- Friendly player
