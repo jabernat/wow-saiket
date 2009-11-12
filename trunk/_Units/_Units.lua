@@ -6,20 +6,43 @@
 
 local me = CreateFrame( "Frame" );
 _Units = me;
+me.Version = GetAddOnMetadata( "_Units", "Version" ):match( "^([%d.]+)" );
 
-local AddOnInitializers = {};
-me.AddOnInitializers = AddOnInitializers;
+me.OptionsCharacter = {
+	Version = me.Version;
+};
+me.OptionsCharacterDefault = {
+	Version = me.Version;
+	NameplatesTankMode = false;
+};
+
+me.AddOnInitializers = {};
 
 me.DropDown = CreateFrame( "Frame", "_UnitsDropDown", UIParent, "UIDropDownMenuTemplate" );
 
-me.ClassColors = oUF.colors.class;
-me.PowerColors = setmetatable( {
-	MANA   = { 0.2, 0.4, 0.7 };
-	RAGE   = { 0.6, 0.2, 0.3 };
-	ENERGY = { 0.6, 0.6, 0.3 };
-}, { __index = oUF.colors.power; } );
-me.PowerColors.RUNIC_POWER = me.PowerColors.RAGE;
-me.PowerColors.FUEL = me.PowerColors.ENERGY;
+local Colors = setmetatable( {
+	pet =  { 0.1, 0.5, 0.1 };
+	smooth = {
+		1.0, 0.0, 0.0, --   0%
+		0.6, 0.6, 0.0, --  50%
+		0.0, 0.4, 0.0  -- 100%
+	};
+	power = setmetatable( {
+		MANA   = { 0.2, 0.4, 0.7 };
+		RAGE   = { 0.6, 0.2, 0.3 };
+		ENERGY = { 0.6, 0.6, 0.3 };
+	}, { __index = oUF.colors.power; } );
+	reaction = setmetatable( {
+		[ 1 ] = { 0.4, 0.15, 0.15 };
+	}, { __index = oUF.colors.reaction; } );
+
+	cast = { 0.6, 0.6, 0.3 };
+	experience = oUF.colors.reaction[ 5 ]; -- Friendly
+	experience_rested = { 0.2, 0.4, 0.7, 0.6 };
+}, { __index = oUF.colors; } );
+me.Colors = Colors;
+Colors.power.RUNIC_POWER = Colors.power.RAGE;
+Colors.power.FUEL = Colors.power.ENERGY;
 
 
 
@@ -31,9 +54,9 @@ me.PowerColors.FUEL = me.PowerColors.ENERGY;
   ****************************************************************************]]
 function me.InitializeAddOn ( Name )
 	Name = Name:upper(); -- For case insensitive file systems (Windows')
-	if ( AddOnInitializers[ Name ] and IsAddOnLoaded( Name ) ) then
-		AddOnInitializers[ Name ]();
-		AddOnInitializers[ Name ] = nil;
+	if ( me.AddOnInitializers[ Name ] and IsAddOnLoaded( Name ) ) then
+		me.AddOnInitializers[ Name ]();
+		me.AddOnInitializers[ Name ] = nil;
 		return true;
 	end
 end
@@ -42,11 +65,11 @@ end
   * Description: Adds an addon's initializer function to the initializer list. *
   ****************************************************************************]]
 function me.RegisterAddOnInitializer ( Name, Initializer )
-	if ( IsAddOnLoaded( Name ) ) then
+	if ( select( 2, IsAddOnLoaded( Name ) ) ) then
 		Initializer();
 		return true;
 	else
-		AddOnInitializers[ Name:upper() ] = Initializer;
+		me.AddOnInitializers[ Name:upper() ] = Initializer;
 	end
 end
 
@@ -128,15 +151,6 @@ me.PLAYER_FOCUS_CHANGED = me.PLAYER_TARGET_CHANGED;
 function me:ADDON_LOADED ( _, AddOn )
 	self.InitializeAddOn( AddOn );
 end
---[[****************************************************************************
-  * Function: _Units:PLAYER_LOGIN                                              *
-  ****************************************************************************]]
-function me:PLAYER_LOGIN ()
-	-- Initialize any addons that were loaded before _Units
-	for Name in pairs( AddOnInitializers ) do
-		self.InitializeAddOn( Name );
-	end
-end
 
 --[[****************************************************************************
   * Function: _Units:OnEvent                                                   *
@@ -151,14 +165,46 @@ end
 
 
 
+--[[****************************************************************************
+  * Function: _Units.Synchronize                                               *
+  * Description: Loads an options table, or the defaults.                      *
+  ****************************************************************************]]
+function me.Synchronize ( OptionsCharacter )
+	-- Load defaults if settings omitted
+	if ( not OptionsCharacter ) then
+		OptionsCharacter = me.OptionsCharacterDefault;
+	end
+
+	me.Nameplates.SetTankMode( OptionsCharacter.NameplatesTankMode );
+end
+--[[****************************************************************************
+  * Function: _Units.OnLoad                                                    *
+  * Description: Loads defaults and validates settings.                        *
+  ****************************************************************************]]
+function me.OnLoad ()
+	me.OnLoad = nil;
+
+	local OptionsCharacter = _UnitsOptionsCharacter;
+	_UnitsOptionsCharacter = me.OptionsCharacter;
+
+	if ( OptionsCharacter ) then
+		OptionsCharacter.Version = me.Version;
+	end
+
+	me.Synchronize( OptionsCharacter ); -- Loads defaults if nil
+end
+
+
+
+
 --------------------------------------------------------------------------------
 -- Function Hooks / Execution
 -----------------------------
 
 do
 	me:SetScript( "OnEvent", me.OnEvent );
-	me:RegisterEvent( "PLAYER_LOGIN" );
 	me:RegisterEvent( "ADDON_LOADED" );
+	me.RegisterAddOnInitializer( "_Units", me.OnLoad );
 
 	me:RegisterEvent( "PLAYER_TARGET_CHANGED" );
 	me:RegisterEvent( "PLAYER_FOCUS_CHANGED" );

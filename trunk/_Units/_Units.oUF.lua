@@ -16,20 +16,7 @@ me.FontNormal = "_UnitsOUFFontNormal";
 me.FontTiny = "_UnitsOUFFontTiny";
 me.FontMicro = "_UnitsOUFFontMicro";
 
-local Colors = setmetatable( {
-	pet =  { 0.1, 0.5, 0.1 };
-	smooth = {
-		1.0, 0.0, 0.0, --   0%
-		0.6, 0.6, 0.0, --  50%
-		0.0, 0.4, 0.0  -- 100%
-	};
-	power = _Units.PowerColors;
-
-	cast = { 0.6, 0.6, 0.3 };
-	experience = oUF.colors.reaction[ 5 ]; -- Friendly
-	experience_rested = { 0.2, 0.4, 0.7, 0.6 };
-}, { __index = oUF.colors; } );
-me.Colors = Colors;
+local Colors = _Units.Colors;
 
 me.StyleMeta = {
 	__index = { -- Defaults
