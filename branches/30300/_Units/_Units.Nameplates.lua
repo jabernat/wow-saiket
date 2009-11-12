@@ -50,7 +50,7 @@ function me:PlateOnShow ()
 		Plate:SetHeight( PlateHeight );
 	end
 
-	if ( not MouseIsOver( self:GetParent() ) ) then -- Note: Fix for bug where highlights get stuck in default UI
+	if ( not self:GetParent():MouseIsOver() ) then -- Note: Fix for bug where highlights get stuck in default UI
 		self.Highlight:Hide();
 	end
 	self.Highlight:SetPoint( "TOPLEFT", self, -PlateBorder, PlateBorder );
@@ -475,8 +475,7 @@ function me:VARIABLES_LOADED ()
 
 	SetCVar( "ThreatWarning", 3 );
 	SetCVar( "ShowClassColorInNameplate", 1 );
-	-- Don't throw an error if the client doesn't have this CVar yet
-	pcall( SetCVar, "NameplateAllowOverlap", 1 );
+	SetCVar( "NameplateAllowOverlap", 1 );
 end
 --[[****************************************************************************
   * Function: _Units.Nameplates:PLAYER_REGEN_ENABLED                           *

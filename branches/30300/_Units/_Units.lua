@@ -5,7 +5,7 @@
 
 
 local me = CreateFrame( "Frame", "_Units" );
-me.Version = GetAddOnMetadata( "_Units", "Version" ):match( "^([%d.]+)" );
+me.Version = GetAddOnMetadata( ..., "Version" ):match( "^([%d.]+)" );
 
 me.OptionsCharacter = {
 	Version = me.Version;
@@ -203,7 +203,7 @@ end
 do
 	me:SetScript( "OnEvent", me.OnEvent );
 	me:RegisterEvent( "ADDON_LOADED" );
-	me.RegisterAddOnInitializer( "_Units", me.OnLoad );
+	me.RegisterAddOnInitializer( ..., me.OnLoad );
 
 	me:RegisterEvent( "PLAYER_TARGET_CHANGED" );
 	me:RegisterEvent( "PLAYER_FOCUS_CHANGED" );
