@@ -4,9 +4,6 @@
   ****************************************************************************]]
 
 
-if ( select( 5, GetAddOnInfo( "TidyPlates" ) ) ) then
-	return;
-end
 local LibSharedMedia = LibStub( "LibSharedMedia-3.0" );
 local L = _UnitsLocalization;
 local _Units = _Units;
