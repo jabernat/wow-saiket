@@ -41,7 +41,7 @@ do
 			Field:SetText( UnitName( UnitID ) );
 
 			if ( UnitIsPlayer( UnitID ) ) then
-				R, G, B = unpack( _Units.ClassColors[ select( 2, UnitClass( UnitID ) ) ] );
+				R, G, B = unpack( _Units.Colors.class[ select( 2, UnitClass( UnitID ) ) ] );
 			else
 				Color = NORMAL_FONT_COLOR;
 				R, G, B = Color.r, Color.g, Color.b;
@@ -144,7 +144,7 @@ do
 				R, G, B = 1, 1, 1;
 			else -- Blend
 				if ( not R ) then -- Power type doesn't have a custom color
-					R, G, B = unpack( _Units.PowerColors[ PowerType ] or _Units.PowerColors[ "MANA" ] );
+					R, G, B = unpack( _Units.Colors.power[ PowerType ] or _Units.Colors.power[ "MANA" ] );
 				end
 				Value = Value / 100;
 				Color2 = 0.5 * ( 1 - Value );

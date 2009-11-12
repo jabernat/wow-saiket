@@ -16,6 +16,10 @@ do
 
 		STATUSMONITOR_IGNORED = "N/A";
 
+		NAMEPLATES_TANKMODE_FORMAT = "_|cffCCCC88Units|r.Nameplates: Tank mode %s.";
+		ENABLED = "enabled";
+		DISABLED = "disabled";
+
 		GRID_LAYOUT_GROUP = Title..": Groups";
 		GRID_LAYOUT_CLASS = Title..": Classes";
 
@@ -30,4 +34,14 @@ do
 			end
 		end;
 	} );
+
+
+
+
+--------------------------------------------------------------------------------
+-- Globals
+----------
+
+	SLASH__UNITS_NAMEPLATES1 = "/unitsnp";
+	SLASH__UNITS_NAMEPLATES2 = "/unp";
 end
