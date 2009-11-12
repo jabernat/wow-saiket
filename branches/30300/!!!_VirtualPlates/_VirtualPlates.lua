@@ -5,7 +5,7 @@
 
 
 local me = CreateFrame( "Frame", "_VirtualPlates", WorldFrame );
-me.Version = GetAddOnMetadata( ... or "!!!_VirtualPlates", "Version" ):match( "^([%d.]+)" );
+me.Version = GetAddOnMetadata( ..., "Version" ):match( "^([%d.]+)" );
 
 local Plates = {};
 me.Plates = Plates;
@@ -227,8 +227,7 @@ end
 function me:VARIABLES_LOADED ()
 	me.VARIABLES_LOADED = nil;
 
-	-- Don't throw an error if the client doesn't have this CVar yet
-	pcall( SetCVar, "nameplateAllowOverlap", 1 );
+	SetCVar( "nameplateAllowOverlap", 1 );
 
 
 	local OptionsCharacter = _VirtualPlatesOptionsCharacter;
