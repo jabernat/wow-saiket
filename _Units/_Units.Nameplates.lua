@@ -276,6 +276,7 @@ do
 
 				-- Gray out bar if uninterruptable
 				self:SetStatusBarColor( unpack( CanInterrupt and Colors.cast or Colors.disconnected ) );
+				SetDesaturation( self.Icon, not CanInterrupt );
 
 				local Flash = me.Flash;
 				Flash:StopAnimating();

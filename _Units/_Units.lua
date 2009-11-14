@@ -32,9 +32,6 @@ local Colors = setmetatable( {
 		RAGE   = { 0.6, 0.2, 0.3 };
 		ENERGY = { 0.6, 0.6, 0.3 };
 	}, { __index = oUF.colors.power; } );
-	reaction = setmetatable( {
-		[ 1 ] = { 0.4, 0.15, 0.15 };
-	}, { __index = oUF.colors.reaction; } );
 
 	cast = { 0.6, 0.6, 0.3 };
 	experience = oUF.colors.reaction[ 5 ]; -- Friendly
