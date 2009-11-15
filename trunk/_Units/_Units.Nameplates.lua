@@ -13,6 +13,7 @@ _Units.Nameplates = me;
 local Plates = {};
 me.Plates = Plates;
 me.PlatesVisible = {};
+me.TargetOutline = CreateFrame( "Frame" );
 
 me.NameFont = CreateFont( "_UnitsNameplatesNameFont" );
 me.LevelFont = CreateFont( "_UnitsNameplatesLevelFont" );
@@ -31,6 +32,7 @@ local PlateBorder = 2;
 local CastHeight = 24;
 
 local InCombat = false;
+local HasTarget = false;
 
 
 
@@ -41,6 +43,9 @@ local InCombat = false;
   ****************************************************************************]]
 function me:PlateOnShow ()
 	me.PlatesVisible[ self ] = true;
+	if ( HasTarget ) then
+		self:GetParent():SetScript( "OnUpdate", me.PlateOnUpdate );
+	end
 	self:RegisterEvent( "UNIT_THREAT_LIST_UPDATE" );
 	self:RegisterEvent( "PLAYER_REGEN_DISABLED" );
 	self:RegisterEvent( "PLAYER_REGEN_ENABLED" );
@@ -70,9 +75,33 @@ end
   ****************************************************************************]]
 function me:PlateOnHide ()
 	me.PlatesVisible[ self ] = nil;
+	if ( HasTarget ) then
+		self:GetParent():SetScript( "OnUpdate", nil );
+		-- Hide target outline if shown
+		if ( self == Plates[ me.TargetOutline:GetParent() ] ) then
+			me.TargetOutline:Hide();
+		end
+	end
 	self:UnregisterEvent( "UNIT_THREAT_LIST_UPDATE" );
 	self:UnregisterEvent( "PLAYER_REGEN_DISABLED" );
 	self:UnregisterEvent( "PLAYER_REGEN_ENABLED" );
+end
+--[[****************************************************************************
+  * Function: _Units.Nameplates:PlateOnUpdate                                  *
+  * Description: Keeps the nameplate's alpha set properly.                     *
+  ****************************************************************************]]
+do
+	local TargetOutline = me.TargetOutline;
+	function me:PlateOnUpdate ()
+		if ( self:GetAlpha() == 1 ) then -- Current target
+			-- Position outline
+			TargetOutline:SetParent( self );
+			TargetOutline:SetPoint( "TOP" );
+			TargetOutline:Show();
+		else
+			self:SetAlpha( 1 );
+		end
+	end
 end
 --[[****************************************************************************
   * Function: _Units.Nameplates:PlateOnHealthChanged                           *
@@ -506,6 +535,21 @@ end
 function me:PLAYER_REGEN_DISABLED ()
 	InCombat = true;
 end
+--[[****************************************************************************
+  * Function: _Units.Nameplates:PLAYER_TARGET_CHANGED                          *
+  ****************************************************************************]]
+function me:PLAYER_TARGET_CHANGED ()
+	HasTarget = UnitExists( "target" );
+
+	-- Reset target indicator
+	me.TargetOutline:Hide();
+
+	-- Set or clear individual plate update handlers
+	local UpdateScript = HasTarget and me.PlateOnUpdate or nil;
+	for Visual in pairs( me.PlatesVisible ) do
+		Visual:GetParent():SetScript( "OnUpdate", UpdateScript );
+	end
+end
 
 --[[****************************************************************************
   * Function: _Units.Nameplates:OnUpdate                                       *
@@ -583,6 +627,7 @@ do
 	me:RegisterEvent( "VARIABLES_LOADED" );
 	me:RegisterEvent( "PLAYER_REGEN_DISABLED" );
 	me:RegisterEvent( "PLAYER_REGEN_ENABLED" );
+	me:RegisterEvent( "PLAYER_TARGET_CHANGED" );
 
 
 	-- Fonts
@@ -598,6 +643,18 @@ do
 	me.CastFont:SetFont( [[Fonts\ARIALN.TTF]], 14, "OUTLINE" );
 	me.CastFont:SetJustifyV( "MIDDLE" );
 	me.CastFont:SetJustifyH( "LEFT" );
+
+
+	-- Target outline
+	me.TargetOutline:SetWidth( PlateWidth );
+	me.TargetOutline:SetHeight( PlateHeight );
+	local Outline = me.TargetOutline:CreateTexture( nil, "BACKGROUND" );
+	Outline:SetTexture( 1, 1, 1 );
+	Outline:SetPoint( "TOPRIGHT", PlateBorder, PlateBorder );
+	Outline:SetPoint( "BOTTOMLEFT", -PlateBorder, -PlateBorder );
+	local Mask = me.TargetOutline:CreateTexture( nil, "BORDER" );
+	Mask:SetTexture( 0, 0, 0 );
+	Mask:SetAllPoints();
 
 
 	-- Interrupt flash
