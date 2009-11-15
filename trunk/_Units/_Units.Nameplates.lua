@@ -260,17 +260,26 @@ end
   ****************************************************************************]]
 do
 	local function UpdateAnimation ( self )
-		-- Note:Plays the flash animation after the rendering engine has moved the
+		-- Note: Plays the flash animation after the rendering engine has moved the
 		--   texture in place for certain.  Otherwise, the animation would play at
 		--   the texture's previous location.
 		self:SetScript( "OnUpdate", nil );
 		me.Flash.Animation:Play();
 	end
+	local CanInterruptEvents = {
+		UNIT_SPELLCAST_INTERRUPTIBLE = true;
+		UNIT_SPELLCAST_NOT_INTERRUPTIBLE = false;
+	};
 	function me:CastOnInterruptibleChanged ( Event, UnitID )
-		if ( not Event -- Called directly
-			or ( ( Event == "UNIT_SPELLCAST_INTERRUPTIBLE" or Event == "UNIT_SPELLCAST_NOT_INTERRUPTIBLE" ) and UnitID == "player" )
-		) then
-			local CanInterrupt = not self.NoInterrupt:IsShown();
+		local CanInterrupt;
+		if ( Event ) then
+			if ( UnitID == "target" ) then
+				CanInterrupt = CanInterruptEvents[ Event ];
+			end
+		else -- Called directly
+			CanInterrupt = not self.NoInterrupt:IsShown();
+		end
+		if ( CanInterrupt ~= nil ) then
 			if ( self.CanInterrupt ~= CanInterrupt ) then
 				self.CanInterrupt = CanInterrupt;
 
