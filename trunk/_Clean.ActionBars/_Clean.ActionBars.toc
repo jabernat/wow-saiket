@@ -1,0 +1,13 @@
+## Interface: 30200
+## Title: _|cffCCCC88Clean|r.ActionBars
+## Notes: Skins the default action bars.
+## Author: Saiket
+## Version: 3.2.2.1
+## X-Date: 2009-11-16
+## X-Category: Action Bars
+## X-License: GPLv3
+## X-Email: saiket.wow@gmail.com
+## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons
+## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Clean
+## RequiredDeps: _Clean, Dominos
+_Clean.ActionBars.lua

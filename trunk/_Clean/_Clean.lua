@@ -1,68 +1,65 @@
 --[[****************************************************************************
   * _Clean by Saiket                                                           *
-  * _Clean.lua - Common functions.                                             *
+  * _Clean.lua - Common functions and data used by _Clean modules.             *
   ****************************************************************************]]
 
 
-_CleanOptions = {};
+local LibSharedMedia = LibStub( "LibSharedMedia-3.0" );
+local me = CreateFrame( "Frame", "_Clean" );
+
+local Colors = {
+	HealthSmooth = {
+		1.0, 0.0, 0.0, --   0%
+		0.6, 0.6, 0.0, --  50%
+		0.0, 0.4, 0.0  -- 100%
+	};
+	Pet =  { 0.1, 0.5, 0.1 };
+	Cast = { 0.6, 0.6, 0.3 };
+	ExperienceRested = { 0.2, 0.4, 0.7, 0.6 };
 
 
-local me = CreateFrame( "Frame" );
-_Clean = me;
+	Normal    = { 0.6, 0.85, 1.0 }; -- Frosty blue
+	Highlight = { 0.8, 0.8, 8/15 }; -- Gold, same as title
+	Foreground = { 0.0, 0.5, 1.0 };
+	Background = { 0.0, 0.0, 0.0 };
+
+
+	-- Shared with oUF layout if loaded
+	disconnected = { 0.6, 0.6, 0.6 };
+	power = {
+		MANA   = { 0.2, 0.4, 0.7 };
+		RAGE   = { 0.6, 0.2, 0.3 };
+		ENERGY = { 0.6, 0.6, 0.3 };
+	};
+	class = {};
+	reaction = {
+		[ 1 ] = { 0.7, 0.2, 0.2 }; -- Hated
+		[ 3 ] = { 0.8, 0.5, 0.2 }; -- Unfriendly
+		[ 4 ] = { 0.8, 0.7, 0.2 }; -- Neutral
+		[ 8 ] = { 0.1, 0.6, 0.2 }; -- Exalted
+	};
+};
+me.Colors = Colors;
+Colors.power.RUNIC_POWER = Colors.power.RAGE;
+Colors.power.FUEL = Colors.power.ENERGY;
+for Class, Color in pairs( RAID_CLASS_COLORS ) do
+	Colors.class[ Class ] = { Color.r, Color.g, Color.b };
+end
+Colors.reaction[ 2 ] = Colors.reaction[ 1 ];
+for Index = 5, 7 do
+	Colors.reaction[ Index ] = Colors.reaction[ 8 ];
+end
+Colors.Experience = Colors.reaction[ 8 ];
+
+
+me.TopMargin = CreateFrame( "Frame", nil, UIParent );
+me.BottomPane = CreateFrame( "Frame", nil, UIParent );
 
 local AddOnInitializers = {};
-me.AddOnInitializers = AddOnInitializers;
-local ProtectedFunctionQueue = {};
-me.ProtectedFunctionQueue = ProtectedFunctionQueue;
-me.InCombatLockdown = false;
 local LockedButtons = {};
-me.LockedButtons = LockedButtons;
+local ProtectedFunctionQueue = {};
 
-me.Colors = {
-	Say      = { r = 1.0; g = 1.0; b = 1.0; };
-	Yell     = { r = 1.0; g = 0.25; b = 0.25; };
-	Emote1   = { r = 1.0; g = 0.4; b = 0.2; };
-	Emote2   = { r = 0.8; g = 1/3; b = 0.125; }; -- Custom text emotes
-	Guild1   = { r = 0.125; g = 0.9; b = 0.07; };
-	Guild2   = { r = 0.6; g = 1.0; b = 0.4; }; -- Officer chat
-	Whisper1 = { r = 0.7; g = 1/3; b = 0.7; };
-	Whisper2 = { r = 1.0; g = 0.5; b = 1.0; }; -- Outbound
-
-	Party = { r = 2/3; g = 2/3; b = 1.0; };
-	Raid1 = { r = 1.0; g = 0.6; b = 0.0; };
-	Raid2 = { r = 1.0; g = 2/3; b = 0.0; }; -- Raid leader
-	Raid3 = { r = 1.0; g = 0.4; b = 0.0; }; -- CT_RaidAssist messages
-	Battleground1 = { r = 0.0; g = 0.8; b = 1.0; };
-	Battleground2 = { r = 0.4; g = 0.8; b = 1.0; }; -- Battleground leader
-
-	Channel1 = { r = 1.0; g = 0.8; b = 0.8; };
-	Channel2 = { r = 2/3; g = 0.5; b = 0.5; }; -- Dimmed
-
-	Hostile1  = { r = 0.8; g = 0.5; b = 0.5; }; -- Brighter
-	Hostile2  = { r = 0.8; g = 1/3; b = 1/3; };
-	Friendly1 = { r = 0.4; g = 1.0; b = 0.4; }; -- Brighter
-	Friendly2 = { r = 0.2; g = 0.6; b = 0.2; };
-	Mana = { r = 0.2; g = 0.2; b = 1.0; };
-
-	Miss = { r = 0.5; g = 0.5; b = 0.5; }; -- Miss, dodge, evade, etc.
-	Fail = { r = 1/3; g = 1/3; b = 1/3; }; -- Couldn't cast
-
-	Loot    = { r = 0.0; g = 0.4; b = 0.2; }; -- Money, loot, tradeskills
-	System  = { r = 1.0; g = 1.0; b = 0.0; };
-	Gain    = { r = 0.4; g = 2/3; b = 1.0; }; -- Rep., faction, XP, skills
-	Warning = { r = 1.0; g = 0.07; b = 0.0; }; -- Raidwarning, localdefense
-
-	Foreground = { r = 0.0; g = 0.5; b = 1.0; a = 1.0; };
-	Background = { r = 0.0; g = 0.0; b = 0.0; a = 1.0; };
-	Highlight = { r = 0.8; g = 0.8; b = 8 / 15; a = 1.0; }; -- Gold, same as title
-	Normal = { r = 0.6; g = 0.85; b = 1.0; a = 1.0; }; -- Frosty blue
-	Dark = { r = 0.4; g = 0.45; b = 0.5; a = 1.0; }; -- Grayish blue
-};
-
-me.MonospaceFont = CreateFont( "_CleanMonospace" );
-me.MonospaceNumberFont = CreateFont( "_CleanMonospaceNumber" );
-
-me.BottomPane = CreateFrame( "Frame", nil, UIParent );
+local InCombat = false;
 
 
 
@@ -72,60 +69,70 @@ me.BottomPane = CreateFrame( "Frame", nil, UIParent );
   * Description: Recycled generic function placeholder.                        *
   ****************************************************************************]]
 function me.NilFunction () end
+
 --[[****************************************************************************
-  * Function: _Clean.Print                                                     *
-  * Description: Write a string to the specified frame, or to the default chat *
-  *   frame when unspecified. Output color defaults to yellow.                 *
+  * Function: _Clean:RemoveIconBorder                                          *
+  * Description: Hides the border graphic from an action button-like icon.     *
   ****************************************************************************]]
-function me.Print ( Message, ChatFrame, Color )
-	if ( not Color ) then
-		Color = NORMAL_FONT_COLOR;
-	end
-	( ChatFrame or DEFAULT_CHAT_FRAME ):AddMessage( tostring( Message ), Color.r, Color.g, Color.b, Color.id );
+function me:RemoveIconBorder ()
+	self:SetTexCoord( 0.08, 0.92, 0.08, 0.92 );
 end
 
 
+
+
+--[[****************************************************************************
+  * Function: _Clean.IsAddOnLoadable                                           *
+  * Description: Returns true if an addon can possibly load this session.      *
+  ****************************************************************************]]
+function me.IsAddOnLoadable ( Name )
+	local Loadable, Reason = select( 5, GetAddOnInfo( Name ) );
+	return Loadable or ( Reason == "DISABLED" and IsAddOnLoadOnDemand( Name ) ); -- Loadable or can become loadable
+end
 --[[****************************************************************************
   * Function: _Clean.InitializeAddOn                                           *
-  * Description: Runs the initializer for an addon if one is present, and then *
-  *   removes it from the initializer list.                                    *
+  * Description: Runs the given addon's initializer if it loaded.              *
   ****************************************************************************]]
 function me.InitializeAddOn ( Name )
 	Name = Name:upper(); -- For case insensitive file systems (Windows')
-	if ( AddOnInitializers[ Name ] and IsAddOnLoaded( Name ) ) then
-		AddOnInitializers[ Name ]();
+	local Initializer = AddOnInitializers[ Name ];
+	if ( Initializer and select( 2, IsAddOnLoaded( Name ) ) ) then -- Returns false if addon is currently loading
+		if ( type( Initializer ) == "table" ) then
+			for _, Script in ipairs( Initializer ) do
+				Script();
+			end
+		else
+			Initializer();
+		end
 		AddOnInitializers[ Name ] = nil;
 		return true;
 	end
 end
 --[[****************************************************************************
   * Function: _Clean.RegisterAddOnInitializer                                  *
-  * Description: Adds an addon's initializer function to the initializer list. *
+  * Description: Register a function to run when an addon loads.               *
   ****************************************************************************]]
 function me.RegisterAddOnInitializer ( Name, Initializer )
-	if ( IsAddOnLoaded( Name ) ) then
-		Initializer();
-		return true;
-	else
-		AddOnInitializers[ Name:upper() ] = Initializer;
+	if ( me.IsAddOnLoadable( Name ) ) then
+		Name = Name:upper();
+		local OldInitializer = AddOnInitializers[ Name ];
+		if ( OldInitializer ) then -- Put multiple initializers in a table
+			if ( type( OldInitializer ) ~= "table" ) then
+				AddOnInitializers[ Name ] = { OldInitializer };
+			end
+			tinsert( AddOnInitializers[ Name ], Initializer );
+		else
+			AddOnInitializers[ Name ] = Initializer;
+		end
+
+		return me.InitializeAddOn( Name );
 	end
 end
-
-
 --[[****************************************************************************
-  * Function: _Clean:RunProtectedFunction                                      *
-  * Description: Runs an function, or stores it until after combat ends if it  *
-  *   calls protected functions.                                               *
+  * Function: _Clean:ADDON_LOADED                                              *
   ****************************************************************************]]
-do
-	local tinsert = tinsert;
-	function me:RunProtectedFunction ( Function, Protected )
-		if ( self.InCombatLockdown and Protected ) then -- Store for later
-			tinsert( self.ProtectedFunctionQueue, Function );
-		else
-			Function();
-		end
-	end
+function me:ADDON_LOADED ( _, AddOn )
+	me.InitializeAddOn( AddOn );
 end
 
 
@@ -137,7 +144,7 @@ end
 function me.AddLockedButton ( Button )
 	LockedButtons[ Button ] = true;
 	local Enable = IsControlKeyDown() == 1;
-	me:RunProtectedFunction( function ()
+	me.RunProtectedFunction( function ()
 		Button:EnableMouse( Enable );
 	end, Button:IsProtected() );
 end
@@ -147,21 +154,10 @@ end
   ****************************************************************************]]
 function me.RemoveLockedButton ( Button )
 	LockedButtons[ Button ] = nil;
-	me:RunProtectedFunction( function ()
+	me.RunProtectedFunction( function ()
 		Button:EnableMouse( true );
 	end, Button:IsProtected() );
 end
-
-
---[[****************************************************************************
-  * Function: _Clean:RemoveButtonIconBorder                                    *
-  * Description: Hides the border graphic from an action button-like icon.     *
-  ****************************************************************************]]
-function me:RemoveButtonIconBorder ()
-	self:SetTexCoord( 0.08, 0.92, 0.08, 0.92 );
-end
-
-
 --[[****************************************************************************
   * Function: _Clean:MODIFIER_STATE_CHANGED                                    *
   ****************************************************************************]]
@@ -175,7 +171,7 @@ function me:MODIFIER_STATE_CHANGED ( _, Modifier, State )
 				break;
 			end
 		end
-		_Clean:RunProtectedFunction( function ()
+		me.RunProtectedFunction( function ()
 			for Button in pairs( LockedButtons ) do
 				Button:EnableMouse( Enable );
 				if ( not Enable ) then
@@ -186,17 +182,31 @@ function me:MODIFIER_STATE_CHANGED ( _, Modifier, State )
 		end, Protected );
 	end
 end
+
+
+--[[****************************************************************************
+  * Function: _Clean.RunProtectedFunction                                      *
+  * Description: Runs an function, or stores it until after combat ends if it  *
+  *   calls protected functions.                                               *
+  ****************************************************************************]]
+function me.RunProtectedFunction ( Function, Protected )
+	if ( InCombat and Protected ) then -- Store for later
+		ProtectedFunctionQueue[ #ProtectedFunctionQueue + 1 ] = Function;
+	else
+		Function();
+	end
+end
 --[[****************************************************************************
   * Function: _Clean:PLAYER_REGEN_DISABLED                                     *
   ****************************************************************************]]
 function me:PLAYER_REGEN_DISABLED ()
-	self.InCombatLockdown = true;
+	InCombat = true;
 end
 --[[****************************************************************************
   * Function: _Clean:PLAYER_REGEN_ENABLED                                      *
   ****************************************************************************]]
 function me:PLAYER_REGEN_ENABLED ()
-	self.InCombatLockdown = false;
+	InCombat = false;
 
 	-- Combat lockdown over; run all stored functions
 	for Index = 1, #ProtectedFunctionQueue do
@@ -204,16 +214,9 @@ function me:PLAYER_REGEN_ENABLED ()
 		ProtectedFunctionQueue[ Index ] = nil;
 	end
 end
---[[****************************************************************************
-  * Function: _Clean:ADDON_LOADED                                              *
-  ****************************************************************************]]
-function me:ADDON_LOADED ( _, AddOn )
-	self.InitializeAddOn( AddOn );
-end
 
 --[[****************************************************************************
   * Function: _Clean:OnEvent                                                   *
-  * Description: Global event handler.                                         *
   ****************************************************************************]]
 do
 	local type = type;
@@ -238,37 +241,35 @@ do
 	me:RegisterEvent( "PLAYER_REGEN_DISABLED" );
 	me:RegisterEvent( "MODIFIER_STATE_CHANGED" );
 
-	-- Place the bottom pane
+	-- Place the layout panes
+	me.TopMargin:SetPoint( "TOPLEFT" );
+	me.TopMargin:SetPoint( "RIGHT" );
+	me.TopMargin:SetHeight( 16 );
 	me.BottomPane:SetPoint( "LEFT" );
 	me.BottomPane:SetPoint( "RIGHT" );
-	me.BottomPane:SetPoint( "TOP", MultiBarLeftButton4, 0, -17 );
+	me.BottomPane:SetPoint( "TOP", UIParent, "CENTER" );
 	me.BottomPane:SetPoint( "BOTTOM" );
+	me.BottomPane:SetFrameStrata( "BACKGROUND" );
+
+	-- Remove class icon padding
+	local IconPadding = 0.08 / 4; -- Icons are in a 4x4 grid
+	for _, Coords in pairs( CLASS_BUTTONS ) do
+		Coords[ 1 ] = Coords[ 1 ] + IconPadding;
+		Coords[ 2 ] = Coords[ 2 ] - IconPadding;
+		Coords[ 3 ] = Coords[ 3 ] + IconPadding;
+		Coords[ 4 ] = Coords[ 4 ] - IconPadding;
+	end
 
 
-	-- Set up font replacement
-	me.MonospaceFont:SetFont( "Interface\\AddOns\\_Clean\\Skin\\DejaVuSansMono.ttf", 10, "" );
-	me.MonospaceNumberFont:SetFont( "Interface\\AddOns\\_Clean\\Skin\\DejaVuSansMono.ttf", 8, "OUTLINE" );
-	me.RegisterAddOnInitializer( "Blizzard_MacroUI", function ()
-		MacroFrameText:SetFontObject( me.MonospaceFont );
-	end );
-	me.RegisterAddOnInitializer( "_Dev", function ()
-		_Dev.Font:SetFontObject( me.MonospaceNumberFont );
-	end );
+	-- Add media to LibSharedMedia
+	LibSharedMedia:Register( LibSharedMedia.MediaType.STATUSBAR, "_Clean", [[Interface\AddOns\_Clean\Skin\Glaze]] );
 
-	local Normal = me.Colors.Normal;
-	GameFontNormal:SetTextColor( Normal.r, Normal.g, Normal.b );
-	GameFontNormalMed3:SetTextColor( Normal.r, Normal.g, Normal.b );
-	GameFontNormalSmall:SetTextColor( Normal.r, Normal.g, Normal.b );
-	GameFontNormalLarge:SetTextColor( Normal.r, Normal.g, Normal.b );
-	GameFontNormalHuge:SetTextColor( Normal.r, Normal.g, Normal.b );
-	BossEmoteNormalHuge:SetTextColor( Normal.r, Normal.g, Normal.b );
-	NumberFontNormalRightYellow:SetTextColor( Normal.r, Normal.g, Normal.b );
-	NumberFontNormalYellow:SetTextColor( Normal.r, Normal.g, Normal.b );
-	NumberFontNormalLargeRightYellow:SetTextColor( Normal.r, Normal.g, Normal.b );
-	NumberFontNormalLargeYellow:SetTextColor( Normal.r, Normal.g, Normal.b );
-	DialogButtonNormalText:SetTextColor( Normal.r, Normal.g, Normal.b );
-	CombatTextFont:SetTextColor( Normal.r, Normal.g, Normal.b );
-	AchievementPointsFont:SetTextColor( Normal.r, Normal.g, Normal.b );
-	AchievementPointsFontSmall:SetTextColor( Normal.r, Normal.g, Normal.b );
-	AchievementDateFont:SetTextColor( Normal.r, Normal.g, Normal.b );
+	-- Alert sounds
+	local Sound = LibSharedMedia.MediaType.SOUND;
+	LibSharedMedia:Register( Sound, "Blizzard: Space Impact", [[Sound\Effects\DeathImpacts\SpaceDeathUni.wav]] );
+	LibSharedMedia:Register( Sound, "Blizzard: Whisp", [[Sound\Event Sounds\Wisp\WispReady1.wav]] );
+	LibSharedMedia:Register( Sound, "Blizzard: Alarm Clock", [[Sound\Interface\AlarmClockWarning2.wav]] );
+	LibSharedMedia:Register( Sound, "Blizzard: Glyph Creation", [[Sound\Interface\Glyph_MajorCreate.wav]] );
+	LibSharedMedia:Register( Sound, "Blizzard: Fanfare", [[Sound\Interface\ReadyCheck.wav]] );
+	LibSharedMedia:Register( Sound, "Blizzard: Boss Emote", [[Sound\Interface\RaidBossWarning.wav]] );
 end

@@ -1,24 +1,20 @@
 ## Interface: 30200
-## Title: _|cffCCCC88Clean|r
-## Notes: Change the UI's look and feel.
+## Title: _|cffCCCC88Clean|r.Units
+## Notes: A set of skinned unit frames.
 ## Author: Saiket
 ## Version: 3.2.2.1
 ## X-Date: 2009-11-16
-## X-Category: Frame Modification
+## X-Category: UnitFrame
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
 ## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons
 ## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Clean
 ## X-Localizations: enUS
-## X-Embeds: LibSharedMedia-3.0
-## OptionalDeps: LibSharedMedia-3.0
-Libs\LibStub\LibStub.lua
-Libs\CallbackHandler-1.0\CallbackHandler-1.0.lua
-
-Embeds.xml
+## RequiredDeps: _Clean, oUF
+## OptionalDeps: oUF_CombatFeedback, oUF_Experience, oUF_Reputation, oUF_SpellRange
 Locales.xml
 
-_Clean.lua
-_Clean.Backdrop.lua
-_Clean.ColorPicker.lua
+_Clean.Units.lua
 
+_Clean.Units.oUF.lua
+_Clean.Units.Grid.lua
