@@ -76,6 +76,8 @@ function me:PlateOnShow ()
 	self.Name:SetPoint( "BOTTOMLEFT", self.Health.Left, 2, 2 );
 	self.ThreatBorder:Hide();
 
+	self.Cast:Hide(); -- Note: Fix for cast bars occasionally being shown without any spellcast
+
 	me.PlateUpdateClassification( self, true ); -- Force
 	me.PlateOnThreatChanged( self );
 end
