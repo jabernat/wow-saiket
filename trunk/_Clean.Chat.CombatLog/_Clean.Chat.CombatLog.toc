@@ -1,20 +1,18 @@
 ## Interface: 30200
-## Title: _|cffCCCC88Clean|r.Chat
-## Notes: Skins the default UI's chat frames.
+## Title: _|cffCCCC88Clean|r.Chat.CombatLog
+## Notes: Skins the default UI's combat log.
 ## Author: Saiket
 ## Version: 3.2.2.1
 ## X-Date: 2009-11-20
-## X-Category: Frame Modification, Chat/Communication
+## X-Category: Frame Modification, Chat/Communication, Combat
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
 ## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons
 ## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Clean
 ## X-Localizations: enUS
-## RequiredDeps: _Clean.ActionBars
+## LoadOnDemand: 1
+## LoadWith: Blizzard_CombatLog
+## RequiredDeps: _Clean.Chat, Blizzard_CombatLog
 Locales.xml
 
-_Clean.Chat.lua
-_Clean.Chat.URLs.lua
-_Clean.Chat.Icons.lua
-_Clean.Chat.RaidWarning.lua
-_Clean.Chat.Layout.lua
+_Clean.Chat.CombatLog.lua
