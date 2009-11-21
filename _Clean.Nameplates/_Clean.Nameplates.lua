@@ -332,6 +332,11 @@ do
 				-- Don't use vertex color if shader isn't supported
 				Texture:SetDesaturated( Uninterruptible );
 			end
+			if ( Uninterruptible ) then -- Use color when grayed out for contrast
+				self.Name:SetTextColor( unpack( Colors.Normal ) );
+			else
+				self.Name:SetTextColor( 1, 1, 1, 1 ); -- Plain white
+			end
 
 			local Flash = me.Flash;
 			Flash:StopAnimating();
@@ -450,7 +455,6 @@ local function PlateAdd ( Plate )
 	Cast.Icon:SetWidth( CastHeight );
 	Cast.Icon:SetHeight( CastHeight );
 	_Clean.RemoveIconBorder( Cast.Icon );
-	Cast[ #Cast + 1 ] = Cast.Icon;
 	CastBorder:SetTexture(); -- Seems to cause crashes when attempting to anchor
 	local IconBorder = Cast:CreateTexture( nil, "OVERLAY" );
 	IconBorder:SetTexture( [[Interface\AchievementFrame\UI-Achievement-IconFrame]] );
