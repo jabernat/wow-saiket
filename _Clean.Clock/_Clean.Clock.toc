@@ -1,24 +1,18 @@
 ## Interface: 30200
-## Title: _|cffCCCC88Clean|r
-## Notes: Change the UI's look and feel.
+## Title: _|cffCCCC88Clean|r.Clock
+## Notes: Adds a clock to the top left of the screen.
 ## Author: Saiket
 ## Version: 3.2.2.1
 ## X-Date: 2009-11-16
-## X-Category: Frame Modification
+## X-Category: Miscellaneous
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
 ## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons
 ## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Clean
 ## X-Localizations: enUS
-## X-Embeds: LibSharedMedia-3.0
-## OptionalDeps: LibSharedMedia-3.0
-Libs\LibStub\LibStub.lua
-Libs\CallbackHandler-1.0\CallbackHandler-1.0.lua
-
-Embeds.xml
+## RequiredDeps: _Clean
+## OptionalDeps: _Clean.Font
 Locales.xml
 
-_Clean.lua
-_Clean.Backdrop.lua
-_Clean.ColorPicker.lua
-
+_Clean.Clock.lua
+_Clean.Clock.BlizzardTimeManager.lua

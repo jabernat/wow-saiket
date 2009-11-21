@@ -1,17 +1,11 @@
 --[[****************************************************************************
-  * _Clean by Saiket                                                           *
+  * _Clean.Clock by Saiket                                                     *
   * Locales/Locale-enUS.lua - Localized string constants (en-US).              *
   ****************************************************************************]]
 
 
 do
-	_CleanLocalization = setmetatable( {
-	}, {
-		__index = function ( self, Key )
-			if ( Key ~= nil ) then
-				rawset( self, Key, Key );
-				return Key;
-			end
-		end;
-	} );
+	_CleanLocalization.Clock = setmetatable( {
+		TIME_FORMAT = "T%02d:%02d:%02d";
+	}, getmetatable( _CleanLocalization ) );
 end
