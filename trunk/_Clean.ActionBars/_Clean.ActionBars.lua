@@ -41,18 +41,13 @@ do
 			self:SetTexCoord( ULx, ULy, LLx, LLy, URx, URy, LRx, LRy );
 		end
 	end
-	local Disabled = false;
 	local function SetNormalTexture ( self, Texture )
-		if ( not Disabled and type( Texture ) == "string" ) then
-			if ( Texture:lower() == [[Interface\Buttons\UI-Quickslot]] ) then
-				-- Empty button texture
-				self:GetNormalTexture():SetTexCoord( 0.2, 0.8, 0.2, 0.8 );
-			else
-				RotateTexture( self:GetNormalTexture(), self.Angle );
-				Disabled = true;
-				self:SetNormalTexture( me.ButtonNormalTexture );
-				Disabled = false;
-			end
+		if ( Texture == [[Interface\Buttons\UI-Quickslot]] ) then
+			-- Empty button texture
+			self:GetNormalTexture():SetTexCoord( 0.2, 0.8, 0.2, 0.8 );
+		else -- Restore skinned texture
+			getmetatable( self ).__index.SetNormalTexture( self, me.ButtonNormalTexture );
+			RotateTexture( self:GetNormalTexture(), self.Angle );
 		end
 	end
 	function ActionButtonModify ( self, Angle )
