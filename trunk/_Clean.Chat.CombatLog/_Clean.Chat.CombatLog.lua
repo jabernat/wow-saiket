@@ -4,7 +4,7 @@
   ****************************************************************************]]
 
 
--- NOTE(This file eats garbage for breakfast.)
+-- NOTE(The normal chat module needs to look right when this is disabled.)
 local L = _CleanLocalization.Chat.CombatLog;
 local _Clean = _Clean;
 local me = {};
@@ -350,8 +350,6 @@ do
 
 
 
-	if ( CombatLogUpdateFrame.refiltering ) then
-		-- Restart log refill with new format
-		Blizzard_CombatLog_Refilter();
-	end
+	-- Update log with new format
+	Blizzard_CombatLog_Refilter();
 end
