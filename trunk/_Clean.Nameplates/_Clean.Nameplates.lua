@@ -4,7 +4,6 @@
   ****************************************************************************]]
 
 
--- NOTE(Hide level text of same-level friendly players/NPCs. Set background swatch to class color & desaturate class icon for hostile players.)
 local LibSharedMedia = LibStub( "LibSharedMedia-3.0" );
 local L = _CleanLocalization.Nameplates;
 local _Clean = _Clean;
@@ -40,6 +39,8 @@ local PlateWidth =  128;
 local PlateHeight = 16;
 local PlateBorder = 2;
 local CastHeight = 24;
+
+local HealthIsGhost = 20; -- Health values below this are assumed to be ghosts
 
 local InCombat = false;
 local HasTarget = false;
@@ -140,7 +141,7 @@ do
 		local Percent = Health / HealthMax;
 		self.Left:SetWidth( Percent * ( PlateWidth - PlateHeight ) );
 		if ( self.IsHealerMode ) then
-			if ( Health <= 10 ) then -- Ghost or close to it
+			if ( Health <= HealthIsGhost ) then -- Ghost or close to it
 				local C = Colors.disconnected;
 				self.Right:SetVertexColor( C[ 1 ], C[ 2 ], C[ 3 ], 1 );
 			else
@@ -204,7 +205,7 @@ do
 			R, G, B = floor( R * 100 + 0.5 ) / 100, floor( G * 100 + 0.5 ) / 100, floor( B * 100 + 0.5 ) / 100;
 			for Class, Color in pairs( RAID_CLASS_COLORS ) do
 				if ( Color.r == R and Color.g == G and Color.b == B ) then
-					return 2, true, Class; -- Hostile player
+					return 1, true, Class; -- Hostile player
 				end
 			end
 		end
@@ -212,7 +213,7 @@ do
 		if ( R < 0.01 and G > 0.99 and B < 0.01 ) then
 			return 8; -- Friendly NPC
 		elseif ( R < 0.01 and G < 0.01 and B > 0.99 ) then
-			return 5, true; -- Friendly player
+			return 8, true; -- Friendly player
 		elseif ( R > 0.99 and G > 0.99 and B < 0.01 ) then
 			return 4; -- Neutral NPC
 		else
@@ -220,10 +221,12 @@ do
 		end
 	end
 	local unpack = unpack;
+	local UnitLevel = UnitLevel;
+	local MAX_PLAYER_LEVEL = MAX_PLAYER_LEVEL;
 	function me:PlateUpdateClassification ( Force )
 		local Health = self.Health;
 		R, G, B = Health:GetStatusBarColor();
-		if ( Force or Health.R ~= R or Health.G ~= G or Health.B ~= B ) then
+		if ( Force or Health.R ~= R or Health.G ~= G or Health.B ~= B ) then -- Reaction/classification changed
 			Health.R, Health.G, Health.B = R, G, B; -- Save for future comparison
 
 			self.Reaction, self.IsPlayer, self.Class = GetClassification();
@@ -244,23 +247,53 @@ do
 				Health.Right:SetVertexColor( 1, 1, 1, 0.1 );
 			end
 
-			self.Level:SetParent( Health.IsHealerMode and Health or self ); -- Reduces level's alpha for healing targets
+			-- Level text/boss icon
+			local LevelText, BossIcon = self.Level, self.BossIcon;
+			local Level, LevelPlayer = ( LevelText:GetText() or math.huge ) + 0, UnitLevel( "player" );
+			if ( LevelPlayer == MAX_PLAYER_LEVEL
+				and Level == MAX_PLAYER_LEVEL
+				and not self.StatusBorder:IsShown()
+			) then -- Hide level text
+				LevelText:SetAlpha( 0 );
+				BossIcon:SetAlpha( 0 );
+			else
+				if ( self.Reaction > 4 ) then -- Dim friendly levels
+					LevelText:SetAlpha( 0.5 );
+					BossIcon:SetAlpha( 0.5 );
+					BossIcon:SetTexCoord( 0, 1, 0, 1 );
+				else -- Hostile
+					LevelText:SetAlpha( 1 );
+					BossIcon:SetAlpha( 1 );
+					if ( self.Class ) then -- Shrink skull so class icon can be seen
+						BossIcon:SetTexCoord( -0.3, 1.3, -0.3, 1.3 );
+					else
+						BossIcon:SetTexCoord( 0, 1, 0, 1 );
+					end
+				end
+			end
 
 			-- Status background
+			local StatusBackground = self.StatusBackground;
 			if ( self.Class ) then -- Use class icon
-				self.StatusBackground:SetTexture( [[Interface\Glues\CharacterCreate\UI-CharacterCreate-Classes]] );
-				self.StatusBackground:SetTexCoord( unpack( CLASS_ICON_TCOORDS[ self.Class ] ) );
-				self.StatusBackground:SetVertexColor( 1, 1, 1, 1 );
+				StatusBackground:SetTexture( [[Interface\Glues\CharacterCreate\UI-CharacterCreate-Classes]] );
+				StatusBackground:SetTexCoord( unpack( CLASS_ICON_TCOORDS[ self.Class ] ) );
+				StatusBackground:SetVertexColor( 1, 1, 1, 1 );
 			else
 				-- Status background is dimmed left health bar color
-				self.StatusBackground:SetTexture( BarTexture );
-				self.StatusBackground:SetTexCoord( 0, 1, 0, 1 );
-				if ( Health.IsHealerMode ) then
-					self.StatusBackground:SetVertexColor( 1, 1, 1 );
+				StatusBackground:SetTexture( BarTexture );
+				StatusBackground:SetTexCoord( 0, 1, 0, 1 );
+
+				if ( self.Reaction <= 4 and Level > LevelPlayer ) then -- Use difficulty color
+					R, G, B = LevelText:GetTextColor();
+					StatusBackground:SetVertexColor( R, G, B, 1 );
 				else
-					self.StatusBackground:SetVertexColor( Health.Left:GetVertexColor() );
+					if ( Health.IsHealerMode ) then
+						StatusBackground:SetVertexColor( 1, 1, 1 );
+					else -- Use reaction color
+						StatusBackground:SetVertexColor( Health.Left:GetVertexColor() );
+					end
+					StatusBackground:SetAlpha( 0.3 );
 				end
-				self.StatusBackground:SetAlpha( 0.3 );
 			end
 
 			return true;
@@ -371,7 +404,7 @@ local function PlateAdd ( Plate )
 	Visual.ThreatGlow, Border,
 		CastBorder, Cast.NoInterrupt, Cast.Icon,
 		Visual.Highlight, Visual.Name, Visual.Level,
-		BossIcon, RaidIcon, Visual.StatusBorder = Plate:GetRegions();
+		Visual.BossIcon, RaidIcon, Visual.StatusBorder = Plate:GetRegions();
 
 
 	Visual:SetScript( "OnEvent", me.PlateOnThreatChanged );
@@ -408,10 +441,10 @@ local function PlateAdd ( Plate )
 	Visual.StatusBorder:SetPoint( "BOTTOMLEFT", Visual.StatusBackground, -Padding, -Padding );
 
 	-- Put boss icon inside status border
-	BossIcon:SetParent( Visual );
-	BossIcon:SetAllPoints( Visual.StatusBackground );
-	BossIcon:SetDrawLayer( "ARTWORK" );
-	BossIcon:SetBlendMode( "ADD" );
+	Visual.BossIcon:SetParent( Visual );
+	Visual.BossIcon:SetAllPoints( Visual.StatusBackground );
+	Visual.BossIcon:SetDrawLayer( "ARTWORK" );
+	Visual.BossIcon:SetBlendMode( "ADD" );
 
 	-- Level text
 	Visual.Level:SetParent( Visual );
