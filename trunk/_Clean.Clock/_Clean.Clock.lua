@@ -9,7 +9,7 @@ local _Clean = _Clean;
 local me = CreateFrame( "Frame", nil, UIParent );
 _Clean.Clock = me;
 
-me.Text = me:CreateFontString( nil, "BACKGROUND" )
+me.Text = me:CreateFontString( nil, "BACKGROUND", "NumberFontNormalSmall" )
 
 me.UpdateRate = 0.2;
 
