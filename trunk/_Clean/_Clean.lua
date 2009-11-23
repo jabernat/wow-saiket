@@ -253,12 +253,14 @@ do
 
 	-- Remove class icon padding
 	local IconPadding = 0.08 / 4; -- Icons are in a 4x4 grid
-	for _, Coords in pairs( CLASS_BUTTONS ) do
-		Coords[ 1 ] = Coords[ 1 ] + IconPadding;
-		Coords[ 2 ] = Coords[ 2 ] - IconPadding;
-		Coords[ 3 ] = Coords[ 3 ] + IconPadding;
-		Coords[ 4 ] = Coords[ 4 ] - IconPadding;
+	local function RemoveClassIconBorders ( TCoords )
+		for _, Coords in pairs( TCoords ) do
+			Coords[ 1 ], Coords[ 2 ] = Coords[ 1 ] + IconPadding, Coords[ 2 ] - IconPadding;
+			Coords[ 3 ], Coords[ 4 ] = Coords[ 3 ] + IconPadding, Coords[ 4 ] - IconPadding;
+		end
 	end
+	RemoveClassIconBorders( CLASS_ICON_TCOORDS );
+	RemoveClassIconBorders( CLASS_BUTTONS );
 
 
 	-- Add media to LibSharedMedia
