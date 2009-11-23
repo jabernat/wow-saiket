@@ -275,13 +275,12 @@ do
 			-- Status background
 			local StatusBackground = self.StatusBackground;
 			if ( self.Class ) then -- Use class icon
-				StatusBackground:SetTexture( [[Interface\Glues\CharacterCreate\UI-CharacterCreate-Classes]] );
-				StatusBackground:SetTexCoord( unpack( CLASS_ICON_TCOORDS[ self.Class ] ) );
-				StatusBackground:SetVertexColor( 1, 1, 1, 1 );
+				self.ClassIcon:Show();
+				self.ClassIcon:SetTexCoord( unpack( CLASS_ICON_TCOORDS[ self.Class ] ) );
+				StatusBackground:SetVertexColor( unpack( Colors.class[ self.Class ] ) );
+				StatusBackground:SetAlpha( 1 );
 			else
-				-- Status background is dimmed left health bar color
-				StatusBackground:SetTexture( BarTexture );
-				StatusBackground:SetTexCoord( 0, 1, 0, 1 );
+				self.ClassIcon:Hide();
 
 				if ( self.Reaction <= 4 and Level > LevelPlayer ) then -- Use difficulty color
 					R, G, B = LevelText:GetTextColor();
@@ -300,6 +299,7 @@ do
 		end
 	end
 end
+
 --[[****************************************************************************
   * Function: _Clean.Nameplates:CastOnShow                                     *
   * Description: Reposition elements when a castbar is shown.                  *
@@ -427,6 +427,7 @@ local function PlateAdd ( Plate )
 	Visual.StatusBackground = Visual:CreateTexture( nil, "BORDER" );
 	Visual.StatusBackground:SetPoint( "TOPLEFT" );
 	Visual.StatusBackground:SetPoint( "BOTTOMRIGHT", Visual, "BOTTOMLEFT", PlateHeight, 0 );
+	Visual.StatusBackground:SetTexture( BarTexture );
 	Visual.StatusBackground:SetBlendMode( "ADD" );
 
 	-- Border for status section
@@ -449,6 +450,14 @@ local function PlateAdd ( Plate )
 	-- Level text
 	Visual.Level:SetParent( Visual );
 	Visual.Level:SetFontObject( me.LevelFont );
+
+	-- Class icon
+	Visual.ClassIcon = Visual:CreateTexture( nil, "ARTWORK" );
+	Visual.ClassIcon:SetAllPoints( Visual.StatusBackground );
+	Visual.ClassIcon:SetTexture( [[Interface\Glues\CharacterCreate\UI-CharacterCreate-Classes]] );
+	Visual.ClassIcon:SetBlendMode( "ADD" );
+	Visual.ClassIcon:SetAlpha( 0.5 );
+	SetDesaturation( Visual.ClassIcon, true );
 
 
 	-- Health bar
