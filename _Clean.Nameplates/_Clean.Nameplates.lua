@@ -4,6 +4,7 @@
   ****************************************************************************]]
 
 
+-- NOTE(Hide level text of same-level friendly players/NPCs. Set background swatch to class color & desaturate class icon for hostile players.)
 local LibSharedMedia = LibStub( "LibSharedMedia-3.0" );
 local L = _CleanLocalization.Nameplates;
 local _Clean = _Clean;
@@ -36,7 +37,7 @@ local TextDimAlpha = 0.6;
 local BarTexture = LibSharedMedia:Fetch( LibSharedMedia.MediaType.STATUSBAR, "_Clean" );
 
 local PlateWidth =  128;
-local PlateHeight = 12;
+local PlateHeight = 16;
 local PlateBorder = 2;
 local CastHeight = 24;
 
