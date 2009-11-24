@@ -257,7 +257,7 @@ do
 				LevelText:SetAlpha( 0 );
 				BossIcon:SetAlpha( 0 );
 			else
-				if ( self.Reaction > 4 ) then -- Dim friendly levels
+				if ( self.Reaction >= 4 ) then -- Dim friendly/neutral levels
 					LevelText:SetAlpha( 0.5 );
 					BossIcon:SetAlpha( 0.5 );
 					BossIcon:SetTexCoord( 0, 1, 0, 1 );
@@ -282,7 +282,7 @@ do
 			else
 				self.ClassIcon:Hide();
 
-				if ( self.Reaction <= 4 and Level > LevelPlayer ) then -- Use difficulty color
+				if ( self.Reaction < 4 and Level > LevelPlayer ) then -- Use difficulty color
 					R, G, B = LevelText:GetTextColor();
 					StatusBackground:SetVertexColor( R, G, B, 1 );
 				else
