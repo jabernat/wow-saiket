@@ -32,7 +32,7 @@ local Colors = _Clean.Colors;
 
 me.ClassificationUpdateRate = 1;
 
-local TextDimAlpha = 0.6;
+local TextDimAlpha = 0.6; -- Transparency of name and sometimes level text
 local BarTexture = LibSharedMedia:Fetch( LibSharedMedia.MediaType.STATUSBAR, "_Clean" );
 
 local PlateWidth =  128;
@@ -41,6 +41,7 @@ local PlateBorder = 2;
 local CastHeight = 24;
 
 local HealthIsGhost = 20; -- Health values below this are assumed to be ghosts
+local DifficultyLevelDifference = 2; -- Hostile mobs this many levels above the player show prominent difficulty colors
 
 local InCombat = false;
 local HasTarget = false;
@@ -93,6 +94,7 @@ function me:PlateOnHide ()
 		-- Hide target outline if shown
 		if ( self == Plates[ me.TargetOutline:GetParent() ] ) then
 			me.TargetOutline:Hide();
+			me.TargetOutline:SetParent( nil );
 		end
 	end
 	self:UnregisterEvent( "UNIT_THREAT_LIST_UPDATE" );
@@ -107,10 +109,13 @@ do
 	local TargetOutline = me.TargetOutline;
 	function me:PlateOnUpdate ()
 		if ( self:GetAlpha() == 1 ) then -- Current target
-			-- Position outline
-			TargetOutline:SetParent( self );
-			TargetOutline:SetPoint( "TOP" );
-			TargetOutline:Show();
+			if ( TargetOutline:GetParent() ~= self ) then -- Not already positioned
+				-- Position outline
+				TargetOutline:SetParent( self );
+				TargetOutline:SetFrameLevel( self:GetFrameLevel() );
+				TargetOutline:SetPoint( "TOP" );
+				TargetOutline:Show();
+			end
 		else
 			self:SetAlpha( 1 );
 		end
@@ -282,7 +287,7 @@ do
 			else
 				self.ClassIcon:Hide();
 
-				if ( self.Reaction < 4 and Level > LevelPlayer ) then -- Use difficulty color
+				if ( self.Reaction < 4 and Level >= LevelPlayer + DifficultyLevelDifference ) then -- Use difficulty color
 					R, G, B = LevelText:GetTextColor();
 					StatusBackground:SetVertexColor( R, G, B, 1 );
 				else
@@ -416,6 +421,7 @@ local function PlateAdd ( Plate )
 	-- Border
 	-- Leave parented to original nameplate for layering
 	Border:SetTexture( [[Interface\Buttons\WHITE8X8]] );
+	Border:SetDrawLayer( "BACKGROUND" );
 	Border:SetVertexColor( 0, 0, 0, 0.75 );
 	Border:SetPoint( "TOPLEFT", Visual, -PlateBorder, PlateBorder );
 	Border:SetPoint( "BOTTOMRIGHT", Visual, PlateBorder, -PlateBorder );
@@ -613,6 +619,7 @@ function me:PLAYER_TARGET_CHANGED ()
 
 	-- Reset target indicator
 	me.TargetOutline:Hide();
+	me.TargetOutline:SetParent( nil );
 
 	-- Set or clear individual plate update handlers
 	local UpdateScript = HasTarget and me.PlateOnUpdate or nil;
@@ -751,11 +758,11 @@ do
 	-- Target outline
 	me.TargetOutline:SetWidth( PlateWidth );
 	me.TargetOutline:SetHeight( PlateHeight );
-	local Outline = me.TargetOutline:CreateTexture( nil, "BACKGROUND" );
+	local Outline = me.TargetOutline:CreateTexture( nil, "BORDER" );
 	Outline:SetTexture( 1, 1, 1 );
 	Outline:SetPoint( "TOPRIGHT", PlateBorder, PlateBorder );
 	Outline:SetPoint( "BOTTOMLEFT", -PlateBorder, -PlateBorder );
-	local Mask = me.TargetOutline:CreateTexture( nil, "BORDER" );
+	local Mask = me.TargetOutline:CreateTexture( nil, "ARTWORK" );
 	Mask:SetTexture( 0, 0, 0 );
 	Mask:SetAllPoints();
 
