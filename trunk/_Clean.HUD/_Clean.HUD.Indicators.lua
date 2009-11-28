@@ -129,5 +129,16 @@ do
 	me.ManageVehicle();
 
 
-	hooksecurefunc( "UIParent_ManageFramePositions", me.Manage );
+
+
+	-- Hook the secure frame position delegate since parts of the DefaultUI don't use the global wrapper functions
+	local Frame;
+	for Index = 1, 20 do -- Limit search to first 20 frames
+		Frame = EnumerateFrames( Frame )
+		if ( Frame and Frame.UIParentManageFramePositions ) then
+			hooksecurefunc( Frame, "UIParentManageFramePositions", me.Manage );
+			return;
+		end
+	end
+	error( "FramePositionDelegate not found!" );
 end
