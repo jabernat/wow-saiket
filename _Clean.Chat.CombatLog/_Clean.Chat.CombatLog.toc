@@ -3,7 +3,7 @@
 ## Notes: Skins the default UI's combat log.
 ## Author: Saiket
 ## Version: 3.2.2.1
-## X-Date: 2009-11-30
+## X-Date: 2009-12-03
 ## X-Category: Frame Modification, Chat/Communication, Combat
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
