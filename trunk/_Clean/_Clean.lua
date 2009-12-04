@@ -5,7 +5,7 @@
 
 
 local LibSharedMedia = LibStub( "LibSharedMedia-3.0" );
-local me = CreateFrame( "Frame", "_Clean" );
+local me = CreateFrame( "Frame", "_Clean", nil, "SecureHandlerAttributeTemplate" );
 
 local Colors = {
 	HealthSmooth = {
