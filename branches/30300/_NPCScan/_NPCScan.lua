@@ -101,7 +101,7 @@ do
 	Tooltip:AddFontStrings( Text, Tooltip:CreateFontString( "$parentTextRight1", nil, "GameTooltipText" ) );
 	function me.TestID ( ID )
 		Tooltip:SetOwner( WorldFrame, "ANCHOR_NONE" );
-		Tooltip:SetHyperlink( ( "unit:0xF53%05X00000000" ):format( ID ) );
+		Tooltip:SetHyperlink( ( "unit:0xF5300%05X000000" ):format( ID ) );
 		if ( Tooltip:IsShown() ) then
 			return Text:GetText();
 		end
