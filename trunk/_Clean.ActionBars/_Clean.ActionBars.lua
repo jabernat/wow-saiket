@@ -130,9 +130,6 @@ function me:PLAYER_LOGIN ()
 
 			Dominos:SaveProfile( me.DominosProfile );
 		end
-		if ( OldProfile == UnitClass( "player" ) ) then -- Default created on initialization
-			Dominos:DeleteProfile( OldProfile );
-		end
 	end
 
 	-- Skin Dominos' "class" buttons
