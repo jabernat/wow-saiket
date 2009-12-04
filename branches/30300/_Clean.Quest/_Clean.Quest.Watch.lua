@@ -94,7 +94,7 @@ do
 	
 	-- Reposition list
 	WatchFrameLines:SetPoint( "BOTTOMRIGHT" );
-	hooksecurefunc( "UIParent_ManageFramePositions", me.Manage );
+	_Clean.RegisterPositionManager( me.Manage );
 	local Backup = WatchFrame_DisplayTrackedQuests;
 	hooksecurefunc( "WatchFrame_DisplayTrackedQuests", me.UpdateQuests );
 	if ( WatchFrame_RemoveObjectiveHandler( Backup ) ) then
