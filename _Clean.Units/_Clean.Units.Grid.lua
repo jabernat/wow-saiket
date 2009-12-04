@@ -68,8 +68,11 @@ do
 		-- Disable party frames
 		for Index = 1, MAX_PARTY_MEMBERS do
 			local Frame = _G[ "PartyMemberFrame"..Index ];
-			Frame.Show = _Clean.NilFunction;
 			Frame:Hide();
+			_Clean:WrapScript( Frame, "OnShow", [[
+				self:Hide();
+				return false; -- Don't call real OnShow script
+			]] );
 
 			UnregisterUnitWatch( Frame );
 			Frame:UnregisterAllEvents();
