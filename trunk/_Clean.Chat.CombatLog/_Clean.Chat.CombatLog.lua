@@ -153,7 +153,6 @@ do
 	hooksecurefunc( "FCF_DockUpdate", me.FCFDockUpdate );
 	Frame:Hide();
 	Frame.Show = _Clean.NilFunction;
-	Frame.Hide = _Clean.NilFunction;
 
 	CombatLog_AddEvent = me.AddEvent;
 	Blizzard_CombatLog_RefilterUpdate = me.RefilterUpdate;
