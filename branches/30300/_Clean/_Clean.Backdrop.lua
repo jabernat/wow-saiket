@@ -18,12 +18,12 @@ _Clean.Backdrop = me;
   * Description: Returns a new backdrop frame.                                 *
   ****************************************************************************]]
 function me.Create ( Parent )
-	local Backdrop = CreateFrame( "Model", nil, Parent );
+	local Backdrop = CreateFrame( "Frame", nil, Parent );
 
 	local Cover = Backdrop:CreateTexture( nil, "OVERLAY" );
-	local Color = _Clean.Colors.Background;
 	Cover:SetAllPoints( Backdrop );
-	Cover:SetTexture( Color.r, Color.g, Color.b, 0.75 );
+	local R, G, B = unpack( _Clean.Colors.Background );
+	Cover:SetTexture( R, G, B, 0.75 );
 
 	return Backdrop;
 end
