@@ -13,7 +13,6 @@ if ( GetLocale() == "zhTW" ) then
 		QUALITY = "品質:";
 		ITEM_LEVEL = "物品等級:";
 		REQUIRED_LEVEL = "需要等級:";
-		LEVELRANGE_SEPARATOR = "-";
 
 		ITEM_CATEGORY = "分類物品";
 		TYPE = "類別:";
