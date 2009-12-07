@@ -232,9 +232,6 @@ end
 function me:VARIABLES_LOADED ()
 	me.VARIABLES_LOADED = nil;
 
-	SetCVar( "nameplateAllowOverlap", 1 );
-
-
 	local OptionsCharacter = _VirtualPlatesOptionsCharacter;
 	_VirtualPlatesOptionsCharacter = me.OptionsCharacter;
 
