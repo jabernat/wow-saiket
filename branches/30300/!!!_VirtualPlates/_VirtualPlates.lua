@@ -125,6 +125,11 @@ do
 		for Key, Value in pairs( PlateOverrides ) do
 			Visual[ Key ] = Value;
 		end
+
+		-- Force recalculation of effective depth for all child frames
+		local Depth = WorldFrame:GetDepth();
+		WorldFrame:SetDepth( Depth + 1 );
+		WorldFrame:SetDepth( Depth );
 	end
 end
 
@@ -166,7 +171,7 @@ do
 	local MinScale, MaxScale, ScaleFactor;
 	function PlatesUpdate ()
 		for Plate, Visual in pairs( PlatesVisible ) do
-			Depth = Plate:GetEffectiveDepth();
+			Depth = Visual:GetEffectiveDepth(); -- Note: Depth of the actual plate is blacklisted, so use child Visual instead
 			if ( Depth <= 0 ) then -- Too close to camera; Completely hidden
 				SetAlpha( Visual, 0 );
 			else
