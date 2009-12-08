@@ -6,9 +6,7 @@
 
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\..\FrameXML\UI.xsd">
 	<Texture name="_DevBorderSideTemplate" file="Interface\Buttons\WHITE8X8" virtual="true">
-		<Size>
-			<AbsDimension x="2" y="2"/>
-		</Size>
+		<Size x="2" y="2"/>
 	</Texture>
 	<Texture name="_DevBorderSideBackwardsTemplate" inherits="_DevBorderSideTemplate" file="Interface\Tooltips\UI-Tooltip-Background" virtual="true"/>
 

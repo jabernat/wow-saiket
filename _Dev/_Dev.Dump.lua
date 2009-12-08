@@ -1,19 +1,6 @@
 --[[****************************************************************************
   * _Dev by Saiket                                                             *
-  * _Dev.Dump.lua - Functions and data used by the dump function.              *
-  *                                                                            *
-  * + Adds /dump for executing LUA by command line. It executes its argument   *
-  *   and displays the returned value in a chat window. The argument should be *
-  *   an RValue.                                                               *
-  *   + Pipes typed into the command will be unescaped to allow manual         *
-  *     construction of color and link tags.                                   *
-  * + Dump will show the type, the expression used, and will iterate through   *
-  *   the contents of tables. Output is color coded.                           *
-  * + Escapes special characters with their C-style escape sequences if        *
-  *   applicable, else with their more general escaped code points.            *
-  * + Shows the names and types of UIObjects.                                  *
-  * + The function dump(label,...) works identically to the slash command, but *
-  *   a label can be specified to uniquely identify the result.                *
+  * _Dev.Dump.lua - Prints the contents of Lua datatypes to chat.              *
   ****************************************************************************]]
 
 
