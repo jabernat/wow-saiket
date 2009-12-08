@@ -1,0 +1,20 @@
+## Interface: 30300
+## Title: GridStatusHealthFade
+## Notes: A status that fadess between two colors based on health.
+## Author: Saiket
+## X-Credits: North101 (Original author)
+## Version: 3.3.0.1
+## X-Date: 2009-10-22
+## X-Category: UnitFrame
+## X-License: GPLv3
+## X-Email: saiket.wow@gmail.com
+## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons/GridStatusHealthFade
+## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:GridStatusHealthFade
+## X-WoWI-ID: 12309
+## X-Curse-Project-ID: gridstatushealthfade
+## X-Localizations: enUS
+## X-GridStatusModule: GridStatusHealthFade
+## RequiredDeps: Grid
+Locales.xml
+
+GridStatusHealthFade.lua
