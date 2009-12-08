@@ -4,7 +4,7 @@
 ## Author: Saiket
 ## X-Credits: GatherHud by Grum and Xinhuan
 ## Version: 3.3.0.1
-## X-Date: 2009-10-22
+## X-Date: 2009-12-08
 ## X-Category: Map
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com

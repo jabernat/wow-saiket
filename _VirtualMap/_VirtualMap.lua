@@ -5,9 +5,10 @@
 
 local GatherMate = GatherMate;
 
-local me = setmetatable( LibStub( "AceAddon-3.0" ):NewAddon( "_VirtualMap", "AceEvent-3.0" ), { __index = CreateFrame( "Frame", "_VirtualMap", UIParent ) } );
-me[ 0 ] = me[ 0 ]; -- Copy userdata from metatable
 local L = _VirtualMapLocalization;
+local me = setmetatable( LibStub( "AceAddon-3.0" ):NewAddon( "_VirtualMap", "AceEvent-3.0" ), { __index = CreateFrame( "Frame", nil, UIParent ) } );
+me[ 0 ] = me[ 0 ]; -- Copy userdata from metatable
+_VirtualMap = me;
 
 local NodeTextures = GatherMate.nodeTextures;
 me.NodeTextures = NodeTextures;
