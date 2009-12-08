@@ -1,8 +1,8 @@
-## Interface: 30200
+## Interface: 30300
 ## Title: _|cffCCCC88Clean|r.Clock
 ## Notes: Adds a clock to the top left of the screen.
 ## Author: Saiket
-## Version: 3.2.2.1
+## Version: 3.3.0.1
 ## X-Date: 2009-11-23
 ## X-Category: Miscellaneous
 ## X-License: GPLv3

@@ -9,7 +9,7 @@ local L = _CleanLocalization.Nameplates;
 local _Clean = _Clean;
 local me = CreateFrame( "Frame", nil, WorldFrame );
 _Clean.Nameplates = me;
-me.Version = GetAddOnMetadata( "_Clean.Nameplates", "Version" ):match( "^([%d.]+)" );
+me.Version = GetAddOnMetadata( ..., "Version" ):match( "^([%d.]+)" );
 
 me.OptionsCharacter = {
 	Version = me.Version;
@@ -67,7 +67,7 @@ function me:PlateOnShow ()
 		Plate:SetHeight( PlateHeight );
 	end
 
-	if ( not MouseIsOver( self:GetParent() ) ) then -- Note: Fix for bug where highlights get stuck in default UI
+	if ( not self:GetParent():IsMouseOver() ) then -- Note: Fix for bug where highlights get stuck in default UI
 		self.Highlight:Hide();
 	end
 	self.Highlight:SetPoint( "TOPLEFT", self, -PlateBorder, PlateBorder );
@@ -231,8 +231,8 @@ do
 	function me:PlateUpdateClassification ( Force )
 		local Health = self.Health;
 		R, G, B = Health:GetStatusBarColor();
-		if ( Force or Health.R ~= R or Health.G ~= G or Health.B ~= B ) then -- Reaction/classification changed
-			Health.R, Health.G, Health.B = R, G, B; -- Save for future comparison
+		if ( Force or Health[ 1 ] ~= R or Health[ 2 ] ~= G or Health[ 3 ] ~= B ) then -- Reaction/classification changed
+			Health[ 1 ], Health[ 2 ], Health[ 3 ] = R, G, B; -- Save for future comparison
 
 			self.Reaction, self.IsPlayer, self.Class = GetClassification();
 			Health.IsHealerMode = self.Reaction > 4 and self.IsPlayer; -- Friendly player
@@ -590,8 +590,7 @@ function me:VARIABLES_LOADED ()
 
 	SetCVar( "ThreatWarning", 3 );
 	SetCVar( "ShowClassColorInNameplate", 1 );
-	-- Don't throw an error if the client doesn't have this CVar yet
-	pcall( SetCVar, "NameplateAllowOverlap", 1 );
+	SetCVar( "NameplateAllowOverlap", 1 );
 end
 --[[****************************************************************************
   * Function: _Clean.Nameplates:PLAYER_REGEN_ENABLED                           *
@@ -737,7 +736,7 @@ do
 	me:RegisterEvent( "PLAYER_REGEN_DISABLED" );
 	me:RegisterEvent( "PLAYER_REGEN_ENABLED" );
 	me:RegisterEvent( "PLAYER_TARGET_CHANGED" );
-	_Clean.RegisterAddOnInitializer( "_Clean.Nameplates", me.OnLoad );
+	_Clean.RegisterAddOnInitializer( ..., me.OnLoad );
 
 
 	-- Fonts

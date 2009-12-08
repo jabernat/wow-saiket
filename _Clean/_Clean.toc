@@ -1,8 +1,8 @@
-## Interface: 30200
+## Interface: 30300
 ## Title: _|cffCCCC88Clean|r
 ## Notes: Change the UI's look and feel.
 ## Author: Saiket
-## Version: 3.2.2.1
+## Version: 3.3.0.1
 ## X-Date: 2009-12-03
 ## X-Category: Frame Modification, Compilations
 ## X-License: GPLv3

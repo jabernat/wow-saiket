@@ -124,7 +124,6 @@ do
 	-- Move default buttons that sit around the minimap
 	local Color = _Clean.Colors.Foreground;
 
-	MinimapToggleButton:Hide();
 	MinimapBorderTop:Hide();
 	MinimapBorderTop:SetTexture();
 	MinimapBorder:Hide();
@@ -175,14 +174,14 @@ do
 	MiniMapBattlefieldIcon:SetVertexColor( unpack( Color ) );
 	BattlegroundShine:SetAllPoints( MiniMapBattlefieldFrame );
 
-	MiniMapMeetingStoneFrame:ClearAllPoints();
-	MiniMapMeetingStoneFrame:SetPoint( "RIGHT", MiniMapBattlefieldFrame, "LEFT" );
-	MiniMapMeetingStoneFrame:SetWidth( IconSize * 1.5 );
-	MiniMapMeetingStoneFrame:SetHeight( IconSize * 1.5 );
-	MiniMapMeetingStoneBorder:Hide();
-	MiniMapMeetingStoneBorder:SetTexture();
-	MiniMapMeetingStoneFrameIcon:SetAllPoints( MiniMapMeetingStoneFrame );
-	MiniMapMeetingStoneFrameIconTexture:SetVertexColor( unpack( Color ) );
+	MiniMapLFGFrame:ClearAllPoints();
+	MiniMapLFGFrame:SetPoint( "RIGHT", MiniMapBattlefieldFrame, "LEFT" );
+	MiniMapLFGFrame:SetWidth( IconSize * 1.75 );
+	MiniMapLFGFrame:SetHeight( IconSize * 1.75 );
+	MiniMapLFGFrameBorder:Hide();
+	MiniMapLFGFrameBorder:SetTexture();
+	MiniMapLFGFrameIcon:SetAllPoints( MiniMapLFGFrame );
+	MiniMapLFGFrameIconTexture:SetVertexColor( unpack( Color ) );
 
 
 	-- Move the zone text inside of the square

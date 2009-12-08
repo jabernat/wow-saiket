@@ -1,8 +1,8 @@
-## Interface: 30200
+## Interface: 30300
 ## Title: _|cffCCCC88Clean|r.Quest
 ## Notes: Skins the default UI's quest and watch frames.
 ## Author: Saiket
-## Version: 3.2.2.1
+## Version: 3.3.0.1
 ## X-Date: 2009-11-16
 ## X-Category: Frame Modification, Quest
 ## X-License: GPLv3

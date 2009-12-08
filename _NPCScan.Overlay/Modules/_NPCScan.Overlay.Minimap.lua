@@ -700,8 +700,6 @@ do
 	end
 
 	Minimap.SetZoom = me.SetZoom;
-	WorldMapFrame:HookScript( "OnHide", SetMapToCurrentZone );
-	SetMapToCurrentZone();
 
 
 	-- Register and create GUI for the range ring option
