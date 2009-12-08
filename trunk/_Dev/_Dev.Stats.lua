@@ -2,9 +2,6 @@
   * _Dev by Saiket                                                             *
   * _Dev.Stats.lua - Provides a more detailed report on your client, which     *
   *   replaces the default framerate monitor.                                  *
-  *                                                                            *
-  * + Shows the framerate, latency, and UI memory consumption in the top left  *
-  *   corner of the screen.                                                    *
   ****************************************************************************]]
 
 

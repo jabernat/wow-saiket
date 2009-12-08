@@ -1,20 +1,6 @@
 --[[****************************************************************************
   * _Dev by Saiket                                                             *
-  * _Dev.lua - Common functions.                                               *
-  *                                                                            *
-  * + math.round(float,precision) rounds float to precision decimal places.    *
-  * + table.count(table) returns the number of table entries for indexed and   *
-  *   associative arrays alike.                                                *
-  * + Escape pipes inserted by the client for /script chat slash commands get  *
-  *   removed to allow you to type escape sequences in-game.                   *
-  * + The console key can only be used when control is held.                   *
-  * + Shrinks the console font to 12 pt.                                       *
-  * + Key bindings to reload the UI and to open chat with /script.             *
-  * + Adds /togglemod <modname> to toggle on and off the given addon and       *
-  *   reload the UI if necessary.                                              *
-  * + Applies fix to all scrolling message frames to speed up printing many    *
-  *   lines to them.  Idea courtesy of Drundia's Fix ScrollingMessageFrame Lag *
-  *   addon.                                                                   *
+  * _Dev.lua - Special tools useful for debugging the UI.                      *
   ****************************************************************************]]
 
 

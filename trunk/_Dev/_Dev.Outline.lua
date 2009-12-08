@@ -1,14 +1,6 @@
 --[[****************************************************************************
   * _Dev by Saiket                                                             *
-  * _Dev.Outline.lua - Outline a frame with transparent green borders.         *
-  *                                                                            *
-  * + /outline [frame expression] will highlight the frame returned by the     *
-  *   frame expression. If no argument is given, all highlights are removed.   *
-  * + The colors of outlined frames are chosen from _Dev.Outline.Colors, and   *
-  *   will be unique as long as there are enough colors for outlined frames.   *
-  * + Adds the name of the frame to the top-left of the outline.               *
-  * + If the frame goes off-screen, an arrow will appear on the screen's edge  *
-  *   to point in its direction.                                               *
+  * _Dev.Outline.lua - Outline a frame with bright transparent borders.        *
   ****************************************************************************]]
 
 

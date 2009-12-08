@@ -18,18 +18,14 @@
 		</Layers>
 		<Frames>
 			<Model file="Interface\Minimap\Rotating-MinimapArrow.mdl" clampedToScreen="true" hidden="true">
-				<Size>
-					<AbsDimension x="32" y="32"/>
-				</Size>
+				<Size x="32" y="32"/>
 				<Anchors>
 					<Anchor point="CENTER"/>
 				</Anchors>
 				<Layers>
 					<Layer level="OVERLAY">
 						<Texture file="Interface\WorldMap\WorldMapPartyIcon">
-							<Size>
-								<AbsDimension x="20" y="20"/>
-							</Size>
+							<Size x="20" y="20"/>
 							<Anchors>
 								<Anchor point="CENTER"/>
 							</Anchors>

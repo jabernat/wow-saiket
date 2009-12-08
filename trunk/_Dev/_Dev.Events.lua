@@ -1,9 +1,6 @@
 --[[****************************************************************************
   * _Dev by Saiket                                                             *
-  * _Dev.Events.lua - Tools to view API events.                                *
-  *                                                                            *
-  * + Adds ability to pulse frames as they receive events.                     *
-  * + Adds option to all all chat windows for showing addon chat messages.     *
+  * _Dev.Events.lua - Adds hidden addon communication to chat windows.         *
   ****************************************************************************]]
 
 
