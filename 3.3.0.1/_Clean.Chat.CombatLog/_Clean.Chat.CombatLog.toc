@@ -1,0 +1,18 @@
+## Interface: 30300
+## Title: _|cffCCCC88Clean|r.Chat.CombatLog
+## Notes: Skins the default UI's combat log.
+## Author: Saiket
+## Version: 3.3.0.1
+## X-Date: 2009-12-03
+## X-Category: Frame Modification, Chat/Communication, Combat
+## X-License: GPLv3
+## X-Email: saiket.wow@gmail.com
+## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons
+## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Clean
+## X-Localizations: enUS
+## LoadOnDemand: 1
+## LoadWith: Blizzard_CombatLog
+## RequiredDeps: _Clean.Chat, Blizzard_CombatLog
+Locales.xml
+
+_Clean.Chat.CombatLog.lua
