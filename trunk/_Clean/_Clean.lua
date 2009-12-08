@@ -7,7 +7,7 @@
 local LibSharedMedia = LibStub( "LibSharedMedia-3.0" );
 local me = CreateFrame( "Frame", "_Clean", nil, "SecureHandlerAttributeTemplate" );
 
-local Colors = {
+me.Colors = {
 	HealthSmooth = {
 		1.0, 0.0, 0.0, --   0%
 		0.6, 0.6, 0.0, --  50%
@@ -39,27 +39,20 @@ local Colors = {
 		[ 8 ] = { 0.1, 0.6, 0.2 }; -- Exalted
 	};
 };
-me.Colors = Colors;
-Colors.power.RUNIC_POWER = Colors.power.RAGE;
-Colors.power.FUEL = Colors.power.ENERGY;
+me.Colors.power.RUNIC_POWER = me.Colors.power.RAGE;
+me.Colors.power.FUEL = me.Colors.power.ENERGY;
 for Class, Color in pairs( RAID_CLASS_COLORS ) do
-	Colors.class[ Class ] = { Color.r, Color.g, Color.b };
+	me.Colors.class[ Class ] = { Color.r, Color.g, Color.b };
 end
-Colors.reaction[ 2 ] = Colors.reaction[ 1 ];
+me.Colors.reaction[ 2 ] = me.Colors.reaction[ 1 ];
 for Index = 5, 7 do
-	Colors.reaction[ Index ] = Colors.reaction[ 8 ];
+	me.Colors.reaction[ Index ] = me.Colors.reaction[ 8 ];
 end
-Colors.Experience = Colors.reaction[ 8 ];
+me.Colors.Experience = me.Colors.reaction[ 8 ];
 
 
 me.TopMargin = CreateFrame( "Frame", nil, UIParent );
 me.BottomPane = CreateFrame( "Frame", nil, UIParent );
-
-local AddOnInitializers = {};
-local LockedButtons = {};
-local ProtectedFunctionQueue = {};
-
-local InCombat = false;
 
 
 
@@ -81,139 +74,170 @@ end
 
 
 
+do
+	local AddOnInitializers = {};
 --[[****************************************************************************
   * Function: _Clean.IsAddOnLoadable                                           *
   * Description: Returns true if an addon can possibly load this session.      *
   ****************************************************************************]]
-function me.IsAddOnLoadable ( Name )
-	local Loadable, Reason = select( 5, GetAddOnInfo( Name ) );
-	return Loadable or ( Reason == "DISABLED" and IsAddOnLoadOnDemand( Name ) ); -- Loadable or can become loadable
-end
+	function me.IsAddOnLoadable ( Name )
+		local Loadable, Reason = select( 5, GetAddOnInfo( Name ) );
+		return Loadable or ( Reason == "DISABLED" and IsAddOnLoadOnDemand( Name ) ); -- Loadable or can become loadable
+	end
 --[[****************************************************************************
   * Function: _Clean.InitializeAddOn                                           *
   * Description: Runs the given addon's initializer if it loaded.              *
   ****************************************************************************]]
-function me.InitializeAddOn ( Name )
-	Name = Name:upper(); -- For case insensitive file systems (Windows')
-	local Initializer = AddOnInitializers[ Name ];
-	if ( Initializer and select( 2, IsAddOnLoaded( Name ) ) ) then -- Returns false if addon is currently loading
-		if ( type( Initializer ) == "table" ) then
-			for _, Script in ipairs( Initializer ) do
-				Script();
+	function me.InitializeAddOn ( Name )
+		Name = Name:upper(); -- For case insensitive file systems (Windows')
+		local Initializer = AddOnInitializers[ Name ];
+		if ( Initializer and select( 2, IsAddOnLoaded( Name ) ) ) then -- Returns false if addon is currently loading
+			if ( type( Initializer ) == "table" ) then
+				for _, Script in ipairs( Initializer ) do
+					Script();
+				end
+			else
+				Initializer();
 			end
-		else
-			Initializer();
+			AddOnInitializers[ Name ] = nil;
+			return true;
 		end
-		AddOnInitializers[ Name ] = nil;
-		return true;
 	end
-end
 --[[****************************************************************************
   * Function: _Clean.RegisterAddOnInitializer                                  *
   * Description: Register a function to run when an addon loads.               *
   ****************************************************************************]]
-function me.RegisterAddOnInitializer ( Name, Initializer )
-	if ( me.IsAddOnLoadable( Name ) ) then
-		Name = Name:upper();
-		local OldInitializer = AddOnInitializers[ Name ];
-		if ( OldInitializer ) then -- Put multiple initializers in a table
-			if ( type( OldInitializer ) ~= "table" ) then
-				AddOnInitializers[ Name ] = { OldInitializer };
+	function me.RegisterAddOnInitializer ( Name, Initializer )
+		if ( me.IsAddOnLoadable( Name ) ) then
+			Name = Name:upper();
+			local OldInitializer = AddOnInitializers[ Name ];
+			if ( OldInitializer ) then -- Put multiple initializers in a table
+				if ( type( OldInitializer ) ~= "table" ) then
+					AddOnInitializers[ Name ] = { OldInitializer };
+				end
+				tinsert( AddOnInitializers[ Name ], Initializer );
+			else
+				AddOnInitializers[ Name ] = Initializer;
 			end
-			tinsert( AddOnInitializers[ Name ], Initializer );
-		else
-			AddOnInitializers[ Name ] = Initializer;
-		end
 
-		return me.InitializeAddOn( Name );
+			return me.InitializeAddOn( Name );
+		end
 	end
-end
 --[[****************************************************************************
   * Function: _Clean:ADDON_LOADED                                              *
   ****************************************************************************]]
-function me:ADDON_LOADED ( _, AddOn )
-	me.InitializeAddOn( AddOn );
+	function me:ADDON_LOADED ( _, AddOn )
+		me.InitializeAddOn( AddOn );
+	end
 end
 
 
+do
+	local LockedButtons = {};
 --[[****************************************************************************
   * Function: _Clean.AddLockedButton                                           *
   * Description: Registers a button to only accept mouse clicks when the       *
   *   control modifier is held.                                                *
   ****************************************************************************]]
-function me.AddLockedButton ( Button )
-	LockedButtons[ Button ] = true;
-	local Enable = IsControlKeyDown() == 1;
-	me.RunProtectedFunction( function ()
-		Button:EnableMouse( Enable );
-	end, Button:IsProtected() );
-end
+	function me.AddLockedButton ( Button )
+		LockedButtons[ Button ] = true;
+		local Enable = IsControlKeyDown() == 1;
+		me.RunProtectedFunction( function ()
+			Button:EnableMouse( Enable );
+		end, Button:IsProtected() );
+	end
 --[[****************************************************************************
   * Function: _Clean.RemoveLockedButton                                        *
   * Description: Unlocks a button.                                             *
   ****************************************************************************]]
-function me.RemoveLockedButton ( Button )
-	LockedButtons[ Button ] = nil;
-	me.RunProtectedFunction( function ()
-		Button:EnableMouse( true );
-	end, Button:IsProtected() );
-end
+	function me.RemoveLockedButton ( Button )
+		LockedButtons[ Button ] = nil;
+		me.RunProtectedFunction( function ()
+			Button:EnableMouse( true );
+		end, Button:IsProtected() );
+	end
 --[[****************************************************************************
   * Function: _Clean:MODIFIER_STATE_CHANGED                                    *
   ****************************************************************************]]
-function me:MODIFIER_STATE_CHANGED ( _, Modifier, State )
-	if ( Modifier:sub( 2 ) == "CTRL" ) then
-		local Enable = State == 1;
-		local Protected = false;
-		for Button in pairs( LockedButtons ) do
-			if ( Button:IsProtected() ) then
-				Protected = true;
-				break;
-			end
-		end
-		me.RunProtectedFunction( function ()
+	function me:MODIFIER_STATE_CHANGED ( _, Modifier, State )
+		if ( Modifier:sub( 2 ) == "CTRL" ) then
+			local Enable = State == 1;
+			local Protected = false;
 			for Button in pairs( LockedButtons ) do
-				Button:EnableMouse( Enable );
-				if ( not Enable ) then
-					-- Don't let it get locked on the cursor
-					Button:StopMovingOrSizing();
+				if ( Button:IsProtected() ) then
+					Protected = true;
+					break;
 				end
 			end
-		end, Protected );
+			me.RunProtectedFunction( function ()
+				for Button in pairs( LockedButtons ) do
+					Button:EnableMouse( Enable );
+					if ( not Enable ) then
+						-- Don't let it get locked on the cursor
+						Button:StopMovingOrSizing();
+					end
+				end
+			end, Protected );
+		end
 	end
 end
 
 
+do
+	local InCombat = false;
+	local ProtectedFunctionQueue = {};
 --[[****************************************************************************
   * Function: _Clean.RunProtectedFunction                                      *
   * Description: Runs an function, or stores it until after combat ends if it  *
   *   calls protected functions.                                               *
   ****************************************************************************]]
-function me.RunProtectedFunction ( Function, Protected )
-	if ( InCombat and Protected ) then -- Store for later
-		ProtectedFunctionQueue[ #ProtectedFunctionQueue + 1 ] = Function;
-	else
-		Function();
+	function me.RunProtectedFunction ( Function, Protected )
+		if ( InCombat and Protected ) then -- Store for later
+			ProtectedFunctionQueue[ #ProtectedFunctionQueue + 1 ] = Function;
+		else
+			Function();
+		end
 	end
-end
 --[[****************************************************************************
   * Function: _Clean:PLAYER_REGEN_DISABLED                                     *
   ****************************************************************************]]
-function me:PLAYER_REGEN_DISABLED ()
-	InCombat = true;
-end
+	function me:PLAYER_REGEN_DISABLED ()
+		InCombat = true;
+	end
 --[[****************************************************************************
   * Function: _Clean:PLAYER_REGEN_ENABLED                                      *
   ****************************************************************************]]
-function me:PLAYER_REGEN_ENABLED ()
-	InCombat = false;
+	function me:PLAYER_REGEN_ENABLED ()
+		InCombat = false;
 
-	-- Combat lockdown over; run all stored functions
-	for Index = 1, #ProtectedFunctionQueue do
-		ProtectedFunctionQueue[ Index ]();
-		ProtectedFunctionQueue[ Index ] = nil;
+		-- Combat lockdown over; run all stored functions
+		for Index = 1, #ProtectedFunctionQueue do
+			ProtectedFunctionQueue[ Index ]();
+			ProtectedFunctionQueue[ Index ] = nil;
+		end
 	end
 end
+
+
+do
+	local PositionManagers = {};
+--[[****************************************************************************
+  * Function: _Clean.PositionManagerUpdate                                     *
+  ****************************************************************************]]
+	function me.PositionManagerUpdate ()
+		for _, Function in ipairs( PositionManagers ) do
+			Function();
+		end
+	end
+--[[****************************************************************************
+  * Function: _Clean.RegisterPositionManager                                   *
+  * Description: Hooks the secure UIParent_ManageFramePositions delegate.      *
+  ****************************************************************************]]
+	function me.RegisterPositionManager ( Function )
+		PositionManagers[ #PositionManagers + 1 ] = Function;
+	end
+end
+
 
 --[[****************************************************************************
   * Function: _Clean:OnEvent                                                   *
@@ -274,4 +298,16 @@ do
 	LibSharedMedia:Register( Sound, "Blizzard: Glyph Creation", [[Sound\Interface\Glyph_MajorCreate.wav]] );
 	LibSharedMedia:Register( Sound, "Blizzard: Fanfare", [[Sound\Interface\ReadyCheck.wav]] );
 	LibSharedMedia:Register( Sound, "Blizzard: Boss Emote", [[Sound\Interface\RaidBossWarning.wav]] );
+
+
+	-- Hook the secure frame position delegate since parts of the DefaultUI use local copies of the global wrapper function
+	local Frame;
+	for Index = 1, 20 do -- Limit search to first 20 frames
+		Frame = EnumerateFrames( Frame )
+		if ( Frame and Frame.UIParentManageFramePositions ) then
+			hooksecurefunc( Frame, "UIParentManageFramePositions", me.PositionManagerUpdate );
+			return;
+		end
+	end
+	error( "FramePositionDelegate not found!" );
 end

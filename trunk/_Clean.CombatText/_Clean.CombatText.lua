@@ -11,7 +11,7 @@ _Clean.CombatText = me;
 
 me.IgnoredHealSpells = {
 	[ 20267 ] = true; -- Judgement of Light
-	[ 20167 ] = true; -- Seal of Light
+	--[ 20167 ] = true; -- Seal of Light
 	[ 54968 ] = true; -- Glyph of Holy Light
 	[ 15290 ] = true; -- Vampiric Embrace
 

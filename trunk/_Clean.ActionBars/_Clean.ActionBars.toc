@@ -1,8 +1,8 @@
-## Interface: 30200
+## Interface: 30300
 ## Title: _|cffCCCC88Clean|r.ActionBars
 ## Notes: Skins the default action bars.
 ## Author: Saiket
-## Version: 3.2.2.1
+## Version: 3.3.0.1
 ## X-Date: 2009-12-03
 ## X-Category: Action Bars
 ## X-License: GPLv3

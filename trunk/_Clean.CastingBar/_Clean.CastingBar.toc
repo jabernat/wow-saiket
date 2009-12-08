@@ -1,8 +1,8 @@
-## Interface: 30200
+## Interface: 30300
 ## Title: _|cffCCCC88Clean|r.CastingBar
 ## Notes: Skins the default UI's player and pet cast bars.
 ## Author: Saiket
-## Version: 3.2.2.1
+## Version: 3.3.0.1
 ## X-Date: 2009-11-16
 ## X-Category: Frame Modification, Caster
 ## X-License: GPLv3

@@ -1,8 +1,8 @@
-## Interface: 30200
+## Interface: 30300
 ## Title: _|cffCCCC88Clean|r.Bags
 ## Notes: Moves Default UI bags relative to _|cffCCCC88Clean|r.ActionBars.
 ## Author: Saiket
-## Version: 3.2.2.1
+## Version: 3.3.0.1
 ## X-Date: 2009-11-28
 ## X-Category: Frame Modification, Inventory
 ## X-License: GPLv3

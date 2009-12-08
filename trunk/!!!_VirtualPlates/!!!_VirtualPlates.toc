@@ -1,9 +1,9 @@
-## Interface: 30200
+## Interface: 30300
 ## Title: _|cffCCCC88VirtualPlates|r
 ## Notes: Gives nameplates depth.
 ## Author: Saiket
-## Version: 3.2.2.5
-## X-Date: 2009-11-08
+## Version: 3.3.0.1
+## X-Date: 2009-12-07
 ## X-Category: UnitFrame
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com

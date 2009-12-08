@@ -15,17 +15,6 @@ _Clean.Quest.Watch = me;
 
 
 --[[****************************************************************************
-  * Function: _Clean.Quest.Watch:UpdateMouseover                               *
-  * Description: Completely disables the collapse button when "hidden".        *
-  ****************************************************************************]]
-function me:UpdateMouseover ()
-	local Enable = self:IsEnabled() == 1;
-	self:EnableMouse( Enable );
-	WatchFrameTitleButton:EnableMouse( Enable );
-end
-
-
---[[****************************************************************************
   * Function: _Clean.Quest.Watch:OnLeftClick                                   *
   * Description: Stops tracking if shift is held.                              *
   ****************************************************************************]]
@@ -50,13 +39,6 @@ do
 	end
 end
 --[[****************************************************************************
-  * Function: _Clean.Quest.Watch:Hook                                          *
-  ****************************************************************************]]
-function me:Hook ()
-	_Clean.AddLockedButton( self );
-	self:RegisterForClicks( "LeftButtonUp" );
-end
---[[****************************************************************************
   * Function: _Clean.Quest.Watch:GetFrame                                      *
   * Description: Hooks newly made buttons.                                     *
   ****************************************************************************]]
@@ -67,11 +49,35 @@ do
 		local Frame = Backup( self, ... );
 
 		if ( NumFrames ~= self.numFrames ) then -- Created new frame
-			me.Hook( Frame );
+			_Clean.AddLockedButton( Frame );
 		end
 
 		return Frame;
 	end
+end
+
+
+--[[****************************************************************************
+  * Function: _Clean.Quest.Watch.UpdateQuests                                  *
+  * Description: Repositions quest item buttons.                               *
+  ****************************************************************************]]
+function me.UpdateQuests ()
+	for Index = 1, WATCHFRAME_NUM_ITEMS do
+		local Button = _G[ "WatchFrameItem"..Index ];
+		if ( Button:IsShown() ) then
+			Button:SetPoint( "TOPRIGHT", ( select( 2, Button:GetPoint( 1 ) ) ) );
+		else
+			break;
+		end
+	end
+end
+--[[****************************************************************************
+  * Function: _Clean.Quest.Watch.Manage                                        *
+  ****************************************************************************]]
+function me.Manage ()
+	WatchFrame:ClearAllPoints();
+	WatchFrame:SetPoint( "TOPRIGHT", MinimapCluster, "BOTTOMRIGHT", 0, -8 );
+	WatchFrame:SetPoint( "BOTTOM", Dominos.Frame:Get( 3 ), "TOP" );
 end
 
 
@@ -82,16 +88,27 @@ end
 -----------------------------
 
 do
-	hooksecurefunc( WatchFrameCollapseExpandButton, "Enable", me.UpdateMouseover );
-	hooksecurefunc( WatchFrameCollapseExpandButton, "Disable", me.UpdateMouseover );
+	-- Right-align the header text
+	WatchFrameTitle:SetPoint( "RIGHT", WatchFrameCollapseExpandButton, "LEFT", -8, 0 );
+	WatchFrameTitle:SetJustifyH( "RIGHT" );
+	
+	-- Reposition list
+	WatchFrameLines:SetPoint( "BOTTOMRIGHT" );
+	_Clean.RegisterPositionManager( me.Manage );
+	local Backup = WatchFrame_DisplayTrackedQuests;
+	hooksecurefunc( "WatchFrame_DisplayTrackedQuests", me.UpdateQuests );
+	if ( WatchFrame_RemoveObjectiveHandler( Backup ) ) then
+		WatchFrame_AddObjectiveHandler( WatchFrame_DisplayTrackedQuests );
+	end
+
 
 	WatchFrameLinkButtonTemplate_OnLeftClick = me.OnLeftClick;
 
 	WatchFrame.buttonCache.GetFrame = me.GetFrame;
 	for _, Frame in ipairs( WatchFrame.buttonCache.frames ) do
-		me.Hook( Frame );
+		_Clean.AddLockedButton( Frame );
 	end
 	for _, Frame in ipairs( WatchFrame.buttonCache.usedFrames ) do
-		me.Hook( Frame );
+		_Clean.AddLockedButton( Frame );
 	end
 end

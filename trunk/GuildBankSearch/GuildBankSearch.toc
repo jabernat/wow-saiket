@@ -1,10 +1,10 @@
-## Interface: 30200
+## Interface: 30300
 ## Title: GuildBank|cffccccccSearch|r
 ## Notes: Adds a search filter to the guild bank.
 ## Notes-koKR: 길드 금고에 검색 필터를 추가합니다.
 ## Author: Saiket
 ## X-Credits: Harros (Original author), Nodd (frFR), freshworks (koKR), jyuny1 (zhTW)
-## Version: 3.2.0.1
+## Version: 3.3.0.1
 ## X-Date: 2009-12-04
 ## X-Category: Inventory, Guild
 ## X-License: GPLv3

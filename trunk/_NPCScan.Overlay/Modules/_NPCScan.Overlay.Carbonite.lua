@@ -46,7 +46,7 @@ function me:WorldMapFrameOnShow ()
 	WorldMap:SetParent( WorldMapDetailFrame );
 	WorldMap:SetAllPoints();
 
-	Key:SetParent( WorldMapDetailFrame );
+	Key:SetParent( WorldMapButton );
 	Key:SetPoint( ( Key:GetPoint() ) );
 	Key:SetAlpha( 1 );
 

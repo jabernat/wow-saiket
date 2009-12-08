@@ -86,7 +86,7 @@ do
 		local function OnShow () -- Set up the module to paint to the WorldMapFrame.
 			WorldMap:SetParent( WorldMapDetailFrame );
 			WorldMap:SetAllPoints();
-		WorldMap:SetScale( 1 );
+			WorldMap:SetScale( 1 );
 
 			WorldMap.Key = Key;
 			WorldMap:Update();

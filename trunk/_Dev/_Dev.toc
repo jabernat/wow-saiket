@@ -1,8 +1,8 @@
-## Interface: 30200
+## Interface: 30300
 ## Title: _|cffCCCC88Dev|r
 ## Notes: Special tools useful for debugging the UI.
 ## Author: Saiket
-## Version: 3.2.0.1
+## Version: 3.3.0.1
 ## X-Date: 2009-11-08
 ## X-Category: Development Tools
 ## X-License: GPLv3

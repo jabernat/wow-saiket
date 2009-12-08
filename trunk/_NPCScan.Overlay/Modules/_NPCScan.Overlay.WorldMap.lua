@@ -12,7 +12,7 @@ Overlay.WorldMap = me;
 me.Label = L.MODULE_WORLDMAP;
 me.AlphaDefault = 0.55;
 
-me.Key = CreateFrame( "Frame", nil, WorldMapDetailFrame );
+me.Key = CreateFrame( "Frame", nil, WorldMapButton );
 
 me.AchievementNPCNames = {};
 

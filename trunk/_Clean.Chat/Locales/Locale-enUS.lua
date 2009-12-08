@@ -28,6 +28,7 @@ do
 	CHAT_GUILD_GET   = "|Hchannel:Guild|h[G]|h %s: ";
 	CHAT_OFFICER_GET = "|Hchannel:Officer|h[O]|h %s: ";
 	CHAT_PARTY_GET        = "|Hchannel:Party|h[P]|h %s: ";
+	CHAT_PARTY_LEADER_GET = "|Hchannel:Party|h[P|TInterface\\GroupFrame\\UI-Group-LeaderIcon:0|t]|h %s: ";
 	CHAT_RAID_GET         = "|Hchannel:Raid|h[R]|h %s: ";
 	CHAT_RAID_LEADER_GET  = "|Hchannel:Raid|h[R|TInterface\\GroupFrame\\UI-Group-LeaderIcon:0|t]|h %s: ";
 	CHAT_RAID_WARNING_GET = "|Hchannel:RaidWarning|h[R-WARN]|h %s: ";

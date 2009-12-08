@@ -82,19 +82,12 @@ end
   * Function: _Clean.HUD.Indicators.ManageVehicle                              *
   * Description: Moves the vehicle seating to the center of the bottom pane.   *
   ****************************************************************************]]
-function me.ManageVehicle ()
-	VehicleSeatIndicator:ClearAllPoints();
-	VehicleSeatIndicator:SetPoint( "CENTER" );
-end
-
-
---[[****************************************************************************
-  * Function: _Clean.HUD.Indicators.Manage                                     *
-  * Description: Reposition indicators after managed frames are moved.         *
-  ****************************************************************************]]
-function me.Manage ()
-	me.ManageWorldState();
-	me.ManageDurability();
+do
+	local SetPoint = VehicleSeatIndicator.SetPoint;
+	function me.ManageVehicle ()
+		VehicleSeatIndicator:ClearAllPoints();
+		SetPoint( VehicleSeatIndicator, "CENTER" );
+	end
 end
 
 
@@ -113,32 +106,21 @@ do
 	WorldStateAlwaysUpFrame:EnableMouse( false );
 	WorldStateAlwaysUpFrame:SetAlpha( 0.5 );
 	hooksecurefunc( "WorldStateAlwaysUpFrame_Update", me.ManageWorldState );
+	_Clean.RegisterPositionManager( me.ManageWorldState );
 
 
 	-- Move the durability frame to the middle
 	DurabilityFrame:SetParent( _Clean.BottomPane );
 	DurabilityFrame:SetScale( 2.0 );
+	DurabilityFrame:SetAlpha( 0.75 );
 	me.ManageDurability();
+	_Clean.RegisterPositionManager( me.ManageDurability );
 
 
 	-- Move the vehicle seat indicator to the middle
 	VehicleSeatIndicator:SetParent( _Clean.BottomPane );
 	VehicleSeatIndicator:SetAlpha( 0.6 );
 	hooksecurefunc( "VehicleSeatIndicator_Update", me.ManageVehicleSeats );
-	hooksecurefunc( "MultiActionBar_Update", me.ManageVehicle );
+	hooksecurefunc( VehicleSeatIndicator, "SetPoint", me.ManageVehicle );
 	me.ManageVehicle();
-
-
-
-
-	-- Hook the secure frame position delegate since parts of the DefaultUI don't use the global wrapper functions
-	local Frame;
-	for Index = 1, 20 do -- Limit search to first 20 frames
-		Frame = EnumerateFrames( Frame )
-		if ( Frame and Frame.UIParentManageFramePositions ) then
-			hooksecurefunc( Frame, "UIParentManageFramePositions", me.Manage );
-			return;
-		end
-	end
-	error( "FramePositionDelegate not found!" );
 end

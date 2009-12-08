@@ -5,7 +5,7 @@
 
 
 local me = CreateFrame( "Frame", "_VirtualPlates", WorldFrame );
-me.Version = GetAddOnMetadata( ... or "!!!_VirtualPlates", "Version" ):match( "^([%d.]+)" );
+me.Version = GetAddOnMetadata( ..., "Version" ):match( "^([%d.]+)" );
 
 local Plates = {};
 me.Plates = Plates;
@@ -125,6 +125,11 @@ do
 		for Key, Value in pairs( PlateOverrides ) do
 			Visual[ Key ] = Value;
 		end
+
+		-- Force recalculation of effective depth for all child frames
+		local Depth = WorldFrame:GetDepth();
+		WorldFrame:SetDepth( Depth + 1 );
+		WorldFrame:SetDepth( Depth );
 	end
 end
 
@@ -166,7 +171,7 @@ do
 	local MinScale, MaxScale, ScaleFactor;
 	function PlatesUpdate ()
 		for Plate, Visual in pairs( PlatesVisible ) do
-			Depth = Plate:GetEffectiveDepth();
+			Depth = Visual:GetEffectiveDepth(); -- Note: Depth of the actual plate is blacklisted, so use child Visual instead
 			if ( Depth <= 0 ) then -- Too close to camera; Completely hidden
 				SetAlpha( Visual, 0 );
 			else
@@ -226,10 +231,6 @@ end
   ****************************************************************************]]
 function me:VARIABLES_LOADED ()
 	me.VARIABLES_LOADED = nil;
-
-	-- Don't throw an error if the client doesn't have this CVar yet
-	pcall( SetCVar, "nameplateAllowOverlap", 1 );
-
 
 	local OptionsCharacter = _VirtualPlatesOptionsCharacter;
 	_VirtualPlatesOptionsCharacter = me.OptionsCharacter;
@@ -429,14 +430,62 @@ do
 
 	-- Add method overrides to be applied to plates' Visuals
 	local GetParent = me.GetParent;
-	local function AddPlateOverride( MethodName )
-		local MethodBackup = me[ MethodName ];
-		PlateOverrides[ MethodName ] = function ( self, ... )
-			return MethodBackup( GetParent( self ), ... );
+	do
+		local function AddPlateOverride( MethodName )
+			PlateOverrides[ MethodName ] = function ( self, ... )
+				self = GetParent( self );
+				return self[ MethodName ]( self, ... );
+			end
+		end
+		AddPlateOverride( "GetParent" );
+		AddPlateOverride( "SetAlpha" );
+		AddPlateOverride( "GetAlpha" );
+		AddPlateOverride( "GetEffectiveAlpha" );
+	end
+	-- Method overrides to use plates' OnUpdate script handlers instead of their Visuals' to preserve handler execution order
+	do
+		local type = type;
+		do
+			local function OnUpdateOverride ( self, ... ) -- Wrapper to replace self parameter with plate's Visual
+				self.OnUpdate( Plates[ self ], ... );
+			end
+			local SetScript = me.SetScript;
+			function PlateOverrides:SetScript ( Script, Handler, ... )
+				if ( type( Script ) == "string" and Script:lower() == "onupdate" ) then
+					self = GetParent( self );
+					self.OnUpdate = Handler;
+					return self:SetScript( Script, Handler and OnUpdateOverride or nil, ... );
+				else
+					return SetScript( self, Script, Handler, ... );
+				end
+			end
+		end
+		do
+			local GetScript = me.GetScript;
+			function PlateOverrides:GetScript ( Script, ... )
+				if ( type( Script ) == "string" and Script:lower() == "onupdate" ) then
+					return GetParent( self ).OnUpdate;
+				else
+					return GetScript( self, Script, ... );
+				end
+			end
+		end
+		do
+			local function VarArg ( self, ... ) -- Saves a reference to the hooked script
+				self.OnUpdate = self:GetScript( "OnUpdate" );
+				return ...;
+			end
+			local HookScript = me.HookScript;
+			function PlateOverrides:HookScript ( Script, Handler, ... )
+				if ( type( Script ) == "string" and Script:lower() == "onupdate" ) then
+					self = GetParent( self );
+					return VarArg( self, self:HookScript( Script, function ( self, ... ) -- Wrapper to replace self parameter with plate's Visual
+						Handler( Plates[ self ], ... );
+					end, ... ) );
+				else
+					return HookScript( self, Script, Handler, ... );
+				end
+			end
 		end
 	end
-	AddPlateOverride( "GetParent" );
-	AddPlateOverride( "SetAlpha" );
-	AddPlateOverride( "GetAlpha" );
-	AddPlateOverride( "GetEffectiveAlpha" );
 end

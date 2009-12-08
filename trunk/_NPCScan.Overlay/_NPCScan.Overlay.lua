@@ -4,12 +4,12 @@
   ****************************************************************************]]
 
 
+local AddOnName = ...;
 local _NPCScan = _NPCScan;
 local me = {};
 _NPCScan.Overlay = me;
 
-local ADDON_NAME = "_NPCScan.Overlay";
-me.Version = GetAddOnMetadata( ADDON_NAME, "Version" ):match( "^([%d.]+)" );
+me.Version = GetAddOnMetadata( AddOnName, "Version" ):match( "^([%d.]+)" );
 
 me.Options = {
 	Version = me.Version;
@@ -546,5 +546,5 @@ do
 	me:RegisterEvent( "ADDON_LOADED" );
 	me:RegisterEvent( "PLAYER_ENTERING_WORLD" );
 
-	me.ModuleInitializers[ ADDON_NAME:upper() ] = me;
+	me.ModuleInitializers[ AddOnName:upper() ] = me;
 end
