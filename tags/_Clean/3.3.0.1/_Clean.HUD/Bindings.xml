@@ -1,0 +1,6 @@
+<Bindings>
+	<Binding name="_CLEAN_HUD_PUSHTOTALK" runOnUp="true" header="_CLEAN_HUD">
+		_Clean.HUD.PushToTalk.OnKeypress( keystate );
+	</Binding>
+	<ModifiedClick action="_CLEAN_HUD_PUSHTOTALK_MOD" default="RCTRL"/>
+</Bindings>

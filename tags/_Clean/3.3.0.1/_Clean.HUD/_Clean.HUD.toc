@@ -1,0 +1,21 @@
+## Interface: 30300
+## Title: _|cffCCCC88Clean|r.HUD
+## Notes: Adds a light Heads Up Display to the center of the screen.
+## Author: Saiket
+## Version: 3.3.0.1
+## X-Date: 2009-11-27
+## X-Category: Frame Modification, Combat
+## X-License: GPLv3
+## X-Email: saiket.wow@gmail.com
+## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons
+## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Clean
+## X-Localizations: enUS
+## RequiredDeps: _Clean
+Locales.xml
+
+_Clean.HUD.lua
+
+_Clean.HUD.Crosshairs.lua
+_Clean.HUD.PushToTalk.lua
+_Clean.HUD.Indicators.lua
+_Clean.HUD.Flags.lua
