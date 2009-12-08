@@ -1,0 +1,32 @@
+## Interface: 30300
+## Title: _|cffCCCC88UTF|r
+## Notes: Unicode input dialog and text replacement.
+## Author: Saiket
+## Version: 3.3.0.1
+## X-Date: 2009-10-22
+## X-Category: Chat/Communication
+## X-License: GPLv3
+## X-Email: saiket.wow@gmail.com
+## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons/UTF
+## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:UTF
+## X-WoWI-ID: 9336
+## X-Curse-Project-ID: utf
+## X-Localizations: enUS
+## X-Embeds: LibTextTable-1.0
+## SavedVariables: _UTFOptions
+## OptionalDeps: LibTextTable-1.0
+Libs\LibStub\LibStub.lua
+
+Embeds.xml
+Locales.xml
+
+_UTF.lua
+_UTF.CharacterEntities.lua
+_UTF.Chat.lua
+
+_UTF.Browse.lua
+
+_UTF.Options.lua
+_UTF.Customize.lua
+_UTF.Customize.Entities.lua
+_UTF.Customize.TextReplace.lua
