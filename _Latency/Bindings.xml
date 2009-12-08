@@ -1,5 +1,0 @@
-<Bindings>
-	<Binding name="_LATENCY_TOGGLE" header="_LATENCY">
-		_Latency.Toggle();
-	</Binding>
-</Bindings>
