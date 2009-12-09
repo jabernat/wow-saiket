@@ -55,6 +55,23 @@ end
 
 
 --[[****************************************************************************
+  * Function: _Clean.Minimap:DifficultyOnEvent                                 *
+  * Description: Updates the instance difficulty flag.                         *
+  ****************************************************************************]]
+function me:DifficultyOnEvent ()
+	if ( self:IsShown() ) then
+		local Texture = _G[ self:GetName().."Texture" ];
+		local MinX, MinY, _, MaxY, MaxX = Texture:GetTexCoord();
+		Texture:SetTexCoord( MinX + 1 / 16, MaxX - 1 / 16, MinY, MaxY );
+
+		MinimapZoneTextButton:SetPoint( "LEFT", self, "RIGHT" );
+	else
+		MinimapZoneTextButton:SetPoint( "LEFT" );
+	end
+end
+
+
+--[[****************************************************************************
   * Function: _Clean.Minimap:OnMouseWheel                                      *
   * Description: Zooms the minimap when mousewheeled over.                     *
   ****************************************************************************]]
@@ -187,12 +204,23 @@ do
 	-- Move the zone text inside of the square
 	MinimapZoneTextButton:SetFrameStrata( "LOW" );
 	MinimapZoneTextButton:ClearAllPoints();
-	MinimapZoneTextButton:SetPoint( "TOPLEFT", Minimap, 0, -2 );
-	MinimapZoneTextButton:SetPoint( "RIGHT", Minimap );
+	MinimapZoneTextButton:SetPoint( "TOPRIGHT", Minimap, 0, -2 );
+	MinimapZoneTextButton:SetPoint( "LEFT", Minimap );
 	MinimapZoneTextButton:EnableMouse( false );
 	MinimapZoneTextButton:SetAlpha( 0.5 );
 	MinimapZoneText:SetAllPoints( MinimapZoneTextButton );
 	MinimapZoneText:SetFontObject( NumberFontNormalSmall );
+
+	-- Let the dungeon difficulty flag share space with the zone text
+	local Frame, Texture = MiniMapInstanceDifficulty, MiniMapInstanceDifficultyTexture;
+	Frame:ClearAllPoints();
+	Frame:SetPoint( "TOPLEFT", -4, 8 );
+	Frame:SetWidth( Texture:GetWidth() / 2 );
+	Frame:SetHeight( Texture:GetHeight() );
+	Frame:SetScale( 0.7 );
+	Frame:SetAlpha( 0.6 );
+	Texture:SetAllPoints();
+	Frame:HookScript( "OnEvent", me.DifficultyOnEvent );
 
 
 	-- Move and shrink the GM ticket frame
