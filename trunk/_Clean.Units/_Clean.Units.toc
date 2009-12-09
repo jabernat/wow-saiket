@@ -11,7 +11,7 @@
 ## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Clean
 ## X-Localizations: enUS
 ## RequiredDeps: _Clean, oUF
-## OptionalDeps: oUF_CombatFeedback, oUF_Experience, oUF_Reputation, oUF_SpellRange
+## OptionalDeps: oUF_CombatFeedback, oUF_Experience, oUF_Reputation, oUF_SpellRange, oUF_HealComm4
 Locales.xml
 
 _Clean.Units.lua

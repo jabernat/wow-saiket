@@ -436,6 +436,14 @@ do
 			HealthValue:SetAlpha( 0.75 );
 			Health.ValueLength = Style.HealthText;
 		end
+		if ( IsAddOnLoaded( "oUF_HealComm4" ) ) then
+			local HealCommBar = CreateFrame( "StatusBar", nil, Health );
+			self.HealCommBar = HealCommBar;
+			self.allowHealCommOverflow = true;
+			HealCommBar:SetStatusBarTexture( BarTexture );
+			local R, G, B = unpack( Colors.reaction[ 8 ] );
+			HealCommBar:SetStatusBarColor( R, G, B, 0.5 );
+		end
 
 		self.PostUpdateHealth = me.PostUpdateHealth;
 
