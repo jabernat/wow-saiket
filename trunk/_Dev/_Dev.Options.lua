@@ -64,13 +64,6 @@ function me:ControlOnEnter ()
 	GameTooltip:SetOwner( self, "ANCHOR_TOPRIGHT" );
 	GameTooltip:SetText( self.tooltipText, nil, nil, nil, nil, 1 );
 end
---[[****************************************************************************
-  * Function: _Dev.Options:ControlOnLeave                                      *
-  * Description: Hides the control's tooltip.                                  *
-  ****************************************************************************]]
-function me:ControlOnLeave ()
-	GameTooltip:Hide();
-end
 
 --[[****************************************************************************
   * Function: _Dev.Options:CheckButtonOnClick                                  *
@@ -223,7 +216,7 @@ function me:CreateEditBox ( Variable, CanDisable )
 	EditBox:SetNumeric( true );
 	EditBox:SetMaxLetters( 6 ); -- Prevent odd EditBox:GetNumber() overflows
 	EditBox:SetScript( "OnEnter", me.ControlOnEnter );
-	EditBox:SetScript( "OnLeave", me.ControlOnLeave );
+	EditBox:SetScript( "OnLeave", GameTooltip_Hide );
 	EditBox:SetScript( "OnTextChanged", me.EditBoxOnTextChanged );
 
 	EditBox.tooltipText = L.OPTIONS[ Variable.."_DESC" ];
@@ -251,7 +244,7 @@ function me:CreateDropDown ( Variable )
 	DropDown:SetPoint( "RIGHT", -4, 0 );
 	DropDown:EnableMouse( true );
 	DropDown:SetScript( "OnEnter", me.ControlOnEnter );
-	DropDown:SetScript( "OnLeave", me.ControlOnLeave );
+	DropDown:SetScript( "OnLeave", GameTooltip_Hide );
 	UIDropDownMenu_JustifyText( DropDown, "LEFT" );
 	_G[ Name.."Middle" ]:SetPoint( "RIGHT", -16, 0 );
 
