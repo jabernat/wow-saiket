@@ -720,7 +720,7 @@ do
 	Checkbox.SetEnabled = Overlay.Config.ModuleCheckboxSetEnabled;
 	Checkbox.tooltipText = L.MODULE_RANGERING_DESC;
 	Checkbox:SetScript( "OnEnter", Overlay.Config.ControlOnEnter );
-	Checkbox:SetScript( "OnLeave", Overlay.Config.ControlOnLeave );
+	Checkbox:SetScript( "OnLeave", GameTooltip_Hide );
 
 	Config:SetHeight( Config:GetHeight() + Checkbox:GetHeight() );
 end

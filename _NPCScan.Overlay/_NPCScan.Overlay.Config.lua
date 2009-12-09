@@ -30,13 +30,6 @@ function me:ControlOnEnter ()
 		GameTooltip:SetText( self.tooltipText, nil, nil, nil, nil, 1 );
 	end
 end
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.Config:ControlOnLeave                           *
-  * Description: Hides the control's tooltip.                                  *
-  ****************************************************************************]]
-function me:ControlOnLeave ()
-	GameTooltip:Hide();
-end
 
 
 --[[****************************************************************************
@@ -171,7 +164,7 @@ do
 	local function AddTooltipHooks( Row, ... )
 		if ( LibRareSpawnsData ) then
 			Row:SetScript( "OnEnter", me.TableRowOnEnter );
-			Row:SetScript( "OnLeave", me.ControlOnLeave );
+			Row:SetScript( "OnLeave", GameTooltip_Hide );
 		end
 		return Row, ...;
 	end

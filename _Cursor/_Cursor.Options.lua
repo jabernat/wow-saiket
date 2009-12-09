@@ -361,13 +361,6 @@ function me:ControlOnEnter ()
 	GameTooltip:SetOwner( self, "ANCHOR_PRESERVE" );
 	GameTooltip:SetText( self.tooltipText, nil, nil, nil, nil, 1 );
 end
---[[****************************************************************************
-  * Function: _Cursor.Options:ControlOnLeave                                   *
-  * Description: Hides the control's tooltip.                                  *
-  ****************************************************************************]]
-function me:ControlOnLeave ()
-	GameTooltip:Hide();
-end
 
 
 
@@ -742,7 +735,7 @@ do
 	Set:SetScript( "OnEnterPressed", Set.OnEnterPressed );
 	Set:SetScript( "OnTextChanged", Set.OnTextChanged );
 	Set:SetScript( "OnEnter", me.ControlOnEnter );
-	Set:SetScript( "OnLeave", me.ControlOnLeave );
+	Set:SetScript( "OnLeave", GameTooltip_Hide );
 	Set.point = "TOPRIGHT";
 	Set.relativePoint = "BOTTOMRIGHT";
 	Set.tooltipText = L.OPTIONS[ "SET_DESC" ];
@@ -777,7 +770,7 @@ do
 	DeleteButton:SetText( L.OPTIONS.DELETE );
 	DeleteButton:SetScript( "OnClick", DeleteButton.OnClick );
 	DeleteButton:SetScript( "OnEnter", me.ControlOnEnter );
-	DeleteButton:SetScript( "OnLeave", me.ControlOnLeave );
+	DeleteButton:SetScript( "OnLeave", GameTooltip_Hide );
 	DeleteButton.tooltipText = L.OPTIONS.DELETE_DESC;
 
 
@@ -818,7 +811,7 @@ do
 	} );
 	Preview:SetScript( "OnMouseUp", Preview.OnMouseUp );
 	Preview:SetScript( "OnEnter", me.ControlOnEnter );
-	Preview:SetScript( "OnLeave", me.ControlOnLeave );
+	Preview:SetScript( "OnLeave", GameTooltip_Hide );
 	Preview.Rate = math.pi;
 	Preview.tooltipText = L.OPTIONS.PREVIEW_DESC;
 
@@ -849,7 +842,7 @@ do
 	X:SetMinMaxValues( -32, 32 );
 	X:SetScript( "OnValueChanged", X.OnValueChanged );
 	X:SetScript( "OnEnter", me.ControlOnEnter );
-	X:SetScript( "OnLeave", me.ControlOnLeave );
+	X:SetScript( "OnLeave", GameTooltip_Hide );
 	X.tooltipText = L.OPTIONS[ "X_DESC" ];
 	Text = _G[ X:GetName().."Low" ];
 	Text:SetText( -32 );
@@ -871,7 +864,7 @@ do
 	Y:SetMinMaxValues( -32, 32 );
 	Y:SetScript( "OnValueChanged", Y.OnValueChanged );
 	Y:SetScript( "OnEnter", me.ControlOnEnter );
-	Y:SetScript( "OnLeave", me.ControlOnLeave );
+	Y:SetScript( "OnLeave", GameTooltip_Hide );
 	Y.tooltipText = L.OPTIONS[ "Y_DESC" ];
 	Text = _G[ Y:GetName().."Low" ];
 	Text:SetText( -32 );
@@ -890,7 +883,7 @@ do
 	Scale:SetMinMaxValues( 1 / 2, 4 );
 	Scale:SetScript( "OnValueChanged", Scale.OnValueChanged );
 	Scale:SetScript( "OnEnter", me.ControlOnEnter );
-	Scale:SetScript( "OnLeave", me.ControlOnLeave );
+	Scale:SetScript( "OnLeave", GameTooltip_Hide );
 	Scale.tooltipText = L.OPTIONS[ "SCALE_DESC" ];
 	_G[ Scale:GetName().."Low" ]:SetText( 0.5 );
 	_G[ Scale:GetName().."High" ]:SetText( 4 );
@@ -905,7 +898,7 @@ do
 	Facing:SetMinMaxValues( 0, math.pi * 2 );
 	Facing:SetScript( "OnValueChanged", Facing.OnValueChanged );
 	Facing:SetScript( "OnEnter", me.ControlOnEnter );
-	Facing:SetScript( "OnLeave", me.ControlOnLeave );
+	Facing:SetScript( "OnLeave", GameTooltip_Hide );
 	Facing.tooltipText = L.OPTIONS[ "FACING_DESC" ];
 	_G[ Facing:GetName().."Low" ]:SetText( L.OPTIONS.FACING_LOW );
 	_G[ Facing:GetName().."High" ]:SetText( L.OPTIONS.FACING_HIGH );
@@ -919,7 +912,7 @@ do
 	Type:SetPoint( "TOP", Enabled, "BOTTOM", 0, -12 );
 	Type:SetPoint( "RIGHT", Y, "LEFT", -8, 0 );
 	Type:SetScript( "OnEnter", me.ControlOnEnter );
-	Type:SetScript( "OnLeave", me.ControlOnLeave );
+	Type:SetScript( "OnLeave", GameTooltip_Hide );
 	UIDropDownMenu_JustifyText( Type, "LEFT" );
 	_G[ Type:GetName().."Middle" ]:SetPoint( "RIGHT", -16, 0 );
 	Type.tooltipText = L.OPTIONS.TYPE_DESC;
@@ -934,7 +927,7 @@ do
 	Value:SetPoint( "RIGHT", Type );
 	Value:SetPoint( "BOTTOM", Preview );
 	Value:SetScript( "OnEnter", me.ControlOnEnter );
-	Value:SetScript( "OnLeave", me.ControlOnLeave );
+	Value:SetScript( "OnLeave", GameTooltip_Hide );
 	UIDropDownMenu_JustifyText( Value, "LEFT" );
 	_G[ Value:GetName().."Middle" ]:SetPoint( "RIGHT", -16, 0 );
 	Value.tooltipText = L.OPTIONS.VALUE_DESC;
@@ -952,7 +945,7 @@ do
 	Path:SetScript( "OnEnterPressed", Path.OnEnterPressed );
 	Path:SetScript( "OnEscapePressed", Path.OnEscapePressed );
 	Path:SetScript( "OnEnter", me.ControlOnEnter );
-	Path:SetScript( "OnLeave", me.ControlOnLeave );
+	Path:SetScript( "OnLeave", GameTooltip_Hide );
 	Path.tooltipText = L.OPTIONS[ "PATH_DESC" ];
 	Text = Path:CreateFontString( nil, "ARTWORK", "GameFontNormalSmall" );
 	Path.Text = Text;
