@@ -61,8 +61,8 @@ end
 
 do
 	-- Make room for the edit box
-	ColorPickerCancelButton:SetWidth( 128 );
-	ColorPickerOkayButton:SetWidth( 128 );
+	ColorPickerCancelButton:SetWidth( 100 );
+	ColorPickerOkayButton:SetWidth( 100 );
 
 	me:SetPoint( "BOTTOMLEFT", 20, 10 );
 	me:SetPoint( "TOPRIGHT", ColorPickerOkayButton, "TOPLEFT", -2, 0 );
