@@ -12,3 +12,4 @@
 ## RequiredDeps: _Clean
 ## OptionalDeps: Carbonite
 _Clean.Minimap.lua
+_Clean.Minimap.LibDBIcon_1_0.lua
