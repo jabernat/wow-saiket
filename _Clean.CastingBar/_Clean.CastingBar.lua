@@ -10,6 +10,8 @@ local _Clean = _Clean;
 local me = {};
 _Clean.CastingBar = me;
 
+me.LagUpdateRate = 1; -- Seconds
+
 local BarPadding = 10;
 local BarTexture = LibSharedMedia:Fetch( LibSharedMedia.MediaType.STATUSBAR, "_Clean" );
 
@@ -44,6 +46,13 @@ function me:SetStatusBarColor ( R, G, B, A )
 	end
 end
 --[[****************************************************************************
+  * Function: _Clean.CastingBar:OnShow                                         *
+  * Description: Reset lag update timer for player's cast bar only.            *
+  ****************************************************************************]]
+function me:OnShow ()
+	self.Lag.UpdateNext = 0;
+end
+--[[****************************************************************************
   * Function: _Clean.CastingBar:OnUpdate                                       *
   * Description: Hides casting bar artwork and updates time text.              *
   ****************************************************************************]]
@@ -51,15 +60,27 @@ do
 	local select = select;
 	local GetTime = GetTime;
 	local max = max;
-	function me:OnUpdate ()
+	function me:OnUpdate ( Elapsed )
 		-- Hide artwork
 		self.Border:Hide();
 		self.Flash:Hide();
 		self.Spark:Hide();
 
+		-- Update cast time
 		local Time = select( 6, ( self.channeling and UnitChannelInfo or UnitCastingInfo )( self.UnitID ) );
 		self.Time:SetFormattedText( L.TIME_FORMAT,
 			Time and max( 0, Time / 1000 - GetTime() ) or 0 );
+
+		-- Update latency
+		local Lag = self.Lag;
+		if ( Lag ) then
+			Lag.UpdateNext = Lag.UpdateNext - Elapsed;
+			if ( Lag.UpdateNext <= 0 ) then
+				Lag.UpdateNext = me.LagUpdateRate;
+
+				Lag:SetWidth( min( 1, select( 3, GetNetStats() ) / 1000 / select( 2, self:GetMinMaxValues() ) ) * self:GetWidth() );
+			end
+		end
 	end
 end
 
@@ -117,6 +138,7 @@ do
 		self:ClearAllPoints();
 		self:SetPoint( "TOPRIGHT", _Clean.ActionBars.BackdropBottomRight, "TOPLEFT", -BarPadding, -BarPadding );
 		self:SetPoint( "BOTTOMLEFT", _Clean.ActionBars.BackdropBottomLeft, "BOTTOMRIGHT", BarPadding, BarPadding );
+		self:SetWidth( 0 ); -- Allow GetWidth to return actual width
 		self:SetStatusBarTexture( BarTexture );
 
 		-- Replace solid background color
@@ -148,6 +170,16 @@ do
 		self.Time = self:CreateFontString( nil, "ARTWORK", "GameFontNormalSmall" );
 		self.Time:SetPoint( "LEFT", Text, "RIGHT" );
 
+		if ( UnitID == "player" ) then
+			self.Lag = self:CreateTexture( nil, "BORDER" );
+			self.Lag:SetPoint( "TOPRIGHT" );
+			self.Lag:SetPoint( "BOTTOM" );
+			self.Lag:SetTexture( BarTexture );
+			self.Lag:SetBlendMode( "ADD" );
+			local R, G, B = unpack( _Clean.Colors.disconnected );
+			self.Lag:SetVertexColor( R, G, B, 0.5 );
+			self:HookScript( "OnShow", me.OnShow );
+		end
 		self:HookScript( "OnEvent", me.OnEvent );
 		self:HookScript( "OnUpdate", me.OnUpdate );
 		hooksecurefunc( self, "SetStatusBarColor", me.SetStatusBarColor );
