@@ -4,7 +4,6 @@
   ****************************************************************************]]
 
 
--- NOTE(Hook LibDBIcon to put icons into the minimap frame.)
 if ( IsAddOnLoaded( "Carbonite" ) ) then
 	return;
 end
