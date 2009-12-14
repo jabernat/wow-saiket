@@ -32,7 +32,9 @@ function me:Skin ( ... )
 	self:SetWidth( IconSize );
 	self:SetHeight( IconSize );
 	self:SetFrameStrata( "BACKGROUND" );
-	self:SetFrameLevel( max( 0, Minimap:GetFrameLevel() - 1 ) );
+	self:SetClampedToScreen( true );
+	local Inset = -IconSize / 6; -- 1/6th of button allowed off screen
+	self:SetClampRectInsets( Inset, Inset, Inset, Inset );
 	self:SetAlpha( 0.8 );
 	_Clean.SkinButton( self, self.icon );
 	self.icon:SetAllPoints( self );
