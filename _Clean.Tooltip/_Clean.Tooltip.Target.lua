@@ -42,6 +42,7 @@ do
 	me.Text = _G[ me:GetName().."TextLeft1" ];
 
 	_Clean.Tooltip.UnitRegister( me );
+	_Clean.Tooltip.Skin( me );
 	me.Icon:ClearAllPoints();
 	me.Icon:SetPoint( "TOPLEFT", me, "TOPRIGHT", -2, -2 );
 end

@@ -4,12 +4,15 @@
   ****************************************************************************]]
 
 
+local LibSharedMedia = LibStub( "LibSharedMedia-3.0" );
 local L = _CleanLocalization.Tooltip;
 local _Clean = _Clean;
 local me = {};
 _Clean.Tooltip = me;
 
+local TooltipPadding = -4; -- Distance between actual border of tooltip frame and its rendered outline
 local IconSize = 32;
+local BarTexture = LibSharedMedia:Fetch( LibSharedMedia.MediaType.STATUSBAR, "_Clean" );
 
 
 
@@ -20,7 +23,35 @@ local IconSize = 32;
   ****************************************************************************]]
 function me:SetDefaultAnchor ()
 	self:ClearAllPoints();
-	self:SetPoint( "TOP", _Clean.TopMargin, "BOTTOM", 0, 4 );
+	self:SetPoint( "TOP", _Clean.TopMargin, "BOTTOM", 0, -TooltipPadding );
+end
+--[[****************************************************************************
+  * Function: _Clean.Tooltip:Skin                                              *
+  * Description: Skins a tooltip frame.                                        *
+  ****************************************************************************]]
+do
+	local function StatusBarOnValueChanged ( self )
+		self:SetStatusBarColor( unpack( _Clean.Colors.reaction[ 8 ] ) );
+	end
+	local function SetBackdrop ( self )
+		getmetatable( self ).__index.SetBackdrop( self, nil );
+	end
+	function me:Skin ()
+		self:SetBackdrop( nil );
+		hooksecurefunc( self, "SetBackdrop", SetBackdrop );
+
+		_Clean.Backdrop.Add( self, TooltipPadding );
+		self:SetHitRectInsets( -TooltipPadding, -TooltipPadding, -TooltipPadding, -TooltipPadding );
+		local StatusBar = _G[ self:GetName().."StatusBar" ];
+		if ( StatusBar ) then
+			StatusBar:ClearAllPoints();
+			StatusBar:SetPoint( "TOPLEFT", self, "BOTTOMLEFT", -TooltipPadding, -TooltipPadding );
+			StatusBar:SetPoint( "RIGHT", TooltipPadding, 0 );
+			StatusBar:SetStatusBarTexture( BarTexture );
+			StatusBar:HookScript( "OnValueChanged", StatusBarOnValueChanged );
+			StatusBarOnValueChanged( StatusBar );
+		end
+	end
 end
 
 
@@ -41,7 +72,7 @@ do
 			self.Icon, self.Normal = Icon, Normal;
 			Icon:SetWidth( IconSize );
 			Icon:SetHeight( IconSize );
-			Icon:SetPoint( "TOPRIGHT", self, "TOPLEFT", 2, -2 );
+			Icon:SetPoint( "TOPRIGHT", self, "TOPLEFT", -TooltipPadding, TooltipPadding );
 			_Clean.SkinButton( nil, Icon, Normal );
 
 			self:HookScript( "OnTooltipCleared", OnTooltipCleared );
@@ -168,12 +199,24 @@ end
 -----------------------------
 
 do
-	hooksecurefunc( "GameTooltip_SetDefaultAnchor", me.SetDefaultAnchor );
+	local function SkinAll ( self ) -- Skins a tooltip and its child shopping tooltips
+		me.Skin( self );
+		for _, ShoppingTooltip in ipairs( self.shoppingTooltips ) do
+			me.Skin( ShoppingTooltip );
+		end
+	end
+
 
 	me.UnitRegister( GameTooltip );
+	SkinAll( GameTooltip );
+	hooksecurefunc( "GameTooltip_SetDefaultAnchor", me.SetDefaultAnchor );
 
 	me.UnitRegister( ItemRefTooltip );
 	me.ItemRegister( ItemRefTooltip );
 	me.SpellRegister( ItemRefTooltip );
 	me.AchievementRegister( ItemRefTooltip );
+	SkinAll( ItemRefTooltip );
+	ItemRefTooltip:SetPadding( 0 ); -- Remove padding on right side that close button occupies
+
+	SkinAll( WorldMapTooltip );
 end
