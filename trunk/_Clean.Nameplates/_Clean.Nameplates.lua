@@ -499,7 +499,7 @@ local function PlateAdd ( Plate )
 	Cast.Icon:SetPoint( "BOTTOMRIGHT", Visual.StatusBackground, "TOPRIGHT", 0, 2 );
 	Cast.Icon:SetWidth( CastHeight );
 	Cast.Icon:SetHeight( CastHeight );
-	_Clean.SkinButton( nil, Cast.Icon );
+	_Clean.SkinButtonIcon( Cast.Icon );
 	CastBorder:SetTexture(); -- Seems to cause crashes when attempting to anchor
 	local IconBorder = Cast:CreateTexture( nil, "OVERLAY" );
 	IconBorder:SetTexture( [[Interface\AchievementFrame\UI-Achievement-IconFrame]] );

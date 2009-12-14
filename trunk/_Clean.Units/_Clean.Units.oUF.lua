@@ -98,7 +98,7 @@ end
   * Function: _Clean.Units.oUF:PostCreateAuraIcon                              *
   ****************************************************************************]]
 function me:PostCreateAuraIcon ( Frame )
-	_Clean.SkinButton( nil, Frame.icon );
+	_Clean.SkinButtonIcon( Frame.icon );
 	Frame.UpdateTooltip = me.AuraUpdateTooltip;
 	Frame.cd:SetReverse( true );
 	Frame:SetFrameLevel( self:GetFrameLevel() - 1 ); -- Don't allow auras to overlap other units
