@@ -66,11 +66,17 @@ me.ButtonNormalTexture = [[Interface\AddOns\_Clean\Skin\ButtonNormalTexture]];
 function me.NilFunction () end
 
 --[[****************************************************************************
-  * Function: _Clean:SkinButton                                                *
+  * Function: _Clean:SkinButtonIcon                                            *
   * Description: Hides the border graphic from an action button-like icon.     *
   ****************************************************************************]]
+function me:SkinButtonIcon ()
+	self:SetTexCoord( 0.08, 0.92, 0.08, 0.92 );
+end
+--[[****************************************************************************
+  * Function: _Clean:SkinButton                                                *
+  ****************************************************************************]]
 function me:SkinButton ( IconTexture, NormalTexture )
-	IconTexture:SetTexCoord( 0.08, 0.92, 0.08, 0.92 ); -- Hide icon border
+	me.SkinButtonIcon( IconTexture );
 	-- Add gloss normal texture
 	if ( NormalTexture ) then
 		NormalTexture:SetTexture( me.ButtonNormalTexture );

@@ -162,7 +162,7 @@ do
 	MiniMapTrackingIcon:SetAllPoints( MiniMapTracking );
 	MiniMapTrackingIcon:SetVertexColor( unpack( Color ) );
 	MiniMapTrackingButtonShine:SetAllPoints();
-	_Clean.SkinButton( nil, MiniMapTrackingIcon );
+	_Clean.SkinButtonIcon( MiniMapTrackingIcon );
 	MiniMapTrackingButton:SetScript( "OnMouseUp", nil );
 	MiniMapTrackingButton:SetScript( "OnMouseDown", nil );
 
@@ -178,7 +178,7 @@ do
 	MiniMapMailBorder:SetTexture();
 	MiniMapMailIcon:SetAllPoints( MiniMapMailFrame );
 	MiniMapMailIcon:SetTexture( [[Interface\Minimap\Tracking\Mailbox]] ); -- No black background
-	_Clean.SkinButton( nil, MiniMapMailIcon );
+	_Clean.SkinButtonIcon( MiniMapMailIcon );
 
 	MiniMapBattlefieldFrame:ClearAllPoints();
 	MiniMapBattlefieldFrame:SetPoint( "RIGHT", MiniMapMailFrame, "LEFT" );
