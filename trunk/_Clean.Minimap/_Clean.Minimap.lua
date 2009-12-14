@@ -110,7 +110,7 @@ do
 	MinimapCluster:SetHeight( Minimap:GetHeight() );
 	MinimapCluster:SetScale( MinimapScale );
 	MinimapCluster:EnableMouse( false );
-	_Clean.Backdrop.Add( MinimapCluster, _Clean.Backdrop.Padding );
+	_Clean.Backdrop.Add( Minimap );
 
 
 	Minimap:SetAllPoints( MinimapCluster );
@@ -162,7 +162,7 @@ do
 	MiniMapTrackingIcon:SetAllPoints( MiniMapTracking );
 	MiniMapTrackingIcon:SetVertexColor( unpack( Color ) );
 	MiniMapTrackingButtonShine:SetAllPoints();
-	_Clean.RemoveIconBorder( MiniMapTrackingIcon );
+	_Clean.SkinButton( nil, MiniMapTrackingIcon );
 	MiniMapTrackingButton:SetScript( "OnMouseUp", nil );
 	MiniMapTrackingButton:SetScript( "OnMouseDown", nil );
 
@@ -178,7 +178,7 @@ do
 	MiniMapMailBorder:SetTexture();
 	MiniMapMailIcon:SetAllPoints( MiniMapMailFrame );
 	MiniMapMailIcon:SetTexture( [[Interface\Minimap\Tracking\Mailbox]] ); -- No black background
-	_Clean.RemoveIconBorder( MiniMapMailIcon );
+	_Clean.SkinButton( nil, MiniMapMailIcon );
 
 	MiniMapBattlefieldFrame:ClearAllPoints();
 	MiniMapBattlefieldFrame:SetPoint( "RIGHT", MiniMapMailFrame, "LEFT" );

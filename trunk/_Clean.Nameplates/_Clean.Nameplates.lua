@@ -405,8 +405,8 @@ local function PlateAdd ( Plate )
 
 	local Health, Cast = Plate:GetChildren();
 	Visual.Health, Visual.Cast = Health, Cast;
-	local Border, BossIcon, RaidIcon, CastBorder;
-	Visual.ThreatGlow, Border,
+	local BossIcon, RaidIcon, CastBorder;
+	Visual.ThreatGlow, Visual.StatusBackground,
 		CastBorder, Cast.NoInterrupt, Cast.Icon,
 		Visual.Highlight, Visual.Name, Visual.Level,
 		Visual.BossIcon, RaidIcon, Visual.StatusBorder = Plate:GetRegions();
@@ -419,20 +419,16 @@ local function PlateAdd ( Plate )
 
 
 	-- Border
-	-- Leave parented to original nameplate for layering
-	Border:SetTexture( [[Interface\Buttons\WHITE8X8]] );
-	Border:SetDrawLayer( "BACKGROUND" );
-	Border:SetVertexColor( 0, 0, 0, 0.75 );
-	Border:SetPoint( "TOPLEFT", Visual, -PlateBorder, PlateBorder );
-	Border:SetPoint( "BOTTOMRIGHT", Visual, PlateBorder, -PlateBorder );
+	_Clean.Backdrop.Add( Visual, PlateBorder ):SetParent( Plate ); -- Parent to original nameplate for layering
 	Visual.Highlight:SetTexture( [[Interface\QuestFrame\UI-QuestTitleHighlight]] );
 
 
 	-- Indicator section
-	-- Create a background for the status
-	Visual.StatusBackground = Visual:CreateTexture( nil, "BORDER" );
+	Visual.StatusBackground:SetParent( Visual );
+	Visual.StatusBackground:ClearAllPoints();
 	Visual.StatusBackground:SetPoint( "TOPLEFT" );
 	Visual.StatusBackground:SetPoint( "BOTTOMRIGHT", Visual, "BOTTOMLEFT", PlateHeight, 0 );
+	Visual.StatusBackground:SetDrawLayer( "BORDER" );
 	Visual.StatusBackground:SetTexture( BarTexture );
 	Visual.StatusBackground:SetBlendMode( "ADD" );
 
@@ -503,7 +499,7 @@ local function PlateAdd ( Plate )
 	Cast.Icon:SetPoint( "BOTTOMRIGHT", Visual.StatusBackground, "TOPRIGHT", 0, 2 );
 	Cast.Icon:SetWidth( CastHeight );
 	Cast.Icon:SetHeight( CastHeight );
-	_Clean.RemoveIconBorder( Cast.Icon );
+	_Clean.SkinButton( nil, Cast.Icon );
 	CastBorder:SetTexture(); -- Seems to cause crashes when attempting to anchor
 	local IconBorder = Cast:CreateTexture( nil, "OVERLAY" );
 	IconBorder:SetTexture( [[Interface\AchievementFrame\UI-Achievement-IconFrame]] );

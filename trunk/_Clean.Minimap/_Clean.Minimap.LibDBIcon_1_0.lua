@@ -11,6 +11,7 @@ _Clean.Minimap.LibDBIcon_1_0 = me;
 me.Meta = {};
 
 local IconSize = 20;
+local IconBorder = 1;
 
 
 
@@ -31,11 +32,13 @@ function me:Skin ( ... )
 	self:SetWidth( IconSize );
 	self:SetHeight( IconSize );
 	self:SetFrameStrata( "BACKGROUND" );
-	self:SetFrameLevel( MinimapCluster:GetFrameLevel() - 1 );
+	self:SetFrameLevel( max( 0, Minimap:GetFrameLevel() - 1 ) );
 	self:SetAlpha( 0.8 );
-	_Clean.RemoveIconBorder( self.icon );
+	_Clean.SkinButton( self, self.icon );
 	self.icon:SetAllPoints( self );
+	self.icon:SetDrawLayer( "ARTWORK" );
 	self.icon.SetTexCoord = _Clean.NilFunction;
+	_Clean.Backdrop.Add( self, IconBorder );
 
 	for Index = 1, select( "#", ... ) do
 		local Region = select( Index, ... );

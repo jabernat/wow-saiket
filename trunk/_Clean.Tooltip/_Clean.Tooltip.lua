@@ -4,6 +4,7 @@
   ****************************************************************************]]
 
 
+-- NOTE(Add class icons to the main gametooltip, and then skin tooltip frames.)
 local L = _CleanLocalization.Tooltip;
 local _Clean = _Clean;
 local me = {};

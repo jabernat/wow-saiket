@@ -54,6 +54,8 @@ me.Colors.Experience = me.Colors.reaction[ 8 ];
 me.TopMargin = CreateFrame( "Frame", nil, UIParent );
 me.BottomPane = CreateFrame( "Frame", nil, UIParent );
 
+me.ButtonNormalTexture = [[Interface\AddOns\_Clean\Skin\ButtonNormalTexture]];
+
 
 
 
@@ -64,11 +66,22 @@ me.BottomPane = CreateFrame( "Frame", nil, UIParent );
 function me.NilFunction () end
 
 --[[****************************************************************************
-  * Function: _Clean:RemoveIconBorder                                          *
+  * Function: _Clean:SkinButton                                                *
   * Description: Hides the border graphic from an action button-like icon.     *
   ****************************************************************************]]
-function me:RemoveIconBorder ()
-	self:SetTexCoord( 0.08, 0.92, 0.08, 0.92 );
+function me:SkinButton ( IconTexture, NormalTexture )
+	IconTexture:SetTexCoord( 0.08, 0.92, 0.08, 0.92 ); -- Hide icon border
+	-- Add gloss normal texture
+	if ( NormalTexture ) then
+		NormalTexture:SetTexture( me.ButtonNormalTexture );
+	elseif ( self ) then
+		self:SetNormalTexture( me.ButtonNormalTexture );
+		NormalTexture = self:GetNormalTexture();
+	end
+	if ( NormalTexture ) then
+		NormalTexture:SetAllPoints( IconTexture );
+		NormalTexture:SetAlpha( 1 );
+	end
 end
 
 
