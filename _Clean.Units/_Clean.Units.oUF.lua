@@ -4,6 +4,7 @@
   ****************************************************************************]]
 
 
+-- NOTE(Fix health bars for critters.)
 local LibSharedMedia = LibStub( "LibSharedMedia-3.0" );
 local L = _CleanLocalization.Units;
 local _Clean = _Clean;
@@ -97,7 +98,7 @@ end
   * Function: _Clean.Units.oUF:PostCreateAuraIcon                              *
   ****************************************************************************]]
 function me:PostCreateAuraIcon ( Frame )
-	_Clean.RemoveIconBorder( Frame.icon );
+	_Clean.SkinButton( nil, Frame.icon );
 	Frame.UpdateTooltip = me.AuraUpdateTooltip;
 	Frame.cd:SetReverse( true );
 	Frame:SetFrameLevel( self:GetFrameLevel() - 1 ); -- Don't allow auras to overlap other units
@@ -357,7 +358,7 @@ do
 		self:SetScript( "OnEnter", UnitFrame_OnEnter );
 		self:SetScript( "OnLeave", UnitFrame_OnLeave );
 
-		local Backdrop = _Clean.Backdrop.Add( self, _Clean.Backdrop.Padding );
+		local Backdrop = _Clean.Backdrop.Add( self );
 		self:SetHighlightTexture( [[Interface\QuestFrame\UI-QuestTitleHighlight]] );
 		self:GetHighlightTexture():SetAllPoints( Backdrop );
 		local Background = self:CreateTexture( nil, "BACKGROUND" );

@@ -149,7 +149,7 @@ do
 				break;
 			end
 		end
-		_Clean.Backdrop.Add( self );
+		_Clean.Backdrop.Add( self, 0 );
 
 		local Text = _G[ self:GetName().."Text" ];
 		Text:ClearAllPoints();
@@ -166,7 +166,7 @@ do
 		self.Icon:SetHeight( 32 );
 		self.Icon:SetPoint( "LEFT", self, 2, 0 );
 		self.Icon:SetAlpha( 0.75 );
-		_Clean.RemoveIconBorder( self.Icon );
+		_Clean.SkinButton( nil, self.Icon, self:CreateTexture( nil, "OVERLAY" ) );
 		self.Time = self:CreateFontString( nil, "ARTWORK", "GameFontNormalSmall" );
 		self.Time:SetPoint( "LEFT", Text, "RIGHT" );
 

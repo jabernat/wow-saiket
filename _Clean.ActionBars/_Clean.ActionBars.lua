@@ -14,8 +14,6 @@ me.BackdropRight = _Clean.Backdrop.Create( UIParent );
 
 me.DominosProfile = "_Clean";
 
-me.ButtonNormalTexture = [[Interface\AddOns\_Clean.ActionBars\Skin\ButtonNormalTexture]];
-
 
 
 
@@ -46,7 +44,7 @@ do
 			-- Empty button texture
 			self:GetNormalTexture():SetTexCoord( 0.2, 0.8, 0.2, 0.8 );
 		else -- Restore skinned texture
-			getmetatable( self ).__index.SetNormalTexture( self, me.ButtonNormalTexture );
+			getmetatable( self ).__index.SetNormalTexture( self, _Clean.ButtonNormalTexture );
 			RotateTexture( self:GetNormalTexture(), self.Angle );
 		end
 	end
@@ -54,10 +52,7 @@ do
 		if ( not self.Angle ) then
 			self.Angle = Angle;
 
-			local NormalTexture = self:GetNormalTexture();
-			NormalTexture:SetAllPoints( self );
-			NormalTexture:SetAlpha( 1.0 );
-			_Clean.RemoveIconBorder( self:GetRegions() ); -- Note: Icon texture must be first!
+			_Clean.SkinButton( self, ( self:GetRegions() ) ); -- Note: Icon texture must be first!
 			hooksecurefunc( self, "SetNormalTexture", SetNormalTexture );
 			SetNormalTexture( self, "" ); -- Set texture and angle
 			return true;
@@ -163,7 +158,7 @@ function me:PLAYER_LOGIN ()
 
 	-- Move pet bar to middle of screen
 	local PetBar = Dominos.Frame:Get( "pet" );
-	PetBar:SetFramePoint( "BOTTOM", UIParent, 0, Backdrop:GetTop() * Backdrop:GetEffectiveScale() / PetBar:GetEffectiveScale() );
+	PetBar:SetFramePoint( "BOTTOM", UIParent, 0, Backdrop:GetTop() * Backdrop:GetParent():GetEffectiveScale() / PetBar:GetEffectiveScale() );
 
 	-- Prevent any profile changes in Dominos
 	Dominos.SaveProfile = _Clean.NilFunction;

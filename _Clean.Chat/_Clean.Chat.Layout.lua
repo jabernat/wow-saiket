@@ -52,9 +52,7 @@ function me:Expand ( Expand )
 		TabFrame:SetAlpha( 1.0 );
 
 		if ( ID == 1 or ID == 2 ) then
-			_Clean.RunProtectedFunction( function ()
-				self:SetPoint( "TOP", MinimapCluster, "BOTTOM" );
-			end, self:IsProtected() );
+			self:SetPoint( "TOP", MinimapCluster, "BOTTOM" );
 		end
 	else -- Contract and restore old alpha
 		self:SetFrameStrata( "BACKGROUND" );
@@ -63,9 +61,7 @@ function me:Expand ( Expand )
 		TabFrame:SetAlpha( me.ButtonAlpha );
 
 		if ( ID == 1 or ID == 2 ) then
-			_Clean.RunProtectedFunction( function ()
-				self:SetPoint( "TOP", _Clean.BottomPane, 0, -3 );
-			end, self:IsProtected() );
+			self:SetPoint( "TOP", _Clean.BottomPane, 0, -3 );
 		end
 	end
 end
@@ -93,22 +89,18 @@ end
   * Description: Undoes the changes made by FCF_UpdateCombatLogPosition.       *
   ****************************************************************************]]
 function me.UpdateCombatLogPosition ()
-	_Clean.RunProtectedFunction( function ()
-		ChatFrame2:ClearAllPoints();
-		ChatFrame2:SetPoint( "BOTTOMLEFT", ChatFrame1, "BOTTOMRIGHT", 4, 0 );
-		ChatFrame2:SetPoint( "RIGHT", _Clean.ActionBars.BackdropRight, "LEFT", -2, 0 );
-	end, ChatFrame2:IsProtected() );
+	ChatFrame2:ClearAllPoints();
+	ChatFrame2:SetPoint( "BOTTOMLEFT", ChatFrame1, "BOTTOMRIGHT", 4, 0 );
+	ChatFrame2:SetPoint( "RIGHT", _Clean.ActionBars.BackdropRight, "LEFT", -2, 0 );
 end
 --[[****************************************************************************
   * Function: _Clean.FCF.UpdateDockPosition                                    *
   * Description: Undoes the changes made by FCF_UpdateDockPosition.            *
   ****************************************************************************]]
 function me.UpdateDockPosition ()
-	_Clean.RunProtectedFunction( function ()
-		ChatFrame1:ClearAllPoints();
-		ChatFrame1:SetPoint( "BOTTOMLEFT", _Clean.ActionBars.BackdropBottomLeft, "TOPLEFT", 0, 6 );
-		ChatFrame1:SetPoint( "RIGHT", _Clean.ActionBars.BackdropBottomRight, "LEFT" );
-	end, ChatFrame1:IsProtected() );
+	ChatFrame1:ClearAllPoints();
+	ChatFrame1:SetPoint( "BOTTOMLEFT", _Clean.ActionBars.BackdropBottomLeft, "TOPLEFT", 0, 6 );
+	ChatFrame1:SetPoint( "RIGHT", _Clean.ActionBars.BackdropBottomRight, "LEFT" );
 end
 --[[****************************************************************************
   * Function: _Clean.FCF.ToggleLock                                            *
@@ -204,9 +196,7 @@ function me:OnEvent ()
 	FCF_SetChatWindowFontSize( nil, ChatFrame2, 12 );
 	me.UpdateDockPosition();
 	me.Expand( ChatFrame1, false );
-	_Clean.RunProtectedFunction( function ()
-		ChatFrame1:Show();
-	end, ChatFrame1:IsProtected() );
+	ChatFrame1:Show();
 	FCF_SetLocked( ChatFrame1, 1 );
 
 	-- Combat Log
@@ -220,9 +210,7 @@ function me:OnEvent ()
 	FCF_SetChatWindowFontSize( nil, ChatFrame2, 8 );
 	me.UpdateCombatLogPosition();
 	me.Expand( ChatFrame2, false );
-	_Clean.RunProtectedFunction( function ()
-		ChatFrame2:Show();
-	end, ChatFrame2:IsProtected() );
+	ChatFrame2:Show();
 	FCF_SetLocked( ChatFrame2, 1 );
 
 	-- Move frames and tabs front of lowest-level frames

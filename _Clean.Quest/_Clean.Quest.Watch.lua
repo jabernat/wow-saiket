@@ -61,13 +61,27 @@ end
   * Function: _Clean.Quest.Watch.UpdateQuests                                  *
   * Description: Repositions quest item buttons.                               *
   ****************************************************************************]]
-function me.UpdateQuests ()
-	for Index = 1, WATCHFRAME_NUM_ITEMS do
-		local Button = _G[ "WatchFrameItem"..Index ];
-		if ( Button:IsShown() ) then
-			Button:SetPoint( "TOPRIGHT", ( select( 2, Button:GetPoint( 1 ) ) ) );
-		else
-			break;
+do
+	local NumButtons = 0;
+	function me.UpdateQuests ()
+		-- Skin new buttons
+		if ( NumButtons ~= WATCHFRAME_NUM_ITEMS ) then -- New button created
+			for Index = NumButtons + 1, WATCHFRAME_NUM_ITEMS do
+				local Button = _G[ "WatchFrameItem"..Index ];
+				_Clean.SkinButton( Button, _G[ Button:GetName().."IconTexture" ] );
+				Button:GetNormalTexture():SetTexCoord( 1, 0, 0, 0, 1, 1, 0, 1 ); -- Rotate 90 degrees CCW
+			end
+			NumButtons = WATCHFRAME_NUM_ITEMS;
+		end
+
+		-- Reposition buttons
+		for Index = 1, WATCHFRAME_NUM_ITEMS do
+			local Button = _G[ "WatchFrameItem"..Index ];
+			if ( Button:IsShown() ) then
+				Button:SetPoint( "TOPRIGHT", ( select( 2, Button:GetPoint( 1 ) ) ) );
+			else
+				break;
+			end
 		end
 	end
 end
