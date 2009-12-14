@@ -37,9 +37,11 @@ end
 do
 	GameTooltip:HookScript( "OnUpdate", me.OnUpdate );
 
-	me:SetPoint( "BOTTOMLEFT", GameTooltip, "BOTTOMRIGHT" );
+	me:SetPoint( "TOPLEFT", GameTooltip, "TOPRIGHT" );
 	me:SetScale( 0.8 );
 	me.Text = _G[ me:GetName().."TextLeft1" ];
 
-	_Clean.Tooltip.RegisterGuild( me );
+	_Clean.Tooltip.UnitRegister( me );
+	me.Icon:ClearAllPoints();
+	me.Icon:SetPoint( "TOPLEFT", me, "TOPRIGHT", -2, -2 );
 end
