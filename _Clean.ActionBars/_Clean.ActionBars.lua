@@ -141,16 +141,25 @@ function me:PLAYER_LOGIN ()
 	-- Add backdrops
 	local Padding = _Clean.Backdrop.Padding;
 	local Backdrop = _Clean.ActionBars.BackdropBottomLeft;
-	Backdrop:SetPoint( "BOTTOMLEFT", Dominos.Frame:Get( 1 ) );
+	Backdrop:SetPoint( "BOTTOMLEFT", Dominos.Frame:Get( 1 ), -Padding, -Padding );
 	Backdrop:SetPoint( "TOPRIGHT", Dominos.Frame:Get( 6 ), Padding, Padding );
 
 	Backdrop = _Clean.ActionBars.BackdropBottomRight;
-	Backdrop:SetPoint( "BOTTOMRIGHT", Dominos.Frame:Get( "bags" ) );
+	Backdrop:SetPoint( "BOTTOMRIGHT", Dominos.Frame:Get( "bags" ), Padding, -Padding );
 	Backdrop:SetPoint( "TOPLEFT", Dominos.Frame:Get( 5 ), -Padding, Padding );
+
+	-- Hide borders where the right bar connects to the bottom-right one
+	Backdrop[ 1 ]:SetPoint( "RIGHT", _Clean.ActionBars.BackdropRight, "LEFT" );
+	Backdrop[ 2 ]:Hide();
 
 	Backdrop = _Clean.ActionBars.BackdropRight;
 	Backdrop:SetPoint( "BOTTOMRIGHT", _Clean.ActionBars.BackdropBottomRight, "TOPRIGHT" );
 	Backdrop:SetPoint( "TOPLEFT", MultiBarLeftButton4, -Padding, Padding );
+
+	-- Hide borders on the bottom of the right bar
+	Backdrop[ 4 ]:Hide();
+	Backdrop[ 5 ]:Hide();
+	Backdrop[ 6 ]:Hide();
 
 	-- Adjust bottom pane to match bar positions
 	_Clean.BottomPane:SetPoint( "TOP", Backdrop, 0, -16.5 - Padding ); -- Room for chat tabs between pane and top of backdrop
