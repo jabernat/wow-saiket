@@ -265,7 +265,7 @@ print( "Reading NPC data:" );
 local NpcData, NpcMapIDs = {}, {};
 for NpcID, Name in pairs( NpcIDs ) do
 	print( "+ ID "..NpcID..":", Name );
-	local Text, Status = http.request( ( [[http://www.wowdb.com/npc.aspx?id=]]..NpcID );
+	local Text, Status = http.request( [[http://www.wowdb.com/npc.aspx?id=]]..NpcID );
 	if ( not Text ) then
 		print( "  - Request failed:", Status );
 	elseif ( math.floor( Status / 100 ) ~= 2 ) then
