@@ -7,7 +7,7 @@
 local Tools = _NPCScan.Tools;
 local Overlay = _NPCScan.Overlay;
 local L = _NPCScanLocalization.TOOLS;
-local me = CreateFrame( "Frame", nil, WorldMapDetailFrame );
+local me = CreateFrame( "Frame", nil, WorldMapButton );
 Tools.Overlay = me;
 
 me.Label = L.OVERLAY_TITLE;
@@ -47,11 +47,13 @@ do
 			if ( Map == NpcMap ) then
 				-- Attempt to find the NPC's normal draw color
 				local Color, ColorIndex = HIGHLIGHT_FONT_COLOR, 0;
-				for NpcID in pairs( Overlay.PathData[ Map ] ) do
-					ColorIndex = ColorIndex + 1;
-					if ( NpcID == me.NpcIDSelected ) then
-						Color = Overlay.Colors[ ( ColorIndex - 1 ) % #Overlay.Colors + 1 ];
-						break;
+				if ( Overlay.PathData[ Map ] ) then
+					for NpcID in pairs( Overlay.PathData[ Map ] ) do
+						ColorIndex = ColorIndex + 1;
+						if ( NpcID == me.NpcIDSelected ) then
+							Color = Overlay.Colors[ ( ColorIndex - 1 ) % #Overlay.Colors + 1 ];
+							break;
+						end
 					end
 				end
 
