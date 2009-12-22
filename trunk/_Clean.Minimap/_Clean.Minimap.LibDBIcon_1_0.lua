@@ -4,6 +4,9 @@
   ****************************************************************************]]
 
 
+if ( not _Clean.Minimap ) then -- Wasn't loaded because Carbonite is enabled
+	return;
+end
 local _Clean = _Clean;
 local me = CreateFrame( "Frame" );
 _Clean.Minimap.LibDBIcon_1_0 = me;
