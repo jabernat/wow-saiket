@@ -4,7 +4,7 @@
   ****************************************************************************]]
 
 
--- NOTE(This mess needs to be rewritten.)
+-- NOTE(Abandon hope, all ye who enter here.)
 local _Clean = _Clean;
 local me = CreateFrame( "Frame", nil, UIParent );
 _Clean.FCF = me;
@@ -99,7 +99,7 @@ end
   ****************************************************************************]]
 function me.UpdateDockPosition ()
 	ChatFrame1:ClearAllPoints();
-	ChatFrame1:SetPoint( "BOTTOMLEFT", _Clean.ActionBars.BackdropBottomLeft, "TOPLEFT", 0, 6 );
+	ChatFrame1:SetPoint( "BOTTOMLEFT", _Clean.ActionBars.BackdropBottomLeft, "TOPLEFT", _Clean.Backdrop.Padding, 6 );
 	ChatFrame1:SetPoint( "RIGHT", _Clean.ActionBars.BackdropBottomRight, "LEFT" );
 end
 --[[****************************************************************************

@@ -4,7 +4,6 @@
   ****************************************************************************]]
 
 
--- NOTE(The normal chat module needs to look right when this is disabled.)
 local L = _CleanLocalization.Chat.CombatLog;
 local _Clean = _Clean;
 local me = {};
