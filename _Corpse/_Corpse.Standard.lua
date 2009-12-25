@@ -77,14 +77,14 @@ end
   * Description: Adds a friend and saves the name.                             *
   ****************************************************************************]]
 function me:AddFriend ( Name )
-	if ( _Corpse.IsModuleActive( self ) and not ( self.AddFriendLast or self.AddFriendSwapLast ) ) then
+	if ( not ( self.AddFriendLast or self.AddFriendSwapLast ) ) then
 		self.AddFriendLast = Name;
 		self:ReregisterEvent( "CHAT_MSG_SYSTEM" );
 
 		if ( GetNumFriends() >= MAX_IGNORE ) then
 			self:RemoveFriendSwap( ( GetFriendInfo( MAX_IGNORE ) ) );
 		end
-		AddFriend( Name );
+		AddFriend( Name, true ); -- "Ignore" flag for friend managing addons
 		return true;
 	end
 end
@@ -96,7 +96,7 @@ function me:RemoveFriend ()
 	self.RemoveFriendLast = self.AddFriendLast;
 	self.AddFriendLast = nil;
 	self:ReregisterEvent( "CHAT_MSG_SYSTEM" );
-	RemoveFriend( self.RemoveFriendLast );
+	RemoveFriend( self.RemoveFriendLast, true ); -- "Ignore" flag for friend managing addons
 end
 --[[****************************************************************************
   * Function: _Corpse.Standard:AddFriendSwap                                   *
@@ -108,7 +108,7 @@ function me:AddFriendSwap ()
 		self.RemoveFriendSwapLast = nil;
 		self:ReregisterEvent( "CHAT_MSG_SYSTEM" );
 
-		AddFriend( self.AddFriendSwapLast );
+		AddFriend( self.AddFriendSwapLast, true ); -- "Ignore" flag for friend managing addons
 		return true;
 	end
 end
@@ -119,7 +119,7 @@ end
 function me:RemoveFriendSwap ( Name )
 	self.RemoveFriendSwapLast = Name;
 	--self:ReregisterEvent( "CHAT_MSG_SYSTEM" ); -- Always called before RemoveFriendSwap
-	RemoveFriend( Name );
+	RemoveFriend( Name, true ); -- "Ignore" flag for friend managing addons
 end
 
 
