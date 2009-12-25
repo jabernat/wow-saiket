@@ -112,6 +112,12 @@ function me:PLAYER_ENTERING_WORLD ()
 	me.SetActiveModule( Module );
 end
 --[[****************************************************************************
+  * Function: _Corpse:PLAYER_LEAVING_WORLD                                     *
+  ****************************************************************************]]
+function me:PLAYER_LEAVING_WORLD ()
+	me.SetActiveModule( nil );
+end
+--[[****************************************************************************
   * Function: _Corpse:OnEvent                                                  *
   * Description: Global event handler.                                         *
   ****************************************************************************]]
