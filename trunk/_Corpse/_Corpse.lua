@@ -105,6 +105,8 @@ function me:PLAYER_ENTERING_WORLD ()
 
 	if ( Type == "pvp" ) then -- In battleground
 		Module = me.Battlegrounds;
+	elseif ( Type == "party" ) then -- In a 5-man dungeon
+		Module = me.Dungeons;
 	elseif ( Type ~= "arena" ) then
 		Module = me.Standard;
 	end -- Else disable in arenas
@@ -154,10 +156,10 @@ function me.SetActiveModule ( NewModule )
 		local OldModule = me.ActiveModule;
 		me.ActiveModule = NewModule;
 
-		if ( OldModule ) then
+		if ( OldModule and OldModule.Disable ) then
 			OldModule:Disable();
 		end
-		if ( NewModule ) then
+		if ( NewModule and NewModule.Enable ) then
 			NewModule:Enable();
 		end
 
