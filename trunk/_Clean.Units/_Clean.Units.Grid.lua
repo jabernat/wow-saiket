@@ -21,6 +21,7 @@ _Clean.Units.Grid = me;
   ****************************************************************************]]
 function me:FrameInitialize ()
 	self.menu = _Clean.Units.ShowGenericMenu;
+	_Clean.Backdrop.Add( self, -2 );
 end
 
 
