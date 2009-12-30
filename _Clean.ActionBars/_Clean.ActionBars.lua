@@ -14,6 +14,8 @@ me.BackdropRight = _Clean.Backdrop.Create( UIParent );
 
 me.DominosProfile = "_Clean";
 
+local NumSideButtonsExcluded = 3; -- Action buttons from the top to leave outside of the backdrop
+
 
 
 
@@ -138,6 +140,7 @@ function me:PLAYER_LOGIN ()
 		ActionButtonModify( _G[ "DominosClassButton"..ID ], math.pi );
 	end );
 
+
 	-- Add backdrops
 	local Padding = _Clean.Backdrop.Padding;
 	local Backdrop = _Clean.ActionBars.BackdropBottomLeft;
@@ -154,12 +157,23 @@ function me:PLAYER_LOGIN ()
 
 	Backdrop = _Clean.ActionBars.BackdropRight;
 	Backdrop:SetPoint( "BOTTOMRIGHT", _Clean.ActionBars.BackdropBottomRight, "TOPRIGHT" );
-	Backdrop:SetPoint( "TOPLEFT", MultiBarLeftButton4, -Padding, Padding );
+	Backdrop:SetPoint( "TOPLEFT", _G[ "MultiBarLeftButton"..( NumSideButtonsExcluded + 1 ) ], -Padding, Padding );
 
 	-- Hide borders on the bottom of the right bar
 	Backdrop[ 4 ]:Hide();
 	Backdrop[ 5 ]:Hide();
 	Backdrop[ 6 ]:Hide();
+
+	-- Outline excluded buttons
+	local function SkinExcludedButton ( Button )
+		Button:GetRegions():SetDrawLayer( "BORDER" ); -- Move icon above backdrop
+		_Clean.Backdrop.Add( Button, 0 );
+	end
+	for Index = 1, NumSideButtonsExcluded do
+		SkinExcludedButton( _G[ "MultiBarLeftButton"..Index ] );
+		SkinExcludedButton( _G[ "MultiBarRightButton"..Index ] );
+	end
+
 
 	-- Adjust bottom pane to match bar positions
 	_Clean.BottomPane:SetPoint( "TOP", Backdrop, 0, -16.5 - Padding ); -- Room for chat tabs between pane and top of backdrop
