@@ -54,52 +54,51 @@ local HasTarget = false;
   * Description: Reposition elements when a nameplate gets reused.             *
   ****************************************************************************]]
 function me:PlateOnShow ()
-	me.PlatesVisible[ self ] = true;
+	local Visual = Plates[ self ];
+	me.PlatesVisible[ self ] = Visual;
+
+	if ( not self:IsMouseOver() ) then -- Note: Fix for bug where highlights get stuck in default UI
+		Visual.Highlight:Hide();
+	end
+	Visual.Highlight:SetPoint( "TOPLEFT", Visual, -PlateBorder, PlateBorder );
+	Visual.Highlight:SetPoint( "BOTTOMRIGHT", Visual, PlateBorder, -PlateBorder );
+	Visual.Level:ClearAllPoints();
+	Visual.Level:SetPoint( "CENTER", Visual.StatusBackground, 0, 1 );
+	Visual.Name:ClearAllPoints();
+	Visual.Name:SetPoint( "TOPRIGHT", Visual.Health.Right );
+	Visual.Name:SetPoint( "BOTTOMLEFT", Visual.Health.Left, 2, 2 );
+	Visual.ThreatBorder:Hide();
+	Visual.ThreatBorder.Threat = nil; -- Reset threat level cache
+	Visual.Cast:Hide(); -- Note: Fix for cast bars occasionally being shown without any spellcast
+
+	me.VisualUpdateClassification( Visual, true ); -- Force
 	if ( HasTarget ) then
-		self:GetParent():SetScript( "OnUpdate", me.PlateOnUpdate );
+		self:SetScript( "OnUpdate", me.PlateOnUpdate ); -- Begin updating target border
 	end
-	self:RegisterEvent( "UNIT_THREAT_LIST_UPDATE" );
-	self:RegisterEvent( "PLAYER_REGEN_DISABLED" );
-	self:RegisterEvent( "PLAYER_REGEN_ENABLED" );
-	if ( not InCombat ) then
-		local Plate = self:GetParent();
-		Plate:SetWidth( PlateWidth );
-		Plate:SetHeight( PlateHeight );
+	if ( InCombat ) then
+		Visual:SetScript( "OnUpdate", me.VisualOnUpdate ); -- Begin updating threat
+	else
+		self:SetWidth( PlateWidth );
+		self:SetHeight( PlateHeight );
 	end
-
-	if ( not self:GetParent():IsMouseOver() ) then -- Note: Fix for bug where highlights get stuck in default UI
-		self.Highlight:Hide();
-	end
-	self.Highlight:SetPoint( "TOPLEFT", self, -PlateBorder, PlateBorder );
-	self.Highlight:SetPoint( "BOTTOMRIGHT", self, PlateBorder, -PlateBorder );
-	self.Level:ClearAllPoints();
-	self.Level:SetPoint( "CENTER", self.StatusBackground, 0, 1 );
-	self.Name:ClearAllPoints();
-	self.Name:SetPoint( "TOPRIGHT", self.Health.Right );
-	self.Name:SetPoint( "BOTTOMLEFT", self.Health.Left, 2, 2 );
-	self.ThreatBorder:Hide();
-
-	self.Cast:Hide(); -- Note: Fix for cast bars occasionally being shown without any spellcast
-
-	me.PlateUpdateClassification( self, true ); -- Force
-	me.PlateOnThreatChanged( self );
 end
 --[[****************************************************************************
   * Function: _Clean.Nameplates:PlateOnHide                                    *
   ****************************************************************************]]
 function me:PlateOnHide ()
 	me.PlatesVisible[ self ] = nil;
+
 	if ( HasTarget ) then
-		self:GetParent():SetScript( "OnUpdate", nil );
+		self:SetScript( "OnUpdate", nil ); -- Stop updating target border
 		-- Hide target outline if shown
-		if ( self == Plates[ me.TargetOutline:GetParent() ] ) then
+		if ( me.TargetOutline:GetParent() == self ) then
 			me.TargetOutline:Hide();
 			me.TargetOutline:SetParent( nil );
 		end
 	end
-	self:UnregisterEvent( "UNIT_THREAT_LIST_UPDATE" );
-	self:UnregisterEvent( "PLAYER_REGEN_DISABLED" );
-	self:UnregisterEvent( "PLAYER_REGEN_ENABLED" );
+	if ( InCombat ) then
+		Plates[ self ]:SetScript( "OnUpdate", nil ); -- Stop updating threat
+	end
 end
 --[[****************************************************************************
   * Function: _Clean.Nameplates:PlateOnUpdate                                  *
@@ -121,83 +120,53 @@ do
 		end
 	end
 end
+
 --[[****************************************************************************
-  * Function: _Clean.Nameplates:PlateOnHealthChanged                           *
+  * Function: _Clean.Nameplates:VisualOnUpdate                                 *
+  * Description: Updates threat textures.                                      *
   ****************************************************************************]]
 do
-	local modf = math.modf;
-	local function GetHealthColor ( Percent ) -- Shade bar based on health
-		local C = Colors.HealthSmooth;
-		if ( Percent == 1 ) then
-			return C[ #C - 2 ], C[ #C - 1 ], C[ #C ], 1;
-		elseif ( Percent == 0 ) then
-			return C[ 1 ], C[ 2 ], C[ 3 ], 1;
-		end
-
-		local Segment, Percent = modf( Percent * ( #C / 3 - 1 ) );
-		local Index, Inverse = Segment * 3 + 1, 1 - Percent;
-
-		return C[ Index + 3 ] * Percent + C[ Index ] * Inverse,
-			C[ Index + 4 ] * Percent + C[ Index + 1 ] * Inverse,
-			C[ Index + 5 ] * Percent + C[ Index + 2 ] * Inverse, 1;
-	end
-	function me:PlateOnHealthChanged ( Health )
-		local _, HealthMax = self:GetMinMaxValues();
-		local Percent = Health / HealthMax;
-		self.Left:SetWidth( Percent * ( PlateWidth - PlateHeight ) );
-		if ( self.IsHealerMode ) then
-			if ( Health <= HealthIsGhost ) then -- Ghost or close to it
-				local C = Colors.disconnected;
-				self.Right:SetVertexColor( C[ 1 ], C[ 2 ], C[ 3 ], 1 );
-			else
-				self.Right:SetVertexColor( GetHealthColor( Percent ) );
+	local Threat, ThreatBorder;
+	local R, G, B, Color;
+	function me:VisualOnUpdate ()
+		Threat, ThreatBorder = 0, self.ThreatBorder;
+		if ( self.Reaction <= 4 ) then -- Not friendly
+			if ( self.ThreatGlow:IsShown() ) then
+				R, G, B = self.ThreatGlow:GetVertexColor();
+				if ( R > 0.99 and B < 0.01 ) then -- Not solid white (uninitialized)
+					Threat = G > 0.5 and 1 or 2;
+				end
 			end
-		end
-	end
-end
---[[****************************************************************************
-  * Function: _Clean.Nameplates:PlateOnThreatChanged                           *
-  * Description: Updates threat textures when UNIT_THREAT_LIST_UPDATE fires.   *
-  ****************************************************************************]]
-do
-	local function GetThreat ( self )
-		if ( self.ThreatGlow:IsShown() ) then
-			return self.ThreatGlow:GetVertexColor() > 0.99 and 2 or 1;
-		else
-			return 0;
-		end
-	end
-	local unpack = unpack;
-	local function UpdateThreat ( self ) -- Color threat borders after one frame's delay
-		self:SetScript( "OnUpdate", nil );
-
-		if ( InCombat and self.Reaction <= 4 ) then -- Not friendly
-			local Threat = GetThreat( self );
-			if ( me.OptionsCharacter.TankMode ) then
+			if ( me.OptionsCharacter.TankMode ) then -- Invert
 				Threat = 2 - Threat;
 			end
+
 			if ( Threat > 0 ) then
-				if ( Threat == 1 ) then -- Medium
-					Threat = Colors.reaction[ 4 ]; -- Neutral
-					self.ThreatBorder:SetTexCoord( 0, 1, 0, 0.5 );
-				else -- High
-					Threat = Colors.reaction[ 1 ]; -- Hostile
-					self.ThreatBorder:SetTexCoord( 0, 1, 0.5, 1 );
+				if ( ThreatBorder.Threat ~= Threat ) then -- Changed
+					ThreatBorder.Threat = Threat;
+					if ( Threat == 1 ) then -- Medium
+						Color = Colors.reaction[ 4 ]; -- Neutral
+						ThreatBorder:SetTexCoord( 0, 1, 0, 0.5 );
+					else -- High
+						Color = Colors.reaction[ 1 ]; -- Hostile
+						ThreatBorder:SetTexCoord( 0, 1, 0.5, 1 );
+					end
+					ThreatBorder:SetVertexColor( Color[ 1 ], Color[ 2 ], Color[ 3 ] );
+					ThreatBorder:Show();
 				end
-				self.ThreatBorder:SetVertexColor( unpack( Threat ) );
-				self.ThreatBorder:Show();
 				return;
 			end
 		end
+
 		-- Low
-		self.ThreatBorder:Hide();
-	end
-	function me:PlateOnThreatChanged ()
-		self:SetScript( "OnUpdate", UpdateThreat );
+		if ( ThreatBorder.Threat ~= Threat ) then -- Changed
+			ThreatBorder.Threat = Threat;
+			ThreatBorder:Hide();
+		end
 	end
 end
 --[[****************************************************************************
-  * Function: _Clean.Nameplates:PlateUpdateClassification                      *
+  * Function: _Clean.Nameplates:VisualUpdateClassification                     *
   * Description: Periodically interprets the status bar color for info.        *
   ****************************************************************************]]
 do
@@ -228,8 +197,10 @@ do
 	local unpack = unpack;
 	local UnitLevel = UnitLevel;
 	local MAX_PLAYER_LEVEL = MAX_PLAYER_LEVEL;
-	function me:PlateUpdateClassification ( Force )
-		local Health = self.Health;
+	local Health, Left, Right;
+	local LevelText, BossIcon, Level, LevelPlayer, StatusBackground;
+	function me:VisualUpdateClassification ( Force )
+		Health = self.Health;
 		R, G, B = Health:GetStatusBarColor();
 		if ( Force or Health[ 1 ] ~= R or Health[ 2 ] ~= G or Health[ 3 ] ~= B ) then -- Reaction/classification changed
 			Health[ 1 ], Health[ 2 ], Health[ 3 ] = R, G, B; -- Save for future comparison
@@ -238,23 +209,24 @@ do
 			Health.IsHealerMode = self.Reaction > 4 and self.IsPlayer; -- Friendly player
 
 			-- Health bar color
+			Left, Right = Health.Left, Health.Right;
 			if ( Health.IsHealerMode ) then
 				-- Color fades based on health
-				Health.Left:SetBlendMode( "MOD" );
-				Health.Left:SetVertexColor( 1, 1, 1, 0.5 );
-				Health.Right:SetBlendMode( "ADD" );
-				me.PlateOnHealthChanged( Health, Health:GetValue() );
+				Left:SetBlendMode( "MOD" );
+				Left:SetVertexColor( 1, 1, 1, 0.5 );
+				Right:SetBlendMode( "ADD" );
+				me.HealthOnValueChanged( Health, Health:GetValue() );
 			else
-				Health.Left:SetBlendMode( "ADD" );
-				Health.Left:SetVertexColor( unpack( Colors.reaction[ self.Reaction ] ) );
-				Health.Left:SetAlpha( 1 );
-				Health.Right:SetBlendMode( "ADD" );
-				Health.Right:SetVertexColor( 1, 1, 1, 0.1 );
+				Left:SetBlendMode( "ADD" );
+				Left:SetVertexColor( unpack( Colors.reaction[ self.Reaction ] ) );
+				Left:SetAlpha( 1 );
+				Right:SetBlendMode( "ADD" );
+				Right:SetVertexColor( 1, 1, 1, 0.1 );
 			end
 
 			-- Level text/boss icon
-			local LevelText, BossIcon = self.Level, self.BossIcon;
-			local Level, LevelPlayer = ( LevelText:GetText() or math.huge ) + 0, UnitLevel( "player" );
+			LevelText, BossIcon = self.Level, self.BossIcon;
+			Level, LevelPlayer = ( LevelText:GetText() or math.huge ) + 0, UnitLevel( "player" );
 			if ( LevelPlayer == MAX_PLAYER_LEVEL
 				and Level == MAX_PLAYER_LEVEL
 				and not self.StatusBorder:IsShown()
@@ -278,7 +250,7 @@ do
 			end
 
 			-- Status background
-			local StatusBackground = self.StatusBackground;
+			StatusBackground = self.StatusBackground;
 			if ( self.Class ) then -- Use class icon
 				self.ClassIcon:Show();
 				self.ClassIcon:SetTexCoord( unpack( CLASS_ICON_TCOORDS[ self.Class ] ) );
@@ -294,13 +266,48 @@ do
 					if ( Health.IsHealerMode ) then
 						StatusBackground:SetVertexColor( 1, 1, 1 );
 					else -- Use reaction color
-						StatusBackground:SetVertexColor( Health.Left:GetVertexColor() );
+						StatusBackground:SetVertexColor( Left:GetVertexColor() );
 					end
 					StatusBackground:SetAlpha( 0.3 );
 				end
 			end
 
 			return true;
+		end
+	end
+end
+
+--[[****************************************************************************
+  * Function: _Clean.Nameplates:HealthOnValueChanged                           *
+  ****************************************************************************]]
+do
+	local modf = math.modf;
+	local function GetHealthColor ( Percent ) -- Shade bar based on health
+		local C = Colors.HealthSmooth;
+		if ( Percent == 1 ) then
+			return C[ #C - 2 ], C[ #C - 1 ], C[ #C ], 1;
+		elseif ( Percent == 0 ) then
+			return C[ 1 ], C[ 2 ], C[ 3 ], 1;
+		end
+
+		local Segment, Percent = modf( Percent * ( #C / 3 - 1 ) );
+		local Index, Inverse = Segment * 3 + 1, 1 - Percent;
+
+		return C[ Index + 3 ] * Percent + C[ Index ] * Inverse,
+			C[ Index + 4 ] * Percent + C[ Index + 1 ] * Inverse,
+			C[ Index + 5 ] * Percent + C[ Index + 2 ] * Inverse, 1;
+	end
+	function me:HealthOnValueChanged ( Health )
+		local _, HealthMax = self:GetMinMaxValues();
+		local Percent = Health / HealthMax;
+		self.Left:SetWidth( Percent * ( PlateWidth - PlateHeight ) );
+		if ( self.IsHealerMode ) then
+			if ( Health <= HealthIsGhost ) then -- Ghost or close to it
+				local C = Colors.disconnected;
+				self.Right:SetVertexColor( C[ 1 ], C[ 2 ], C[ 3 ], 1 );
+			else
+				self.Right:SetVertexColor( GetHealthColor( Percent ) );
+			end
 		end
 	end
 end
@@ -412,7 +419,6 @@ local function PlateAdd ( Plate )
 		Visual.BossIcon, RaidIcon, Visual.StatusBorder = Plate:GetRegions();
 
 
-	Visual:SetScript( "OnEvent", me.PlateOnThreatChanged );
 	Visual:SetWidth( PlateWidth );
 	Visual:SetHeight( PlateHeight );
 	Visual:SetPoint( "TOP" );
@@ -476,8 +482,8 @@ local function PlateAdd ( Plate )
 	Health.Right:SetPoint( "TOPRIGHT" );
 	Health.Right:SetPoint( "BOTTOMLEFT", Health.Left, "BOTTOMRIGHT" );
 	Health.Right:SetTexture( BarTexture );
-	Health:HookScript( "OnValueChanged", me.PlateOnHealthChanged );
-	me.PlateOnHealthChanged( Health, Health:GetValue() );
+	Health:SetScript( "OnValueChanged", me.HealthOnValueChanged );
+	me.HealthOnValueChanged( Health, Health:GetValue() );
 
 	-- Name text
 	Visual.Name:SetParent( Health );
@@ -486,9 +492,9 @@ local function PlateAdd ( Plate )
 
 	-- Cast bar
 	Cast:SetParent( Visual );
-	Cast:HookScript( "OnShow", me.CastOnShow );
-	Cast:HookScript( "OnHide", me.CastOnHide );
-	Cast:HookScript( "OnEvent", me.CastOnInterruptibleChanged );
+	Cast:SetScript( "OnShow", me.CastOnShow );
+	Cast:SetScript( "OnHide", me.CastOnHide );
+	Cast:SetScript( "OnEvent", me.CastOnInterruptibleChanged );
 	Cast:SetStatusBarTexture( BarTexture );
 	local BarTexture = Cast:GetStatusBarTexture();
 	BarTexture:SetDrawLayer( "BORDER" );
@@ -548,10 +554,10 @@ local function PlateAdd ( Plate )
 	Visual.ThreatBorder:SetTexture( [[Interface\AddOns\_Clean.Nameplates\Skin\ThreatBorders]] );
 
 
-	Visual:SetScript( "OnShow", me.PlateOnShow );
-	Visual:SetScript( "OnHide", me.PlateOnHide );
+	Plate:SetScript( "OnShow", me.PlateOnShow );
+	Plate:SetScript( "OnHide", me.PlateOnHide );
 	if ( Plate:IsVisible() ) then
-		me.PlateOnShow( Visual );
+		me.PlateOnShow( Plate );
 	end
 end
 --[[****************************************************************************
@@ -565,7 +571,7 @@ do
 	function PlatesScan ( ... )
 		for Index = 1, select( "#", ... ) do
 			Frame = select( Index, ... );
-			if ( not Plates[ Frame ] ) then
+			if ( not ( Plates[ Frame ] or Frame:GetName() ) ) then
 				Region = Frame:GetRegions();
 				if ( Region and Region:GetObjectType() == "Texture" and Region:GetTexture() == [[Interface\TargetingFrame\UI-TargetingFrame-Flash]] ) then
 					PlateAdd( Frame );
@@ -595,9 +601,14 @@ end
 function me:PLAYER_REGEN_ENABLED ()
 	InCombat = false;
 
-	for Plate in pairs( Plates ) do
+	for Plate, Visual in pairs( Plates ) do
 		Plate:SetWidth( PlateWidth );
 		Plate:SetHeight( PlateHeight );
+	end
+	for Plate, Visual in pairs( me.PlatesVisible ) do
+		Visual:SetScript( "OnUpdate", nil ); -- Quit updating threat
+		Visual.ThreatBorder:Hide();
+		Visual.ThreatBorder.Threat = nil; -- Reset threat level cache
 	end
 end
 --[[****************************************************************************
@@ -605,6 +616,10 @@ end
   ****************************************************************************]]
 function me:PLAYER_REGEN_DISABLED ()
 	InCombat = true;
+
+	for Plate, Visual in pairs( me.PlatesVisible ) do
+		Visual:SetScript( "OnUpdate", me.VisualOnUpdate ); -- Begin updating threat
+	end
 end
 --[[****************************************************************************
   * Function: _Clean.Nameplates:PLAYER_TARGET_CHANGED                          *
@@ -618,8 +633,8 @@ function me:PLAYER_TARGET_CHANGED ()
 
 	-- Set or clear individual plate update handlers
 	local UpdateScript = HasTarget and me.PlateOnUpdate or nil;
-	for Visual in pairs( me.PlatesVisible ) do
-		Visual:GetParent():SetScript( "OnUpdate", UpdateScript );
+	for Plate in pairs( me.PlatesVisible ) do
+		Plate:SetScript( "OnUpdate", UpdateScript );
 	end
 end
 
@@ -636,15 +651,15 @@ do
 		if ( ChildCount ~= NewChildCount ) then
 			ChildCount = NewChildCount;
 
-			PlatesScan( WorldFrame:GetChildren( WorldFrame ) );
+			PlatesScan( WorldFrame:GetChildren() );
 		end
 
 		NextUpdate = NextUpdate - Elapsed;
 		if ( NextUpdate <= 0 ) then
 			NextUpdate = me.ClassificationUpdateRate;
 
-			for Visual in pairs( me.PlatesVisible ) do
-				me.PlateUpdateClassification( Visual );
+			for Plate, Visual in pairs( me.PlatesVisible ) do
+				me.VisualUpdateClassification( Visual );
 			end
 		end
 	end
@@ -660,11 +675,6 @@ end
 function me.SetTankMode ( Enable )
 	if ( me.OptionsCharacter.TankMode ~= Enable ) then
 		me.OptionsCharacter.TankMode = Enable;
-
-		-- Immediately update visible plates
-		for Visual in pairs( me.PlatesVisible ) do
-			me.PlateOnThreatChanged( Visual );
-		end
 		return true;
 	end
 end
