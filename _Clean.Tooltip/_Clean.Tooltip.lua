@@ -163,7 +163,7 @@ end
   ****************************************************************************]]
 do
 	local function OnTooltipSetSpell ( self )
-		me.IconSet( self, ( select( 3, GetSpellInfo( select( 3, self:GetSpell() ) ) ) ) );
+		me.IconSet( self, ( select( 3, GetSpellInfo( ( select( 3, self:GetSpell() ) ) ) ) ) );
 	end
 	function me:SpellRegister ()
 		me.IconCreate( self );
