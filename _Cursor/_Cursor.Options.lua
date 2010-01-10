@@ -741,8 +741,7 @@ do
 	Set.tooltipText = L.OPTIONS[ "SET_DESC" ];
 	local SetButton = Set.Button;
 	SetButton:SetPoint( "RIGHT", Set, 3, 1 );
-	SetButton:SetWidth( 24 );
-	SetButton:SetHeight( 24 );
+	SetButton:SetSize( 24, 24 );
 	SetButton:SetNormalTexture( "Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Up" );
 	SetButton:SetPushedTexture( "Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Down" );
 	SetButton:SetHighlightTexture( "Interface\\Buttons\\UI-Common-MouseHilight", "ADD" );
@@ -751,22 +750,19 @@ do
 
 	local SaveButton = SetsPanel.SaveButton;
 	SaveButton:SetPoint( "BOTTOMLEFT", 8, 10 );
-	SaveButton:SetWidth( 74 );
-	SaveButton:SetHeight( 22 );
+	SaveButton:SetSize( 74, 22 );
 	SaveButton:SetText( L.OPTIONS.SAVE );
 	SaveButton:SetScript( "OnClick", SaveButton.OnClick );
 
 	local LoadButton = SetsPanel.LoadButton;
 	LoadButton:SetPoint( "LEFT", SaveButton, "RIGHT", 4, 0 );
-	LoadButton:SetWidth( 74 );
-	LoadButton:SetHeight( 22 );
+	LoadButton:SetSize( 74, 22 );
 	LoadButton:SetText( L.OPTIONS.LOAD );
 	LoadButton:SetScript( "OnClick", LoadButton.OnClick );
 
 	local DeleteButton = SetsPanel.DeleteButton;
 	DeleteButton:SetPoint( "BOTTOMRIGHT", -8, 10 );
-	DeleteButton:SetWidth( 74 );
-	DeleteButton:SetHeight( 22 );
+	DeleteButton:SetSize( 74, 22 );
 	DeleteButton:SetText( L.OPTIONS.DELETE );
 	DeleteButton:SetScript( "OnClick", DeleteButton.OnClick );
 	DeleteButton:SetScript( "OnEnter", me.ControlOnEnter );
@@ -788,8 +784,7 @@ do
 	local ApplyButton = CursorsPanel.ApplyButton;
 	ApplyButton:SetScript( "OnClick", me.OnApply );
 	ApplyButton:SetPoint( "BOTTOMRIGHT", CursorsPanel, "TOPRIGHT", 0, 2 );
-	ApplyButton:SetWidth( 64 );
-	ApplyButton:SetHeight( 16 );
+	ApplyButton:SetSize( 64, 16 );
 	ApplyButton:SetText( L.OPTIONS.APPLY );
 
 
@@ -804,8 +799,7 @@ do
 	-- Preview window
 	local Preview = CursorsPanel.Preview;
 	Preview:SetPoint( "TOPRIGHT", -16, -8 );
-	Preview:SetWidth( 96 );
-	Preview:SetHeight( 96 );
+	Preview:SetSize( 96, 96 );
 	Preview:SetBackdrop( {
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border"; edgeSize = 16;
 	} );
@@ -828,8 +822,7 @@ do
 
 	local Cursor = Preview.Model:CreateTexture( nil, "OVERLAY" );
 	Preview.Cursor = Cursor;
-	Cursor:SetWidth( 24 );
-	Cursor:SetHeight( 24 );
+	Cursor:SetSize( 24, 24 );
 	Cursor:SetTexture( "Interface\\Cursor\\Point.blp" );
 	Cursor:SetVertexColor( 0.4, 0.4, 0.4 );
 

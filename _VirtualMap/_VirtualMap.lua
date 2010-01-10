@@ -375,8 +375,7 @@ do
 				PinOffset = 0.4 * ( 1 - abs( PitchCompression ) * ( Pin[ PIN_DEPTH ] / Radius + 1 ) / 2 );
 				PinBrightness = Brightness + PinOffset;
 				PinBrightnessFar = BrightnessFar + PinOffset;
-				Pin:SetWidth( PinSize );
-				Pin:SetHeight( PinSize );
+				Pin:SetSize( PinSize, PinSize );
 				Pin:SetPoint( "BOTTOM", HUD, "CENTER", PinX * Scale, PinY * Scale * HeightCompression );
 				Texture = Pin[ PIN_TEXTURE ];
 				Texture:SetAlpha( PinAlpha );

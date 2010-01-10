@@ -178,8 +178,7 @@ local function Resize ( self )
 		Column:SetWidth( ColumnWidth );
 		Width = Width + ColumnWidth;
 	end
-	self.Body:SetWidth( Width > 0 and Width or 1 );
-	self.Body:SetHeight( ( 1 + #Rows ) * RowHeight );
+	self.Body:SetSize( Width > 0 and Width or 1, ( 1 + #Rows ) * RowHeight );
 end
 --[[****************************************************************************
   * Function: local OnUpdate                                                   *
@@ -257,8 +256,7 @@ do
 			ScrollScript( View, 1 );
 		end );
 		local Thumb = Scroll:GetThumbTexture();
-		Thumb:SetWidth( Dec:GetWidth() );
-		Thumb:SetHeight( Dec:GetWidth() );
+		Thumb:SetSize( Dec:GetSize() );
 		Thumb:SetTexCoord( 0.25, 0.75, 0.25, 0.75 );
 		local Background = Scroll:CreateTexture( nil, "BACKGROUND" );
 		Background:SetTexture( 0, 0, 0, 0.5 );

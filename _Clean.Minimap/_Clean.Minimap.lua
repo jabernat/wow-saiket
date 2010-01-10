@@ -106,8 +106,7 @@ end
 do
 	MinimapCluster:ClearAllPoints();
 	MinimapCluster:SetPoint( "TOPRIGHT", _Clean.TopMargin, "BOTTOMRIGHT" );
-	MinimapCluster:SetWidth( Minimap:GetWidth() );
-	MinimapCluster:SetHeight( Minimap:GetHeight() );
+	MinimapCluster:SetSize( Minimap:GetSize() );
 	MinimapCluster:SetScale( MinimapScale );
 	MinimapCluster:EnableMouse( false );
 	_Clean.Backdrop.Add( Minimap );
@@ -152,8 +151,7 @@ do
 
 	MiniMapTracking:ClearAllPoints();
 	MiniMapTracking:SetPoint( "BOTTOMLEFT", Minimap, -1, 0 );
-	MiniMapTracking:SetWidth( IconSize );
-	MiniMapTracking:SetHeight( IconSize );
+	MiniMapTracking:SetSize( IconSize, IconSize );
 	MiniMapTrackingButton:SetAllPoints( MiniMapTracking );
 	MiniMapTrackingButtonBorder:Hide();
 	MiniMapTrackingButtonBorder:SetTexture();
@@ -172,8 +170,7 @@ do
 
 	MiniMapMailFrame:ClearAllPoints();
 	MiniMapMailFrame:SetPoint( "BOTTOMRIGHT", Minimap, -1, 0 );
-	MiniMapMailFrame:SetWidth( IconSize );
-	MiniMapMailFrame:SetHeight( IconSize );
+	MiniMapMailFrame:SetSize( IconSize, IconSize );
 	MiniMapMailBorder:Hide();
 	MiniMapMailBorder:SetTexture();
 	MiniMapMailIcon:SetAllPoints( MiniMapMailFrame );
@@ -182,8 +179,7 @@ do
 
 	MiniMapBattlefieldFrame:ClearAllPoints();
 	MiniMapBattlefieldFrame:SetPoint( "RIGHT", MiniMapMailFrame, "LEFT" );
-	MiniMapBattlefieldFrame:SetWidth( IconSize * 1.5 );
-	MiniMapBattlefieldFrame:SetHeight( IconSize * 1.5 );
+	MiniMapBattlefieldFrame:SetSize( IconSize * 1.5, IconSize * 1.5 );
 	MiniMapBattlefieldBorder:Hide();
 	MiniMapBattlefieldBorder:SetTexture();
 	MiniMapBattlefieldIcon:SetAllPoints( MiniMapBattlefieldFrame );
@@ -192,8 +188,7 @@ do
 
 	MiniMapLFGFrame:ClearAllPoints();
 	MiniMapLFGFrame:SetPoint( "RIGHT", MiniMapBattlefieldFrame, "LEFT" );
-	MiniMapLFGFrame:SetWidth( IconSize * 1.75 );
-	MiniMapLFGFrame:SetHeight( IconSize * 1.75 );
+	MiniMapLFGFrame:SetSize( IconSize * 1.75, IconSize * 1.75 );
 	MiniMapLFGFrameBorder:Hide();
 	MiniMapLFGFrameBorder:SetTexture();
 	MiniMapLFGFrameIcon:SetAllPoints( MiniMapLFGFrame );
@@ -214,8 +209,7 @@ do
 	local Frame, Texture = MiniMapInstanceDifficulty, MiniMapInstanceDifficultyTexture;
 	Frame:ClearAllPoints();
 	Frame:SetPoint( "TOPLEFT", -4, 8 );
-	Frame:SetWidth( Texture:GetWidth() / 2 );
-	Frame:SetHeight( Texture:GetHeight() );
+	Frame:SetSize( Texture:GetWidth() / 2, Texture:GetHeight() );
 	Frame:SetScale( 0.7 );
 	Frame:SetAlpha( 0.6 );
 	Texture:SetAllPoints();

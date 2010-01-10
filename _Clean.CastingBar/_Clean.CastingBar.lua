@@ -162,8 +162,7 @@ do
 		self.Flash = _G[ self:GetName().."Flash" ];
 		self.Spark = _G[ self:GetName().."Spark" ];
 		self.Icon = self:CreateTexture( nil, "ARTWORK" );
-		self.Icon:SetWidth( 32 );
-		self.Icon:SetHeight( 32 );
+		self.Icon:SetSize( 32, 32 );
 		self.Icon:SetPoint( "LEFT", self, 2, 0 );
 		self.Icon:SetAlpha( 0.75 );
 		_Clean.SkinButton( nil, self.Icon, self:CreateTexture( nil, "OVERLAY" ) );

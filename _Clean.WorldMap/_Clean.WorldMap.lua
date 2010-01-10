@@ -55,8 +55,7 @@ do
 				( Left * MapScale + me.OffsetX ) / Scale,
 				( Bottom * MapScale + me.OffsetY ) / Scale );
 
-			me:SetWidth( me.Text:GetStringWidth() );
-			me:SetHeight( me.Text:GetStringHeight() );
+			me:SetSize( me.Text:GetStringWidth(), me.Text:GetStringHeight() );
 			me:Show();
 		else
 			me:Hide();

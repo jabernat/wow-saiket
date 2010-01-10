@@ -78,8 +78,7 @@ function me:PlateOnShow ()
 	if ( InCombat ) then
 		Visual:SetScript( "OnUpdate", me.VisualOnUpdate ); -- Begin updating threat
 	else
-		self:SetWidth( PlateWidth );
-		self:SetHeight( PlateHeight );
+		self:SetSize( PlateWidth, PlateHeight );
 	end
 end
 --[[****************************************************************************
@@ -334,8 +333,7 @@ function me:CastOnShow ()
 
 	self.NoInterrupt:ClearAllPoints();
 	self.NoInterrupt:SetPoint( "CENTER", self.Icon, -1, -2 );
-	self.NoInterrupt:SetWidth( CastHeight * 3 );
-	self.NoInterrupt:SetHeight( CastHeight * 3 );
+	self.NoInterrupt:SetSize( CastHeight * 3, CastHeight * 3 );
 	me.CastOnInterruptibleChanged( self, nil, Uninterruptible );
 end
 --[[****************************************************************************
@@ -419,8 +417,7 @@ local function PlateAdd ( Plate )
 		Visual.BossIcon, RaidIcon, Visual.StatusBorder = Plate:GetRegions();
 
 
-	Visual:SetWidth( PlateWidth );
-	Visual:SetHeight( PlateHeight );
+	Visual:SetSize( PlateWidth, PlateHeight );
 	Visual:SetPoint( "TOP" );
 
 
@@ -503,8 +500,7 @@ local function PlateAdd ( Plate )
 	Cast.Icon:SetParent( Cast );
 	Cast.Icon:ClearAllPoints();
 	Cast.Icon:SetPoint( "BOTTOMRIGHT", Visual.StatusBackground, "TOPRIGHT", 0, 2 );
-	Cast.Icon:SetWidth( CastHeight );
-	Cast.Icon:SetHeight( CastHeight );
+	Cast.Icon:SetSize( CastHeight, CastHeight );
 	_Clean.SkinButtonIcon( Cast.Icon );
 	CastBorder:SetTexture(); -- Seems to cause crashes when attempting to anchor
 	local IconBorder = Cast:CreateTexture( nil, "OVERLAY" );
@@ -540,8 +536,7 @@ local function PlateAdd ( Plate )
 
 	-- Misc
 	-- Put raid icon above nameplate
-	RaidIcon:SetWidth( 32 );
-	RaidIcon:SetHeight( 32 );
+	RaidIcon:SetSize( 32, 32 );
 	RaidIcon:ClearAllPoints();
 	RaidIcon:SetPoint( "BOTTOM", Visual, "TOP" );
 
@@ -549,8 +544,7 @@ local function PlateAdd ( Plate )
 	Visual.ThreatGlow:SetTexture();
 	Visual.ThreatBorder = Visual:CreateTexture( nil, "BACKGROUND" );
 	Visual.ThreatBorder:SetPoint( "CENTER" );
-	Visual.ThreatBorder:SetWidth( ( PlateWidth + 2 * PlateBorder ) * 256 / 128 );
-	Visual.ThreatBorder:SetHeight( ( PlateHeight + 2 * PlateBorder ) * 32 / 12 );
+	Visual.ThreatBorder:SetSize( ( PlateWidth + 2 * PlateBorder ) * 256 / 128, ( PlateHeight + 2 * PlateBorder ) * 32 / 12 );
 	Visual.ThreatBorder:SetTexture( [[Interface\AddOns\_Clean.Nameplates\Skin\ThreatBorders]] );
 
 
@@ -602,8 +596,7 @@ function me:PLAYER_REGEN_ENABLED ()
 	InCombat = false;
 
 	for Plate, Visual in pairs( Plates ) do
-		Plate:SetWidth( PlateWidth );
-		Plate:SetHeight( PlateHeight );
+		Plate:SetSize( PlateWidth, PlateHeight );
 	end
 	for Plate, Visual in pairs( me.PlatesVisible ) do
 		Visual:SetScript( "OnUpdate", nil ); -- Quit updating threat
@@ -761,8 +754,7 @@ do
 
 
 	-- Target outline
-	me.TargetOutline:SetWidth( PlateWidth );
-	me.TargetOutline:SetHeight( PlateHeight );
+	me.TargetOutline:SetSize( PlateWidth, PlateHeight );
 	local Outline = me.TargetOutline:CreateTexture( nil, "BORDER" );
 	Outline:SetTexture( 1, 1, 1 );
 	Outline:SetPoint( "TOPRIGHT", PlateBorder, PlateBorder );
@@ -774,8 +766,7 @@ do
 
 	-- Interrupt flash
 	local Flash = me:CreateTexture( nil, "OVERLAY" );
-	Flash:SetWidth( 400 / 300 * ( PlateWidth + 2 * ( CastHeight - PlateHeight ) ) );
-	Flash:SetHeight( 171 / 70 * CastHeight );
+	Flash:SetSize( 400 / 300 * ( PlateWidth + 2 * ( CastHeight - PlateHeight ) ), 171 / 70 * CastHeight );
 	Flash:SetTexture( [[Interface\AchievementFrame\UI-Achievement-Alert-Glow]] );
 	Flash:SetBlendMode( "ADD" );
 	Flash:SetTexCoord( 0, 0.78125, 0, 0.66796875 );

@@ -382,8 +382,7 @@ do
 			local Size = Style[ "initial-height" ] * 1.35;
 			self.Classification = Classification;
 			Classification:SetPoint( "CENTER" );
-			Classification:SetWidth( Size );
-			Classification:SetHeight( Size );
+			Classification:SetSize( Size, Size );
 			Classification:SetTexture( [[Interface\AchievementFrame\UI-Achievement-IconFrame]] );
 			Classification:SetTexCoord( 0, 0.5625, 0, 0.5625 );
 			Classification:SetAlpha( 0.8 );
@@ -394,8 +393,7 @@ do
 			Size = Style[ "initial-height" ] / 2;
 			self.RaidIcon = RaidIcon;
 			RaidIcon:SetPoint( "CENTER" );
-			RaidIcon:SetWidth( Size );
-			RaidIcon:SetHeight( Size );
+			RaidIcon:SetSize( Size, Size );
 
 			if ( IsAddOnLoaded( "oUF_CombatFeedback" ) ) then
 				local FeedbackText = Portrait:CreateFontString( nil, "OVERLAY", "NumberFontNormalLarge" );

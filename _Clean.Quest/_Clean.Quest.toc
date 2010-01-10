@@ -11,7 +11,7 @@
 ## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Clean
 ## X-Localizations: enUS
 ## RequiredDeps: _Clean
-## OptionalDeps: Carbonite
+## OptionalDeps: _Clean.ActionBars, Carbonite
 Locales.xml
 
 _Clean.Quest.lua

@@ -193,15 +193,13 @@ do
 	-- Create add and remove buttons
 	local RemoveButton = CreateFrame( "Button", nil, me, "GameMenuButtonTemplate" );
 	me.RemoveButton = RemoveButton;
-	RemoveButton:SetWidth( 16 );
-	RemoveButton:SetHeight( 20 );
+	RemoveButton:SetSize( 16, 20 );
 	RemoveButton:SetPoint( "BOTTOMRIGHT", -16, 16 );
 	RemoveButton:SetText( L.CUSTOMIZE_REMOVE );
 	RemoveButton:SetScript( "OnClick", me.Remove );
 	local AddButton = CreateFrame( "Button", nil, me, "GameMenuButtonTemplate" );
 	me.AddButton = AddButton;
-	AddButton:SetWidth( 16 );
-	AddButton:SetHeight( 20 );
+	AddButton:SetSize( 16, 20 );
 	AddButton:SetPoint( "BOTTOMRIGHT", RemoveButton, "TOPRIGHT", 0, 4 );
 	AddButton:SetText( L.CUSTOMIZE_ADD );
 	AddButton:SetScript( "OnClick", me.Add );

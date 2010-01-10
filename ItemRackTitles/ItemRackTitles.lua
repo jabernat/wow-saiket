@@ -156,18 +156,15 @@ function Options.OnLoad ()
 	Helm:ClearAllPoints();
 	Helm:SetPoint( "TOP", Save );
 	Helm:SetPoint( "LEFT", Delete, 2, 0 );
-	Helm:SetWidth( 14 );
-	Helm:SetHeight( 14 );
+	Helm:SetSize( 14, 14 );
 	local Cloak = ItemRackOptShowCloak;
-	Cloak:SetWidth( 14 );
-	Cloak:SetHeight( 14 );
+	Cloak:SetSize( 14, 14 );
 	Cloak:SetPoint( "TOPLEFT", Helm, "BOTTOMLEFT", 0, 2 );
 
 	local Hide = ItemRackOptSetsHideCheckButton;
 	Hide:ClearAllPoints();
 	Hide:SetPoint( "BOTTOMLEFT", 8, 6 );
-	Hide:SetWidth( 16 );
-	Hide:SetHeight( 16 );
+	Hide:SetSize( 16, 16 );
 	local Icon = ItemRackOptSetsCurrentSet;
 	Icon:ClearAllPoints();
 	Icon:SetPoint( "BOTTOMLEFT", Hide, "TOPLEFT", 4, 2 );
@@ -179,8 +176,7 @@ function Options.OnLoad ()
 	Options.Checkbox = Checkbox;
 	Checkbox:SetPoint( "TOP", IconSelect, "BOTTOM", 0, 2 );
 	Checkbox:SetPoint( "LEFT", 8, 0 );
-	Checkbox:SetWidth( 16 );
-	Checkbox:SetHeight( 16 );
+	Checkbox:SetSize( 16, 16 );
 	Checkbox:SetScript( "OnClick", Options.CheckboxOnClick );
 	local Label = ItemRackTitlesCheckboxText;
 	Options.Label = Label;

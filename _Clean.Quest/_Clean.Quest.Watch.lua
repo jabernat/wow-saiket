@@ -102,19 +102,27 @@ end
 -----------------------------
 
 do
+	if ( IsAddOnLoaded( "_Clean.ActionBars" ) ) then
+		-- Reposition list
+		WatchFrameLines:SetPoint( "BOTTOMRIGHT" );
+		_Clean.RegisterPositionManager( function ()
+			WatchFrame:ClearAllPoints();
+			WatchFrame:SetPoint( "TOPRIGHT", MinimapCluster, "BOTTOMRIGHT", 0, -8 );
+			WatchFrame:SetPoint( "BOTTOM", Dominos.Frame:Get( 3 ), "TOP" );
+		end );
+
+		-- Reposition quest item buttons
+		local Backup = WatchFrame_DisplayTrackedQuests;
+		hooksecurefunc( "WatchFrame_DisplayTrackedQuests", me.UpdateQuests );
+		if ( WatchFrame_RemoveObjectiveHandler( Backup ) ) then
+			WatchFrame_AddObjectiveHandler( WatchFrame_DisplayTrackedQuests );
+		end
+	end
+
+
 	-- Right-align the header text
 	WatchFrameTitle:SetPoint( "RIGHT", WatchFrameCollapseExpandButton, "LEFT", -8, 0 );
 	WatchFrameTitle:SetJustifyH( "RIGHT" );
-	
-	-- Reposition list
-	WatchFrameLines:SetPoint( "BOTTOMRIGHT" );
-	_Clean.RegisterPositionManager( me.Manage );
-	local Backup = WatchFrame_DisplayTrackedQuests;
-	hooksecurefunc( "WatchFrame_DisplayTrackedQuests", me.UpdateQuests );
-	if ( WatchFrame_RemoveObjectiveHandler( Backup ) ) then
-		WatchFrame_AddObjectiveHandler( WatchFrame_DisplayTrackedQuests );
-	end
-
 
 	WatchFrameLinkButtonTemplate_OnLeftClick = me.OnLeftClick;
 

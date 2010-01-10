@@ -424,8 +424,7 @@ do
 
 
 	-- Set up filter button
-	me.FilterButton:SetWidth( 100 );
-	me.FilterButton:SetHeight( 21 );
+	me.FilterButton:SetSize( 100, 21 );
 	me.FilterButton:SetPoint( "TOPRIGHT", -11, -40 );
 	me.FilterButton:SetText( L.FILTER );
 	me.FilterButton:SetScript( "OnClick", me.Toggle );
@@ -433,8 +432,7 @@ do
 
 	-- Set up filter pane
 	me:Hide();
-	me:SetWidth( 187 );
-	me:SetHeight( 389 );
+	me:SetSize( 187, 389 );
 	me:SetPoint( "TOPLEFT", GuildBankFrame, "TOPRIGHT", -2, -28 );
 	me:EnableMouse( true );
 	me:SetToplevel( true );
@@ -455,18 +453,15 @@ do
 
 		local Top = me:CreateTexture( nil, "BACKGROUND" );
 		Top:SetTexture( "Interface\\AuctionFrame\\AuctionHouseDressUpFrame-Top" );
-		Top:SetWidth( 256 );
-		Top:SetHeight( 256 );
+		Top:SetSize( 256, 256 );
 		Top:SetPoint( "TOPLEFT" );
 		local Bottom = me:CreateTexture( nil, "BACKGROUND" );
 		Bottom:SetTexture( "Interface\\AuctionFrame\\AuctionHouseDressUpFrame-Bottom" );
-		Bottom:SetWidth( 256 );
-		Bottom:SetHeight( 256 );
+		Bottom:SetSize( 256, 256 );
 		Bottom:SetPoint( "TOPLEFT", Top, "BOTTOMLEFT" );
 		local Corner = me:CreateTexture( nil, "BACKGROUND" );
 		Corner:SetTexture( "Interface\\AuctionFrame\\AuctionHouseDressUpFrame-Corner" );
-		Corner:SetWidth( 32 );
-		Corner:SetHeight( 32 );
+		Corner:SetSize( 32, 32 );
 		Corner:SetPoint( "TOPRIGHT", -5, -5 );
 	end
 
@@ -475,8 +470,7 @@ do
 	CreateFrame( "Button", nil, me, "UIPanelCloseButton" ):SetPoint( "TOPRIGHT", 1, 0 );
 
 	local ClearButton = me.ClearButton;
-	ClearButton:SetWidth( 45 );
-	ClearButton:SetHeight( 18 );
+	ClearButton:SetSize( 45, 18 );
 	ClearButton:SetPoint( "TOPRIGHT", -31, -8 );
 	ClearButton:SetText( L.CLEAR );
 	ClearButton:SetScript( "OnClick", me.FilterClear );
@@ -499,8 +493,7 @@ do
 		return self;
 	end
 	local function InitializeLevelEditBox ( self, Parameter, Label )
-		self:SetWidth( 25 );
-		self:SetHeight( 16 );
+		self:SetSize( 25, 16 );
 		self:SetNumeric( true );
 		self:SetMaxLetters( 3 );
 		self:SetAutoFocus( false );
