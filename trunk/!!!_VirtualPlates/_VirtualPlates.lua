@@ -108,8 +108,7 @@ do
 		Plates[ Plate ] = Visual;
 
 		Visual:SetPoint( "TOP" );
-		Visual:SetWidth( Plate:GetWidth() );
-		Visual:SetHeight( Plate:GetHeight() );
+		Visual:SetSize( Plate:GetSize() );
 
 		ReparentChildren( Plate, Plate:GetChildren() );
 		ReparentRegions( Plate, Plate:GetRegions() );
@@ -208,8 +207,7 @@ do
 				end
 				Visual:SetScale( Scale );
 				if ( not InCombat ) then
-					Plate:SetWidth( Visual:GetWidth() * Scale );
-					Plate:SetHeight( Visual:GetHeight() * Scale );
+					Plate:SetSize( Visual:GetWidth() * Scale, Visual:GetHeight() * Scale );
 				end
 			end
 			wipe( SortOrder );
@@ -261,8 +259,7 @@ function me:PLAYER_REGEN_DISABLED ()
 	InCombat = true;
 
 	for Plate, Visual in pairs( Plates ) do
-		Plate:SetWidth( Visual:GetWidth() );
-		Plate:SetHeight( Visual:GetHeight() );
+		Plate:SetSize( Visual:GetSize() );
 	end
 end
 --[[****************************************************************************

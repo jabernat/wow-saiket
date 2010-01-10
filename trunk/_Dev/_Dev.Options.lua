@@ -225,8 +225,7 @@ function me:CreateEditBox ( Variable, CanDisable )
 	Label:SetText( L.OPTIONS[ Variable ] );
 	if ( CanDisable ) then
 		EditBox.Icon = EditBox:CreateTexture( nil, "OVERLAY" );
-		EditBox.Icon:SetWidth( 16 );
-		EditBox.Icon:SetHeight( 16 );
+		EditBox.Icon:SetSize( 16, 16 );
 		EditBox.Icon:SetPoint( "RIGHT", -4, 0 );
 	end
 	return EditBox;

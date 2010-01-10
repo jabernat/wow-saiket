@@ -32,8 +32,7 @@ end
   * Description: Skins a new minimap button.                                   *
   ****************************************************************************]]
 function me:Skin ( ... )
-	self:SetWidth( IconSize );
-	self:SetHeight( IconSize );
+	self:SetSize( IconSize, IconSize );
 	self:SetFrameStrata( "BACKGROUND" );
 	self:SetClampedToScreen( true );
 	local Inset = -IconSize / 6; -- 1/6th of button allowed off screen

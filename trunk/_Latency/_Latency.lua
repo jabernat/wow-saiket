@@ -238,8 +238,7 @@ end
   * Description: Resizes the graph.                                            *
   ****************************************************************************]]
 function me:OnSizeChanged ()
-	self.Graph:SetWidth( self:GetWidth() - me.Padding * 2 );
-	self.Graph:SetHeight( self:GetHeight() - me.Padding * 2 - 18 );
+	self.Graph:SetSize( self:GetWidth() - me.Padding * 2, self:GetHeight() - me.Padding * 2 - 18 );
 end
 --[[****************************************************************************
   * Function: _Latency:OnHide                                                  *
@@ -261,8 +260,7 @@ end
 
 do
 	-- Set up window
-	me:SetWidth( 300 );
-	me:SetHeight( 80 );
+	me:SetSize( 300, 80 );
 	me:SetScale( 0.8 );
 	me:SetPoint( "CENTER" );
 	me:SetFrameStrata( "MEDIUM" );
@@ -313,8 +311,7 @@ do
 	-- Resize grip
 	local Resize = CreateFrame( "Button", nil, me );
 	me.Resize = Resize;
-	Resize:SetWidth( 30 );
-	Resize:SetHeight( 30 );
+	Resize:SetSize( 30, 30 );
 	Resize:SetPoint( "BOTTOMRIGHT", 6, -4 );
 	Resize:SetFrameLevel( Graph:GetFrameLevel() + 2 );
 	Resize:SetNormalTexture( "Interface\\AddOns\\_Latency\\Skin\\ResizeGrip" );

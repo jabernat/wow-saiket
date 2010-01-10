@@ -155,8 +155,7 @@ do
 
 		Width, Height = self:GetWidth(), self:GetHeight();
 		Texture:SetPoint( "TOPLEFT", MinX * Width, -MinY * Height );
-		Texture:SetWidth( WindowX * Width );
-		Texture:SetHeight( WindowY * Height );
+		Texture:SetSize( WindowX * Width, WindowY * Height );
 
 
 		--[[ Transform parallelogram so its corners lie on the tri's points:
@@ -241,16 +240,14 @@ do
 		Texture:SetTexCoord( 0, 1, 0, 1 );
 		Texture:SetBlendMode( "ADD" );
 		Texture:SetPoint( "CENTER", self, "TOPLEFT", X, Y );
-		Texture:SetWidth( Size * RingWidth );
-		Texture:SetHeight( Size * RingWidth );
+		Texture:SetSize( Size * RingWidth, Size * RingWidth );
 
 		Texture = me.TextureCreate( self, Layer, R, G, B, 0.5 );
 		Texture:SetTexture( [[Textures\SunCenter]] );
 		Texture:SetTexCoord( 0, 1, 0, 1 );
 		Texture:SetBlendMode( "ADD" );
 		Texture:SetPoint( "CENTER", self, "TOPLEFT", X, Y );
-		Texture:SetWidth( Size * GlowWidth );
-		Texture:SetHeight( Size * GlowWidth );
+		Texture:SetSize( Size * GlowWidth, Size * GlowWidth );
 	end
 end
 --[[****************************************************************************

@@ -35,8 +35,7 @@ do
 				Texture = Overlay.TextureCreate( self, "OVERLAY", R, G, B, Density );
 				Texture:SetTexture( [[Interface\OPTIONSFRAME\VoiceChat-Record]] );
 				Texture:SetTexCoord( 0, 1, 0, 1 );
-				Texture:SetWidth( 8 );
-				Texture:SetHeight( 8 );
+				Texture:SetSize( 8, 8 );
 				Texture:SetPoint( "CENTER", self, "TOPLEFT", X * Width, -Y * Height );
 			end
 		end

@@ -70,8 +70,7 @@ do
 		if ( not self.Icon ) then
 			local Icon, Normal = self:CreateTexture( nil, "ARTWORK" ), self:CreateTexture( nil, "OVERLAY" );
 			self.Icon, self.Normal = Icon, Normal;
-			Icon:SetWidth( IconSize );
-			Icon:SetHeight( IconSize );
+			Icon:SetSize( IconSize, IconSize );
 			Icon:SetPoint( "TOPRIGHT", self, "TOPLEFT", -TooltipPadding, TooltipPadding );
 			_Clean.SkinButton( nil, Icon, Normal );
 

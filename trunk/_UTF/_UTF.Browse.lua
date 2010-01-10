@@ -237,8 +237,7 @@ end
 do
 	-- Set up window
 	me:Hide();
-	me:SetWidth( 200 );
-	me:SetHeight( 192 );
+	me:SetSize( 200, 192 );
 	me:SetPoint( "CENTER" );
 	me:SetFrameStrata( "DIALOG" );
 	me:EnableMouse( true );
@@ -319,8 +318,7 @@ do
 	-- Initialize button text
 	local GlyphText = Glyph:CreateFontString();
 	Glyph.Text = GlyphText;
-	GlyphText:SetWidth( 0 );
-	GlyphText:SetHeight( 0 );
+	GlyphText:SetSize( 0, 0 );
 	GlyphText:SetPoint( "CENTER" );
 	Glyph:SetFontString( GlyphText );
 

@@ -83,8 +83,7 @@ do
 		local Enabled = CreateFrame( "CheckButton", "$parentEnabled", Frame, "UICheckButtonTemplate" );
 		Frame.Enabled = Enabled;
 		Enabled:SetPoint( "TOPLEFT", 6, -6 );
-		Enabled:SetWidth( 26 );
-		Enabled:SetHeight( 26 );
+		Enabled:SetSize( 26, 26 );
 		Enabled:SetScript( "OnClick", me.ModuleEnabledOnClick );
 		local Label = _G[ Enabled:GetName().."Text" ];
 		Label:SetText( L.CONFIG_ENABLE );
