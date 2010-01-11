@@ -1,9 +1,9 @@
 ## Interface: 30300
 ## Title: _|cffCCCC88Clean|r
-## Notes: Change the UI's look and feel.
+## Notes: Core of the _Clean suite.
 ## Author: Saiket
 ## Version: 3.3.0.1
-## X-Date: 2009-12-14
+## X-Date: 2010-01-10
 ## X-Category: Frame Modification, Compilations
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
