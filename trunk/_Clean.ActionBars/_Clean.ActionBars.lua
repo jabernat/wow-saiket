@@ -14,7 +14,7 @@ me.BackdropRight = _Clean.Backdrop.Create( UIParent );
 
 me.DominosProfile = "_Clean";
 
-local NumSideButtonsExcluded = 3; -- Action buttons from the top to leave outside of the backdrop
+local NumSideButtonsExcluded = 4; -- Action buttons from the top to leave outside of the backdrop
 
 
 
