@@ -6,7 +6,6 @@
 
 local AddOnName = ...;
 _LatencyOptions = {
-	IsEnabled = true;
 	IsLocked = false;
 };
 
@@ -44,9 +43,8 @@ me.Padding = 6;
   ****************************************************************************]]
 function me.Toggle ( Enable )
 	if ( Enable == nil ) then
-		Enable = not _LatencyOptions.IsEnabled;
+		Enable = not me:IsShown();
 	end
-	_LatencyOptions.IsEnabled = Enable;
 
 	if ( Enable ) then
 		me:Show();
@@ -184,6 +182,14 @@ do
 	end
 end
 --[[****************************************************************************
+  * Function: _Latency:PLAYER_LOGOUT                                           *
+  ****************************************************************************]]
+function me:PLAYER_LOGOUT ()
+	local Options, _ = _LatencyOptions;
+	Options.Width, Options.Height = me:GetSize();
+	Options.Point, _, _, Options.X, Options.Y = me:GetPoint();
+end
+--[[****************************************************************************
   * Function: _Latency:PLAYER_ENTERING_WORLD                                   *
   ****************************************************************************]]
 function me:PLAYER_ENTERING_WORLD ()
@@ -195,16 +201,14 @@ end
   * Function: _Latency:CHAT_MSG_ADDON                                          *
   ****************************************************************************]]
 function me:CHAT_MSG_ADDON ( _, Prefix, Message, Type, Author )
-	if ( Prefix == me.Prefix ) then
-		if ( Type == "WHISPER" and Author == UnitName( "player" ) ) then
-			if ( me.NumPings > 0 ) then
-				me.NumPings = me.NumPings - 1;
-			end
+	if ( Prefix == me.Prefix and Type == "WHISPER" and Author == UnitName( "player" ) ) then
+		if ( me.NumPings > 0 ) then
+			me.NumPings = me.NumPings - 1;
+		end
 
-			local SendTime = me.TimeDecode( Message );
-			if ( SendTime >= me.PingCutoff ) then
-				PingData[ SendTime ] = GetTime() - SendTime;
-			end
+		local SendTime = me.TimeDecode( Message );
+		if ( SendTime >= me.PingCutoff ) then
+			PingData[ SendTime ] = GetTime() - SendTime;
 		end
 	end
 end
@@ -215,10 +219,12 @@ function me:ADDON_LOADED ( _, AddOn )
 	if ( AddOn:lower() == AddOnName:lower() ) then
 		me:UnregisterEvent( "ADDON_LOADED" );
 		me.ADDON_LOADED = nil;
+		local Options = _LatencyOptions;
 
-		me.Toggle( _LatencyOptions.IsEnabled );
-		me.ToggleLocked( _LatencyOptions.IsLocked );
-		me:SetScript( "OnHide", me.OnHide );
+		me.ToggleLocked( Options.IsLocked );
+
+		me:SetSize( Options.Width or 300, Options.Height or 80 );
+		me:SetPoint( Options.Point or "CENTER", nil, Options.Point or "CENTER", Options.X or 0, Options.Y or 0 );
 	end
 end
 --[[****************************************************************************
@@ -238,7 +244,9 @@ end
   * Description: Resizes the graph.                                            *
   ****************************************************************************]]
 function me:OnSizeChanged ()
-	self.Graph:SetSize( self:GetWidth() - me.Padding * 2, self:GetHeight() - me.Padding * 2 - 18 );
+	-- Note: LibGraph-2.0 doesn't hook SetSize
+	self.Graph:SetWidth( self:GetWidth() - me.Padding * 2 );
+	self.Graph:SetHeight( self:GetHeight() - me.Padding * 2 - 18 );
 end
 --[[****************************************************************************
   * Function: _Latency:OnHide                                                  *
@@ -248,6 +256,16 @@ function me:OnHide ()
 	-- Only print message when directly hidden (i.e. not hidding the interface)
 	if ( not self:IsShown() ) then
 		print( L.ONCLOSE_NOTICE );
+	end
+end
+--[[****************************************************************************
+  * Function: _Latency.SlashCommand                                            *
+  ****************************************************************************]]
+function me.SlashCommand ( Input )
+	if ( Input and Input:trim():lower() == L.LOCK ) then
+		me.ToggleLocked();
+	else
+		me.Toggle();
 	end
 end
 
@@ -260,6 +278,7 @@ end
 
 do
 	-- Set up window
+	me:Hide();
 	me:SetSize( 300, 80 );
 	me:SetScale( 0.8 );
 	me:SetPoint( "CENTER" );
@@ -267,15 +286,14 @@ do
 	me:EnableMouse( true );
 	me:SetToplevel( true );
 	me:SetBackdrop( {
-		bgFile = "Interface\\TutorialFrame\\TutorialFrameBackground";
-		edgeFile = "Interface\\TutorialFrame\\TutorialFrameBorder";
+		bgFile = [[Interface\TutorialFrame\TutorialFrameBackground]];
+		edgeFile = [[Interface\TutorialFrame\TutorialFrameBorder]];
 		tile = true; tileSize = 32; edgeSize = 32;
 		insets = { left = 7; right = 5; top = 3; bottom = 6; };
 	} );
 	-- Make dragable
 	me:SetMovable( true );
 	me:SetResizable( true );
-	me:SetUserPlaced( true );
 	me:SetClampedToScreen( true );
 	me:SetClampRectInsets( me.Padding + 2, -me.Padding, -me.Padding - 18, me.Padding );
 	me:CreateTitleRegion():SetAllPoints();
@@ -314,8 +332,8 @@ do
 	Resize:SetSize( 30, 30 );
 	Resize:SetPoint( "BOTTOMRIGHT", 6, -4 );
 	Resize:SetFrameLevel( Graph:GetFrameLevel() + 2 );
-	Resize:SetNormalTexture( "Interface\\AddOns\\_Latency\\Skin\\ResizeGrip" );
-	Resize:SetHighlightTexture( "Interface\\AddOns\\_Latency\\Skin\\ResizeGrip" );
+	Resize:SetNormalTexture( [[Interface\AddOns\]]..( ... )..[[\Skin\ResizeGrip]] );
+	Resize:SetHighlightTexture( [[Interface\AddOns\]]..( ... )..[[\Skin\ResizeGrip]] );
 	Resize:SetScript( "OnMouseDown", function ()
 		me:StartSizing( "BOTTOMRIGHT" );
 	end );
@@ -328,16 +346,18 @@ do
 	me:SetScript( "OnUpdate", me.OnUpdate );
 	me:SetScript( "OnEvent", me.OnEvent );
 	me:SetScript( "OnSizeChanged", me.OnSizeChanged );
+	me:SetScript( "OnHide", me.OnHide );
 	me:RegisterEvent( "CHAT_MSG_ADDON" );
 	me:RegisterEvent( "PLAYER_ENTERING_WORLD" );
 	me:RegisterEvent( "ADDON_LOADED" );
+	me:RegisterEvent( "PLAYER_LOGOUT" );
 
 
-	SlashCmdList[ "_LATENCY_TOGGLE" ] = function ( Input )
-		if ( Input and Input:trim():lower() == L.LOCK ) then
-			me.ToggleLocked();
-		else
-			me.Toggle();
-		end
-	end;
+	SlashCmdList[ "_LATENCY_TOGGLE" ] = me.SlashCommand;
+	-- Un-cache stub slash commands created by AddonLoader
+	for Command in GetAddOnMetadata( ..., "X-LoadOn-Slash" ):gmatch( "/[^%s,]+" ) do
+		Command = Command:upper();
+		hash_SlashCmdList[ Command ] = nil;
+		_G[ "SLASH_"..Command:sub( 2 ).."1" ] = nil;
+	end
 end
