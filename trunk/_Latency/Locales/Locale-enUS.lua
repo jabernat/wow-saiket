@@ -30,9 +30,6 @@ do
 -- Globals
 ----------
 
-	BINDING_HEADER__LATENCY = Title;
-	BINDING_NAME__LATENCY_TOGGLE = "Toggles "..Title;
-
 	SLASH__LATENCY_TOGGLE1 = "/latency";
 	SLASH__LATENCY_TOGGLE2 = "/lag";
 end

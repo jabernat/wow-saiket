@@ -12,6 +12,8 @@
 ## X-Localizations: enUS
 ## X-Embeds: LibGraph-2.0
 ## SavedVariablesPerCharacter: _LatencyOptions
+## LoadManagers: AddonLoader
+## X-LoadOn-Slash: /latency, /lag
 ## OptionalDeps: LibGraph-2.0
 Libs\LibStub\LibStub.lua
 
