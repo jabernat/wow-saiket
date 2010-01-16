@@ -11,7 +11,7 @@
 ## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Underscore
 ## X-Localizations: enUS
 ## RequiredDeps: _Underscore, oUF
-## OptionalDeps: oUF_CombatFeedback, oUF_Experience, oUF_Reputation, oUF_SpellRange, oUF_HealComm4, Grid
+## OptionalDeps: oUF_CombatFeedback, oUF_Experience, oUF_HealComm4, oUF_Reputation, oUF_Smooth, oUF_SpellRange, Grid
 Locales.xml
 
 _Underscore.Units.lua

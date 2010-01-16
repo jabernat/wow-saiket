@@ -424,6 +424,9 @@ do
 			Health.Text:SetAlpha( 0.75 );
 			Health.TextLength = Style.HealthText;
 		end
+		if ( IsAddOnLoaded( "oUF_Smooth" ) ) then
+			Health.Smooth = true;
+		end
 		if ( IsAddOnLoaded( "oUF_HealComm4" ) ) then
 			local HealCommBar = CreateFrame( "StatusBar", nil, Health );
 			self.HealCommBar = HealCommBar;
