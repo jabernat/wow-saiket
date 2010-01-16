@@ -3,7 +3,7 @@
 ## Notes: A set of skinned unit frames.
 ## Author: Saiket
 ## Version: 3.3.0.1
-## X-Date: 2009-12-29
+## X-Date: 2010-01-16
 ## X-Category: UnitFrame
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com

@@ -4,7 +4,6 @@
   ****************************************************************************]]
 
 
---NOTE(Move the reverse health bar update code into PostUpdateHealth.)
 local LibSharedMedia = LibStub( "LibSharedMedia-3.0" );
 local L = _UnderscoreLocalization.Units;
 local _Underscore = _Underscore;
@@ -26,21 +25,18 @@ Colors.class = oUF.colors.class;
 
 
 --[[****************************************************************************
-  * Function: _Underscore.Units.oUF:SetStatusBarColor                          *
+  * Function: _Underscore.Units.oUF:SetStatusBarTextColor                      *
   * Description: Colors bar text to match bars.                                *
   ****************************************************************************]]
-function me:SetStatusBarColor ( R, G, B, A )
-	self.Texture:SetVertexColor( R, G, B, A );
-	if ( self.Value ) then
-		self.Value:SetTextColor( R, G, B, A );
-	end
+function me:SetStatusBarTextColor ( R, G, B, A )
+	self.Text:SetTextColor( R, G, B, A );
 end
 --[[****************************************************************************
-  * Function: _Underscore.Units.oUF.BarFormatValue                             *
+  * Function: _Underscore.Units.oUF.BarFormatText                              *
   * Description: Formats bar text depending on the bar's style.                *
   ****************************************************************************]]
-function me:BarFormatValue ( Value, ValueMax )
-	self.Value:SetFormattedText( L.NumberFormats[ self.ValueLength ]( Value, ValueMax ) );
+function me:BarFormatText ( Value, ValueMax )
+	self.Text:SetFormattedText( L.NumberFormats[ self.TextLength ]( Value, ValueMax ) );
 end
 
 
@@ -51,10 +47,10 @@ end
   ****************************************************************************]]
 do
 	local function ColorDead ( Bar, Label )
-		Bar.Texture:SetVertexColor( 0.2, 0.2, 0.2 );
-		if ( Bar.Value ) then
-			Bar.Value:SetText( L[ Label ] );
-			Bar.Value:SetTextColor( unpack( Colors.disconnected ) );
+		Bar:SetStatusBarColor( 0.2, 0.2, 0.2 );
+		if ( Bar.Text ) then
+			Bar.Text:SetText( L[ Label ] );
+			Bar.Text:SetTextColor( unpack( Colors.disconnected ) );
 		end
 	end
 	local UnitIsGhost = UnitIsGhost;
@@ -69,8 +65,8 @@ do
 			ColorDead( Bar, "DEAD" );
 		elseif ( not UnitIsConnected( UnitID ) ) then
 			ColorDead( Bar, "OFFLINE" );
-		elseif ( Bar.Value ) then
-			me.BarFormatValue( Bar, Health, HealthMax );
+		elseif ( Bar.Text ) then
+			me.BarFormatText( Bar, Health, HealthMax );
 		end
 	end
 end
@@ -82,13 +78,11 @@ function me:PostUpdatePower ( Event, UnitID, Bar, Power, PowerMax )
 	if ( Dead ) then
 		Bar:SetValue( 0 );
 	end
-	if ( Bar.Value ) then
-		if ( Dead ) then
-			Bar.Value:SetText();
-		elseif ( select( 2, UnitPowerType( UnitID ) ) ~= "MANA" ) then
-			Bar.Value:SetText();
+	if ( Bar.Text ) then
+		if ( Dead or select( 2, UnitPowerType( UnitID ) ) ~= "MANA" ) then
+			Bar.Text:SetText();
 		else
-			me.BarFormatValue( Bar, Power, PowerMax );
+			me.BarFormatText( Bar, Power, PowerMax );
 		end
 	end
 end
@@ -267,43 +261,42 @@ do
 		Background:SetTexture( BarTexture );
 		return Background;
 	end
-	local function CreateBar ( self )
+	local function CreateBar ( self, TextFont )
 		local Bar = CreateFrame( "StatusBar", nil, self );
 		Bar:SetStatusBarTexture( BarTexture );
-		Bar.Texture = Bar:GetStatusBarTexture();
+		if ( TextFont ) then
+			Bar.Text = Bar:CreateFontString( nil, "OVERLAY", TextFont:GetName() );
+			Bar.Text:SetJustifyV( "MIDDLE" );
+			hooksecurefunc( Bar, "SetStatusBarColor", me.SetStatusBarTextColor );
+		end
 		return Bar;
 	end
 	local CreateBarReverse; -- Creates a status bar that fills in reverse.
 	do
-		local function SetStatusBarTexture ( self, Path )
-			self.Texture:SetTexture( Path );
-		end
-		local function GetStatusBarTexture ( self )
-			return self.Texture;
+		local function SetValue ( self, Value, ValueMax, Width )
+			self:GetStatusBarTexture():SetPoint( "LEFT", self, "RIGHT",
+				( ( Value or self:GetValue() ) / ( MaxValue or select( 2, self:GetMinMaxValues() ) ) - 1 ) * ( Width or self:GetWidth() ), 0 );
 		end
 		local function OnSizeChanged ( self, Width )
-			Width = ( 1 - self:GetValue() / select( 2, self:GetMinMaxValues() ) ) * Width;
-			if ( Width > 0 ) then
-				self.Texture:SetWidth( Width );
-				self.Texture:Show();
-			else -- Full health
-				self.Texture:Hide();
-			end
+			SetValue( self, nil, nil, Width );
 		end
-		local function OnValueChanged ( self )
-			OnSizeChanged( self, self:GetWidth() );
+		local function OnValueChanged ( self, Value )
+			SetValue( self, Value );
 		end
-		function CreateBarReverse ( self )
-			local Bar = CreateFrame( "StatusBar", nil, self );
-			Bar.Texture = Bar:CreateTexture( nil, "BORDER" );
-			Bar.Texture:SetPoint( "TOPRIGHT" );
-			Bar.Texture:SetPoint( "BOTTOM" );
-			Bar.Texture:SetTexture( BarTexture );
+		local function OnMinMaxChanged ( self, ValueMin, ValueMax )
+			SetValue( self, nil, ValueMax );
+		end
+		function CreateBarReverse ( self, ... )
+			local Bar = CreateBar( self, ... );
+			local Texture = Bar:GetStatusBarTexture();
+			Texture:ClearAllPoints();
+			Texture:SetPoint( "TOPRIGHT" );
+			Texture:SetPoint( "BOTTOM" );
+			Texture:SetTexCoordModifiesRect( false ); -- Keep the usual texcoord animation from showing (Texture must be horizontally uniform)
 
-			Bar.SetStatusBarTexture = SetStatusBarTexture;
-			Bar.GetStatusBarTexture = GetStatusBarTexture;
-			Bar:SetScript( "OnValueChanged", OnValueChanged );
 			Bar:SetScript( "OnSizeChanged", OnSizeChanged );
+			Bar:SetScript( "OnValueChanged", OnValueChanged );
+			Bar:SetScript( "OnMinMaxChanged", OnMinMaxChanged );
 
 			return Bar;
 		end
@@ -413,12 +406,11 @@ do
 
 
 		-- Health bar
-		local Health = CreateBarReverse( self );
+		local Health = CreateBarReverse( self, Style.HealthText and Style.BarTextFont );
 		self.Health = Health;
 		Health:SetPoint( "TOPLEFT", Bars );
 		Health:SetPoint( "RIGHT", Bars );
 		Health:SetHeight( Style[ "initial-height" ] * ( 1 - Style.PowerHeight - Style.ProgressHeight ) );
-		Health.SetStatusBarColor = me.SetStatusBarColor;
 		CreateBarBackground( Health, 0.07 );
 		Health.frequentUpdates = true;
 		Health.colorDisconnected = true;
@@ -426,14 +418,11 @@ do
 		Health.colorSmooth = true;
 		Health.smoothGradient = Colors.HealthSmooth;
 
-		if ( Style.HealthText ) then
-			local HealthValue = Health:CreateFontString( nil, "OVERLAY", Style.BarValueFont:GetName() );
-			Health.Value = HealthValue;
-			HealthValue:SetPoint( "TOPRIGHT", -2, 0 );
-			HealthValue:SetPoint( "BOTTOM" );
-			HealthValue:SetJustifyV( "MIDDLE" );
-			HealthValue:SetAlpha( 0.75 );
-			Health.ValueLength = Style.HealthText;
+		if ( Health.Text ) then
+			Health.Text:SetPoint( "TOPRIGHT", -2, 0 );
+			Health.Text:SetPoint( "BOTTOM" );
+			Health.Text:SetAlpha( 0.75 );
+			Health.TextLength = Style.HealthText;
 		end
 		if ( IsAddOnLoaded( "oUF_HealComm4" ) ) then
 			local HealCommBar = CreateFrame( "StatusBar", nil, Health );
@@ -448,24 +437,20 @@ do
 
 
 		-- Power bar
-		local Power = CreateBar( self );
+		local Power = CreateBar( self, Style.PowerText and Style.BarTextFont );
 		self.Power = Power;
 		Power:SetPoint( "TOPLEFT", Health, "BOTTOMLEFT" );
 		Power:SetPoint( "RIGHT", Bars );
 		Power:SetHeight( Style[ "initial-height" ] * Style.PowerHeight );
-		Power.SetStatusBarColor = me.SetStatusBarColor;
 		CreateBarBackground( Power, 0.14 );
 		Power.frequentUpdates = true;
 		Power.colorPower = true;
 
-		if ( Style.PowerText ) then
-			local PowerValue = Power:CreateFontString( nil, "OVERLAY", Style.BarValueFont:GetName() );
-			Power.Value = PowerValue;
-			PowerValue:SetPoint( "TOPRIGHT", -2, 0 );
-			PowerValue:SetPoint( "BOTTOM" );
-			PowerValue:SetJustifyV( "MIDDLE" );
-			PowerValue:SetAlpha( 0.75 );
-			Power.ValueLength = Style.PowerText;
+		if ( Power.Text ) then
+			Power.Text:SetPoint( "TOPRIGHT", -2, 0 );
+			Power.Text:SetPoint( "BOTTOM" );
+			Power.Text:SetAlpha( 0.75 );
+			Power.TextLength = Style.PowerText;
 		end
 
 		self.PostUpdatePower = me.PostUpdatePower;
@@ -529,8 +514,8 @@ do
 		local Name = Health:CreateFontString( nil, "OVERLAY", Style.NameFont:GetName() );
 		self.Name = Name;
 		Name:SetPoint( "LEFT", 2, 0 );
-		if ( Health.Value ) then
-			Name:SetPoint( "RIGHT", Health.Value, "LEFT" );
+		if ( Health.Text ) then
+			Name:SetPoint( "RIGHT", Health.Text, "LEFT" );
 		else
 			Name:SetPoint( "RIGHT", -2, 0 );
 		end
@@ -621,7 +606,7 @@ do
 		HealthText = "Small"; -- "Full"/"Small"/"Tiny"
 		PowerText  = "Small"; -- Same as Health
 		NameFont = me.FontNormal;
-		BarValueFont = me.FontTiny;
+		BarTextFont = me.FontTiny;
 		CastTime = true;
 		Auras = true;
 		AuraSize = 15;
