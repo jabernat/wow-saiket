@@ -13,6 +13,9 @@
   ****************************************************************************]]
 
 
+local oUF = select( 2, ... ).oUF or _G[ assert( GetAddOnMetadata( ..., "X-oUF" ), "X-oUF metadata missing in parent addon." ) ];
+assert( oUF, "Unable to locate oUF." );
+
 local UpdateRate = 0.1;
 
 local UpdateFrame;
