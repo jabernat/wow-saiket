@@ -2,8 +2,8 @@
 ## Title: oUF SpellRange
 ## Notes: Range element for oUF that works for non-group members
 ## Author: Saiket
-## Version: 3.3.0.1
-## X-Date: 2009-10-22
+## Version: 3.3.0.2
+## X-Date: 2010-01-16
 ## X-Category: UnitFrame
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
@@ -11,5 +11,6 @@
 ## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:oUF_SpellRange
 ## X-WoWI-ID: 12839
 ## X-Curse-Project-ID: ouf_spellrange
+## X-oUF: oUF
 ## RequiredDeps: oUF
 oUF_SpellRange.lua
