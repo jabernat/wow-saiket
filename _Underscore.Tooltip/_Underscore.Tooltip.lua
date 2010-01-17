@@ -40,7 +40,7 @@ do
 		self:SetBackdrop( nil );
 		hooksecurefunc( self, "SetBackdrop", SetBackdrop );
 
-		_Underscore.Backdrop.Add( self, TooltipPadding ):SetAlpha( 0.75 );
+		_Underscore.Backdrop.Create( self, TooltipPadding ):SetAlpha( 0.75 );
 		self:SetHitRectInsets( -TooltipPadding, -TooltipPadding, -TooltipPadding, -TooltipPadding );
 		local StatusBar = _G[ self:GetName().."StatusBar" ];
 		if ( StatusBar ) then

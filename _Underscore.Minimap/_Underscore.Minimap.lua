@@ -108,7 +108,7 @@ do
 	MinimapCluster:SetSize( Minimap:GetSize() );
 	MinimapCluster:SetScale( MinimapScale );
 	MinimapCluster:EnableMouse( false );
-	_Underscore.Backdrop.Add( Minimap );
+	_Underscore.Backdrop.Create( Minimap );
 
 
 	Minimap:SetAllPoints( MinimapCluster );

@@ -351,7 +351,7 @@ do
 		self:SetScript( "OnEnter", UnitFrame_OnEnter );
 		self:SetScript( "OnLeave", UnitFrame_OnLeave );
 
-		local Backdrop = _Underscore.Backdrop.Add( self );
+		local Backdrop = _Underscore.Backdrop.Create( self );
 		self:SetHighlightTexture( [[Interface\QuestFrame\UI-QuestTitleHighlight]] );
 		self:GetHighlightTexture():SetAllPoints( Backdrop );
 		local Background = self:CreateTexture( nil, "BACKGROUND" );

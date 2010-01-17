@@ -73,7 +73,7 @@ do
 	me:Hide();
 	me:SetFrameStrata( "TOOLTIP" );
 	me:SetClampedToScreen( true );
-	_Underscore.Backdrop.Add( me ):SetAlpha( 0.5 );
+	_Underscore.Backdrop.Create( me ):SetAlpha( 0.5 );
 
 	local Color = NORMAL_FONT_COLOR;
 	me.Text:SetTextColor( Color.r, Color.g, Color.b, 0.7 );

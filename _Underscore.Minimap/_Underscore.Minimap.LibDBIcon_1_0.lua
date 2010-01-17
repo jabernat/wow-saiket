@@ -42,7 +42,7 @@ function me:Skin ( ... )
 	self.icon:SetAllPoints( self );
 	self.icon:SetDrawLayer( "ARTWORK" );
 	self.icon.SetTexCoord = _Underscore.NilFunction;
-	_Underscore.Backdrop.Add( self, IconBorder );
+	_Underscore.Backdrop.Create( self, IconBorder );
 
 	for Index = 1, select( "#", ... ) do
 		local Region = select( Index, ... );

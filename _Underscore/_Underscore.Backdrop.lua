@@ -22,7 +22,8 @@ local BorderFadeTime = 0.75;
 
 --[[****************************************************************************
   * Function: _Underscore.Backdrop:Create                                      *
-  * Description: Returns a new backdrop frame.                                 *
+  * Description: Returns a new backdrop frame.  Optional Padding argument      *
+  *   specifies a non-default padding size.  If false, no anchors are set.     *
   ****************************************************************************]]
 do
 	local CreateSide;
@@ -66,9 +67,15 @@ do
 		end
 	end
 	local R, G, B = unpack( Colors.Background );
-	function me:Create ()
+	function me:Create ( Padding )
 		local Center = self:CreateTexture( nil, "BACKGROUND" );
 		Center:SetTexture( R, G, B, 0.75 );
+
+		if ( Padding ~= false ) then
+			Padding = Padding or me.Padding;
+			Center:SetPoint( "TOPRIGHT", Padding, Padding );
+			Center:SetPoint( "BOTTOMLEFT", -Padding, -Padding );
+		end
 
 		-- Clockwise
 		local Side, Corner = CreateSide( self, Center, 1 ); -- Top, TopRight
@@ -87,19 +94,6 @@ do
 		me[ #me + 1 ] = Center;
 		return Center;
 	end
-end
---[[****************************************************************************
-  * Function: _Underscore.Backdrop:Add                                         *
-  * Description: Similar to Create, but also sets the backdrop with padding.   *
-  ****************************************************************************]]
-function me:Add ( Padding )
-	local Backdrop = me.Create( self );
-
-	Padding = Padding or me.Padding;
-	Backdrop:SetPoint( "TOPRIGHT", Padding, Padding );
-	Backdrop:SetPoint( "BOTTOMLEFT", -Padding, -Padding );
-
-	return Backdrop;
 end
 
 
@@ -185,7 +179,6 @@ do
 		assert( NewStatus ~= nil, "Status must be non-nil!" );
 		assert( tonumber( NewPriority ), "Priority must be numeric!" );
 		local TopLast = Stack[ #Stack ];
-		Size[ NewStatus ], R[ NewStatus ], G[ NewStatus ], B[ NewStatus ], A[ NewStatus ] = NewSize, NewR, NewG, NewB, NewA;
 
 		if ( Priority[ NewStatus ] ~= NewPriority ) then -- Recalculate stack position
 			local NewIndex, OldIndex = 1; -- Default to bottom
@@ -220,9 +213,15 @@ do
 
 		-- Update if top status changed
 		local Top = Stack[ #Stack ];
-		if ( Top ~= TopLast or Top == NewStatus ) then
+		if ( Top == NewStatus ) then
+			if ( Size[ Top ] == NewSize and R[ Top ] == NewR and G[ Top ] == NewG and B[ Top ] == NewB and A[ Top ] == NewA ) then
+				return; -- No change
+			end
+			me.BorderBlend( NewSize, NewR, NewG, NewB, NewA );
+		elseif ( Top ~= TopLast ) then
 			me.BorderBlend( Size[ Top ], R[ Top ], G[ Top ], B[ Top ], A[ Top ] );
 		end
+		Size[ NewStatus ], R[ NewStatus ], G[ NewStatus ], B[ NewStatus ], A[ NewStatus ] = NewSize, NewR, NewG, NewB, NewA;
 	end
 --[[****************************************************************************
   * Function: _Underscore.Backdrop.BorderRemoveStatus                          *
