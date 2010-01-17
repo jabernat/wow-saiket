@@ -8,9 +8,9 @@ local _Underscore = _Underscore;
 local me = CreateFrame( "Frame" );
 _Underscore.ActionBars = me;
 
-me.BackdropBottomLeft = _Underscore.Backdrop.Create( UIParent );
-me.BackdropBottomRight = _Underscore.Backdrop.Create( UIParent );
-me.BackdropRight = _Underscore.Backdrop.Create( UIParent );
+me.BackdropBottomLeft = _Underscore.Backdrop.Create( UIParent, false ); -- Flag prevents anchoring to UIParent
+me.BackdropBottomRight = _Underscore.Backdrop.Create( UIParent, false );
+me.BackdropRight = _Underscore.Backdrop.Create( UIParent, false );
 
 me.DominosProfile = "_Underscore";
 
@@ -167,7 +167,7 @@ function me:PLAYER_LOGIN ()
 	-- Outline excluded buttons
 	local function SkinExcludedButton ( Button )
 		Button:GetRegions():SetDrawLayer( "BORDER" ); -- Move icon above backdrop
-		_Underscore.Backdrop.Add( Button, 0 );
+		_Underscore.Backdrop.Create( Button, 0 );
 	end
 	for Index = 1, NumSideButtonsExcluded do
 		SkinExcludedButton( _G[ "MultiBarLeftButton"..Index ] );

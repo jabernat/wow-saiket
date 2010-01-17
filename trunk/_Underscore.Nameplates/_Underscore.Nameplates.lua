@@ -71,13 +71,11 @@ function me:PlateOnShow ()
 	Visual.ThreatBorder.Threat = nil; -- Reset threat level cache
 	Visual.Cast:Hide(); -- Note: Fix for cast bars occasionally being shown without any spellcast
 
-	me.VisualUpdateClassification( Visual, true ); -- Force
+	me.VisualClassificationUpdate( Visual, true ); -- Force
 	if ( HasTarget ) then
 		self:SetScript( "OnUpdate", me.PlateOnUpdate ); -- Begin updating target border
 	end
-	if ( InCombat ) then
-		Visual:SetScript( "OnUpdate", me.VisualOnUpdate ); -- Begin updating threat
-	else
+	if ( not InCombat ) then
 		self:SetSize( PlateWidth, PlateHeight );
 	end
 end
@@ -94,9 +92,6 @@ function me:PlateOnHide ()
 			me.TargetOutline:Hide();
 			me.TargetOutline:SetParent( nil );
 		end
-	end
-	if ( InCombat ) then
-		Plates[ self ]:SetScript( "OnUpdate", nil ); -- Stop updating threat
 	end
 end
 --[[****************************************************************************
@@ -121,13 +116,13 @@ do
 end
 
 --[[****************************************************************************
-  * Function: _Underscore.Nameplates:VisualOnUpdate                            *
+  * Function: _Underscore.Nameplates:VisualThreatUpdate                        *
   * Description: Updates threat textures.                                      *
   ****************************************************************************]]
 do
 	local Threat, ThreatBorder;
-	local R, G, B, Color;
-	function me:VisualOnUpdate ()
+	local R, G, B;
+	function me:VisualThreatUpdate ()
 		Threat, ThreatBorder = 0, self.ThreatBorder;
 		if ( self.Reaction <= 4 ) then -- Not friendly
 			if ( self.ThreatGlow:IsShown() ) then
@@ -139,33 +134,29 @@ do
 			if ( me.OptionsCharacter.TankMode ) then -- Invert
 				Threat = 2 - Threat;
 			end
-
-			if ( Threat > 0 ) then
-				if ( ThreatBorder.Threat ~= Threat ) then -- Changed
-					ThreatBorder.Threat = Threat;
-					if ( Threat == 1 ) then -- Medium
-						Color = Colors.reaction[ 4 ]; -- Neutral
-						ThreatBorder:SetTexCoord( 0, 1, 0, 0.5 );
-					else -- High
-						Color = Colors.reaction[ 1 ]; -- Hostile
-						ThreatBorder:SetTexCoord( 0, 1, 0.5, 1 );
-					end
-					ThreatBorder:SetVertexColor( Color[ 1 ], Color[ 2 ], Color[ 3 ] );
-					ThreatBorder:Show();
-				end
-				return;
-			end
 		end
 
-		-- Low
 		if ( ThreatBorder.Threat ~= Threat ) then -- Changed
 			ThreatBorder.Threat = Threat;
-			ThreatBorder:Hide();
+			if ( Threat == 0 ) then -- Low
+				ThreatBorder:Hide();
+			else
+				local Color;
+				if ( Threat == 1 ) then -- Medium
+					Color = Colors.reaction[ 4 ]; -- Neutral
+					ThreatBorder:SetTexCoord( 0, 1, 0, 0.5 );
+				else -- High
+					Color = Colors.reaction[ 4 ]; -- Hostile
+					ThreatBorder:SetTexCoord( 0, 1, 0.5, 1 );
+				end
+				ThreatBorder:SetVertexColor( Color[ 1 ], Color[ 2 ], Color[ 3 ] );
+				ThreatBorder:Show();
+			end
 		end
 	end
 end
 --[[****************************************************************************
-  * Function: _Underscore.Nameplates:VisualUpdateClassification                *
+  * Function: _Underscore.Nameplates:VisualClassificationUpdate                *
   * Description: Periodically interprets the status bar color for info.        *
   ****************************************************************************]]
 do
@@ -198,7 +189,7 @@ do
 	local MAX_PLAYER_LEVEL = MAX_PLAYER_LEVEL;
 	local Health, Left, Right;
 	local LevelText, BossIcon, Level, LevelPlayer, StatusBackground;
-	function me:VisualUpdateClassification ( Force )
+	function me:VisualClassificationUpdate ( Force )
 		Health = self.Health;
 		R, G, B = Health:GetStatusBarColor();
 		if ( Force or Health[ 1 ] ~= R or Health[ 2 ] ~= G or Health[ 3 ] ~= B ) then -- Reaction/classification changed
@@ -425,7 +416,7 @@ do
 
 
 		-- Border
-		_Underscore.Backdrop.Add( Visual, PlateBorder ):SetParent( Plate ); -- Parent to original nameplate for layering
+		_Underscore.Backdrop.Create( Visual, PlateBorder ):SetParent( Plate ); -- Parent to original nameplate for layering
 		Visual.Highlight:SetTexture( [[Interface\QuestFrame\UI-QuestTitleHighlight]] );
 
 
@@ -602,8 +593,8 @@ function me:PLAYER_REGEN_ENABLED ()
 	for Plate, Visual in pairs( Plates ) do
 		Plate:SetSize( PlateWidth, PlateHeight );
 	end
+
 	for Plate, Visual in pairs( me.PlatesVisible ) do
-		Visual:SetScript( "OnUpdate", nil ); -- Quit updating threat
 		Visual.ThreatBorder:Hide();
 		Visual.ThreatBorder.Threat = nil; -- Reset threat level cache
 	end
@@ -613,10 +604,6 @@ end
   ****************************************************************************]]
 function me:PLAYER_REGEN_DISABLED ()
 	InCombat = true;
-
-	for Plate, Visual in pairs( me.PlatesVisible ) do
-		Visual:SetScript( "OnUpdate", me.VisualOnUpdate ); -- Begin updating threat
-	end
 end
 --[[****************************************************************************
   * Function: _Underscore.Nameplates:PLAYER_TARGET_CHANGED                     *
@@ -656,7 +643,13 @@ do
 			NextUpdate = me.ClassificationUpdateRate;
 
 			for Plate, Visual in pairs( me.PlatesVisible ) do
-				me.VisualUpdateClassification( Visual );
+				me.VisualClassificationUpdate( Visual );
+			end
+		end
+
+		if ( InCombat ) then -- Update threat borders
+			for Plate, Visual in pairs( me.PlatesVisible ) do
+				me.VisualThreatUpdate( Visual );
 			end
 		end
 	end

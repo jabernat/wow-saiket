@@ -21,7 +21,7 @@ _Underscore.Units.Grid = me;
   ****************************************************************************]]
 function me:FrameInitialize ()
 	self.menu = _Underscore.Units.ShowGenericMenu;
-	_Underscore.Backdrop.Add( self, -2 );
+	_Underscore.Backdrop.Create( self, -2 );
 end
 
 

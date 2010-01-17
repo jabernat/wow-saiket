@@ -151,7 +151,7 @@ do
 				break;
 			end
 		end
-		_Underscore.Backdrop.Add( self, 0 );
+		_Underscore.Backdrop.Create( self, 0 );
 
 		local Text = _G[ self:GetName().."Text" ];
 		Text:ClearAllPoints();
