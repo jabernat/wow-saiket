@@ -7,10 +7,10 @@
 if ( IsAddOnLoaded( "Carbonite" ) ) then
 	return;
 end
-local me = {
-	PingText = MinimapPing:CreateFontString( nil, "ARTWORK", "NumberFontNormalSmallGray" );
-};
+local me = CreateFrame( "Frame" );
 _Underscore.Minimap = me;
+
+me.PingText = MinimapPing:CreateFontString( nil, "ARTWORK", "NumberFontNormalSmallGray" );
 
 local IconSize = 14;
 local MinimapScale = 0.9;
@@ -77,13 +77,19 @@ function me:OnMouseWheel ( Delta )
 	self:SetZoom( min( max( self:GetZoom() + Delta, 0 ), self:GetZoomLevels() - 1 ) );
 end
 --[[****************************************************************************
-  * Function: _Underscore.Minimap:OnEvent                                      *
+  * Function: _Underscore.Minimap:MINIMAP_PING                                 *
   * Description: Displays the name of the player who pinged.                   *
   ****************************************************************************]]
-function me:OnEvent ( Event, UnitID )
-	if ( Event == "MINIMAP_PING" ) then
-		me.PingText:SetText( UnitName( UnitID ) );
-	end
+function me:MINIMAP_PING ( _, UnitID )
+	me.PingText:SetText( UnitName( UnitID ) );
+end
+--[[****************************************************************************
+  * Function: _Underscore.Minimap:PLAYER_LOGOUT                                *
+  * Description: Restore the original minimap shape in case _Underscore was    *
+  *   disabled right before a reload UI.                                       *
+  ****************************************************************************]]
+function me:PLAYER_LOGOUT ()
+	Minimap:SetMaskTexture( [[Textures\MinimapMask]] );
 end
 
 
@@ -103,6 +109,10 @@ end
 -----------------------------
 
 do
+	me:SetScript( "OnEvent", _Underscore.OnEvent );
+	me:RegisterEvent( "MINIMAP_PING" );
+	me:RegisterEvent( "PLAYER_LOGOUT" );
+
 	MinimapCluster:ClearAllPoints();
 	MinimapCluster:SetPoint( "TOPRIGHT", _Underscore.TopMargin, "BOTTOMRIGHT" );
 	MinimapCluster:SetSize( Minimap:GetSize() );
@@ -113,7 +123,6 @@ do
 
 	Minimap:SetAllPoints( MinimapCluster );
 	Minimap:SetMaskTexture( [[Interface\Buttons\WHITE8X8]] );
-	Minimap:SetBlipTexture( [[Interface\AddOns\]]..( ... )..[[\Skin\ObjectIcons]] );
 	GetMinimapShape = me.GetMinimapShape;
 
 	-- Hooks to allow pings on a square minimap
@@ -122,7 +131,6 @@ do
 	-- Show name of pinger
 	me.PingText:SetPoint( "TOPRIGHT", MinimapPing, "CENTER", -8, -8 );
 	me.PingText:SetAlpha( 0.75 );
-	MinimapPing:HookScript( "OnEvent", me.OnEvent );
 
 
 
