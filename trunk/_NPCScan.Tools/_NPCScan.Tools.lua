@@ -27,7 +27,7 @@ local MatrixMetaSymbolic = me.Matrix.MetaSymbolic;
   ****************************************************************************]]
 function MatrixMeta.__index:New ( ... )
 	-- Create a new identity matrix
-	local Matrix = setmetatable( {}, getmetatable( self ) or self.Meta );
+	local Matrix = setmetatable( {}, self.Meta );
 	for Position = 1, 9 do
 		Matrix[ Position ] = select( Position, ... ) or ( Position % 4 == 1 and 1 or 0 );
 	end
