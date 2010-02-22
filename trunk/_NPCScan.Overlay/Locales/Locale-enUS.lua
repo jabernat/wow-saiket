@@ -5,6 +5,7 @@
 
 
 do
+	local Title = "_|cffCCCC88NPCScan|r.Overlay";
 	_NPCScanLocalization.OVERLAY = setmetatable( {
 		CONFIG_TITLE = "Overlay";
 		CONFIG_ENABLE = ENABLE;
@@ -16,8 +17,10 @@ do
 
 		MODULE_BATTLEFIELDMINIMAP = "Battlefield-Minimap Popout";
 		MODULE_WORLDMAP = "Main World Map";
-		MODULE_WORLDMAP_KEY = "_|cffCCCC88NPCScan|r.Overlay";
+		MODULE_WORLDMAP_KEY = Title;
 		MODULE_WORLDMAP_KEY_FORMAT = "\226\128\162 %s";
+		MODULE_WORLDMAP_TOGGLE = Title;
+		MODULE_WORLDMAP_TOGGLE_DESC = "If enabled, displays the paths of mobs tracked by _NPCScan that aren't cached.";
 		MODULE_MINIMAP = "Minimap";
 		MODULE_RANGERING_FORMAT = "Show %dyd ring for approximate detection range";
 		MODULE_RANGERING_DESC = "Note: The range ring only appears in zones with tracked rares.";

@@ -13,6 +13,7 @@ me.Label = L.MODULE_WORLDMAP;
 me.AlphaDefault = 0.55;
 
 me.Key = CreateFrame( "Frame", nil, WorldMapButton );
+me.Toggle = CreateFrame( "CheckButton", "_NPCScanOverlayWorldMapToggle", WorldMapFrame, "OptionsCheckButtonTemplate" );
 
 me.AchievementNPCNames = {};
 
@@ -140,6 +141,28 @@ end
 
 
 --[[****************************************************************************
+  * Function: _NPCScan.Overlay.WorldMap.Toggle.setFunc                         *
+  * Description: Toggles the module from the WorldMap frame.                   *
+  ****************************************************************************]]
+function me.Toggle.setFunc ( Enable )
+	Overlay[ Enable == "1" and "ModuleEnable" or "ModuleDisable" ]( "WorldMap" );
+end
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.WorldMap.Toggle:OnEnter                         *
+  ****************************************************************************]]
+function me.Toggle:OnEnter ()
+	WorldMapTooltip:SetOwner( self, "ANCHOR_LEFT" );
+	WorldMapTooltip:SetText( L.MODULE_WORLDMAP_TOGGLE_DESC, nil, nil, nil, nil, 1 );
+end
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.WorldMap.Toggle:OnLeave                         *
+  ****************************************************************************]]
+function me.Toggle:OnLeave ()
+	WorldMapTooltip:Hide();
+end
+
+
+--[[****************************************************************************
   * Function: _NPCScan.Overlay.WorldMap:OnShow                                 *
   ****************************************************************************]]
 function me:OnShow ()
@@ -180,6 +203,8 @@ function me:Disable ()
 		self.Key:Hide();
 	end
 	Overlay.TextureRemoveAll( self );
+
+	self.Toggle:SetChecked( false );
 end
 --[[****************************************************************************
   * Function: _NPCScan.Overlay.WorldMap:Enable                                 *
@@ -187,6 +212,8 @@ end
 function me:Enable ()
 	self:RegisterEvent( "WORLD_MAP_UPDATE" );
 	self:Show();
+
+	self.Toggle:SetChecked( true );
 end
 
 
@@ -229,8 +256,17 @@ do
 	Title:SetAllPoints( TitleBackground );
 	Title:SetText( L.MODULE_WORLDMAP_KEY );
 
-	me:OnLoad();
-	Overlay.ModuleRegister( "WorldMap", me );
+
+	-- Create toggle button on the WorldMap
+	local Toggle = me.Toggle;
+	local Label = _G[ Toggle:GetName().."Text" ];
+	Label:SetText( L.MODULE_WORLDMAP_TOGGLE );
+	local LabelWidth = Label:GetStringWidth();
+	Toggle:SetHitRectInsets( 4, 4 - LabelWidth, 4, 4 );
+	Toggle:SetPoint( "RIGHT", WorldMapQuestShowObjectives, "LEFT", -LabelWidth - 8, 0 );
+	Toggle:SetScript( "OnEnter", Toggle.OnEnter );
+	Toggle:SetScript( "OnLeave", Toggle.OnLeave );
+
 
 	-- Cache achievement NPC names
 	for AchievementID, Achievement in pairs( _NPCScan.Achievements ) do
@@ -238,4 +274,8 @@ do
 			me.AchievementNPCNames[ NpcID ] = GetAchievementCriteriaInfo( CriteriaID );
 		end
 	end
+
+
+	me:OnLoad();
+	Overlay.ModuleRegister( "WorldMap", me );
 end
