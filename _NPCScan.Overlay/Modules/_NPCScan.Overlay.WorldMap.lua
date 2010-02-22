@@ -204,7 +204,9 @@ function me:Disable ()
 	end
 	Overlay.TextureRemoveAll( self );
 
-	self.Toggle:SetChecked( false );
+	if ( self.Toggle ) then
+		self.Toggle:SetChecked( false );
+	end
 end
 --[[****************************************************************************
   * Function: _NPCScan.Overlay.WorldMap:Enable                                 *
@@ -213,7 +215,9 @@ function me:Enable ()
 	self:RegisterEvent( "WORLD_MAP_UPDATE" );
 	self:Show();
 
-	self.Toggle:SetChecked( true );
+	if ( self.Toggle ) then
+		self.Toggle:SetChecked( true );
+	end
 end
 
 
