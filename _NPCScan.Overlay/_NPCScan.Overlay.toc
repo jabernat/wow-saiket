@@ -13,7 +13,7 @@
 ## X-Curse-Project-ID: npcscan-overlay
 ## SavedVariables: _NPCScanOverlayOptions
 ## RequiredDeps: _NPCScan
-## OptionalDeps: AlphaMap, Carbonite, Cartographer3, LibRareSpawns
+## OptionalDeps: AlphaMap, Carbonite, Cartographer3, LibRareSpawns, Mapster
 Locales.xml
 
 _NPCScan.Overlay.lua
@@ -30,3 +30,4 @@ Modules\_NPCScan.Overlay.AlphaMap.lua
 # Pseudo-modules
 Modules\_NPCScan.Overlay.Carbonite.lua
 Modules\_NPCScan.Overlay.Cartographer3.lua
+Modules\_NPCScan.Overlay.Mapster.lua
