@@ -32,15 +32,17 @@ do
 		local UnitID = self.unit or self.name;
 		local Icon = self.icon;
 
+		local Color;
 		if ( UnitID and UnitIsPlayer( UnitID ) ) then -- Class colored icon
-			local Color;
 			if ( PlayerIsPVPInactive( UnitID ) ) then
 				Color = InactiveColor;
 			else
 				local _, Class = UnitClass( UnitID );
 				Color = Colors[ Class ];
 			end
+		end
 
+		if ( Color ) then
 			Icon:SetTexture( [[Interface\Minimap\PartyRaidBlips]] );
 			Icon:SetVertexColor( unpack( Color ) );
 			if ( UnitPlayerOrPetInParty( UnitID ) ) then
