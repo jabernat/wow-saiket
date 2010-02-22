@@ -209,6 +209,7 @@ do
 	me.UnitRegister( GameTooltip );
 	SkinAll( GameTooltip );
 	hooksecurefunc( "GameTooltip_SetDefaultAnchor", me.SetDefaultAnchor );
+	GameTooltip:SetScale( 0.75 );
 
 	me.UnitRegister( ItemRefTooltip );
 	me.ItemRegister( ItemRefTooltip );
