@@ -12,7 +12,7 @@
    path is used to find your saved Routes settings.
 
 When all paths are drawn, reload your UI and run this script with a standalone
-Lua 5.1 interpreter.  The <../../_NPCScan.Overlay._NPCScan.Overlay.PathData.lua>
+Lua 5.1 interpreter.  The <../../_NPCScan.Overlay/_NPCScan.Overlay.PathData.lua>
 data file will be overwritten.
 
 If the program appears to lock up, one of your paths is "inside-out" (traced
@@ -170,6 +170,7 @@ for _, ZoneName in ipairs( Zones ) do
 	local ZoneData = RoutesDB.global.routes[ ZoneName ];
 	local Overlays = {};
 	local Names = {};
+	local IDs = {};
 
 	for RouteName, RouteData in pairs( ZoneData ) do
 		if ( RouteName:match( "^Overlay:(.+)$" ) ) then
@@ -185,28 +186,27 @@ for _, ZoneName in ipairs( Zones ) do
 		end
 	end
 	for ID, Data in pairs( Overlays ) do
-		Names[ #Names + 1 ] = Data[ 1 ];
+		IDs[ #IDs + 1 ] = ID;
 	end
 
-	if ( #Names > 0 ) then
+	if ( #IDs > 0 ) then
 		print( ZoneName );
 		Outfile:write( ( "\t[ \"%s\" ] = {\n" ):format( ZoneName ) );
 
-		table.sort( Names, function ( Arg1, Arg2 )
-			return Arg1:match( "Overlay:[^:]+:([^:]+)" ) < Arg2:match( "Overlay:[^:]+:([^:]+)" );
-		end );
-		for _, RouteName in ipairs( Names ) do
-			local ID, Name = RouteName:match( "Overlay:([^:]+):([^:]+)" );
-			ID = tonumber( ID );
+		table.sort( IDs );
+		for _, ID in ipairs( IDs ) do
 			local Data = Overlays[ ID ];
+			local Name = Data[ 1 ]:match( "Overlay:[^:]+:([^:]+)" );
 
-			print( ( "\t%s (%d)" ):format( Name, ID ) );
+			print( ( "\t[%d] %s" ):format( ID, Name or "Unknown" ) );
 			local PolyData = "";
 			for Index, RouteName in ipairs( Data ) do
 				print( ( "\t\t%s" ):format( RouteName ) );
 				PolyData = PolyData..PolyLineToTris( ZoneData[ RouteName ].route );
 			end
-			Outfile:write( ( "\t\t-- %s\n" ):format( Name ) );
+			if ( Name ) then
+				Outfile:write( ( "\t\t-- %s\n" ):format( Name ) );
+			end
 			Outfile:write( ( "\t\t[ %d ] = \"%s\";\n" ):format( ID, EscapeString( PolyData ) ) );
 		end
 		Outfile:write( "\t};\n" );
