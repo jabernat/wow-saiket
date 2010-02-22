@@ -9,7 +9,7 @@
 
 Once you have selected a set of NPCs and configured the account file, reload your
 UI and run this script with a standalone Lua 5.1 interpreter.  The
-<../../_NPCScan.Overlay._NPCScan.Overlay.PathData.lua> data file will be overwritten.
+<../../_NPCScan.Overlay/_NPCScan.Overlay.PathData.lua> data file will be overwritten.
 ]]
 
 
@@ -249,7 +249,7 @@ for AchievementID, Enabled in pairs( Achievements ) do
 
 			local Count = 0;
 			for NpcID, Name in Text:gmatch( [[<td><a href="/%?npc=([%d]+)">(.-)</a> slain</td>]] ) do
-				NpcIDs[ NpcID ] = Name;
+				NpcIDs[ tonumber( NpcID ) ] = Name;
 				Count = Count + 1;
 			end
 			print( "  + "..AchievementName..":", Count.." NPCs." );
@@ -299,6 +299,14 @@ for NpcID, Name in pairs( NpcIDs ) do
 end
 
 
+-- Sort by npc ID
+local SortOrder = {};
+for NpcID in pairs( NpcMapIDs ) do
+	SortOrder[ #SortOrder + 1 ] = NpcID;
+end
+table.sort( SortOrder );
+
+
 
 
 local Outfile = assert( io.open( OutputFilename, "w+" ) );
@@ -307,15 +315,15 @@ Outfile:write( "_NPCScan.Tools.LocationData = {\n" );
 
 
 Outfile:write( "\tNpcMapIDs = {\n" );
-for NpcID, MapID in pairs( NpcMapIDs ) do
-	Outfile:write( "\t\t[ "..NpcID.." ] = \""..MapID.."\";\n" );
+for _, NpcID in ipairs( SortOrder ) do
+	Outfile:write( "\t\t[ "..NpcID.." ] = \""..NpcMapIDs[ NpcID ].."\";\n" );
 end
 Outfile:write( "\t};\n" );
 
 
 Outfile:write( "\tNpcData = {\n" );
-for NpcID, NpcData in pairs( NpcData ) do
-	Outfile:write( "\t\t[ "..NpcID.." ] = \""..EscapeString( NpcData ).."\";\n" );
+for _, NpcID in ipairs( SortOrder ) do
+	Outfile:write( "\t\t[ "..NpcID.." ] = \""..EscapeString( NpcData[ NpcID ] ).."\";\n" );
 end
 Outfile:write( "\t};\n" );
 
