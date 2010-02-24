@@ -7,7 +7,8 @@
 local L = _NPCScanLocalization.OVERLAY;
 local Overlay = _NPCScan.Overlay;
 local Minimap = Minimap;
-local me = CreateFrame( "Frame" );
+local ScrollFrame = CreateFrame( "ScrollFrame", nil, Minimap );
+local me = CreateFrame( "Frame", nil, ScrollFrame );
 Overlay.Minimap = me;
 
 me.Label = L.MODULE_MINIMAP;
@@ -18,7 +19,7 @@ me.UpdateRateDefault  = 0.04;
 me.UpdateRateRotating = 0.02; -- Faster so that spinning the minimap appears smooth
 local UpdateRate = me.UpdateRateDefault;
 
-me.RangeRing = CreateFrame( "Frame", nil, me ); -- [ Quadrant ] = Texture;
+me.RangeRing = CreateFrame( "Frame", nil, ScrollFrame ); -- [ Quadrant ] = Texture;
 
 local UpdateForce, IsInside, RotateMinimap, Radius, Quadrants;
 
@@ -649,14 +650,14 @@ end
   * Function: _NPCScan.Overlay.Minimap:Disable                                 *
   ****************************************************************************]]
 function me:Disable ()
-	self:Hide();
+	ScrollFrame:Hide();
 	Overlay.TextureRemoveAll( self );
 end
 --[[****************************************************************************
   * Function: _NPCScan.Overlay.Minimap:Enable                                  *
   ****************************************************************************]]
 function me:Enable ()
-	self:Show();
+	ScrollFrame:Show();
 end
 
 
@@ -667,11 +668,10 @@ end
 -----------------------------
 
 do
-	local ScrollFrame = CreateFrame( "ScrollFrame", nil, Minimap );
+	ScrollFrame:Hide();
 	ScrollFrame:SetAllPoints();
 	ScrollFrame:SetScrollChild( me );
 
-	me:Hide();
 	me:SetAllPoints();
 	me:SetScript( "OnShow", me.OnShow );
 	me:SetScript( "OnUpdate", me.OnUpdate );
@@ -684,6 +684,7 @@ do
 	-- Setup the range ring's textures
 	local RangeRing = me.RangeRing;
 	RangeRing:SetAllPoints();
+	RangeRing:SetAlpha( 0.8 );
 	local Color = NORMAL_FONT_COLOR;
 	for Index = 1, 4 do
 		local Texture = RangeRing:CreateTexture();
@@ -706,14 +707,14 @@ do
 	local Config = Overlay.ModuleRegister( "Minimap", me );
 
 	local Checkbox = CreateFrame( "CheckButton", "$parentRangeRing", Config, "UICheckButtonTemplate" );
-	me.RangeRing.Checkbox = Checkbox;
+	RangeRing.Checkbox = Checkbox;
 	Config.RangeRing = Checkbox;
 	tinsert( Config, Checkbox );
 
 	Checkbox:SetPoint( "TOPLEFT", Config.Enabled, "BOTTOMLEFT" );
 	Checkbox:SetWidth( 26 );
 	Checkbox:SetHeight( 26 );
-	Checkbox:SetScript( "OnClick", me.RangeRing.CheckboxOnClick );
+	Checkbox:SetScript( "OnClick", RangeRing.CheckboxOnClick );
 	local Label = _G[ Checkbox:GetName().."Text" ];
 	Label:SetFormattedText( L.MODULE_RANGERING_FORMAT, Overlay.DetectionRadius );
 	Checkbox:SetHitRectInsets( 4, 4 - Label:GetStringWidth(), 4, 4 );
