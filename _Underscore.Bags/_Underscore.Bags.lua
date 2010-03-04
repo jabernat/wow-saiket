@@ -44,6 +44,23 @@ end
 
 
 
+--[[****************************************************************************
+  * Function: _Underscore.Bags.StackOnMouseWheel                               *
+  * Description: Scrolls the stack amount using the scrollwheel.               *
+  ****************************************************************************]]
+function me:StackOnMouseWheel ( Delta )
+	if ( IsModifiedClick( "_UNDERSCORE_BAGS_SCROLLALL" ) ) then
+		self.split = Delta > 0 and self.maxStack or 1;
+		StackSplitText:SetText( self.split );
+		UpdateStackSplitFrame( self.maxStack );
+	else
+		( Delta > 0 and StackSplitRightButton or StackSplitLeftButton ):Click();
+	end
+end
+
+
+
+
 --------------------------------------------------------------------------------
 -- Function Hooks / Execution
 -----------------------------
@@ -55,4 +72,9 @@ do
 
 	setfenv( updateContainerFrameAnchors, me.ContainerEnv );
 	updateContainerFrameAnchors = me.Update;
+
+
+	-- Enable scrolling the stack split dialog
+	StackSplitFrame:EnableMouseWheel( true );
+	StackSplitFrame:SetScript( "OnMouseWheel", me.StackOnMouseWheel );
 end
