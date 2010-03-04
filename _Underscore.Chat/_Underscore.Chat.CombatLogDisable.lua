@@ -20,7 +20,9 @@ do
 	elseif ( not Loadable ) then
 		-- Hook to keep the combat log chat frame in place
 		hooksecurefunc( "FCF_DockUpdate", function ()
-			_G[ COMBATLOG:GetName().."Background" ]:SetPoint( "TOPLEFT", -2, 3 );
+			if ( IsAddOnLoaded( "Blizzard_CombatLog" ) ) then
+				_G[ COMBATLOG:GetName().."Background" ]:SetPoint( "TOPLEFT", -2, 3 );
+			end
 		end );
 	end
 end
