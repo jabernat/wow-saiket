@@ -24,6 +24,6 @@ do
 		MODULE_MINIMAP = "Minimap";
 		MODULE_RANGERING_FORMAT = "Show %dyd ring for approximate detection range";
 		MODULE_RANGERING_DESC = "Note: The range ring only appears in zones with tracked rares.";
-		MODULE_ALPHAMAP = "AlphaMap AddOn";
+		MODULE_ALPHAMAP3 = "AlphaMap3 AddOn";
 	}, getmetatable( _NPCScanLocalization ) );
 end
