@@ -185,6 +185,8 @@ end
   * Function: _Latency:PLAYER_LOGOUT                                           *
   ****************************************************************************]]
 function me:PLAYER_LOGOUT ()
+	me:SetUserPlaced( false );
+
 	local Options, _ = _LatencyOptions;
 	Options.Width, Options.Height = me:GetSize();
 	Options.Point, _, _, Options.X, Options.Y = me:GetPoint();
@@ -292,7 +294,6 @@ do
 		insets = { left = 7; right = 5; top = 3; bottom = 6; };
 	} );
 	-- Make dragable
-	me:SetMovable( true );
 	me:SetResizable( true );
 	me:SetClampedToScreen( true );
 	me:SetClampRectInsets( me.Padding + 2, -me.Padding, -me.Padding - 18, me.Padding );
