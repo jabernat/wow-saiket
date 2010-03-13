@@ -1,21 +1,21 @@
 --[[****************************************************************************
   * _NPCScan.Overlay by Saiket                                                 *
-  * _NPCScan.Overlay.AlphaMap.lua - Canvas for the AlphaMap addon.             *
+  * _NPCScan.Overlay.AlphaMap3.lua - Canvas for the AlphaMap3 addon.           *
   ****************************************************************************]]
 
 
 local Overlay = _NPCScan.Overlay;
 local me = CreateFrame( "Frame" );
-Overlay.AlphaMap = me;
+Overlay.AlphaMap3 = me;
 
-me.Label = _NPCScanLocalization.OVERLAY.MODULE_ALPHAMAP;
+me.Label = _NPCScanLocalization.OVERLAY.MODULE_ALPHAMAP3;
 me.AlphaDefault = 0.8;
 
 
 
 
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay.AlphaMap:OnLoad                                 *
+  * Function: _NPCScan.Overlay.AlphaMap3:OnLoad                                *
   ****************************************************************************]]
 function me:OnLoad ()
 	me:SetParent( AlphaMapDetailFrame );
@@ -29,7 +29,7 @@ function me:OnLoad ()
 	me.Update = WorldMap.Update;
 	WorldMap.OnLoad( me );
 
-	if ( Overlay.Options.Modules[ "AlphaMap" ] == true ) then
+	if ( Overlay.Options.Modules[ "AlphaMap3" ] == true ) then
 		me:Enable();
 		me:Update();
 	end
@@ -43,5 +43,5 @@ end
 -----------------------------
 
 do
-	Overlay.ModuleRegister( "AlphaMap", me, "AlphaMap" );
+	Overlay.ModuleRegister( "AlphaMap3", me, "AlphaMap3" );
 end
