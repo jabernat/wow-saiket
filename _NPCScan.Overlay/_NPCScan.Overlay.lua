@@ -303,6 +303,10 @@ end
   ****************************************************************************]]
 function me.ModuleUnregister ( Name )
 	local Config = me.Config.Modules[ Name ];
+
+	local Color = GRAY_FONT_COLOR;
+	_G[ Config:GetName().."Title" ]:SetTextColor( Color.r, Color.g, Color.b );
+
 	if ( Config.Enabled:IsEnabled() == 1 ) then
 		Config.Enabled:SetEnabled( false );
 		for _, Control in ipairs( Config ) do

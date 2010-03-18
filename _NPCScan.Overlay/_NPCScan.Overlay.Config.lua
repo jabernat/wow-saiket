@@ -67,16 +67,16 @@ end
 do
 	local LastFrame;
 	function me.ModuleRegister ( Name, Text )
-		local Frame = CreateFrame( "Frame", "_NPCScanOverlayModule"..Name, me, "OptionsBoxTemplate" );
+		local Frame = CreateFrame( "Frame", "_NPCScanOverlayModule"..Name, me.ScrollChild, "OptionsBoxTemplate" );
 		Frame.Name = Name;
 		me.Modules[ Name ] = Frame;
 
 		_G[ Frame:GetName().."Title" ]:SetText( Text );
-		Frame:SetPoint( "RIGHT", -8, 0 );
+		Frame:SetPoint( "RIGHT", me.ScrollChild:GetParent(), -4, 0 );
 		if ( LastFrame ) then
 			Frame:SetPoint( "TOPLEFT", LastFrame, "BOTTOMLEFT", 0, -16 );
 		else
-			Frame:SetPoint( "TOPLEFT", me.SubText, "BOTTOMLEFT", -2, -16 );
+			Frame:SetPoint( "TOPLEFT", 4, -14 );
 		end
 		LastFrame = Frame;
 
@@ -234,6 +234,24 @@ do
 	SubText:SetJustifyH( "LEFT" );
 	SubText:SetJustifyV( "TOP" );
 	SubText:SetText( L.CONFIG_DESC );
+
+
+	-- Module options scrollframe
+	local Background = CreateFrame( "Frame", nil, me, "OptionsBoxTemplate" );
+	Background:SetPoint( "TOPLEFT", SubText, "BOTTOMLEFT", -2, -12 );
+	Background:SetPoint( "BOTTOMRIGHT", -32, 16 );
+	local Texture = Background:CreateTexture( nil, "BACKGROUND" );
+	Texture:SetTexture( 0, 0, 0, 0.5 );
+	Texture:SetPoint( "BOTTOMLEFT", 5, 5 );
+	Texture:SetPoint( "TOPRIGHT", -5, -5 );
+
+	local ScrollFrame = CreateFrame( "ScrollFrame", "_NPCScanOverlayScrollFrame", Background, "UIPanelScrollFrameTemplate" );
+	ScrollFrame:SetPoint( "TOPLEFT", 4, -4 );
+	ScrollFrame:SetPoint( "BOTTOMRIGHT", -4, 4 );
+
+	me.ScrollChild = CreateFrame( "Frame" );
+	ScrollFrame:SetScrollChild( me.ScrollChild );
+	me.ScrollChild:SetSize( 1, 1 );
 
 
 	InterfaceOptions_AddCategory( me );

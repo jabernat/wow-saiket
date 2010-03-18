@@ -716,6 +716,8 @@ do
 	Checkbox:SetHeight( 26 );
 	Checkbox:SetScript( "OnClick", RangeRing.CheckboxOnClick );
 	local Label = _G[ Checkbox:GetName().."Text" ];
+	Label:SetPoint( "RIGHT", Config, "RIGHT", -6, 0 );
+	Label:SetJustifyH( "LEFT" );
 	Label:SetFormattedText( L.MODULE_RANGERING_FORMAT, Overlay.DetectionRadius );
 	Checkbox:SetHitRectInsets( 4, 4 - Label:GetStringWidth(), 4, 4 );
 	Checkbox.SetEnabled = Overlay.Config.ModuleCheckboxSetEnabled;
