@@ -330,23 +330,45 @@ do
 end
 
 
+do
+	local Blocks = {};
 --[[****************************************************************************
-  * Function: _Cursor.ShouldHide                                               *
-  * Description: Returns true if the cursor model should be hidden.            *
+  * Function: _Cursor.BlockAdd                                                 *
+  * Description: Adds a condition for hiding the cursor.                       *
   ****************************************************************************]]
-function me.ShouldHide ()
-	return me.IsCameraMoving or me.IsMouselooking or me.IsCinematicPlaying or me.IsScreenshotSaving;
+	function me.BlockAdd ( Name )
+		if ( not Blocks[ Name ] ) then
+			Blocks[ Name ] = true;
+			me:Hide();
+		end
+	end
+--[[****************************************************************************
+  * Function: _Cursor.BlockRemove                                              *
+  * Description: Removes a condition for hiding the cursor.                    *
+  ****************************************************************************]]
+	local next = next;
+	function me.BlockRemove ( Name )
+		if ( Blocks[ Name ] ) then
+			Blocks[ Name ] = nil;
+			if ( next( Blocks ) == nil ) then -- No more active blocks
+				me:Show();
+			end
+		end
+	end
 end
 
 
 --[[****************************************************************************
+  * Function: _Cursor.ScreenshotStart                                          *
+  ****************************************************************************]]
+function me.ScreenshotStart ()
+	me.BlockAdd( "Screenshot" );
+end
+--[[****************************************************************************
   * Function: _Cursor:SCREENSHOT_SUCCEEDED                                     *
   ****************************************************************************]]
 function me:SCREENSHOT_SUCCEEDED ()
-	me.IsScreenshotSaving = false;
-	if ( not me.ShouldHide() ) then
-		me:Show();
-	end
+	me.BlockRemove( "Screenshot" );
 end
 --[[****************************************************************************
   * Function: _Cursor:SCREENSHOT_FAILED                                        *
@@ -356,34 +378,64 @@ me.SCREENSHOT_FAILED = me.SCREENSHOT_SUCCEEDED;
   * Function: _Cursor:CINEMATIC_START                                          *
   ****************************************************************************]]
 function me:CINEMATIC_START ()
-	me.IsCinematicPlaying = true;
-	me:Hide();
+	me.BlockAdd( "Cinematic" ); -- In-game-engine cinematic, like the new character introduction
 end
 --[[****************************************************************************
   * Function: _Cursor:CINEMATIC_STOP                                           *
   ****************************************************************************]]
 function me:CINEMATIC_STOP ()
-	me.IsCinematicPlaying = false;
-	if ( not me.ShouldHide() ) then
-		me:Show();
+	me.BlockRemove( "Cinematic" );
+end
+--[[****************************************************************************
+  * Function: _Cursor.MovieStart                                               *
+  ****************************************************************************]]
+function me.MovieStart ()
+	me.BlockAdd( "Movie" ); -- FMV movie sequence, like the Wrathgate cinematic
+end
+--[[****************************************************************************
+  * Function: _Cursor.MovieStop                                                *
+  ****************************************************************************]]
+function me.MovieStop ()
+	me.BlockRemove( "Movie" );
+end
+--[[****************************************************************************
+  * Function: _Cursor.CameraMoveStart                                          *
+  ****************************************************************************]]
+function me.CameraMoveStart ()
+	me.BlockAdd( "Camera" );
+end
+--[[****************************************************************************
+  * Function: _Cursor.CameraMoveStop                                           *
+  ****************************************************************************]]
+function me.CameraMoveStop ()
+	me.BlockRemove( "Camera" );
+end
+--[[****************************************************************************
+  * Function: _Cursor:MouselookOnUpdate                                        *
+  * Description: Checks the mouselook status in realtime to hide the cursor    *
+  *   when in mouselook mode.                                                  *
+  ****************************************************************************]]
+do
+	local IsMouselooking = IsMouselooking;
+	function me:MouselookOnUpdate ()
+		if ( IsMouselooking() ) then
+			me.BlockAdd( "Mouselook" );
+		else
+			me.BlockRemove( "Mouselook" );
+		end
 	end
 end
+
+
 --[[****************************************************************************
   * Function: _Cursor:ADDON_LOADED                                             *
   ****************************************************************************]]
 do
-	local function ToTable ( ... )
-		local Table = {};
-		for Index = 1, select( "#", ... ) do
-			Table[ #Table + 1 ] = tonumber( ( select( Index, ... ) ) );
-		end
-		return Table;
-	end
 	local function VersionCompare ( Version1, Version2 ) -- Compares delimited version strings
 		if ( Version1 == Version2 ) then
 			return 0;
 		end
-		Version1, Version2 = ToTable( ( "." ):split( Version1 or "" ) ), ToTable( ( "." ):split( Version2 or "" ) );
+		Version1, Version2 = { ( "." ):split( Version1 or "" ) }, { ( "." ):split( Version2 or "" ) };
 		for Index, Sub1 in ipairs( Version1 ) do
 			local Sub2 = Version2[ Index ];
 			if ( not Sub2 or Sub1 > Sub2 ) then
@@ -403,10 +455,12 @@ do
 				_CursorOptions = { Sets = CopyTable( me.DefaultSets ) };
 			end
 
-			if ( VersionCompare( _CursorOptions.Version, Version ) < 0 ) then
-				local Name = L.SETS[ "Face Melter (Warning, bright!)" ];
-				if ( _CursorOptions.Sets[ Name ] ) then
-					_CursorOptions.Sets[ Name ] = CopyTable( me.DefaultSets[ Name ] );
+			if ( _CursorOptions.Version ~= Version ) then
+				if ( VersionCompare( _CursorOptions.Version, "3.1.0.2" ) < 0 ) then -- 3.1.0.2: Updated the Face Melter preset
+					local Name = L.SETS[ "Face Melter (Warning, bright!)" ];
+					if ( _CursorOptions.Sets[ Name ] ) then
+						_CursorOptions.Sets[ Name ] = CopyTable( me.DefaultSets[ Name ] );
+					end
 				end
 				_CursorOptions.Version = Version;
 			end
@@ -486,37 +540,12 @@ do
 	me:RegisterEvent( "CINEMATIC_STOP" );
 
 	-- Hide during screenshots
-	hooksecurefunc( "Screenshot", function ()
-		me.IsScreenshotSaving = true;
-		me:Hide();
-	end );
+	hooksecurefunc( "Screenshot", me.ScreenshotStart );
+	-- Hide while FMV movies play
+	MovieFrame:HookScript( "OnShow", me.MovieStart );
+	MovieFrame:HookScript( "OnHide", me.MovieStop );
 	-- Hook camera movement to hide cursor effects
-	hooksecurefunc( "CameraOrSelectOrMoveStart", function ()
-		me.IsCameraMoving = true;
-		me:Hide();
-	end );
-	hooksecurefunc( "CameraOrSelectOrMoveStop", function ()
-		me.IsCameraMoving = false;
-		if ( not me.ShouldHide() ) then
-			me:Show();
-		end
-	end );
-	do
-		local IsMouselooking = IsMouselooking;
-		local Mouselooking;
-		CreateFrame( "Frame" ):SetScript( "OnUpdate", function ()
-			Mouselooking = IsMouselooking();
-			if ( Mouselooking ) then
-				if ( not me.IsMouselooking ) then
-					me.IsMouselooking = true;
-					me:Hide();
-				end
-			elseif ( me.IsMouselooking ) then
-				me.IsMouselooking = false;
-				if ( not me.ShouldHide() ) then
-					me:Show();
-				end
-			end
-		end );
-	end
+	hooksecurefunc( "CameraOrSelectOrMoveStart", me.CameraMoveStart );
+	hooksecurefunc( "CameraOrSelectOrMoveStop", me.CameraMoveStop );
+	CreateFrame( "Frame" ):SetScript( "OnUpdate", me.MouselookOnUpdate );
 end
