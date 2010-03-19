@@ -61,6 +61,9 @@ do
 	local function MapHasNPCs ( Map )
 		local MapData = Overlay.PathData[ Map ];
 		if ( MapData ) then
+			if ( Overlay.Options.ShowAll ) then
+				return true;
+			end
 			for NpcID in pairs( MapData ) do
 				if ( Overlay.NPCsEnabled[ NpcID ] ) then
 					return true;

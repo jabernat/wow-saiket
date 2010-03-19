@@ -2,8 +2,8 @@
 ## Title: _|cffCCCC88NPCScan|r.Overlay
 ## Notes: Adds mob patrol paths to your map.
 ## Author: Saiket
-## Version: 3.3.0.5
-## X-Date: 2010-03-17
+## Version: 3.3.0.6
+## X-Date: 2010-03-18
 ## X-Category: Maps
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
