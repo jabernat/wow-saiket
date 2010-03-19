@@ -48,6 +48,7 @@ me.DetectionRadius = 100; -- yards
 
 local TexturesUnused = CreateFrame( "Frame" );
 
+local MESSAGE_REGISTER = "NpcOverlay_RegisterScanner";
 local MESSAGE_ADD = "NpcOverlay_Add";
 local MESSAGE_REMOVE = "NpcOverlay_Remove";
 local MESSAGE_FOUND = "NpcOverlay_Found";
@@ -456,31 +457,56 @@ function me.NPCFound ( NpcID )
 			local X, Y = GetPlayerMapPosition( "player" );
 			if ( X ~= 0 and Y ~= 0 ) then
 				me.NPCsFoundX[ NpcID ], me.NPCsFoundY[ NpcID ] = X, Y;
-				me.UpdateMap( Map );
+				if ( me.NPCsEnabled[ NpcID ] ) then
+					me.UpdateMap( Map );
+				end
 
 				return true;
 			end
 		end
 	end
 end
+do
+	local ScannerAddOn;
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay[ MESSAGE_REGISTER ]                             *
+  ****************************************************************************]]
+	me[ MESSAGE_REGISTER ] = function ( _, Event, AddOn )
+		me:UnregisterMessage( Event );
+		me[ Event ] = nil;
+		ScannerAddOn = assert( AddOn, "Registration message must provide an addon identifier." );
+
+		-- Quit showing all by default and let the scanning addon control visibility
+		for NpcID in pairs( me.NPCsEnabled ) do
+			me.NPCRemove( NpcID );
+		end
+
+		me:RegisterMessage( MESSAGE_ADD );
+		me:RegisterMessage( MESSAGE_REMOVE );
+	end;
 --[[****************************************************************************
   * Function: _NPCScan.Overlay[ MESSAGE_ADD ]                                  *
   ****************************************************************************]]
-me[ MESSAGE_ADD ] = function ( _, _, NpcID )
-	me.NPCAdd( NpcID );
-end;
+	me[ MESSAGE_ADD ] = function ( _, _, NpcID, AddOn )
+		if ( AddOn == ScannerAddOn ) then
+			me.NPCAdd( assert( NpcID, "Add message missing Npc ID." ) );
+		end
+	end;
 --[[****************************************************************************
   * Function: _NPCScan.Overlay[ MESSAGE_REMOVE ]                               *
   ****************************************************************************]]
-me[ MESSAGE_REMOVE ] = function ( _, _, NpcID )
-	me.NPCRemove( NpcID );
-end;
+	me[ MESSAGE_REMOVE ] = function ( _, _, NpcID, AddOn )
+		if ( AddOn == ScannerAddOn ) then
+			me.NPCRemove( assert( NpcID, "Remove message missing Npc ID." ) );
+		end
+	end;
 --[[****************************************************************************
   * Function: _NPCScan.Overlay[ MESSAGE_FOUND ]                                *
   ****************************************************************************]]
-me[ MESSAGE_FOUND ] = function ( _, _, NpcID )
-	me.NPCFound( NpcID );
-end;
+	me[ MESSAGE_FOUND ] = function ( _, _, NpcID )
+		me.NPCFound( assert( NpcID, "Found message missing Npc ID." ) );
+	end;
+end
 
 
 
@@ -552,15 +578,15 @@ end
   * Function: _NPCScan.Overlay:OnLoad                                          *
   ****************************************************************************]]
 function me:OnLoad ()
-	-- Build a reverse lookup of NPC IDs to zones
+	-- Build a reverse lookup of NPC IDs to zones, and add them all by default
 	for Map, MapData in pairs( me.PathData ) do
 		for NpcID in pairs( MapData ) do
 			me.NPCMaps[ NpcID ] = Map;
+			me.NPCAdd( NpcID );
 		end
 	end
 
-	me:RegisterMessage( MESSAGE_ADD );
-	me:RegisterMessage( MESSAGE_REMOVE );
+	me:RegisterMessage( MESSAGE_REGISTER );
 	me:RegisterMessage( MESSAGE_FOUND );
 end
 
