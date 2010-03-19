@@ -10,6 +10,8 @@ local L = _NPCScanLocalization.OVERLAY;
 local me = CreateFrame( "Frame" );
 Overlay.Config = me;
 
+me.ShowAll = CreateFrame( "CheckButton", "_NPCScanOverlayConfigShowAllCheckbox", me, "InterfaceOptionsCheckButtonTemplate" );
+
 me.Modules = {};
 
 local LibRareSpawnsData;
@@ -29,6 +31,14 @@ function me:ControlOnEnter ()
 		GameTooltip:SetOwner( self, "ANCHOR_TOPLEFT" );
 		GameTooltip:SetText( self.tooltipText, nil, nil, nil, nil, 1 );
 	end
+end
+
+
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.Config.ShowAll.setFunc                          *
+  ****************************************************************************]]
+function me.ShowAll.setFunc ( Enable )
+	Overlay.SetShowAll( Enable == "1" );
 end
 
 
@@ -236,9 +246,14 @@ do
 	SubText:SetText( L.CONFIG_DESC );
 
 
+	me.ShowAll:SetPoint( "TOPLEFT", SubText, "BOTTOMLEFT", -2, -8 );
+	_G[ me.ShowAll:GetName().."Text" ]:SetText( L.CONFIG_SHOWALL );
+	me.ShowAll.tooltipText = L.CONFIG_SHOWALL_DESC;
+
+
 	-- Module options scrollframe
 	local Background = CreateFrame( "Frame", nil, me, "OptionsBoxTemplate" );
-	Background:SetPoint( "TOPLEFT", SubText, "BOTTOMLEFT", -2, -12 );
+	Background:SetPoint( "TOPLEFT", me.ShowAll, "BOTTOMLEFT", 0, -8 );
 	Background:SetPoint( "BOTTOMRIGHT", -32, 16 );
 	local Texture = Background:CreateTexture( nil, "BACKGROUND" );
 	Texture:SetTexture( 0, 0, 0, 0.5 );

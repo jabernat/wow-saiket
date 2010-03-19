@@ -21,6 +21,7 @@ me.OptionsDefault = {
 	Version = me.Version;
 	Modules = {};
 	ModulesAlpha = {};
+	ShowAll = false;
 };
 
 
@@ -262,10 +263,22 @@ function me:ApplyZone ( Map, Callback )
 
 		for NpcID, PathData in pairs( MapData ) do
 			ColorIndex = ColorIndex + 1;
-			if ( me.NPCsEnabled[ NpcID ] ) then
+			if ( me.Options.ShowAll or me.NPCsEnabled[ NpcID ] ) then
 				local Color = me.Colors[ ( ColorIndex - 1 ) % #me.Colors + 1 ];
 				Callback( self, PathData, me.NPCsFoundX[ NpcID ], me.NPCsFoundY[ NpcID ], Color.r, Color.g, Color.b, NpcID );
 			end
+		end
+	end
+end
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.UpdateMap                                       *
+  * Description: Updates a map for all active modules.                         *
+  ****************************************************************************]]
+function me.UpdateMap ( Map )
+	for Name in pairs( me.Options.Modules ) do
+		local Module = me.Modules[ Name ];
+		if ( Module.Update ) then
+			SafeCall( Module.Update, Module, Map );
 		end
 	end
 end
@@ -412,11 +425,8 @@ function me.NPCAdd ( NpcID )
 	if ( Map and not me.NPCsEnabled[ NpcID ] ) then
 		me.NPCsEnabled[ NpcID ] = true;
 
-		for Name in pairs( me.Options.Modules ) do
-			local Module = me.Modules[ Name ];
-			if ( Module.Update ) then
-				SafeCall( Module.Update, Module, Map );
-			end
+		if ( not me.Options.ShowAll ) then
+			me.UpdateMap( Map );
 		end
 		return true;
 	end
@@ -428,12 +438,8 @@ function me.NPCRemove ( NpcID )
 	if ( me.NPCsEnabled[ NpcID ] ) then
 		me.NPCsEnabled[ NpcID ] = nil;
 
-		local Map = me.NPCMaps[ NpcID ];
-		for Name in pairs( me.Options.Modules ) do
-			local Module = me.Modules[ Name ];
-			if ( Module.Update ) then
-				SafeCall( Module.Update, Module, Map );
-			end
+		if ( not me.Options.ShowAll ) then
+			me.UpdateMap( me.NPCMaps[ NpcID ] );
 		end
 		return true;
 	end
@@ -450,13 +456,7 @@ function me.NPCFound ( NpcID )
 			local X, Y = GetPlayerMapPosition( "player" );
 			if ( X ~= 0 and Y ~= 0 ) then
 				me.NPCsFoundX[ NpcID ], me.NPCsFoundY[ NpcID ] = X, Y;
-
-				for Name in pairs( me.Options.Modules ) do
-					local Module = me.Modules[ Name ];
-					if ( Module.Update ) then
-						SafeCall( Module.Update, Module, Map );
-					end
-				end
+				me.UpdateMap( Map );
 
 				return true;
 			end
@@ -486,6 +486,33 @@ end;
 
 
 --[[****************************************************************************
+  * Function: _NPCScan.Overlay.SetShowAll                                      *
+  * Description: Enables always showing all paths.                             *
+  ****************************************************************************]]
+function me.SetShowAll ( Enable )
+	Enable = not not Enable;
+	if ( Enable ~= me.Options.ShowAll ) then
+		me.Options.ShowAll = Enable;
+
+		me.Config.ShowAll:SetChecked( Enable );
+
+		-- Update all affected maps
+		for Map, MapData in pairs( me.PathData ) do
+			-- If a map has a disabled path, it must be redrawn
+			for NpcID in pairs( MapData ) do
+				if ( not me.NPCsEnabled[ NpcID ] ) then
+					me.UpdateMap( Map );
+					break;
+				end
+			end
+		end
+
+		return true;
+	end
+end
+
+
+--[[****************************************************************************
   * Function: _NPCScan.Overlay.Synchronize                                     *
   * Description: Reloads enabled modules from saved settings.                  *
   ****************************************************************************]]
@@ -494,6 +521,8 @@ function me.Synchronize ( Options )
 	if ( not Options ) then
 		Options = me.OptionsDefault;
 	end
+
+	me.SetShowAll( Options.ShowAll );
 
 	for Name, Module in pairs( me.Modules ) do
 		if ( Options.Modules[ Name ] ~= false ) then -- New modules (nil) default to enabled
