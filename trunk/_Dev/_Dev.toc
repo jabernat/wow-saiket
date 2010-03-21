@@ -2,8 +2,8 @@
 ## Title: _|cffCCCC88Dev|r
 ## Notes: Special tools useful for debugging the UI.
 ## Author: Saiket
-## Version: 3.3.0.1
-## X-Date: 2009-12-08
+## Version: 3.3.0.2
+## X-Date: 2010-03-20
 ## X-Category: Development Tools
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com

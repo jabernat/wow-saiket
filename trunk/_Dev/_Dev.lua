@@ -16,9 +16,6 @@ _DevOptions = _DevOptionsOriginal;
 local L = _DevLocalization;
 local me = CreateFrame( "Frame", "_Dev" );
 
-local ScrollingMessageFrames = {};
-me.ScrollingMessageFrames = ScrollingMessageFrames;
-
 me.Font = CreateFont( "_DevFont" );
 me.ScriptSlashCommandBackup = SlashCmdList[ "SCRIPT" ];
 
@@ -42,17 +39,6 @@ do
 			Color = NORMAL_FONT_COLOR;
 		end
 		( ChatFrame or DEFAULT_CHAT_FRAME ):AddMessage( tostring( Message ), Color.r, Color.g, Color.b, Color.id );
-	end
-end
---[[****************************************************************************
-  * Function: _Dev:AddMessage                                                  *
-  * Description: Hook to speed up printing to scrolling message frames.  Idea  *
-  *   courtesy of Drundia's Fix ScrollingMessageFrame Lag addon.               *
-  ****************************************************************************]]
-function me:AddMessage ()
-	if ( not ( ScrollingMessageFrames[ self ] or self:IsProtected() ) ) then
-		ScrollingMessageFrames[ self ] = true;
-		self:SetHeight( self:GetHeight() );
 	end
 end
 --[[****************************************************************************
@@ -278,14 +264,6 @@ do
 			LastAlt = Alt;
 			me:OnEvent( "MODIFIER_STATE_CHANGED", "*ALT", Alt or 0 );
 		end
-
-		-- Refresh any updated message frames
-		for MessageFrame in pairs( ScrollingMessageFrames ) do
-			ScrollingMessageFrames[ MessageFrame ] = nil;
-			if ( MessageFrame:IsVisible() ) then
-				MessageFrame:UpdateColorByID( Color.id, Color.r, Color.g, Color.b ); -- Redraws text
-			end
-		end
 	end
 end
 
@@ -311,7 +289,4 @@ do
 
 	SlashCmdList[ "SCRIPT" ] = me.ScriptSlashCommand;
 	SlashCmdList[ "_DEV_TOGGLEADDON" ] = me.ToggleAddOnSlashCommand;
-
-	-- Fix to speed up printing many lines to scrolling message frames, by Drundia
-	hooksecurefunc( getmetatable( ChatFrame1 ).__index, "AddMessage", me.AddMessage );
 end
