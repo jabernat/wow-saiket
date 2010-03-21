@@ -49,6 +49,7 @@ do
 	local function SortFunc ( NpcID1, NpcID2 )
 		return ZoneTable[ NpcID1 ] < ZoneTable[ NpcID2 ];
 	end
+	local OverlayNPCs = _NPCScanOverlayLocalization.NPCS;
 	function me:OnShow ()
 		self:SetScript( "OnShow", nil );
 		me.OnShow = nil;
@@ -78,7 +79,7 @@ do
 		sort( Order, SortFunc );
 
 		for _, NpcID in ipairs( Order ) do
-			me.Table:AddRow( NpcID, ZoneTable[ NpcID ], NpcID, AchievementNPCNames[ NpcID ] or NPCNames[ NpcID ] or "" );
+			me.Table:AddRow( NpcID, ZoneTable[ NpcID ], NpcID, AchievementNPCNames[ NpcID ] or OverlayNPCs[ NpcID ] or NPCNames[ NpcID ] or "" );
 		end
 	end
 end
@@ -113,7 +114,7 @@ do
 	-- Place table
 	me.TableContainer:SetPoint( "TOPLEFT", SubText, -2, -28 );
 	me.TableContainer:SetPoint( "BOTTOMRIGHT", -16, 16 );
-	me.TableContainer:SetBackdrop( { bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background"; } );
+	me.TableContainer:SetBackdrop( { bgFile = [[Interface\DialogFrame\UI-DialogBox-Background]]; } );
 
 
 	InterfaceOptions_AddCategory( me );

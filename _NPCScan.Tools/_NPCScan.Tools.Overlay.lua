@@ -97,9 +97,9 @@ function me:OnShow ()
 	MapUpdate( self );
 end
 --[[****************************************************************************
-  * Function: _NPCScan.Tools.Overlay:WORLD_MAP_UPDATE                          *
+  * Function: _NPCScan.Tools.Overlay:OnEvent                                   *
   ****************************************************************************]]
-function me:WORLD_MAP_UPDATE ()
+function me:OnEvent ()
 	MapUpdate( self );
 end
 
@@ -155,7 +155,7 @@ do
 	me:Hide();
 	me:SetAllPoints();
 	me:SetScript( "OnShow", me.OnShow );
-	me:SetScript( "OnEvent", _NPCScan.OnEvent );
+	me:SetScript( "OnEvent", me.OnEvent );
 
 	Overlay.ModuleRegister( "_NPCScan.Tools", me );
 end
