@@ -4,7 +4,7 @@
   ****************************************************************************]]
 
 
-local L = _NPCScanLocalization.OVERLAY;
+local L = _NPCScanOverlayLocalization;
 local Overlay = _NPCScan.Overlay;
 local me = CreateFrame( "Frame", nil, WorldMapDetailFrame );
 Overlay.WorldMap = me;
@@ -16,6 +16,8 @@ me.Key = CreateFrame( "Frame", nil, WorldMapButton );
 me.Toggle = CreateFrame( "CheckButton", "_NPCScanOverlayWorldMapToggle", WorldMapFrame, "OptionsCheckButtonTemplate" );
 
 me.AchievementNPCNames = {};
+
+local IsChildAddOn = IsAddOnLoaded( "_NPCScan" );
 
 
 
@@ -52,7 +54,7 @@ do
 			Line:Show();
 		end
 
-		Line:SetText( L.MODULE_WORLDMAP_KEY_FORMAT:format( me.AchievementNPCNames[ NpcID ] or NPCNames[ NpcID ] or NpcID ) );
+		Line:SetText( L.MODULE_WORLDMAP_KEY_FORMAT:format( me.AchievementNPCNames[ NpcID ] or L.NPCS[ NpcID ] or NPCNames[ NpcID ] or NpcID ) );
 		Line:SetTextColor( R, G, B );
 
 		Width = max( Width, Line:GetStringWidth() );
@@ -77,12 +79,15 @@ do
 			Height = self.Title:GetStringHeight();
 			Count = 0;
 
-			-- Cache custom mob names
-			for Name, NpcID in pairs( _NPCScan.OptionsCharacter.NPCs ) do
-				NPCNames[ NpcID ] = Name;
+			if ( IsChildAddOn ) then -- Cache _NPCScan's custom mob names
+				for Name, NpcID in pairs( _NPCScan.OptionsCharacter.NPCs ) do
+					NPCNames[ NpcID ] = Name;
+				end
 			end
 			Overlay.ApplyZone( self, Map, PaintKey );
-			wipe( NPCNames );
+			if ( IsChildAddOn ) then
+				wipe( NPCNames );
+			end
 
 			for Index = Count + 1, #self do
 				self[ Index ]:Hide();
@@ -276,9 +281,12 @@ do
 
 
 	-- Cache achievement NPC names
-	for AchievementID, Achievement in pairs( _NPCScan.Achievements ) do
-		for CriteriaID, NpcID in pairs( Achievement.Criteria ) do
-			me.AchievementNPCNames[ NpcID ] = GetAchievementCriteriaInfo( CriteriaID );
+	for AchievementID in pairs( Overlay.Achievements ) do
+		for Criteria = 1, GetAchievementNumCriteria( AchievementID ) do
+			local Name, CriteriaType, _, _, _, _, _, AssetID = GetAchievementCriteriaInfo( AchievementID, Criteria );
+			if ( CriteriaType == 0 ) then -- Mob kill type
+				me.AchievementNPCNames[ AssetID ] = Name;
+			end
 		end
 	end
 

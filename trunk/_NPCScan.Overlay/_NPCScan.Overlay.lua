@@ -5,6 +5,7 @@
 
 
 local AddOnName = ...;
+_NPCScan = _NPCScan or {};
 local _NPCScan = _NPCScan;
 local me = {};
 _NPCScan.Overlay = me;
@@ -34,6 +35,10 @@ me.NPCsFoundX = {};
 me.NPCsFoundY = {};
 me.NPCsFoundIgnored = {
 	[ 32487 ] = true; -- Putridus the Ancient
+};
+me.Achievements = { -- Achievements whos criteria mobs are all mapped
+	[ 1312 ] = true; -- Bloody Rare (Outlands)
+	[ 2257 ] = true; -- Frostbitten (Northrend)
 };
 
 me.Colors = {
