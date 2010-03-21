@@ -4,7 +4,7 @@
   ****************************************************************************]]
 
 
-local L = _NPCScanLocalization.OVERLAY;
+local L = _NPCScanOverlayLocalization;
 local Overlay = _NPCScan.Overlay;
 local Minimap = Minimap;
 local ScrollFrame = CreateFrame( "ScrollFrame", nil, Minimap );
@@ -615,6 +615,17 @@ do
 		end
 	end
 end
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.Minimap:OnEvent                                 *
+  ****************************************************************************]]
+do
+	local type = type;
+	function me:OnEvent ( Event, ... )
+		if ( type( self[ Event ] ) == "function" ) then
+			self[ Event ]( self, Event, ... );
+		end
+	end
+end
 
 
 --[[****************************************************************************
@@ -675,7 +686,7 @@ do
 	me:SetAllPoints();
 	me:SetScript( "OnShow", me.OnShow );
 	me:SetScript( "OnUpdate", me.OnUpdate );
-	me:SetScript( "OnEvent", _NPCScan.OnEvent );
+	me:SetScript( "OnEvent", me.OnEvent );
 	me:RegisterEvent( "MINIMAP_UPDATE_ZOOM" );
 	me:RegisterEvent( "ZONE_CHANGED_NEW_AREA" );
 	Overlay.OptionsDefault.MinimapRangeRing = true;

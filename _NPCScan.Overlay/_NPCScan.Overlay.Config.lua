@@ -6,7 +6,7 @@
 
 
 local Overlay = _NPCScan.Overlay;
-local L = _NPCScanLocalization.OVERLAY;
+local L = _NPCScanOverlayLocalization;
 local me = CreateFrame( "Frame" );
 Overlay.Config = me;
 
@@ -14,6 +14,7 @@ me.ShowAll = CreateFrame( "CheckButton", "_NPCScanOverlayConfigShowAllCheckbox",
 
 me.Modules = {};
 
+local IsChildAddOn = IsAddOnLoaded( "_NPCScan" );
 local LibRareSpawnsData;
 if ( IsAddOnLoaded( "LibRareSpawns" ) ) then
 	LibRareSpawnsData = LibRareSpawns.ByNPCID;
@@ -120,38 +121,46 @@ do
 end
 
 
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.Config:default                                  *
+  ****************************************************************************]]
+function me:default ()
+	Overlay.Synchronize();
+end
 
 
+
+
+if ( IsChildAddOn ) then
 --[[****************************************************************************
   * Function: _NPCScan.Overlay.Config:TableRowOnEnter                          *
   * Description: Adds mob info from LibRareSpawns.                             *
   ****************************************************************************]]
-if ( LibRareSpawnsData ) then
-	local MaxSize = 160;
-	function me:TableRowOnEnter ()
-		local Data = LibRareSpawnsData[ select( 4, self:GetData() ) ];
-		if ( Data ) then
-			local Width, Height = Data.PortraitWidth, Data.PortraitHeight;
-			if ( Width > MaxSize ) then
-				Height = Height * ( MaxSize / Width );
-				Width = MaxSize;
-			end
-			if ( Height > MaxSize ) then
-				Width = Width * ( MaxSize / Height );
-				Height = MaxSize;
-			end
+	if ( LibRareSpawnsData ) then
+		local MaxSize = 160;
+		function me:TableRowOnEnter ()
+			local Data = LibRareSpawnsData[ select( 4, self:GetData() ) ];
+			if ( Data ) then
+				local Width, Height = Data.PortraitWidth, Data.PortraitHeight;
+				if ( Width > MaxSize ) then
+					Height = Height * ( MaxSize / Width );
+					Width = MaxSize;
+				end
+				if ( Height > MaxSize ) then
+					Width = Width * ( MaxSize / Height );
+					Height = MaxSize;
+				end
 
-			GameTooltip:SetOwner( self, "ANCHOR_TOPRIGHT" );
-			GameTooltip:SetText( L.CONFIG_IMAGE_FORMAT:format( Data.Portrait, Height, Width ) );
-			GameTooltip:AddLine( L.CONFIG_LEVEL_TYPE_FORMAT:format( Data.Level, Data.MonsterType ) );
-			GameTooltip:Show();
+				GameTooltip:SetOwner( self, "ANCHOR_TOPRIGHT" );
+				GameTooltip:SetText( L.CONFIG_IMAGE_FORMAT:format( Data.Portrait, Height, Width ) );
+				GameTooltip:AddLine( L.CONFIG_LEVEL_TYPE_FORMAT:format( Data.Level, Data.MonsterType ) );
+				GameTooltip:Show();
+			end
 		end
 	end
-end
 --[[****************************************************************************
   * Function: _NPCScan.Overlay.Config:TableSetHeader                           *
   ****************************************************************************]]
-do
 	local function Recurse ( NewValue, Count, CurrentValue, ... )
 		if ( Count == 0 ) then
 			return NewValue;
@@ -213,29 +222,19 @@ end
 
 
 
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.Config:default                                  *
-  ****************************************************************************]]
-function me:default ()
-	Overlay.Synchronize();
-end
-
-
-
-
 --------------------------------------------------------------------------------
 -- Function Hooks / Execution
 -----------------------------
 
 do
-	me.name = L.CONFIG_TITLE;
-	me.parent = _NPCScanLocalization.CONFIG_TITLE;
+	local Label = L[ IsChildAddOn and "CONFIG_TITLE" or "CONFIG_TITLE_STANDALONE" ];
+	me.name = Label;
 	me:Hide();
 
 	-- Pane title
 	me.Title = me:CreateFontString( nil, "ARTWORK", "GameFontNormalLarge" );
 	me.Title:SetPoint( "TOPLEFT", 16, -16 );
-	me.Title:SetText( L.CONFIG_TITLE );
+	me.Title:SetText( Label );
 	local SubText = me:CreateFontString( nil, "ARTWORK", "GameFontHighlightSmall" );
 	me.SubText = SubText;
 	SubText:SetPoint( "TOPLEFT", me.Title, "BOTTOMLEFT", 0, -8 );
@@ -269,8 +268,10 @@ do
 	me.ScrollChild:SetSize( 1, 1 );
 
 
+	if ( IsChildAddOn ) then
+		me.parent = _NPCScanLocalization.CONFIG_TITLE;
+
+		_NPCScan.Config.Search:SetScript( "OnShow", me.TableOnShow );
+	end
 	InterfaceOptions_AddCategory( me );
-
-
-	_NPCScan.Config.Search:SetScript( "OnShow", me.TableOnShow );
 end

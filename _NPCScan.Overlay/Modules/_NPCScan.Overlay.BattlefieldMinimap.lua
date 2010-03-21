@@ -9,7 +9,7 @@ local Overlay = _NPCScan.Overlay;
 local me = CreateFrame( "Frame" );
 Overlay.BattlefieldMinimap = me;
 
-me.Label = _NPCScanLocalization.OVERLAY.MODULE_BATTLEFIELDMINIMAP;
+me.Label = _NPCScanOverlayLocalization.MODULE_BATTLEFIELDMINIMAP;
 me.AlphaDefault = 0.8;
 
 

@@ -3,7 +3,7 @@
 ## Notes: Adds mob patrol paths to your map.
 ## Author: Saiket
 ## Version: 3.3.0.6
-## X-Date: 2010-03-18
+## X-Date: 2010-03-20
 ## X-Category: Maps
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
@@ -11,9 +11,13 @@
 ## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:NPCScan.Overlay
 ## X-WoWI-ID: 14686
 ## X-Curse-Project-ID: npcscan-overlay
+## X-Localizations: enUS
 ## SavedVariables: _NPCScanOverlayOptions
-## RequiredDeps: _NPCScan
-## OptionalDeps: LibRareSpawns, AlphaMap3, Carbonite, Cartographer3, Mapster
+## OptionalDeps: Ace3, _NPCScan, LibRareSpawns, AlphaMap3, Carbonite, Cartographer3, Mapster
+Libs\LibStub\LibStub.lua
+Libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
+
+Embeds.xml
 Locales.xml
 
 _NPCScan.Overlay.lua

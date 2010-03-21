@@ -8,7 +8,7 @@ local Overlay = _NPCScan.Overlay;
 local me = CreateFrame( "Frame" );
 Overlay.AlphaMap3 = me;
 
-me.Label = _NPCScanLocalization.OVERLAY.MODULE_ALPHAMAP3;
+me.Label = _NPCScanOverlayLocalization.MODULE_ALPHAMAP3;
 me.AlphaDefault = 0.8;
 
 
