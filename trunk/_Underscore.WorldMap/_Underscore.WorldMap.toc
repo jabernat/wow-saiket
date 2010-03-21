@@ -3,7 +3,7 @@
 ## Notes: Adds coordinates to the World Map frame.
 ## Author: Saiket
 ## Version: 3.3.0.1
-## X-Date: 2010-02-21
+## X-Date: 2010-03-20
 ## X-Category: Frame Modification, Map
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com

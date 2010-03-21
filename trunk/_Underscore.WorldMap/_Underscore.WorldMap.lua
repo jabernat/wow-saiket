@@ -11,6 +11,8 @@ local L = _UnderscoreLocalization.WorldMap;
 local me = CreateFrame( "Frame", nil, WorldMapButton );
 _Underscore.WorldMap = me;
 
+me.ScrollHandler = CreateFrame( "Frame", nil, WorldMapFrame ); -- Can insecurely toggle mousewheel input
+
 me.Text = me:CreateFontString( nil, "ARTWORK", "NumberFontNormalSmall" );
 
 
@@ -104,6 +106,46 @@ end
 
 
 
+--[[****************************************************************************
+  * Function: _Underscore.WorldMap.ScrollHandler:OnMouseWheel                  *
+  * Description: Scrolls through dungeon map levels when available.            *
+  ****************************************************************************]]
+function me.ScrollHandler:OnMouseWheel ( Delta )
+	local Level, LevelsMax = GetCurrentMapDungeonLevel(), GetNumDungeonMapLevels();
+
+	if ( Delta > 0 ) then -- Up
+		if ( Level < LevelsMax ) then
+			SetDungeonMapLevel( Level + 1 );
+		end
+	else -- Down
+		if ( Level > 1 ) then
+			SetDungeonMapLevel( Level - 1 );
+		end
+	end
+end
+--[[****************************************************************************
+  * Function: _Underscore.WorldMap.ScrollHandler:WORLD_MAP_UPDATE              *
+  ****************************************************************************]]
+function me.ScrollHandler:WORLD_MAP_UPDATE ()
+	self:EnableMouseWheel( GetNumDungeonMapLevels() > 0 );
+end
+--[[****************************************************************************
+  * Function: _Underscore.WorldMap.ScrollHandler:OnShow                        *
+  ****************************************************************************]]
+function me.ScrollHandler:OnShow ()
+	self:RegisterEvent( "WORLD_MAP_UPDATE" );
+	self:WORLD_MAP_UPDATE();
+end
+--[[****************************************************************************
+  * Function: _Underscore.WorldMap.ScrollHandler:OnHide                        *
+  ****************************************************************************]]
+function me.ScrollHandler:OnHide ()
+	self:UnregisterEvent( "WORLD_MAP_UPDATE" );
+end
+
+
+
+
 --------------------------------------------------------------------------------
 -- Function Hooks / Execution
 -----------------------------
@@ -118,10 +160,17 @@ do
 	me.Text:SetTextColor( Color.r, Color.g, Color.b, 0.7 );
 	me.Text:SetAllPoints();
 
+
+	local ScrollHandler = me.ScrollHandler;
+	ScrollHandler:SetAllPoints( WorldMapButton );
+	ScrollHandler:SetScript( "OnMouseWheel", ScrollHandler.OnMouseWheel );
+	ScrollHandler:SetScript( "OnShow", ScrollHandler.OnShow );
+	ScrollHandler:SetScript( "OnHide", ScrollHandler.OnHide );
+	ScrollHandler:SetScript( "OnEvent", _Underscore.OnEvent );
+
+
 	WorldMapButton:HookScript( "OnUpdate", me.OnUpdate );
-
 	WorldMapUnit_Update = me.UpdateUnit;
-
 
 	hooksecurefunc( "WorldMap_ToggleSizeUp", me.DisableBlackout );
 	me.DisableBlackout();
