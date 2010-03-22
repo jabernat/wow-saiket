@@ -73,7 +73,7 @@ do
 	local function OnUpdate ( self )
 		self:SetScript( "OnUpdate", nil );
 
-		local Map = GetMapInfo();
+		local Map = GetCurrentMapAreaID() - 1;
 		if ( Map ~= self.MapLast ) then
 			self.MapLast = Map;
 
