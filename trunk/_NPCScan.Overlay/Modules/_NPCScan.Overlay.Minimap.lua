@@ -588,7 +588,7 @@ do
 			X, Y = GetPlayerMapPosition( "player" );
 			if ( not Map or ( X == 0 and Y == 0 )
 				or X < 0 or X > 1 or Y < 0 or Y > 1
-				or Map ~= GetMapInfo() -- Coordinates will be for wrong map
+				or Map ~= GetCurrentMapAreaID() - 1 -- Coordinates will be for wrong map
 			) then
 				UpdateForce = nil;
 				me.RangeRing:Hide();

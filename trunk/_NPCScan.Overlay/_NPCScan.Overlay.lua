@@ -458,7 +458,7 @@ function me.NPCFound ( NpcID )
 	if ( Map and not me.NPCsFoundIgnored[ NpcID ] ) then
 		SetMapToCurrentZone();
 
-		if ( Map == GetMapInfo() ) then
+		if ( Map == GetCurrentMapAreaID() - 1 ) then
 			local X, Y = GetPlayerMapPosition( "player" );
 			if ( X ~= 0 and Y ~= 0 ) then
 				me.NPCsFoundX[ NpcID ], me.NPCsFoundY[ NpcID ] = X, Y;
