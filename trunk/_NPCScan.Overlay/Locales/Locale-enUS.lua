@@ -13,8 +13,6 @@ do
 		CONFIG_ALPHA = "Alpha";
 		CONFIG_DESC = "Control which maps will show mob path overlays.  Most map-modifying addons are controlled with the World Map option.";
 		CONFIG_ZONE = "Zone:";
-		CONFIG_IMAGE_FORMAT = "|T%s:%d:%d|t"; -- Path, Height, Width
-		CONFIG_LEVEL_TYPE_FORMAT = UNIT_TYPE_LEVEL_TEMPLATE; -- Level, Type
 		CONFIG_SHOWALL = "Always show all paths";
 		CONFIG_SHOWALL_DESC = "Normally when a mob isn't being searched for, its path gets taken off the map.  Enable this setting to always show every known patrol instead.";
 
