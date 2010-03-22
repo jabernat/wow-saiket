@@ -3,7 +3,7 @@
 ## Notes: Tools to construct path data from mob position data for _|cffCCCC88NPCScan|r.Overlay.
 ## Author: Saiket
 ## Version: 3.3.0.2
-## X-Date: 2010-03-20
+## X-Date: 2010-03-22
 ## X-Category: Maps, Development Tools, Data Export
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com

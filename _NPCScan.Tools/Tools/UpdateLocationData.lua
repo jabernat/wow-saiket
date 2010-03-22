@@ -1,11 +1,20 @@
---[[ Tools/UpdateLocationData.lua - Pulls NPC location data from WoWDB and WowHead.
+--[[ _NPCScan.Tools by Saiket
+Tools/UpdateLocationData.lua - Pulls NPC location data from WoWDB and WowHead.
 
-1. Log on to a character and set up its _NPCScan search list with all mobs you
-   want data for.
-2. Create a file in the Tools folder named <Account.dat>, and type in the account
-   name, server, and character (ex. "AccountName\ServerName\CharacterName") for
+1. Create a file in the Tools folder named <Account.dat>, and type in the account
+   name, server, and character (ex. "AccountName/ServerName/CharacterName") for
    the character used to configure _NPCScan.  This path is used to find your
    saved _NPCScan settings.
+2. Prepare database files from the WoW client: (Only needs to be done once per WoW patch)
+   a. Find the latest versions of these DBC files in WoW's MPQ archives using a
+      tool such as WinMPQ:
+      * <DBFilesClient/WorldMapArea.dbc>
+      * <DBFilesClient/AreaTable.dbc>
+   b. Extract them to the <DBFilesClient> folder.
+   c. Run <DBCUtil.bat> to convert all found *.DBC files into *.CSV files using
+      nneonneo's <DBCUtil.exe> program.
+3. Log on to a character and set up its _NPCScan search list with all mobs you
+   want data for.
 
 Once you have selected a set of NPCs and configured the account file, reload your
 UI and run this script with a standalone Lua 5.1 interpreter.  The
@@ -20,88 +29,24 @@ local DataPath = assert( AccountFile:read(), "Account.dat must have account data
 assert( #DataPath > 0, "Missing data path in Account.dat." );
 
 
-local DataFilename = [[..\..\..\..\WTF\Account\]]..DataPath..[[\SavedVariables\_NPCScan.lua]];
-local OutputFilename = [[..\_NPCScan.Tools.LocationData.lua]];
+local DataFilename = [[../../../../WTF/Account/]]..DataPath..[[/SavedVariables/_NPCScan.lua]];
+local OutputFilename = [[../_NPCScan.Tools.LocationData.lua]];
 
-local MapIDs = {
-	-- Kalimdor
-	[ "Azuremyst Isle" ] = "AzuremystIsle";
-	[ "Moonglade" ] = "Moonglade";
-	[ "Thousand Needles" ] = "ThousandNeedles";
-	[ "Winterspring" ] = "Winterspring";
-	[ "Ashenvale" ] = "Ashenvale";
-	[ "Teldrassil" ] = "Teldrassil";
-	[ "Un'Goro Crater" ] = "UngoroCrater";
-	[ "Mulgore" ] = "Mulgore";
-	[ "Dustwallow Marsh" ] = "Dustwallow";
-	[ "Felwood" ] = "Felwood";
-	[ "Darkshore" ] = "Darkshore";
-	[ "Orgrimmar" ] = "Ogrimmar";
-	[ "Desolace" ] = "Desolace";
-	[ "The Exodar" ] = "TheExodar";
-	[ "Tanaris" ] = "Tanaris";
-	[ "Durotar" ] = "Durotar";
-	[ "Azshara" ] = "Aszhara";
-	[ "Feralas" ] = "Feralas";
-	[ "Silithus" ] = "Silithus";
-	[ "The Barrens" ] = "Barrens";
-	[ "Thunder Bluff" ] = "ThunderBluff";
-	[ "Bloodmyst Isle" ] = "BloodmystIsle";
-	[ "Stonetalon Mountains" ] = "StonetalonMountains";
-	[ "Darnassus" ] = "Darnassis";
-	-- Eastern Kingdoms
-	[ "The Hinterlands" ] = "Hinterlands";
-	[ "Stranglethorn Vale" ] = "Stranglethorn";
-	[ "Eastern Plaguelands" ] = "EasternPlaguelands";
-	[ "Duskwood" ] = "Duskwood";
-	[ "Ghostlands" ] = "Ghostlands";
-	[ "Blasted Lands" ] = "BlastedLands";
-	[ "Elwynn Forest" ] = "Elwynn";
-	[ "Arathi Highlands" ] = "Arathi";
-	[ "Eversong Woods" ] = "EversongWoods";
-	[ "Ironforge" ] = "Ironforge";
-	[ "Badlands" ] = "Badlands";
-	[ "Searing Gorge" ] = "SearingGorge";
-	[ "Loch Modan" ] = "LochModan";
-	[ "Burning Steppes" ] = "BurningSteppes";
-	[ "Undercity" ] = "Undercity";
-	[ "Westfall" ] = "Westfall";
-	[ "Western Plaguelands" ] = "WesternPlaguelands";
-	[ "Wetlands" ] = "Wetlands";
-	[ "Tirisfal Glades" ] = "Tirisfal";
-	[ "Stormwind City" ] = "Stormwind";
-	[ "Silverpine Forest" ] = "Silverpine";
-	[ "Silvermoon City" ] = "SilvermoonCity";
-	[ "Redridge Mountains" ] = "Redridge";
-	[ "Isle of Quel'Danas" ] = "Sunwell";
-	[ "Deadwind Pass" ] = "DeadwindPass";
-	[ "Hillsbrad Foothills" ] = "Hilsbrad";
-	[ "Swamp of Sorrows" ] = "SwampOfSorrows";
-	[ "Dun Morogh" ] = "DunMorogh";
-	[ "Alterac Mountains" ] = "Alterac";
-	-- Outlands
-	[ "Blade's Edge Mountains" ] = "BladesEdgeMountains";
-	[ "Zangarmarsh" ] = "Zangarmarsh";
-	[ "Netherstorm" ] = "Netherstorm";
-	[ "Shattrath City" ] = "ShattrathCity";
-	[ "Terokkar Forest" ] = "TerokkarForest";
-	[ "Shadowmoon Valley" ] = "ShadowmoonValley";
-	[ "Nagrand" ] = "Nagrand";
-	[ "Hellfire Peninsula" ] = "Hellfire";
-	-- Northrend
-	[ "Icecrown" ] = "IcecrownGlacier";
-	[ "Wintergrasp" ] = "LakeWintergrasp";
-	[ "Crystalsong Forest" ] = "CrystalsongForest";
-	[ "Dragonblight" ] = "Dragonblight";
-	[ "Howling Fjord" ] = "HowlingFjord";
-	[ "Borean Tundra" ] = "BoreanTundra";
-	[ "The Storm Peaks" ] = "TheStormPeaks";
-	[ "Hrothgar's Landing" ] = "HrothgarsLanding";
-	[ "Sholazar Basin" ] = "SholazarBasin";
-	[ "Dalaran" ] = "Dalaran";
-	[ "Grizzly Hills" ] = "GrizzlyHills";
-	[ "Zul'Drak" ] = "ZulDrak";
-};
+
+-- Create a lookup of localized zone names to zone IDs
+require( "DbcCSV" );
+local WorldMapAreas = DbcCSV.Parse( [[DBFilesClient/WorldMapArea.dbc.csv]], 1,
+	"ID", nil, "AreaTableID" );
+local AreaTable = DbcCSV.Parse( [[DBFilesClient/AreaTable.dbc.csv]], 1,
+	"ID", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, "Localization" );
+
+local MapIDs = {};
+for ID, WorldMapArea in pairs( WorldMapAreas ) do
+	if ( WorldMapArea.AreaTableID ~= 0 ) then -- Not a continent
+		MapIDs[ AreaTable[ WorldMapArea.AreaTableID ].Localization ] = ID;
+	end
+end
+
 
 local http = require( "socket.http" );
 require( "Json" );
@@ -316,7 +261,7 @@ Outfile:write( "_NPCScan.Tools.LocationData = {\n" );
 
 Outfile:write( "\tNpcMapIDs = {\n" );
 for _, NpcID in ipairs( SortOrder ) do
-	Outfile:write( "\t\t[ "..NpcID.." ] = \""..NpcMapIDs[ NpcID ].."\";\n" );
+	Outfile:write( "\t\t[ "..NpcID.." ] = "..NpcMapIDs[ NpcID ]..";\n" );
 end
 Outfile:write( "\t};\n" );
 
