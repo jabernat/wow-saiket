@@ -40,7 +40,7 @@ end
   ****************************************************************************]]
 do
 	local Count, Height, Width;
-	local NPCNames = {};
+	local NPCNames = {}; -- Cache of names used by _NPCScan searches
 	local function PaintKey ( self, PathData, FoundX, FoundY, R, G, B, NpcID )
 		Count = Count + 1;
 		local Line = self[ Count ];
@@ -128,7 +128,7 @@ do
 	local function OnUpdate ( self )
 		self:SetScript( "OnUpdate", nil );
 
-		local Map = GetMapInfo();
+		local Map = GetCurrentMapAreaID() - 1;
 		if ( Map ~= self.MapLast ) then
 			self.MapLast = Map;
 
