@@ -180,6 +180,17 @@ end
 
 
 
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.Config.SlashCommand                             *
+  * Description: Slash command chat handler to open the options pane.          *
+  ****************************************************************************]]
+function me.SlashCommand ()
+	InterfaceOptionsFrame_OpenToCategory( me );
+end
+
+
+
+
 --------------------------------------------------------------------------------
 -- Function Hooks / Execution
 -----------------------------
@@ -232,4 +243,6 @@ do
 		_NPCScan.Config.Search.TableCreate = me.TableCreate;
 	end
 	InterfaceOptions_AddCategory( me );
+
+	SlashCmdList[ "_NPCSCAN_OVERLAY" ] = me.SlashCommand;
 end
