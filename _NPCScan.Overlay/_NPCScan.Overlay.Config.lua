@@ -15,10 +15,6 @@ me.ShowAll = CreateFrame( "CheckButton", "_NPCScanOverlayConfigShowAllCheckbox",
 me.Modules = {};
 
 local IsChildAddOn = IsAddOnLoaded( "_NPCScan" );
-local LibRareSpawnsData;
-if ( IsAddOnLoaded( "LibRareSpawns" ) ) then
-	LibRareSpawnsData = LibRareSpawns.ByNPCID;
-end
 
 
 
@@ -133,32 +129,6 @@ end
 
 if ( IsChildAddOn ) then
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay.Config:TableRowOnEnter                          *
-  * Description: Adds mob info from LibRareSpawns.                             *
-  ****************************************************************************]]
-	if ( LibRareSpawnsData ) then
-		local MaxSize = 160;
-		function me:TableRowOnEnter ()
-			local Data = LibRareSpawnsData[ select( 4, self:GetData() ) ];
-			if ( Data ) then
-				local Width, Height = Data.PortraitWidth, Data.PortraitHeight;
-				if ( Width > MaxSize ) then
-					Height = Height * ( MaxSize / Width );
-					Width = MaxSize;
-				end
-				if ( Height > MaxSize ) then
-					Width = Width * ( MaxSize / Height );
-					Height = MaxSize;
-				end
-
-				GameTooltip:SetOwner( self, "ANCHOR_TOPRIGHT" );
-				GameTooltip:SetText( L.CONFIG_IMAGE_FORMAT:format( Data.Portrait, Height, Width ) );
-				GameTooltip:AddLine( L.CONFIG_LEVEL_TYPE_FORMAT:format( Data.Level, Data.MonsterType ) );
-				GameTooltip:Show();
-			end
-		end
-	end
---[[****************************************************************************
   * Function: _NPCScan.Overlay.Config:TableSetHeader                           *
   ****************************************************************************]]
 	local function Recurse ( NewValue, Count, CurrentValue, ... )
@@ -179,43 +149,31 @@ if ( IsChildAddOn ) then
 --[[****************************************************************************
   * Function: _NPCScan.Overlay.Config:TableAddRow                              *
   ****************************************************************************]]
-	local function AddTooltipHooks( Row, ... )
-		if ( LibRareSpawnsData ) then
-			Row:SetScript( "OnEnter", me.TableRowOnEnter );
-			Row:SetScript( "OnLeave", GameTooltip_Hide );
-		end
-		return Row, ...;
-	end
-
 	local AddRowBackup;
 	function me:TableAddRow ( ... )
 		local Map = Overlay.NPCMaps[ select( 4, ... ) ]; -- Arg 4 is NpcID
 		if ( Map ) then
-			return AddTooltipHooks( AddRowBackup( self, Append( Overlay.GetZoneName( Map ), ... ) ) );
+			return AddRowBackup( self, Append( Overlay.GetZoneName( Map ), ... ) );
 		else
-			return AddTooltipHooks( AddRowBackup( self, ... ) );
+			return AddRowBackup( self, ... );
 		end
 	end
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay.Config:TableOnShow                              *
+  * Function: _NPCScan.Overlay.Config:TableCreate                              *
   * Description: Hooks _NPCScan's "Search" table to add a zone column.         *
   ****************************************************************************]]
-	local OnShowBackup = _NPCScan.Config.Search.OnShow;
-	function me:TableOnShow ()
-		self:SetScript( "OnShow", OnShowBackup );
-		me.TableOnShow = nil;
-
-		if ( not self.Table ) then
-			self.Table = LibStub( "LibTextTable-1.0" ).New( nil, self.TableContainer );
-			self.Table:SetAllPoints();
+	local function HookTable ( Table, ... )
+		if ( Table ) then -- Just created
+			SetHeaderBackup = Table.SetHeader;
+			AddRowBackup = Table.AddRow;
+			Table.SetHeader = me.TableSetHeader;
+			Table.AddRow = me.TableAddRow;
 		end
-
-		SetHeaderBackup = self.Table.SetHeader;
-		AddRowBackup = self.Table.AddRow;
-		self.Table.SetHeader = me.TableSetHeader;
-		self.Table.AddRow = me.TableAddRow;
-
-		OnShowBackup( self );
+		return Table, ...;
+	end
+	local TableCreateBackup = _NPCScan.Config.Search.TableCreate;
+	function me:TableCreate ( ... )
+		return HookTable( TableCreateBackup( self, ... ) );
 	end
 end
 
@@ -271,7 +229,7 @@ do
 	if ( IsChildAddOn ) then
 		me.parent = _NPCScanLocalization.CONFIG_TITLE;
 
-		_NPCScan.Config.Search:SetScript( "OnShow", me.TableOnShow );
+		_NPCScan.Config.Search.TableCreate = me.TableCreate;
 	end
 	InterfaceOptions_AddCategory( me );
 end

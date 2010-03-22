@@ -3,7 +3,7 @@
 ## Notes: Adds mob patrol paths to your map.
 ## Author: Saiket
 ## Version: 3.3.0.6
-## X-Date: 2010-03-20
+## X-Date: 2010-03-21
 ## X-Category: Maps
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
@@ -13,7 +13,7 @@
 ## X-Curse-Project-ID: npcscan-overlay
 ## X-Localizations: enUS
 ## SavedVariables: _NPCScanOverlayOptions
-## OptionalDeps: Ace3, _NPCScan, LibRareSpawns, AlphaMap3, Carbonite, Cartographer3, Mapster
+## OptionalDeps: Ace3, _NPCScan, AlphaMap3, Carbonite, Cartographer3, Mapster
 Libs\LibStub\LibStub.lua
 Libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
 
