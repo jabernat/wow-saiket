@@ -11,13 +11,16 @@ local L = _UnderscoreLocalization.WorldMap;
 local me = CreateFrame( "Frame", nil, WorldMapButton );
 _Underscore.WorldMap = me;
 
+-- Note: Parent ScrollHandler to WorldMapFrame so it gets disabled when Carbonite takes over
 me.ScrollHandler = CreateFrame( "Frame", nil, WorldMapFrame ); -- Can insecurely toggle mousewheel input
 
-me.Text = me:CreateFontString( nil, "ARTWORK", "NumberFontNormalSmall" );
+local Tooltip = CreateFrame( "Frame", nil, me );
+me.Tooltip = Tooltip;
+Tooltip.Text = Tooltip:CreateFontString( nil, "ARTWORK", "NumberFontNormalSmall" );
 
 
-me.Scale = 1;
-me.OffsetX, me.OffsetY = -8, -16;
+Tooltip.Scale = 1;
+Tooltip.OffsetX, Tooltip.OffsetY = -8, -16;
 
 
 
@@ -85,20 +88,20 @@ do
 			local Left, Bottom, Width, Height = self:GetRect();
 			Left, Bottom = CursorX / MapScale - Left, CursorY / MapScale - Bottom;
 
-			me.Text:SetFormattedText( L.COORD_FORMAT,
+			Tooltip.Text:SetFormattedText( L.COORD_FORMAT,
 				100 * Left / Width,
 				100 * ( 1 - Bottom / Height ) );
 
-			local Scale = me.Scale * UIParent:GetEffectiveScale();
-			me:SetScale( Scale / MapScale ); -- Standard scale no matter scale of parent
-			me:SetPoint( "TOPRIGHT", self, "BOTTOMLEFT",
-				( Left * MapScale + me.OffsetX ) / Scale,
-				( Bottom * MapScale + me.OffsetY ) / Scale );
+			local Scale = Tooltip.Scale * UIParent:GetEffectiveScale();
+			Tooltip:SetScale( Scale / MapScale ); -- Standard scale no matter scale of parent
+			Tooltip:SetPoint( "TOPRIGHT", self, "BOTTOMLEFT",
+				( Left * MapScale + Tooltip.OffsetX ) / Scale,
+				( Bottom * MapScale + Tooltip.OffsetY ) / Scale );
 
-			me:SetSize( me.Text:GetStringWidth(), me.Text:GetStringHeight() );
-			me:Show();
+			Tooltip:SetSize( Tooltip.Text:GetStringWidth(), Tooltip.Text:GetStringHeight() );
+			Tooltip:Show();
 		else
-			me:Hide();
+			Tooltip:Hide();
 		end
 	end
 end
@@ -151,14 +154,17 @@ end
 -----------------------------
 
 do
-	me:Hide();
-	me:SetFrameStrata( "TOOLTIP" );
-	me:SetClampedToScreen( true );
-	_Underscore.Backdrop.Create( me ):SetAlpha( 0.5 );
+	me:SetAllPoints();
+	me:SetScript( "OnUpdate", me.OnUpdate );
+
+	Tooltip:Hide();
+	Tooltip:SetFrameStrata( "TOOLTIP" );
+	Tooltip:SetClampedToScreen( true );
+	_Underscore.Backdrop.Create( Tooltip ):SetAlpha( 0.5 );
 
 	local Color = NORMAL_FONT_COLOR;
-	me.Text:SetTextColor( Color.r, Color.g, Color.b, 0.7 );
-	me.Text:SetAllPoints();
+	Tooltip.Text:SetTextColor( Color.r, Color.g, Color.b, 0.7 );
+	Tooltip.Text:SetAllPoints();
 
 
 	local ScrollHandler = me.ScrollHandler;
@@ -169,7 +175,6 @@ do
 	ScrollHandler:SetScript( "OnEvent", _Underscore.OnEvent );
 
 
-	WorldMapButton:HookScript( "OnUpdate", me.OnUpdate );
 	WorldMapUnit_Update = me.UpdateUnit;
 
 	hooksecurefunc( "WorldMap_ToggleSizeUp", me.DisableBlackout );
