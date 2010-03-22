@@ -50,4 +50,15 @@ do
 			end
 		end;
 	} );
+
+
+
+
+--------------------------------------------------------------------------------
+-- Globals
+----------
+
+	SLASH__NPCSCAN_OVERLAY1 = "/npcscanoverlay";
+	SLASH__NPCSCAN_OVERLAY2 = "/npcoverlay";
+	SLASH__NPCSCAN_OVERLAY3 = "/overlay";
 end
