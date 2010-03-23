@@ -562,6 +562,23 @@ function me:ZONE_CHANGED_NEW_AREA ()
 	end
 end
 --[[****************************************************************************
+  * Function: _NPCScan.Overlay.Minimap:WORLD_MAP_UPDATE                        *
+  ****************************************************************************]]
+do
+	local GetCurrentMapAreaID = GetCurrentMapAreaID;
+	local MapLast;
+	function me:WORLD_MAP_UPDATE ()
+		local Map = GetCurrentMapAreaID() - 1;
+		if ( MapLast ~= Map ) then -- Changed zones
+			MapLast = Map;
+
+			if ( Map == Overlay.ZoneMaps[ GetRealZoneText() ] ) then -- Now showing current zone
+				UpdateForce = true;
+			end
+		end
+	end
+end
+--[[****************************************************************************
   * Function: _NPCScan.Overlay.Minimap:OnShow                                  *
   ****************************************************************************]]
 function me:OnShow ()
@@ -575,7 +592,7 @@ do
 	local GetRealZoneText = GetRealZoneText;
 	local GetCVarBool = GetCVarBool;
 	local GetPlayerFacing = GetPlayerFacing;
-	local GetMapInfo = GetMapInfo;
+	local GetCurrentMapAreaID = GetCurrentMapAreaID;
 	local UpdateNext = 0;
 	local LastX, LastY, LastFacing;
 	local Map, X, Y, Facing, Width, Height;
@@ -663,12 +680,16 @@ end
 function me:Disable ()
 	ScrollFrame:Hide();
 	Overlay.TextureRemoveAll( self );
+	self:UnregisterEvent( "WORLD_MAP_UPDATE" );
+	self:UnregisterEvent( "ZONE_CHANGED_NEW_AREA" );
 end
 --[[****************************************************************************
   * Function: _NPCScan.Overlay.Minimap:Enable                                  *
   ****************************************************************************]]
 function me:Enable ()
 	ScrollFrame:Show();
+	self:RegisterEvent( "WORLD_MAP_UPDATE" );
+	self:RegisterEvent( "ZONE_CHANGED_NEW_AREA" );
 end
 
 
@@ -688,7 +709,6 @@ do
 	me:SetScript( "OnUpdate", me.OnUpdate );
 	me:SetScript( "OnEvent", me.OnEvent );
 	me:RegisterEvent( "MINIMAP_UPDATE_ZOOM" );
-	me:RegisterEvent( "ZONE_CHANGED_NEW_AREA" );
 	Overlay.OptionsDefault.MinimapRangeRing = true;
 
 

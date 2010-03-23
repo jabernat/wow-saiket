@@ -25,26 +25,11 @@ end
 
 
 
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.Cartographer3.SetMapToCurrentZone               *
-  * Description: Force a Minimap update when the map is returned.              *
-  ****************************************************************************]]
-function me.SetMapToCurrentZone ()
-	if ( Overlay.Minimap.Update ) then
-		Overlay.Minimap:Update();
-	end
-end
-
-
-
-
 --------------------------------------------------------------------------------
 -- Function Hooks / Execution
 -----------------------------
 
 do
-	hooksecurefunc( "SetMapToCurrentZone", me.SetMapToCurrentZone );
-
 	if ( IntegrateWorldMap ) then
 		Key:SetParent( Cartographer_MapFrame );
 		Key:SetPoint( Key:GetPoint(), Cartographer_MapHolder_ScrollFrame );
