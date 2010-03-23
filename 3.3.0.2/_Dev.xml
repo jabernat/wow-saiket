@@ -1,0 +1,69 @@
+<!--****************************************************************************
+    * _Dev by Saiket                                                           *
+    * _Dev.xml - Common templates used by _Dev modules.                        *
+    *************************************************************************-->
+
+
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\..\FrameXML\UI.xsd">
+	<Texture name="_DevBorderSideTemplate" file="Interface\Buttons\WHITE8X8" virtual="true">
+		<Size x="2" y="2"/>
+	</Texture>
+	<Texture name="_DevBorderSideBackwardsTemplate" inherits="_DevBorderSideTemplate" file="Interface\Tooltips\UI-Tooltip-Background" virtual="true"/>
+
+
+	<Frame name="_DevBorderTemplate" hidden="true" virtual="true">
+		<Layers>
+			<Layer level="OVERLAY">
+				<Texture inherits="_DevBorderSideTemplate">
+					<Anchors>
+						<Anchor point="BOTTOMLEFT" relativePoint="TOPLEFT"/>
+						<Anchor point="BOTTOMRIGHT" relativePoint="TOPRIGHT"/>
+					</Anchors>
+				</Texture>
+				<Texture inherits="_DevBorderSideTemplate">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativePoint="BOTTOMLEFT"/>
+						<Anchor point="TOPRIGHT" relativePoint="BOTTOMRIGHT"/>
+					</Anchors>
+				</Texture>
+				<Texture inherits="_DevBorderSideTemplate">
+					<Anchors>
+						<Anchor point="TOPRIGHT" relativePoint="TOPLEFT"/>
+						<Anchor point="BOTTOMRIGHT" relativePoint="BOTTOMLEFT"/>
+					</Anchors>
+				</Texture>
+				<Texture inherits="_DevBorderSideTemplate">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativePoint="TOPRIGHT"/>
+						<Anchor point="BOTTOMLEFT" relativePoint="BOTTOMRIGHT"/>
+					</Anchors>
+				</Texture>
+				<!-- Textures are anchored backwards so they only display when the frame is inside out -->
+				<Texture inherits="_DevBorderSideBackwardsTemplate">
+					<Anchors>
+						<Anchor point="BOTTOMLEFT" relativePoint="TOPRIGHT"/>
+						<Anchor point="BOTTOMRIGHT" relativePoint="TOPLEFT"/>
+					</Anchors>
+				</Texture>
+				<Texture inherits="_DevBorderSideBackwardsTemplate">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativePoint="BOTTOMRIGHT"/>
+						<Anchor point="TOPRIGHT" relativePoint="BOTTOMLEFT"/>
+					</Anchors>
+				</Texture>
+				<Texture inherits="_DevBorderSideBackwardsTemplate">
+					<Anchors>
+						<Anchor point="TOPRIGHT" relativePoint="BOTTOMLEFT"/>
+						<Anchor point="BOTTOMRIGHT" relativePoint="TOPLEFT"/>
+					</Anchors>
+				</Texture>
+				<Texture inherits="_DevBorderSideBackwardsTemplate">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativePoint="BOTTOMRIGHT"/>
+						<Anchor point="BOTTOMLEFT" relativePoint="TOPRIGHT"/>
+					</Anchors>
+				</Texture>
+			</Layer>
+		</Layers>
+	</Frame>
+</Ui>
