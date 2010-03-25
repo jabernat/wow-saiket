@@ -206,9 +206,9 @@ for _, MapFilename in ipairs( MapFilenames ) do
 
 	for RouteName, RouteData in pairs( ZoneData ) do
 		if ( RouteName:match( "^Overlay:(.+)$" ) ) then
-			local ID, Name = RouteName:match( "Overlay:([^:]+):([^:]+)" );
+			local ID = RouteName:match( "Overlay:([^:]+):[^:]+" );
 			ID = tonumber( ID );
-			if ( ID and Name ) then
+			if ( ID ) then
 				if ( Overlays[ ID ] ) then
 					table.insert( Overlays[ ID ], RouteName );
 				else
@@ -218,7 +218,14 @@ for _, MapFilename in ipairs( MapFilenames ) do
 		end
 	end
 	for ID, Data in pairs( Overlays ) do
+		-- Sort route parts
+		table.sort( Data, function ( Route1, Route2 )
+			Route1 = tonumber( Route1:match( "Overlay:[^:]+:[^:]+:([^:]+)" ) ) or 1;
+			Route2 = tonumber( Route2:match( "Overlay:[^:]+:[^:]+:([^:]+)" ) ) or 1;
+			return Route1 < Route2;
+		end );
 		IDs[ #IDs + 1 ] = ID;
+		Names[ ID ] = Data[ 1 ]:match( "Overlay:[^:]+:([^:]+)" );
 	end
 
 	if ( #IDs > 0 ) then
@@ -227,10 +234,12 @@ for _, MapFilename in ipairs( MapFilenames ) do
 		print( ( "[Map:%d] %s" ):format( MapID, MapName ) );
 		Outfile:write( ( "\t[ %d ] = { -- %s\n" ):format( MapID, MapName ) );
 
-		table.sort( IDs );
+		table.sort( IDs, function ( ID1, ID2 )
+			return Names[ ID1 ] < Names[ ID2 ];
+		end);
 		for _, ID in ipairs( IDs ) do
 			local Data = Overlays[ ID ];
-			local Name = Data[ 1 ]:match( "Overlay:[^:]+:([^:]+)" );
+			local Name = Names[ ID ];
 
 			print( ( "\t[Npc:%d] %s" ):format( ID, Name or "Unknown" ) );
 			local PolyData = "";
