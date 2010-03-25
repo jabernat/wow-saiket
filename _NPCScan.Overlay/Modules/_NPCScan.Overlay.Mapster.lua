@@ -4,30 +4,52 @@
   ****************************************************************************]]
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
+if ( not IsAddOnLoaded( "Mapster" ) ) then
+	return;
+end
 
-if ( IsAddOnLoaded( "Mapster" ) ) then
-	local Toggle = _NPCScan.Overlay.WorldMap.Toggle;
-	local Mapster = LibStub( "AceAddon-3.0" ):GetAddon( "Mapster" );
+local AddOnName = ...;
+local Mapster = LibStub( "AceAddon-3.0" ):GetAddon( "Mapster" );
+local me = Mapster:NewModule( AddOnName );
+_NPCScan.Overlay.Mapster = me;
 
-	local function UpdateTogglePosition () -- Moves the checkbox so it doesn't overlap Mapster's stuff
-		Toggle:ClearAllPoints();
-		if ( WorldMapFrame.sizedDown ) then -- Bottom right corner of map
-			local Label = _G[ Toggle:GetName().."Text" ];
-			Toggle:SetPoint( "BOTTOM", MapsterOptionsButton, 0, -2 );
-			Toggle:SetPoint( "RIGHT", WorldMapDetailFrame, -Label:GetStringWidth() - 12, 0 );
-		else -- Left side, near Mapster options button
-			Toggle:SetPoint( "LEFT", MapsterOptionsButton, "RIGHT", 8, 0 );
-		end
+me.Toggle = _NPCScan.Overlay.WorldMap.Toggle;
+
+
+
+
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.Mapster:UpdateMapsize                           *
+  * Description: Moves the checkbox so it doesn't overlap Mapster's stuff.     *
+  ****************************************************************************]]
+function me:UpdateMapsize ( Mini )
+	self.Toggle:ClearAllPoints();
+	self.Toggle:SetPoint( "BOTTOM", WorldMapTrackQuest );
+	if ( Mini ) then -- Right side so coordinates don't overlap
+		local Label = _G[ self.Toggle:GetName().."Text" ];
+		self.Toggle:SetPoint( "RIGHT", WorldMapDetailFrame, -Label:GetStringWidth() - 4, 0 );
+	else -- Left side, between "Track Quests" and player coordinates
+		local Label = _G[ WorldMapTrackQuest:GetName().."Text" ];
+		self.Toggle:SetPoint( "LEFT", WorldMapTrackQuest, "RIGHT", Label:GetStringWidth() + 8, -4 );
 	end
-
-	-- Hook size up/down commands once Mapster creates its options button
-	hooksecurefunc( Mapster, "OnEnable", function ()
-		-- Options button created
-		hooksecurefunc( Mapster, "SizeUp", UpdateTogglePosition );
-		hooksecurefunc( Mapster, "SizeDown", UpdateTogglePosition );
-		UpdateTogglePosition();
-	end );
+end
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.Mapster:OnEnable                                *
+  ****************************************************************************]]
+function me:OnEnable ()
+	self:UpdateMapsize( Mapster.miniMap );
+	self.Toggle:Show();
+end
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.Mapster:OnDisable                               *
+  ****************************************************************************]]
+function me:OnDisable ()
+	self.Toggle:Hide();
+end
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.Mapster:OnInitialize                            *
+  ****************************************************************************]]
+function me:OnInitialize ()
+	self:SetEnabledState( true );
+	self.Toggle:Hide();
 end
