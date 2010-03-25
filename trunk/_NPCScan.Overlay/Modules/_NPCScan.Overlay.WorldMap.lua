@@ -17,6 +17,7 @@ me.Toggle = CreateFrame( "CheckButton", "_NPCScanOverlayWorldMapToggle", WorldMa
 
 me.AchievementNPCNames = {};
 
+local KeyFont = CreateFont( "_NPCScanOverlayWorldMapKeyFont" );
 local IsChildAddOn = IsAddOnLoaded( "_NPCScan" );
 
 
@@ -45,10 +46,9 @@ do
 		Count = Count + 1;
 		local Line = self[ Count ];
 		if ( not Line ) then
-			Line = self.Body:CreateFontString( nil, "OVERLAY", "ChatFontNormal" );
+			Line = self.Body:CreateFontString( nil, "OVERLAY", KeyFont:GetName() );
 			Line:SetPoint( "TOPLEFT", Count == 1 and self.Title or self[ Count - 1 ], "BOTTOMLEFT" );
 			Line:SetPoint( "RIGHT", self.Title );
-			Line:SetJustifyH( "LEFT" );
 			self[ Count ] = Line;
 		else
 			Line:Show();
@@ -236,12 +236,15 @@ end
 -----------------------------
 
 do
+	KeyFont:SetFontObject( ChatFontNormal );
+	KeyFont:SetJustifyH( "LEFT" );
+
+
 	local Key = me.Key;
 	Key:SetPoint( "BOTTOMLEFT" );
 	Key:SetScript( "OnEnter", Key.OnEnter );
 	Key:OnEnter();
 	Key:EnableMouse( true );
-	Key:SetAlpha( 0.8 );
 	Key:SetBackdrop( {
 		edgeFile = [[Interface\AchievementFrame\UI-Achievement-WoodBorder]]; edgeSize = 48;
 	} );
