@@ -143,16 +143,20 @@ end
 function me:ExperiencePostUpdate ( _, UnitID, Bar, Value, ValueMax )
 	if ( UnitID == "player" ) then
 		local RestedExperience = GetXPExhaustion();
-		local Texture = Bar.RestTexture;
 		if ( RestedExperience ) then
-			local Width = Bar:GetParent():GetWidth(); -- Bar's width not calculated by PLAYER_ENTERING_WORLD, but parent's width is
-			Texture:Show();
-			Texture:SetPoint( "LEFT", Value / ValueMax * Width, 0 );
-			Texture:SetPoint( "RIGHT", Bar, "LEFT", min( 1, ( Value + RestedExperience ) / ValueMax ) * Width, 0 );
+			Bar.RestTexture:SetPoint( "RIGHT", Bar, "LEFT", Bar:GetWidth() * min( 1, ( Value + RestedExperience ) / ValueMax ), 0 );
+			Bar.RestTexture:Show();
 		else -- Not resting
-			Texture:Hide();
+			Bar.RestTexture:Hide();
 		end
 	end
+end
+--[[****************************************************************************
+  * Function: _Underscore.Units.oUF:ExperienceOnSizeChanged                    *
+  ****************************************************************************]]
+function me:ExperienceOnSizeChanged ()
+	local Frame = self:GetParent();
+	me.ExperiencePostUpdate( Frame, nil, Frame.unit, self, self:GetValue(), ( select( 2, self:GetMinMaxValues() ) ) );
 end
 
 
@@ -273,26 +277,32 @@ do
 	end
 	local CreateBarReverse; -- Creates a status bar that fills in reverse.
 	do
-		local function SetValue ( self, Value, ValueMax, Width )
-			self:GetStatusBarTexture():SetPoint( "LEFT", self, "RIGHT",
-				( ( Value or self:GetValue() ) / ( MaxValue or select( 2, self:GetMinMaxValues() ) ) - 1 ) * ( Width or self:GetWidth() ), 0 );
+		local function UpdateBar ( self )
+			local Texture = self:GetStatusBarTexture();
+			Texture:ClearAllPoints();
+			Texture:SetPoint( "BOTTOMRIGHT" );
+			Texture:SetPoint( "TOPLEFT", self, "TOPRIGHT",
+				( self:GetValue() / select( 2, self:GetMinMaxValues() ) - 1 ) * self:GetWidth(), 0 );
+		end
+		local function BarUpdaterOnUpdate ( self )
+			self:Hide();
+			UpdateBar( self.Bar );
 		end
 		local function OnSizeChanged ( self, Width )
-			SetValue( self, nil, nil, Width );
+			UpdateBar( self );
 		end
-		local function OnValueChanged ( self, Value )
-			SetValue( self, Value );
+		local function OnValueChanged ( self )
+			self.BarUpdater:Show();
 		end
-		local function OnMinMaxChanged ( self, ValueMin, ValueMax )
-			SetValue( self, nil, ValueMax );
+		local function OnMinMaxChanged ( self )
+			self.BarUpdater:Show();
 		end
 		function CreateBarReverse ( self, ... )
 			local Bar = CreateBar( self, ... );
-			local Texture = Bar:GetStatusBarTexture();
-			Texture:ClearAllPoints();
-			Texture:SetPoint( "TOPRIGHT" );
-			Texture:SetPoint( "BOTTOM" );
-			Texture:SetTexCoordModifiesRect( false ); -- Keep the usual texcoord animation from showing (Texture must be horizontally uniform)
+			Bar.BarUpdater = CreateFrame( "Frame", nil, Bar );
+			Bar.BarUpdater.Bar = Bar;
+			Bar.BarUpdater:Hide();
+			Bar.BarUpdater:SetScript( "OnUpdate", BarUpdaterOnUpdate );
 
 			Bar:SetScript( "OnSizeChanged", OnSizeChanged );
 			Bar:SetScript( "OnValueChanged", OnValueChanged );
@@ -472,12 +482,13 @@ do
 				self.Experience = Progress;
 				Progress:SetStatusBarColor( unpack( Colors.Experience ) );
 				Progress.PostUpdate = me.ExperiencePostUpdate;
+				Progress:SetScript( "OnSizeChanged", me.ExperienceOnSizeChanged );
 				Progress:Show();
 				local Rest = Progress:CreateTexture( nil, "ARTWORK" );
 				Progress.RestTexture = Rest;
 				Rest:SetTexture( BarTexture );
 				Rest:SetVertexColor( unpack( Colors.ExperienceRested ) );
-				Rest:SetPoint( "TOP" );
+				Rest:SetPoint( "TOPLEFT", Progress:GetStatusBarTexture(), "TOPRIGHT" );
 				Rest:SetPoint( "BOTTOM" );
 				Rest:Hide();
 			elseif ( IsAddOnLoaded( "oUF_Reputation" ) ) then
