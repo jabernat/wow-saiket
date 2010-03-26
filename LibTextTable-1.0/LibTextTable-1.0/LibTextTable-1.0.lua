@@ -4,7 +4,7 @@
   ****************************************************************************]]
 
 
-local MAJOR, MINOR = "LibTextTable-1.0", 2;
+local MAJOR, MINOR = "LibTextTable-1.0", 3;
 
 local lib = LibStub:NewLibrary( MAJOR, MINOR );
 if ( not lib ) then
@@ -61,8 +61,8 @@ local function RowInsert ( self, Index )
 		Row:RegisterForClicks( "LeftButtonUp" );
 		Row:SetHeight( RowHeight );
 		Row:SetPoint( "LEFT" );
-		Row:SetPoint( "RIGHT", self.View, -1, 0 );
-		Row:SetHighlightTexture( "Interface\\FriendsFrame\\UI-FriendsFrame-HighlightBar", "ADD" );
+		Row:SetPoint( "RIGHT", self.View, -1, 0 ); -- NOTE(Bug!)
+		Row:SetHighlightTexture( [[Interface\FriendsFrame\UI-FriendsFrame-HighlightBar]], "ADD" );
 		-- Apply row methods
 		if ( not getmetatable( RowMethods ) ) then
 			setmetatable( RowMethods, getmetatable( Row ) );
@@ -143,18 +143,18 @@ local function ColumnCreate ( self )
 	Left:SetPoint( "TOPLEFT" );
 	Left:SetPoint( "BOTTOM" );
 	Left:SetWidth( 5 );
-	Left:SetTexture( "Interface\\FriendsFrame\\WhoFrame-ColumnTabs" );
+	Left:SetTexture( [[Interface\FriendsFrame\WhoFrame-ColumnTabs]] );
 	Left:SetTexCoord( 0, 0.078125, 0, 0.75 );
 	local Right = Column:CreateTexture( nil, "BACKGROUND" );
 	Right:SetPoint( "TOPRIGHT" );
 	Right:SetPoint( "BOTTOM" );
 	Right:SetWidth( 4 );
-	Right:SetTexture( "Interface\\FriendsFrame\\WhoFrame-ColumnTabs" );
+	Right:SetTexture( [[Interface\FriendsFrame\WhoFrame-ColumnTabs]] );
 	Right:SetTexCoord( 0.90625, 0.96875, 0, 0.75 );
 	local Middle = Column:CreateTexture( nil, "BACKGROUND" );
 	Middle:SetPoint( "TOPLEFT", Left, "TOPRIGHT" );
 	Middle:SetPoint( "BOTTOMRIGHT", Right, "BOTTOMLEFT" );
-	Middle:SetTexture( "Interface\\FriendsFrame\\WhoFrame-ColumnTabs" );
+	Middle:SetTexture( [[Interface\FriendsFrame\WhoFrame-ColumnTabs]] );
 	Middle:SetTexCoord( 0.078125, 0.90625, 0, 0.75 );
 
 	Columns[ Index ] = Column;
@@ -218,7 +218,7 @@ end
   ****************************************************************************]]
 local function OnValueChangedHorizontal ( self, HorizontalScroll )
 	local View = self:GetParent();
-	View:SetHorizontalScroll( -HorizontalScroll );
+	View:SetHorizontalScroll( HorizontalScroll );
 
 	local Min, Max = self:GetMinMaxValues();
 	View.Left[ HorizontalScroll == Min and "Disable" or "Enable" ]( View.Left );
@@ -244,7 +244,7 @@ do
 	local function CreateScrollFrame ( View, ScrollScript )
 		local Scroll = CreateFrame( "Slider", nil, View );
 		Scroll:Hide();
-		Scroll:SetThumbTexture( "Interface\\Buttons\\UI-ScrollBar-Knob" );
+		Scroll:SetThumbTexture( [[Interface\Buttons\UI-ScrollBar-Knob]] );
 		local Dec = CreateFrame( "Button", nil, Scroll, "UIPanelScrollUpButtonTemplate" );
 		local Inc = CreateFrame( "Button", nil, Scroll, "UIPanelScrollDownButtonTemplate" );
 		Dec:SetScript( "OnClick", function ()
@@ -295,6 +295,7 @@ do
 			XScroll:SetMinMaxValues( 0, XRange );
 			XScroll:SetValue( min( XScroll:GetValue(), XRange ) );
 		elseif ( XScroll and XScroll:IsShown() ) then -- Hide scrollbar
+			XScroll:SetValue( 0 );
 			XScroll:Hide();
 			View:SetPoint( "BOTTOM", Table );
 		end
@@ -318,6 +319,7 @@ do
 			YScroll:SetMinMaxValues( 0, YRange );
 			YScroll:SetValue( min( YScroll:GetValue(), YRange ) );
 		elseif ( YScroll and YScroll:IsShown() ) then -- Hide scrollbar
+			YScroll:SetValue( 0 );
 			YScroll:Hide();
 			View:SetPoint( "RIGHT", Table );
 		end
@@ -529,7 +531,7 @@ function lib.New ( Name, Parent, HeaderFont, ElementFont )
 	View:SetPoint( "RIGHT" );
 	View:SetScrollChild( Body );
 	View:SetScript( "OnScrollRangeChanged", OnScrollRangeChanged );
-	Background:SetPoint( "TOPRIGHT", View, -1, 1 );
+	Background:SetPoint( "TOPRIGHT", View, -1, 1 ); -- NOTE(Bug!)
 
 	Table.Keys = {};
 	Table.UnusedRows = {};
