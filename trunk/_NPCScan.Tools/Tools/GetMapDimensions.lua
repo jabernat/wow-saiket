@@ -92,6 +92,3 @@ for _, Continent in ipairs( ContinentOrder ) do
 			MapNames[ WorldMapArea.ID ] ) );
 	end
 end
-
-for MapID in pairs( MapIDs ) do
-end
