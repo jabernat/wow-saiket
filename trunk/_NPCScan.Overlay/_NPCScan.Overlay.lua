@@ -281,10 +281,12 @@ end
   * Description: Updates a map for all active modules.                         *
   ****************************************************************************]]
 function me.UpdateMap ( Map )
-	for Name in pairs( me.Options.Modules ) do
-		local Module = me.Modules[ Name ];
-		if ( Module.Update ) then
-			SafeCall( Module.Update, Module, Map );
+	for Name, Enabled in pairs( me.Options.Modules ) do
+		if ( Enabled ) then
+			local Module = me.Modules[ Name ];
+			if ( Module.Update ) then
+				SafeCall( Module.Update, Module, Map );
+			end
 		end
 	end
 end
