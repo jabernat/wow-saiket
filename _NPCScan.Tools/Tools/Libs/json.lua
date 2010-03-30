@@ -21,7 +21,9 @@
 --   0.9.20-Saiket
 --          Extended to support more of JavaScript's object structure.  Can now read
 --          associative table keys without surrounding quotes, and supports elided
---          commas in array constructs.
+--          commas in array constructs.  Unexpected constants (presumed mistakenly
+--          sent by server side coding) are evaluated as JavaScript variable names
+--          if possible, using nil for their values.
 --   0.9.20 Introduction of local Lua functions for private functions (removed _ function prefix). 
 --          Fixed Lua 5.1 compatibility issues.
 --   		Introduced json.null to have null values in associative arrays.
@@ -215,6 +217,11 @@ function decode_scanConstant(s, startPos)
       return consts[k], startPos + string.len(k)
     end
   end
+	-- Assume a Javascript variable name as a last resort; Only fail if a browser would
+	local _, endPos, key = s:find( "^([_a-zA-Z][_a-zA-Z0-9]*)", startPos );
+	if ( key ) then
+		return nil, endPos + 1; -- Browser would evaluate bogus variable name to null
+	end
   base.assert(nil, 'Failed to scan constant from string ' .. s .. ' at starting position ' .. startPos)
 end
 
