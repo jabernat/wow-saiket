@@ -260,7 +260,7 @@ function decode_scanObject(s,startPos)
     end
     base.assert(startPos<=stringLen, 'JSON string ended unexpectedly scanning object.')
     -- Scan the key
-    key, startPos = decode(s,startPos)
+    key, startPos = decode_scanObjectKey(s,startPos)
     base.assert(startPos<=stringLen, 'JSON string ended unexpectedly searching for value of key ' .. key)
     startPos = decode_scanWhitespace(s,startPos)
     base.assert(startPos<=stringLen, 'JSON string ended unexpectedly searching for value of key ' .. key)
@@ -270,6 +270,28 @@ function decode_scanObject(s,startPos)
     value, startPos = decode(s,startPos)
     object[key]=value
   until false	-- infinite loop while key-value pairs are found
+end
+
+--- Scans a JSON string for an unquoted key name
+-- Returns the string extracted as a Lua string,
+-- and the position of the next non-string character.
+-- @param s The string being scanned.
+-- @param startPos The starting position of the scan.
+-- @return string, int The extracted string as a Lua string, and the next character to parse.
+function decode_scanObjectKey ( s, startPos )
+  base.assert(startPos, 'decode_scanObjectKey(..) called without start position')
+
+  startPos = decode_scanWhitespace(s,startPos)
+  base.assert(startPos<=string.len(s), 'Unterminated JSON encoded object found at position in [' .. s .. ']')
+
+	local curChar = s:sub( startPos, startPos );
+	if ( curChar == [[']] or curChar == [["]] ) then
+    return decode_scanString(s,startPos)
+	else
+		local _, endPos, key = s:find( "^([_a-zA-Z][_a-zA-Z0-9]*)", startPos );
+    base.assert(key, 'JSON string ended unexpectedly scanning object.')
+		return key, endPos + 1;
+	end
 end
 
 --- Scans a JSON string from the opening inverted comma or single quote to the
