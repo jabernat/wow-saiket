@@ -3,7 +3,7 @@
 -- json Module.
 -- Author: Craig Mason-Jones
 -- Homepage: http://json.luaforge.net/
--- Version: 0.9.20
+-- Version: 0.9.20-Saiket
 -- This module is released under the The GNU General Public License (GPL).
 -- Please see LICENCE.txt for details.
 --
@@ -18,6 +18,10 @@
 --   compat-5.1 if using Lua 5.0
 --
 -- CHANGELOG
+--   0.9.20-Saiket
+--          Extended to support more of JavaScript's object structure.  Can now read
+--          associative table keys without surrounding quotes, and supports elided
+--          commas in array constructs.
 --   0.9.20 Introduction of local Lua functions for private functions (removed _ function prefix). 
 --          Fixed Lua 5.1 compatibility issues.
 --   		Introduced json.null to have null values in associative arrays.
@@ -167,19 +171,20 @@ function decode_scanArray(s,startPos)
   base.assert(string.sub(s,startPos,startPos)=='[','decode_scanArray called but array does not start at position ' .. startPos .. ' in string:\n'..s )
   startPos = startPos + 1
   -- Infinite loop for array elements
+	local index = 1;
   repeat
     startPos = decode_scanWhitespace(s,startPos)
     base.assert(startPos<=stringLen,'JSON String ended unexpectedly scanning array.')
-    local curChar = string.sub(s,startPos,startPos)
-    if (curChar==']') then
+		while (s:sub(startPos,startPos)==',') do
+			index = index + 1
+			startPos = decode_scanWhitespace( s, startPos + 1 )
+		end
+    if (s:sub(startPos,startPos)==']') then
       return array, startPos+1
-    end
-    if (curChar==',') then
-      startPos = decode_scanWhitespace(s,startPos+1)
     end
     base.assert(startPos<=stringLen, 'JSON String ended unexpectedly scanning array.')
     object, startPos = decode(s,startPos)
-    table.insert(array,object)
+    array[ index ] = object
   until false
 end
 
