@@ -3,7 +3,7 @@
 
 FOR /r "DBFilesClient" %%I IN (*.dbc) DO (
 	ECHO Converting %%~I...
-	DBCUtil.exe --overwrite --quiet "%%~I"
+	Libs\DBCUtil.exe --overwrite --quiet "%%~I"
 )
 
 ECHO.
