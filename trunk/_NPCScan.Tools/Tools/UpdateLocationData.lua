@@ -8,6 +8,8 @@ Tools/UpdateLocationData.lua - Pulls NPC location data from WoWDB and WowHead.
 2. Prepare database files from the WoW client: (Only needs to be done once per WoW patch)
    a. Find the latest versions of these DBC files in WoW's MPQ archives using a
       tool such as WinMPQ:
+      * <DBFilesClient/Achievement.dbc>
+      * <DBFilesClient/Achievement_Criteria.dbc>
       * <DBFilesClient/WorldMapArea.dbc>
       * <DBFilesClient/AreaTable.dbc>
    b. Extract them to the <DBFilesClient> folder.
@@ -22,6 +24,12 @@ UI and run this script with a standalone Lua 5.1 interpreter.  The
 ]]
 
 
+package.cpath = [[.\Libs\?.dll;]]..package.cpath;
+package.path = [[.\Libs\?.lua;]]..package.path;
+local http = require( "socket.http" );
+require( "json" );
+require( "bit" );
+require( "DbcCSV" );
 
 
 local AccountFile = assert( io.open( "Account.dat" ) );
@@ -33,8 +41,19 @@ local DataFilename = [[../../../../WTF/Account/]]..DataPath..[[/SavedVariables/_
 local OutputFilename = [[../_NPCScan.Tools.LocationData.lua]];
 
 
+
+
+local Achievements = DbcCSV.Parse( [[DBFilesClient/Achievement.dbc.csv]], 1,
+	"ID", nil, nil, nil, "Name", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
+	nil --[[Description]], nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
+	nil, nil, nil, nil, nil,
+	nil --[[Rewards]], nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
+	nil, "CriteriaParent" );
+
+local AchievementCriteria = DbcCSV.Parse( [[DBFilesClient/Achievement_Criteria.dbc.csv]], 1,
+	"ID", "AchievementID", "Type", "AssetID", nil, nil, nil, nil, nil, "Name" );
+
 -- Create a lookup of AreaTableIDs to zone IDs
-require( "DbcCSV" );
 local WorldMapAreas = DbcCSV.Parse( [[DBFilesClient/WorldMapArea.dbc.csv]], 1,
 	"ID", nil, "AreaTableID" );
 
@@ -46,77 +65,82 @@ for ID, WorldMapArea in pairs( WorldMapAreas ) do
 end
 
 
-local http = require( "socket.http" );
-require( "Json" );
-require( "bit" );
+
+
+-- Load _NPCScan saved variables
+assert( loadfile( DataFilename ) )();
+local Success, NpcNames, AchievementsActive = assert( pcall( function ()
+	local Options = _NPCScanOptionsCharacter;
+	return assert( Options.NPCs, "NPC data missing in _NPCScan saved variables." ),
+		assert( Options.Achievements, "Achievement data missing in _NPCScan saved variables." );
+end ) );
+
+local NpcIDs = {};
+for Name, NpcID in pairs( NpcNames ) do
+	NpcIDs[ NpcID ] = Name;
+end
 
 
 
 
-local EscapeString;
-do
-	local EscapeSequences = {
-		--[ "\a" ] = "\\a"; -- Bell
-		--[ "\b" ] = "\\b"; -- Backspace
-		--[ "\t" ] = "\\t"; -- Horizontal tab
-		[ "\n" ] = "\\n"; -- Newline
-		--[ "\v" ] = "\\v"; -- Vertical tab
-		--[ "\f" ] = "\\f"; -- Form feed
-		[ "\r" ] = "\\r"; -- Carriage return
-		[ "\\" ] = "\\\\"; -- Backslash
-		[ "\"" ] = "\\\""; -- Quotation mark
-	};
-	--[[ Add all non-printed characters to replacement table
-	for Index = 0, 31 do
-		local Character = string.char( Index );
-		if ( not EscapeSequences[ Character ] ) then
-			EscapeSequences[ Character ] = ( "\\%03d" ):format( Index );
-		end
+-- Find mobs that are criteria for achievements
+local AchievementFilter = {};
+local function AddAchievement ( ID )
+	AchievementFilter[ ID ] = true;
+	-- Recurse any achievements whos criteria must also be met
+	local CriteriaParent = Achievements[ ID ].CriteriaParent;
+	if ( CriteriaParent ~= 0 ) then
+		AddAchievement( CriteriaParent );
 	end
-	for Index = 127, 255 do
-		local Character = string.char( Index );
-		if ( not EscapeSequences[ Character ] ) then
-			EscapeSequences[ Character ] = ( "\\%03d" ):format( Index );
-		end
-	end]]
+end
+for AchievementID, Enabled in pairs( AchievementsActive ) do
+	if ( Enabled ) then
+		AddAchievement( AchievementID );
+	end
+end
 
-	function EscapeString ( Input )
-		--return ( Input:gsub( "[%z\1-\31\"\\\127-\255]", EscapeSequences ) );
-		return ( Input:gsub( "[\r\n\"\\]", EscapeSequences ) );
+-- Get rare mob kill criteria for found achievements
+for ID, Criteria in pairs( AchievementCriteria ) do
+	if ( AchievementFilter[ Criteria.AchievementID ]
+		and Criteria.Type == 0 -- Mob kill type
+	) then
+		NpcIDs[ Criteria.AssetID ] = Criteria.Name;
 	end
 end
 
 
-local function GetNpcData ( NpcData ) -- Returns the mob's primary MapID and a list of coords
-	-- Validate map data and choose the primary zone
-	local PrimaryCount, PrimaryMap = 0;
-	for _, MapData in ipairs( NpcData ) do
-		assert( MapData.mapType == "npc", "Invalid mapType "..MapData.mapType.."." );
-		assert( tonumber( MapData.locationID ), "Invalid AreaTableID "..tostring( MapData.locationID ).."." );
 
-		local CountTotal = 0;
-		for _, Coord in ipairs( MapData.coords ) do
-			Coord[ 3 ] = tonumber( Coord[ 3 ]:match( "<div>Spotted here (%d+) times</div>" ) );
-			CountTotal = CountTotal + Coord[ 3 ];
-			for Index = 4, #Coord do -- Clear unused data
-				Coord[ Index ] = nil;
+
+-- Get kill locations from WoWDB
+local EncodeNpcData; -- Packs coordinates and relative sighting density info into a string
+do
+	local function GetNpcData ( NpcData ) -- Returns the mob's primary MapID and a list of coords
+		-- Validate map data and choose the primary zone
+		local PrimaryCount, PrimaryMap = 0;
+		for _, MapData in ipairs( NpcData ) do
+			assert( MapData.mapType == "npc", "Invalid mapType "..MapData.mapType.."." );
+			assert( tonumber( MapData.locationID ), "Invalid AreaTableID "..tostring( MapData.locationID ).."." );
+
+			local CountTotal = 0;
+			for _, Coord in ipairs( MapData.coords ) do
+				Coord[ 3 ] = tonumber( Coord[ 3 ]:match( "<div>Spotted here (%d+) times</div>" ) );
+				CountTotal = CountTotal + Coord[ 3 ];
+				for Index = 4, #Coord do -- Clear unused data
+					Coord[ Index ] = nil;
+				end
+			end
+
+			if ( CountTotal > PrimaryCount ) then
+				PrimaryCount = CountTotal;
+				PrimaryMap = MapData;
 			end
 		end
 
-		if ( CountTotal > PrimaryCount ) then
-			PrimaryCount = CountTotal;
-			PrimaryMap = MapData;
-		end
+		assert( PrimaryMap, "No points found for NPC." );
+		return assert( MapIDs[ tonumber( PrimaryMap.locationID ) ], "Unrecognized AreaTableID "..PrimaryMap.locationID.."." ),
+			PrimaryMap.coords, PrimaryCount;
 	end
 
-	assert( PrimaryMap, "No points found for NPC." );
-	return assert( MapIDs[ tonumber( PrimaryMap.locationID ) ], "Unrecognized AreaTableID "..PrimaryMap.locationID.."." ),
-		PrimaryMap.coords, PrimaryCount;
-end
-
-
-local EncodeNpcData; -- Packs coordinates and relative sighting density info into a string
-do
 	local MaxCoordValue = 2 ^ 16 - 1;
 	local unpack, char = unpack, string.char;
 	local floor, ceil, min = math.floor, math.ceil, math.min;
@@ -134,75 +158,6 @@ do
 	end
 end
 
-
-
-
-assert( loadfile( DataFilename ) )();
-local Success, NpcNames, Achievements = assert( pcall( function ()
-	local Options = _NPCScanOptionsCharacter;
-	return assert( Options.NPCs, "NPC data missing in _NPCScan saved variables." ),
-		assert( Options.Achievements, "Achievement data missing in _NPCScan saved variables." );
-end ) );
-
-local NpcIDs = {};
-for Name, NpcID in pairs( NpcNames ) do
-	NpcIDs[ NpcID ] = Name;
-end
-
-
-
-
-print( "____" );
-print( "Reading achievement data:" );
-local function ReplaceSingleQuotes ( Escapes )
-	if ( #Escapes % 2 == 0 ) then -- Even number; not escaped.
-		return Escapes..[["]];
-	end
-end
-for AchievementID, Enabled in pairs( Achievements ) do
-	if ( Enabled ) then
-		print( "* ID "..AchievementID..":" );
-		local Text, Status = http.request( [[http://www.wowhead.com/?achievement=]]..AchievementID );
-		if ( not Text ) then
-			print( "  - Request failed:", Status );
-		elseif ( math.floor( Status / 100 ) ~= 2 ) then
-			print( "  - Invalid status code:", Status );
-		else
-			if ( Status ~= 200 ) then
-				print( "  + Status code "..Status..":", #Text.." bytes." );
-			end
-			local AchievementName = Text:match( [[var g_pageInfo = (%b{});]] );
-			if ( AchievementName ) then
-				AchievementName = AchievementName:gsub( ",([%]}])", "%1" ); -- Extra commas aren't allowed
-				AchievementName = AchievementName:gsub( "([{,])%s*(%w+)%s*:%s*", [[%1"%2":]] ); -- Key identifiers must be wrapped in quotes!
-				AchievementName = AchievementName:gsub( "(\\*)'", ReplaceSingleQuotes );
-				local Success, Data = pcall( Json.Decode, AchievementName );
-				if ( not Success ) then
-					print( "  - Couldn't parse achievement name:", Data );
-					AchievementName = nil;
-				elseif ( Data.name ) then
-					AchievementName = Data.name;
-				end
-			end
-			if ( not AchievementName ) then
-				print( "  - Could not find achievement name!" );
-				AchievementName = "Unknown";
-			end
-
-			local Count = 0;
-			for NpcID, Name in Text:gmatch( [[<td><a href="/%?npc=([%d]+)">(.-)</a> slain</td>]] ) do
-				NpcIDs[ tonumber( NpcID ) ] = Name;
-				Count = Count + 1;
-			end
-			print( "  + "..AchievementName..":", Count.." NPCs." );
-		end
-	end
-end
-
-
-
-
-print( "\n____" );
 print( "Reading NPC data:" );
 local NpcData, NpcMapIDs = {}, {};
 for NpcID, Name in pairs( NpcIDs ) do
@@ -217,13 +172,11 @@ for NpcID, Name in pairs( NpcIDs ) do
 			print( "  + Status code "..Status..":", #Text.." bytes." );
 		end
 
-		Text = Text:match( [[<script>addMapLocations%((.*)%)</script>]] );
+		Text = Text:match( [[<script>addMapLocations%((.-)%)</script>]] );
 		if ( not Text ) then
 			print( "  - Could not find map location data!" );
 		else
-			Text = Text:gsub( ",([%]}])", "%1" ); -- Extra commas aren't allowed
-			Text = Text:gsub( "([{,])%s*(%w+)%s*:%s*", [[%1"%2":]] ); -- Key identifiers must be wrapped in quotes!
-			local Success, Data = pcall( Json.Decode, Text );
+			local Success, Data = pcall( json.decode, Text );
 
 			if ( not Success ) then
 				print( "  - Couldn't parse map data:", Data:sub( 1, 128 ) );
@@ -266,7 +219,7 @@ Outfile:write( "\t};\n" );
 
 Outfile:write( "\tNpcData = {\n" );
 for _, NpcID in ipairs( SortOrder ) do
-	Outfile:write( "\t\t[ "..NpcID.." ] = \""..EscapeString( NpcData[ NpcID ] ).."\";\n" );
+	Outfile:write( ( "\t\t[ %d ] = %q;\n" ):format( NpcID, NpcData[ NpcID ] ) );
 end
 Outfile:write( "\t};\n" );
 

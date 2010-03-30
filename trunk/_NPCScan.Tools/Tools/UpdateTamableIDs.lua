@@ -16,6 +16,12 @@ overwrites <../../_NPCScan/_NPCScan.TamableIDs.lua>.
 ]]
 
 
+package.cpath = [[.\Libs\?.dll;]]..package.cpath;
+package.path = [[.\Libs\?.lua;]]..package.path;
+local http = require( "socket.http" );
+require( "json" );
+require( "bit" );
+require( "DbcCSV" );
 
 
 local RareMapOverrides = { -- [ NpcID ] = ForcedMapID;
@@ -24,8 +30,9 @@ local RareMapOverrides = { -- [ NpcID ] = ForcedMapID;
 local OutputFilename = [[../../_NPCScan/_NPCScan.TamableIDs.lua]];
 
 
+
+
 -- Create a list of all tamable creature types for the WowHead query
-require( "DbcCSV" );
 local CreatureFamilies = DbcCSV.Parse( [[DBFilesClient/CreatureFamily.dbc.csv]], 1,
 	"ID", nil, nil, nil, nil, nil, nil, nil, "PetTalentType" );
 
@@ -50,11 +57,6 @@ for ID, WorldMapArea in pairs( WorldMapAreas ) do
 		MapNames[ ID ] = AreaTable[ WorldMapArea.AreaTableID ].Localization;
 	end
 end
-
-
-local http = require( "socket.http" );
-require( "Json" );
-require( "bit" );
 
 
 
@@ -101,9 +103,7 @@ do
 			if ( not Text ) then
 				print( "    - Could not find map location data!" );
 			else
-				Text = Text:gsub( ",([%]}])", "%1" ); -- Extra commas aren't allowed
-				Text = Text:gsub( "([{,])%s*(%w+)%s*:%s*", [[%1"%2":]] ); -- Key identifiers must be wrapped in quotes!
-				local Success, Data = pcall( Json.Decode, Text );
+				local Success, Data = pcall( json.decode, Text );
 
 				if ( not Success ) then
 					print( "    - Couldn't parse map data:", Data:sub( 1, 128 ) );
@@ -159,7 +159,6 @@ end
 
 
 
-print( "____" );
 print( "Reading rare mob data:" );
 
 -- Query to filter all rare/rare elite tamable mobs
@@ -167,12 +166,6 @@ local Query = ( "http://www.wowhead.com/?npcs&filter=cl=4:2;fa=%s" ):format( tab
 local ListViewPattern = [[<script type="text/javascript">//<!%[CDATA%[
 new Listview%((%b{})%);
 //%]%]></script>]]
-
-local function ReplaceSingleQuotes ( Escapes )
-	if ( #Escapes % 2 == 0 ) then -- Even number; not escaped.
-		return Escapes..[["]];
-	end
-end
 
 local Text, Status = http.request( Query );
 if ( not Text ) then
@@ -188,11 +181,7 @@ else
 	if ( not Text ) then
 		print( "  - Could not find rare mob data!" );
 	else
-		Text = Text:gsub( ",+([%]}])", "%1" ); -- Extra commas aren't allowed
-		Text = Text:gsub( "([%[{]),+", "%1" );
-		Text = Text:gsub( "([{,])%s*(%w+)%s*:%s*", [[%1"%2":]] ); -- Key identifiers must be wrapped in quotes!
-		Text = Text:gsub( "(\\*)'", ReplaceSingleQuotes );
-		local Success, ListData = pcall( Json.Decode, Text );
+		local Success, ListData = pcall( json.decode, Text );
 
 		if ( not Success ) then
 			print( "  - Couldn't parse rare mob data:", ListData:sub( 1, 128 ) );
