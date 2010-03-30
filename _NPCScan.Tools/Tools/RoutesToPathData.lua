@@ -31,6 +31,10 @@ counter-clockwise) or overlaps itself.
 ]]
 
 
+package.cpath = [[.\Libs\?.dll;]]..package.cpath;
+package.path = [[.\Libs\?.lua;]]..package.path;
+require( "bit" );
+require( "DbcCSV" );
 
 
 local AccountName = assert( assert( io.open( "Account.dat" ) ):read(), "Account.dat must have account name on first line." ):match( "^[^/]+" );
@@ -40,8 +44,9 @@ local RoutesDataFilename = [[../../../../WTF/Account/]]..AccountName..[[/SavedVa
 local OutputFilename = [[../../_NPCScan.Overlay/_NPCScan.Overlay.PathData.lua]];
 
 
+
+
 -- Create lookups for map filenames to IDs, and IDs to localized names
-require( "DbcCSV" );
 local WorldMapAreas = DbcCSV.Parse( [[DBFilesClient/WorldMapArea.dbc.csv]], 1,
 	"ID", nil, "AreaTableID", "Filename" );
 local AreaTable = DbcCSV.Parse( [[DBFilesClient/AreaTable.dbc.csv]], 1,
@@ -53,45 +58,6 @@ for ID, WorldMapArea in pairs( WorldMapAreas ) do
 	if ( WorldMapArea.AreaTableID ~= 0 ) then -- Not a continent
 		MapIDs[ WorldMapArea.Filename ] = ID;
 		MapNames[ ID ] = AreaTable[ WorldMapArea.AreaTableID ].Localization;
-	end
-end
-
-
-require( "bit" );
-
-
-
-
-local EscapeString;
-do
-	local EscapeSequences = {
-		--[ "\a" ] = "\\a"; -- Bell
-		--[ "\b" ] = "\\b"; -- Backspace
-		--[ "\t" ] = "\\t"; -- Horizontal tab
-		[ "\n" ] = "\\n"; -- Newline
-		--[ "\v" ] = "\\v"; -- Vertical tab
-		--[ "\f" ] = "\\f"; -- Form feed
-		[ "\r" ] = "\\r"; -- Carriage return
-		[ "\\" ] = "\\\\"; -- Backslash
-		[ "\"" ] = "\\\""; -- Quotation mark
-	};
-	--[[ Add all non-printed characters to replacement table
-	for Index = 0, 31 do
-		local Character = string.char( Index );
-		if ( not EscapeSequences[ Character ] ) then
-			EscapeSequences[ Character ] = ( "\\%03d" ):format( Index );
-		end
-	end
-	for Index = 127, 255 do
-		local Character = string.char( Index );
-		if ( not EscapeSequences[ Character ] ) then
-			EscapeSequences[ Character ] = ( "\\%03d" ):format( Index );
-		end
-	end]]
-
-	function EscapeString ( Input )
-		--return ( Input:gsub( "[%z\1-\31\"\\\127-\255]", EscapeSequences ) );
-		return ( Input:gsub( "[\r\n\"\\]", EscapeSequences ) );
 	end
 end
 
@@ -250,7 +216,7 @@ for _, MapFilename in ipairs( MapFilenames ) do
 			if ( Name ) then
 				Outfile:write( ( "\t\t-- %s\n" ):format( Name ) );
 			end
-			Outfile:write( ( "\t\t[ %d ] = \"%s\";\n" ):format( ID, EscapeString( PolyData ) ) );
+			Outfile:write( ( "\t\t[ %d ] = %q;\n" ):format( ID, PolyData ) );
 		end
 		Outfile:write( "\t};\n" );
 	end

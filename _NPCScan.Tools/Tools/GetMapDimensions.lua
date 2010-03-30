@@ -21,9 +21,15 @@ Note: Multi-level maps such as Dalaran are unsupported.
 ]]
 
 
+package.cpath = [[.\Libs\?.dll;]]..package.cpath;
+package.path = [[.\Libs\?.lua;]]..package.path;
+require( "DbcCSV" );
 
 
 local InputFilename = [[../../_NPCScan.Overlay/_NPCScan.Overlay.PathData.lua]];
+
+
+
 
 -- Read the pathdata with binary option enabled, otherwise it won't read it all
 local InputFile = assert( io.open( InputFilename, "rb" ) );
@@ -38,9 +44,8 @@ local MapIDs = assert( _NPCScan.Overlay.PathData, "PathData missing from _NPCSca
 
 
 -- Create lookup tables from DBC CSV files
-require( "DbcCSV" );
 local Maps = DbcCSV.Parse( [[DBFilesClient/Map.dbc.csv]], 1,
-	"ID", nil, nil, nil, "Name" );
+	"ID", nil, nil, nil, nil, "Name" );
 local WorldMapContinents = DbcCSV.Parse( [[DBFilesClient/WorldMapContinent.dbc.csv]], 2, -- Index by MapID
 	"ID", "MapID" );
 local WorldMapAreas = DbcCSV.Parse( [[DBFilesClient/WorldMapArea.dbc.csv]], 1,
