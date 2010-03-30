@@ -41,6 +41,20 @@ local OutputFilename = [[../_NPCScan.Tools.ModelData.lua]];
 
 
 
+local function assertf ( Success, Format, ... ) -- Doesn't allocate error messages until needed
+	if ( Success ) then
+		return Success;
+	end
+	local Args = { ... }; -- Convert all to strings
+	for Index = 1, select( "#", ... ) do
+		Args[ Index ] = tostring( Args[ Index ] );
+	end
+	error( Format:format( unpack( Args, 1, select( "#", ... ) ) ) );
+end
+
+
+
+
 print( "Parsing game data..." ); -- This takes a while
 local Achievements = DbcCSV.Parse( [[DBFilesClient/Achievement.dbc.csv]], 1,
 	"ID", nil, nil, nil, "Name", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
@@ -109,33 +123,22 @@ end
 print( "Reading NPC model IDs:" );
 local NpcModelPaths = {};
 for NpcID, Name in pairs( NpcIDs ) do
-	print( "+ ID "..NpcID..":", Name );
-	local Text, Status = http.request( [[http://www.wowhead.com/?npc=]]..NpcID );
-	if ( not Text ) then
-		print( "  - Request failed:", Status );
-	elseif ( math.floor( Status / 100 ) ~= 2 ) then
-		print( "  - Invalid status code:", Status );
-	else
+	local Success, ErrorMessage = pcall( function ()
+		print( "+ ID "..NpcID..":", Name );
+		local Text, Status = http.request( [[http://www.wowhead.com/?npc=]]..NpcID );
+		assertf( Text and math.floor( Status / 100 ) == 2, "Request failed: Status code %d.", Status );
+
 		if ( Status ~= 200 ) then
 			print( "  + Status code "..Status..":", #Text.." bytes." );
 		end
 
-		Text = Text:match( [[onclick="this%.blur%(%); ModelViewer%.show%((.-)%)">]] );
-		if ( not Text ) then
-			print( "  - Could not find model data!" );
-		else
-			local Success, Data = pcall( json.decode, Text );
-			if ( not Success ) then
-				print( "  - Couldn't parse model data:", Data:sub( 1, 128 ) );
-			else
-				local DisplayInfo = CreatureDisplayInfo[ Data.displayId ];
-				if ( not DisplayInfo ) then
-					print( "  - Invalid displayID "..tostring( Data.displayId ) );
-				else
-					NpcModelPaths[ NpcID ] = CreatureModelData[ DisplayInfo.ModelDataID ].Path;
-				end
-			end
-		end
+		Text = assert( Text:match( [[onclick="this%.blur%(%); ModelViewer%.show%((.-)%)">]] ), "Could not find model data!" );
+		local DisplayID = json.decode( Text ).displayId;
+		local DisplayInfo = assertf( CreatureDisplayInfo[ DisplayID ], "Invalid displayID %s.", DisplayID );
+		NpcModelPaths[ NpcID ] = CreatureModelData[ DisplayInfo.ModelDataID ].Path;
+	end );
+	if ( not Success ) then
+		print( "  - "..ErrorMessage );
 	end
 end
 

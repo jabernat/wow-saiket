@@ -43,6 +43,20 @@ local OutputFilename = [[../_NPCScan.Tools.LocationData.lua]];
 
 
 
+local function assertf ( Success, Format, ... ) -- Doesn't allocate error messages until needed
+	if ( Success ) then
+		return Success;
+	end
+	local Args = { ... }; -- Convert all to strings
+	for Index = 1, select( "#", ... ) do
+		Args[ Index ] = tostring( Args[ Index ] );
+	end
+	error( Format:format( unpack( Args, 1, select( "#", ... ) ) ) );
+end
+
+
+
+
 local Achievements = DbcCSV.Parse( [[DBFilesClient/Achievement.dbc.csv]], 1,
 	"ID", nil, nil, nil, "Name", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
 	nil --[[Description]], nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
@@ -118,8 +132,8 @@ do
 		-- Validate map data and choose the primary zone
 		local PrimaryCount, PrimaryMap = 0;
 		for _, MapData in ipairs( NpcData ) do
-			assert( MapData.mapType == "npc", "Invalid mapType "..MapData.mapType.."." );
-			assert( tonumber( MapData.locationID ), "Invalid AreaTableID "..tostring( MapData.locationID ).."." );
+			assertf( MapData.mapType == "npc", "Invalid mapType %s.", MapData.mapType );
+			assertf( tonumber( MapData.locationID ), "Invalid AreaTableID %s.", MapData.locationID );
 
 			local CountTotal = 0;
 			for _, Coord in ipairs( MapData.coords ) do
@@ -137,7 +151,7 @@ do
 		end
 
 		assert( PrimaryMap, "No points found for NPC." );
-		return assert( MapIDs[ tonumber( PrimaryMap.locationID ) ], "Unrecognized AreaTableID "..PrimaryMap.locationID.."." ),
+		return assertf( MapIDs[ tonumber( PrimaryMap.locationID ) ], "Unrecognized AreaTableID %s.", PrimaryMap.locationID ),
 			PrimaryMap.coords, PrimaryCount;
 	end
 
@@ -161,35 +175,20 @@ end
 print( "Reading NPC data:" );
 local NpcData, NpcMapIDs = {}, {};
 for NpcID, Name in pairs( NpcIDs ) do
-	print( "+ ID "..NpcID..":", Name );
-	local Text, Status = http.request( [[http://www.wowdb.com/npc.aspx?id=]]..NpcID );
-	if ( not Text ) then
-		print( "  - Request failed:", Status );
-	elseif ( math.floor( Status / 100 ) ~= 2 ) then
-		print( "  - Invalid status code:", Status );
-	else
+	local Success, ErrorMessage = pcall( function ()
+		print( "+ ID "..NpcID..":", Name );
+		local Text, Status = http.request( [[http://www.wowdb.com/npc.aspx?id=]]..NpcID );
+		assertf( Text and math.floor( Status / 100 ) == 2, "Request failed: Status code %d.", Status );
+
 		if ( Status ~= 200 ) then
 			print( "  + Status code "..Status..":", #Text.." bytes." );
 		end
 
-		Text = Text:match( [[<script>addMapLocations%((.-)%)</script>]] );
-		if ( not Text ) then
-			print( "  - Could not find map location data!" );
-		else
-			local Success, Data = pcall( json.decode, Text );
-
-			if ( not Success ) then
-				print( "  - Couldn't parse map data:", Data:sub( 1, 128 ) );
-			else
-				local Success, MapID, Message = pcall( EncodeNpcData, Data );
-				if ( not Success ) then
-					print( "  - "..MapID );
-				else
-					NpcMapIDs[ NpcID ] = MapID;
-					NpcData[ NpcID ] = Message;
-				end
-			end
-		end
+		Text = assertf( Text:match( [[<script>addMapLocations%((.-)%)</script>]] ), "Could not find map location data!" );
+		NpcMapIDs[ NpcID ], NpcData[ NpcID ] = EncodeNpcData( json.decode( Text ) );
+	end );
+	if ( not Success ) then
+		print( "  - "..ErrorMessage );
 	end
 end
 

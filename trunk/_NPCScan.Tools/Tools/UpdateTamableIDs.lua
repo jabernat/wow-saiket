@@ -32,6 +32,20 @@ local OutputFilename = [[../../_NPCScan/_NPCScan.TamableIDs.lua]];
 
 
 
+local function assertf ( Success, Format, ... ) -- Doesn't allocate error messages until needed
+	if ( Success ) then
+		return Success;
+	end
+	local Args = { ... }; -- Convert all to strings
+	for Index = 1, select( "#", ... ) do
+		Args[ Index ] = tostring( Args[ Index ] );
+	end
+	error( Format:format( unpack( Args, 1, select( "#", ... ) ) ) );
+end
+
+
+
+
 -- Create a list of all tamable creature types for the WowHead query
 local CreatureFamilies = DbcCSV.Parse( [[DBFilesClient/CreatureFamily.dbc.csv]], 1,
 	"ID", nil, nil, nil, nil, nil, nil, nil, "PetTalentType" );
@@ -67,8 +81,8 @@ do
 		-- Validate map data and choose the primary zone
 		local PrimaryCount, PrimaryMap = 0;
 		for _, MapData in ipairs( Data ) do
-			assert( MapData.mapType == "npc", "Invalid mapType "..tostring( MapData.mapType ).."." );
-			local AreaTableID = assert( tonumber( MapData.locationID ), "Invalid AreaTableID "..tostring( MapData.locationID ).."." );
+			assertf( MapData.mapType == "npc", "Invalid mapType %s.", MapData.mapType );
+			local AreaTableID = assertf( tonumber( MapData.locationID ), "Invalid AreaTableID %s.", MapData.locationID );
 
 			local CountTotal = 0;
 			for _, Coord in ipairs( MapData.coords ) do
@@ -90,39 +104,20 @@ do
 	end
 	function GetNpcMap ( NpcID )
 		local Text, Status = http.request( [[http://www.wowdb.com/npc.aspx?id=]]..NpcID );
-		if ( not Text ) then
-			print( "    - Request failed:", Status );
-		elseif ( math.floor( Status / 100 ) ~= 2 ) then
-			print( "    - Invalid status code:", Status );
-		else
-			if ( Status ~= 200 ) then
-				print( "    + Status code "..Status..":", #Text.." bytes." );
-			end
+		assertf( Text and math.floor( Status / 100 ) == 2, "Request failed: Status code %d.", Status );
 
-			Text = Text:match( [[<script>addMapLocations%((.*)%)</script>]] );
-			if ( not Text ) then
-				print( "    - Could not find map location data!" );
-			else
-				local Success, Data = pcall( json.decode, Text );
-
-				if ( not Success ) then
-					print( "    - Couldn't parse map data:", Data:sub( 1, 128 ) );
-				else
-					local Success, MapID = pcall( SelectPrimaryMap, Data );
-					if ( not Success ) then
-						print( "    - "..MapID );
-					else
-						return MapID;
-					end
-				end
-			end
+		if ( Status ~= 200 ) then
+			print( "    + Status code "..Status..":", #Text.." bytes." );
 		end
+
+		Text = assert( Text:match( [[<script>addMapLocations%((.*)%)</script>]] ), "Could not find map location data!" );
+		return SelectPrimaryMap( json.decode( Text ) );
 	end
 end
 
 
 local function HandleRare ( NpcData ) -- Parses WowHead's rare data
-	local ID = assert( tonumber( NpcData.id ), "Invalid Npc ID "..tostring( NpcData.id ).."." );
+	local ID = assertf( tonumber( NpcData.id ), "Invalid Npc ID %s.", NpcData.id );
 	local Name = assert( NpcData.name, "Missing Npc name." );
 	print( ( "  + [npc:%d] %s" ):format( ID, Name ) );
 
@@ -132,18 +127,22 @@ local function HandleRare ( NpcData ) -- Parses WowHead's rare data
 		MapID = RareMapOverrides[ ID ];
 	else
 		local LocationTable = assert( NpcData.location, "Missing location table." );
-		assert( type( LocationTable ) == "table" and #LocationTable > 0, "Invalid location table." );
+		assertf( type( LocationTable ) == "table" and #LocationTable > 0, "Invalid location table." );
 
 		if ( #LocationTable == 1 ) then
-			local AreaTableID = LocationTable[ 1 ];
-			MapID = MapIDs[ AreaTableID ] or true;
+			MapID = MapIDs[ LocationTable[ 1 ] ] or true;
 		else -- Check WoWDB for the most frequent zone
 			print( "    - Multiple possible zones: Checking with WoWDB..." );
-			MapID = GetNpcMap( ID );
-			if ( not MapID ) then -- WoWDB had no data
+			local Success, NpcMap = pcall( GetNpcMap, ID );
+			if ( not Success ) then
+				print( "    - "..NpcMap );
+				NpcMap = nil;
+			end
+			if ( NpcMap ) then
+				MapID = NpcMap;
+			else -- WoWDB didn't work or had no data
 				print( "    - No results; Falling back on WowHead data." );
-				local AreaTableID = LocationTable[ 1 ];
-				MapID = MapIDs[ AreaTableID ] or true;
+				MapID = MapIDs[ LocationTable[ 1 ] ] or true;
 			end
 		end
 	end
@@ -168,65 +167,52 @@ new Listview%((%b{})%);
 //%]%]></script>]]
 
 local Text, Status = http.request( Query );
-if ( not Text ) then
-	print( "  - Request failed:", Status );
-elseif ( math.floor( Status / 100 ) ~= 2 ) then
-	print( "  - Invalid status code:", Status );
-else
-	if ( Status ~= 200 ) then
-		print( "  + Status code "..Status..":", #Text.." bytes." );
-	end
+assertf( Text and math.floor( Status / 100 ) == 2, "Request failed: Status code %d.", Status );
 
-	Text = Text:match( ListViewPattern );
-	if ( not Text ) then
-		print( "  - Could not find rare mob data!" );
+if ( Status ~= 200 ) then
+	print( "  + Status code "..Status..":", #Text.." bytes." );
+end
+
+Text = assert( Text:match( ListViewPattern ), "Could not find rare mob data!" );
+local ListData = json.decode( Text );
+assertf( ListData.id == "npcs", "Invalid id %s.", ListData.id );
+
+local RaresList = {};
+for _, NpcData in ipairs( ListData.data ) do
+	local Success, Rare = pcall( HandleRare, NpcData );
+	if ( not Success ) then
+		print( "    - "..Rare );
 	else
-		local Success, ListData = pcall( json.decode, Text );
+		RaresList[ #RaresList + 1 ] = Rare;
+	end
+end
 
-		if ( not Success ) then
-			print( "  - Couldn't parse rare mob data:", ListData:sub( 1, 128 ) );
+-- Sort by npc name
+table.sort( RaresList, function ( Rare1, Rare2 )
+	return Rare1.Name < Rare2.Name;
+end );
+
+
+-- Write table
+local Outfile = assert( io.open( OutputFilename, "w+" ) );
+
+Outfile:write( "-- AUTOMATICALLY GENERATED BY <_NPCScan.Tools/Tools/UpdateTamableIDs.lua>!\n" );
+Outfile:write( "_NPCScan.TamableIDs = {\n" );
+
+for _, Rare in ipairs( RaresList ) do
+	if ( Rare.MapID == true ) then
+		Outfile:write( ( "\t[ %d ] = true; -- \"%s\"\n" ):format( Rare.ID, Rare.Name ) );
+	else
+		local MapName = MapNames[ Rare.MapID ];
+		if ( not MapName ) then -- Probably overridden to a continent map
+			Outfile:write( ( "\t[ %d ] = %d; -- \"%s\"\n" ):format( Rare.ID, Rare.MapID, Rare.Name ) );
 		else
-			assert( ListData.id == "npcs", "Invalid id "..tostring( ListData.id ).."." );
-
-			local RaresList = {};
-			for _, NpcData in ipairs( ListData.data ) do
-				local Success, Rare = pcall( HandleRare, NpcData );
-				if ( not Success ) then
-					print( "    - "..Rare );
-				else
-					RaresList[ #RaresList + 1 ] = Rare;
-				end
-			end
-
-			-- Sort by npc name
-			table.sort( RaresList, function ( Rare1, Rare2 )
-				return Rare1.Name < Rare2.Name;
-			end );
-
-
-			-- Write table
-			local Outfile = assert( io.open( OutputFilename, "w+" ) );
-
-			Outfile:write( "-- AUTOMATICALLY GENERATED BY <_NPCScan.Tools/Tools/UpdateTamableIDs.lua>!\n" );
-			Outfile:write( "_NPCScan.TamableIDs = {\n" );
-
-			for _, Rare in ipairs( RaresList ) do
-				if ( Rare.MapID == true ) then
-					Outfile:write( ( "\t[ %d ] = true; -- \"%s\"\n" ):format( Rare.ID, Rare.Name ) );
-				else
-					local MapName = MapNames[ Rare.MapID ];
-					if ( not MapName ) then -- Probably overridden to a continent map
-						Outfile:write( ( "\t[ %d ] = %d; -- \"%s\"\n" ):format( Rare.ID, Rare.MapID, Rare.Name ) );
-					else
-						Outfile:write( ( "\t[ %d ] = %d; -- \"%s\" from %s\n" ):format( Rare.ID, Rare.MapID, Rare.Name, MapName ) );
-					end
-				end
-			end
-
-			Outfile:write( "};\n" );
-
-			Outfile:flush();
-			Outfile:close();
+			Outfile:write( ( "\t[ %d ] = %d; -- \"%s\" from %s\n" ):format( Rare.ID, Rare.MapID, Rare.Name, MapName ) );
 		end
 	end
 end
+
+Outfile:write( "};\n" );
+
+Outfile:flush();
+Outfile:close();
