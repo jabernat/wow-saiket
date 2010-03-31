@@ -12,6 +12,7 @@ do
 		CONFIG_MAPID = "MapID";
 		CONFIG_ID = "ID";
 		CONFIG_NAME = "Name";
+		CONFIG_MODEL = "Model File Path";
 
 		OVERLAY_TITLE = select( 2, GetAddOnInfo( "_NPCScan.Tools" ) );
 	}, getmetatable( _NPCScanLocalization ) );

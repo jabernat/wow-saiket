@@ -35,19 +35,15 @@ do
 		return Row, ...;
 	end
 
-	local AddRowBackup;
-	function me:TableAddRow ( ... )
-		return AddHooks( AddRowBackup( self, ... ) );
+	local CreateRowBackup;
+	function me:TableCreateRow ( ... )
+		return AddHooks( CreateRowBackup( self, ... ) );
 	end
 --[[****************************************************************************
   * Function: _NPCScan.Tools.Config:OnShow                                     *
   ****************************************************************************]]
 	local function OnSelect ( self, ID )
 		Tools.Overlay.Select( ID );
-	end
-	local ZoneTable = {};
-	local function SortFunc ( NpcID1, NpcID2 )
-		return ZoneTable[ NpcID1 ] < ZoneTable[ NpcID2 ];
 	end
 	local OverlayNPCs = _NPCScanOverlayLocalization.NPCS;
 	function me:OnShow ()
@@ -58,9 +54,11 @@ do
 		me.Table:SetAllPoints();
 		me.Table.OnSelect = OnSelect;
 
-		me.Table:SetHeader( L.CONFIG_MAPID, L.CONFIG_ID, L.CONFIG_NAME );
-		AddRowBackup = me.Table.AddRow;
-		me.Table.AddRow = me.TableAddRow;
+		me.Table:SetHeader( L.CONFIG_MAPID, L.CONFIG_ID, L.CONFIG_NAME, L.CONFIG_MODEL );
+		me.Table:SetSortHandlers( true, true, true, false );
+		me.Table:SetSortColumn( 1 ); -- Default to MapID
+		CreateRowBackup = me.Table.CreateRow;
+		me.Table.CreateRow = me.TableCreateRow;
 
 		-- Cache custom mob names
 		local NPCNames = {};
@@ -70,16 +68,11 @@ do
 		local AchievementNPCNames = Overlay.WorldMap.AchievementNPCNames;
 
 		for NpcID, MapID in pairs( Tools.LocationData.NpcMapIDs ) do
-			ZoneTable[ NpcID ] = Overlay.GetZoneName( MapID ) or MapID;
-		end
-		local Order = {};
-		for NpcID in pairs( ZoneTable ) do
-			Order[ #Order + 1 ] = NpcID;
-		end
-		sort( Order, SortFunc );
-
-		for _, NpcID in ipairs( Order ) do
-			me.Table:AddRow( NpcID, ZoneTable[ NpcID ], NpcID, AchievementNPCNames[ NpcID ] or OverlayNPCs[ NpcID ] or NPCNames[ NpcID ] or "" );
+			me.Table:AddRow( NpcID,
+				Overlay.GetZoneName( MapID ) or MapID,
+				NpcID,
+				AchievementNPCNames[ NpcID ] or OverlayNPCs[ NpcID ] or NPCNames[ NpcID ] or nil,
+				Tools.ModelData[ NpcID ] or nil );
 		end
 	end
 end
