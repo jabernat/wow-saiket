@@ -180,6 +180,11 @@ do
 		end
 
 		-- Artwork
+		local Arrow = Column:CreateTexture( nil, "OVERLAY" );
+		Column.Arrow = Arrow;
+		Arrow:Hide();
+		Arrow:SetSize( RowHeight * 0.5, RowHeight * 0.8 );
+		Arrow:SetTexture( [[Interface\Buttons\UI-SortArrow]] );
 		local Left = Column:CreateTexture( nil, "BACKGROUND" );
 		Left:SetPoint( "TOPLEFT" );
 		Left:SetPoint( "BOTTOM" );
@@ -272,30 +277,41 @@ end
   * Function: TableObject:SetSortColumn                                        *
   * Description: Selects or clears the column to sort by.                      *
   ****************************************************************************]]
-function TableMethods:SetSortColumn ( SortColumn, Inverted )
+function TableMethods:SetSortColumn ( Column, Inverted )
 	local Header = self.Header;
 
-	if ( tonumber( SortColumn ) ) then
-		SortColumn = Header[ tonumber( SortColumn ) ];
+	if ( tonumber( Column ) ) then
+		Column = Header[ tonumber( Column ) ];
 	end
 
-	if ( Header.SortColumn ~= SortColumn ) then
+	if ( Header.SortColumn ~= Column ) then
 		if ( Header.SortColumn ) then
+			Header.SortColumn.Arrow:Hide();
 			Header.SortColumn:UnlockHighlight();
 		end
-		Header.SortColumn = SortColumn;
-		Header.SortInverted = Inverted or false;
-		if ( SortColumn ) then
-			SortColumn:LockHighlight();
+		Header.SortColumn, Header.SortInverted = Column, Inverted or false;
+		if ( Column ) then
+			Column:LockHighlight();
+			Column.Arrow:Show();
 			self:Sort();
 		end
-	elseif ( SortColumn ) then -- Selected same sort column
+	elseif ( Column ) then -- Selected same sort column
 		if ( Inverted == nil ) then -- Unspecified; Flip inverted status
 			Inverted = not Header.SortInverted;
 		end
 		if ( Header.SortInverted ~= Inverted ) then
 			Header.SortInverted = Inverted;
 			self:Sort();
+		end
+	end
+
+	if ( Column ) then
+		if ( Header.SortInverted ) then
+			Column.Arrow:SetPoint( "LEFT", 0, 2 );
+			Column.Arrow:SetTexCoord( 0.0625, 0.5, 1, 0 );
+		else
+			Column.Arrow:SetPoint( "LEFT", 0, -2 );
+			Column.Arrow:SetTexCoord( 0.0625, 0.5, 0, 1 );
 		end
 	end
 end
