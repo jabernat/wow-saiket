@@ -216,6 +216,8 @@ function TableMethods:SetSortColumn ( Column, Inverted )
 	if ( tonumber( Column ) ) then
 		Column = Header[ tonumber( Column ) ];
 	end
+	assert( Column, "Invalid colum." );
+	assert( Column.Sort, "Column must have a sort handler assigned." );
 
 	if ( Header.SortColumn ~= Column ) then
 		if ( Header.SortColumn ) then
