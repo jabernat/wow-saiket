@@ -11,100 +11,13 @@ if ( not lib ) then
 	return;
 end
 
-lib.RowMeta = { __index = {}; };
+lib.RowMeta = lib.RowMeta or { __index = {}; };
 local RowMethods = lib.RowMeta.__index;
-lib.TableMeta = { __index = {}; };
+lib.TableMeta = lib.TableMeta or { __index = {}; };
 local TableMethods = lib.TableMeta.__index;
 
 local RowHeight = 14;
 local ColumnPadding = 6;
-
-
-
-
---[[****************************************************************************
-  * Function: local RowOnClick                                                 *
-  * Description: Selects a row element when the row is clicked.                *
-  ****************************************************************************]]
-local function RowOnClick ( Row )
-	Row:GetParent().Table:SetSelection( Row );
-end
---[[****************************************************************************
-  * Function: local RowInsert                                                  *
-  * Description: Creates a new row button for the table.                       *
-  ****************************************************************************]]
-local function RowInsert ( Table, Index )
-	local Rows = Table.Rows;
-	Index = Index or #Rows + 1;
-
-	local Row = next( Table.UnusedRows );
-	if ( Row ) then
-		Table.UnusedRows[ Row ] = nil;
-		Row:Show();
-	else
-		Row = CreateFrame( "Button", nil, Rows );
-		Row:SetScript( "OnClick", RowOnClick );
-		Row:RegisterForClicks( "AnyUp" );
-		Row:SetHeight( RowHeight );
-		Row:SetPoint( "LEFT" );
-		Row:SetPoint( "RIGHT", Table.Body ); -- Expand to right side of view
-		Row:SetHighlightTexture( [[Interface\FriendsFrame\UI-FriendsFrame-HighlightBar]], "ADD" );
-		-- Apply row methods
-		if ( not getmetatable( RowMethods ) ) then
-			setmetatable( RowMethods, getmetatable( Row ) );
-		end
-		setmetatable( Row, lib.RowMeta );
-	end
-
-	if ( Rows[ Index ] ) then -- Move old row below new one
-		Rows[ Index ]:SetPoint( "TOP", Row, "BOTTOM" );
-	end
-	if ( Index == 1 ) then
-		Row:SetPoint( "TOP" );
-	else
-		Row:SetPoint( "TOP", Rows[ Index - 1 ], "BOTTOM" );
-	end
-
-	Row:SetID( Index );
-	tinsert( Rows, Index, Row );
-	return Row;
-end
---[[****************************************************************************
-  * Function: local RowRemove                                                  *
-  * Description: Hides a row button and allows it to be recycled.              *
-  ****************************************************************************]]
-local RowRemove;
-do
-	local function ClearElements ( Count, ... )
-		for Index = 1, Count do
-			local Element = select( Index, ... );
-			Element:Hide();
-			Element:SetText();
-		end
-	end
-	function RowRemove ( Table, Index )
-		local Rows = Table.Rows;
-		local Row = Rows[ Index ];
-
-		tremove( Rows, Index );
-		Table.UnusedRows[ Row ] = true;
-		Row:Hide();
-		Row.Key = nil;
-		ClearElements( Table.NumColumns, Row:GetRegions() );
-		for Column = 1, Table.NumColumns do -- Remove values
-			Row[ Column ] = nil;
-		end
-		-- Reanchor next row
-		local NextRow = Rows[ Index ];
-		if ( NextRow ) then
-			if ( Index == 1 ) then
-				NextRow:SetPoint( "TOP" );
-			else
-				NextRow:SetPoint( "TOP", Rows[ Index - 1 ], "BOTTOM" );
-			end
-		end
-	end
-end
 
 
 
@@ -139,19 +52,37 @@ end
   * Function: TableObject:Clear                                                *
   * Description: Empties the table of all rows.                                *
   ****************************************************************************]]
-function TableMethods:Clear ()
-	local Rows = self.Rows;
-	if ( #Rows > 0 ) then
-		if ( self.View.YScroll ) then -- Force correct view resize
-			self.View.YScroll:SetValue( 0 );
+do
+	local function ClearElements ( Count, ... )
+		for Index = 1, Count do
+			local Element = select( Index, ... );
+			Element:Hide();
+			Element:SetText();
 		end
-		self:SetSelection();
-		wipe( self.Keys );
-		for Index = #Rows, 1, -1 do -- Remove in reverse so rows don't move mid-loop
-			RowRemove( self, Index );
+	end
+	function TableMethods:Clear ()
+		local Rows = self.Rows;
+		if ( #Rows > 0 ) then
+			if ( self.View.YScroll ) then -- Force correct view resize
+				self.View.YScroll:SetValue( 0 );
+			end
+			self:SetSelection();
+			wipe( self.Keys );
+			for Index = #Rows, 1, -1 do -- Remove in reverse so rows don't move mid-loop
+				local Row = Rows[ Index ];
+
+				Rows[ Index ] = nil;
+				self.UnusedRows[ Row ] = true;
+				Row:Hide();
+				Row.Key = nil;
+				ClearElements( self.NumColumns, Row:GetRegions() );
+				for Column = 1, self.NumColumns do -- Remove values
+					Row[ Column ] = nil;
+				end
+			end
+			self:Resize();
+			return true;
 		end
-		self:Resize();
-		return true;
 	end
 end
 --[[****************************************************************************
@@ -275,7 +206,9 @@ function TableMethods:SetSortHandlers ( ... )
 end
 --[[****************************************************************************
   * Function: TableObject:SetSortColumn                                        *
-  * Description: Selects or clears the column to sort by.                      *
+  * Description: Selects or clears the column to sort by.  The Inverted option *
+  *   flips the sort order.  If it's not set and the column is already sorted, *
+  *   the sort order flips automatically.                                      *
   ****************************************************************************]]
 function TableMethods:SetSortColumn ( Column, Inverted )
 	local Header = self.Header;
@@ -343,7 +276,6 @@ do
 		Header:SetScript( "OnUpdate", nil );
 		local Rows = Header.Table.Rows;
 		if ( Header.SortColumn and #Rows > 0 ) then
-
 			Column = Header.SortColumn:GetID();
 			Handler, Inverted = Header.SortColumn.Sort, Header.SortInverted;
 			if ( Handler == true ) then
@@ -351,13 +283,9 @@ do
 			end
 			sort( Rows, Compare );
 
-			-- Clear all old anchors first
 			for Index, Row in ipairs( Rows ) do
 				Row:SetID( Index );
-				Row:SetPoint( "TOP" );
-			end
-			for Index = 2, #Rows do -- First row already anchored at top
-				Rows[ Index ]:SetPoint( "TOP", Rows[ Index - 1 ], "BOTTOM" );
+				Row:SetPoint( "TOPLEFT", 0, ( 1 - Index ) * RowHeight );
 			end
 		end
 	end
@@ -366,10 +294,34 @@ do
 	end
 end
 --[[****************************************************************************
+  * Function: TableObject:CreateRow                                            *
+  * Description: Creates a new row when none is available in the row pool.     *
+  ****************************************************************************]]
+do
+	local function RowOnClick ( Row ) -- Selects a row element when the row is clicked.
+		Row:GetParent().Table:SetSelection( Row );
+	end
+	function TableMethods:CreateRow ()
+		local Row = CreateFrame( "Button", nil, self.Rows );
+		Row:SetScript( "OnClick", RowOnClick );
+		Row:RegisterForClicks( "AnyUp" );
+		Row:SetHeight( RowHeight );
+		Row:SetPoint( "RIGHT", self.Body ); -- Expand to right side of view
+		Row:SetHighlightTexture( [[Interface\FriendsFrame\UI-FriendsFrame-HighlightBar]], "ADD" );
+		-- Apply row methods
+		if ( not getmetatable( RowMethods ) ) then
+			setmetatable( RowMethods, getmetatable( Row ) );
+		end
+		setmetatable( Row, lib.RowMeta );
+		return Row;
+	end
+end
+--[[****************************************************************************
   * Function: TableObject:AddRow                                               *
   * Description: Adds a row of strings to the table with the current header.   *
   ****************************************************************************]]
 do
+	local select = select;
 	local function RowAddElements ( Table, Row ) -- Adds and anchors missing element strings
 		local Columns = Table.Header;
 		for Index = Row:GetNumRegions() + 1, Table.NumColumns do
@@ -394,7 +346,19 @@ do
 	end
 	function TableMethods:AddRow ( Key, ... )
 		assert( Key == nil or self.Keys[ Key ] == nil, "Index key must be unique." );
-		local Row = RowInsert( self ); -- Appended
+
+		local Rows = self.Rows;
+		local Index = #Rows + 1;
+
+		local Row = next( self.UnusedRows );
+		if ( Row ) then
+			self.UnusedRows[ Row ] = nil;
+			Row:Show();
+		else
+			Row = self:CreateRow();
+		end
+		Rows[ Index ] = Row;
+
 		if ( Key ~= nil ) then
 			self.Keys[ Key ] = Row;
 			Row.Key = Key;
@@ -403,6 +367,8 @@ do
 			Row[ Index ] = select( Index, ... );
 		end
 
+		Row:SetID( Index );
+		Row:SetPoint( "TOPLEFT", 0, ( 1 - Index ) * RowHeight );
 		RowAddElements( self, Row );
 		UpdateElements( self, Row, Row:GetRegions() );
 
@@ -416,25 +382,36 @@ end
   * Description: Requests that the table be resized on the next update.        *
   ****************************************************************************]]
 do
+	local ColumnWidths = {};
+	local select = select;
+	local function GetElementWidths ( NumColumns, ... )
+		for Index = 1, NumColumns do
+			local Width = select( Index, ... ):GetStringWidth();
+			if ( Width > ColumnWidths[ Index ] ) then
+				ColumnWidths[ Index ] = Width;
+			end
+		end
+	end
 	local function Resize ( Rows ) -- Resizes all table headers and elements
 		local Table = Rows.Table;
 		local Header = Table.Header;
-		local TotalWidth = 0;
-		for Index = 1, Table.NumColumns do
-			local Column = Header[ Index ];
-			-- Get widest column element
-			local ColumnWidth = Column:GetTextWidth();
-			for _, Row in ipairs( Rows ) do
-				local ElementWidth = select( Index, Row:GetRegions() ):GetStringWidth();
-				if ( ElementWidth > ColumnWidth ) then
-					ColumnWidth = ElementWidth;
-				end
-			end
-			ColumnWidth = ColumnWidth + ColumnPadding * 2;
-			Column:SetWidth( ColumnWidth );
-			TotalWidth = TotalWidth + ColumnWidth;
+		local NumColumns = Table.NumColumns;
+
+		for Index = 1, NumColumns do
+			ColumnWidths[ Index ] = Header[ Index ]:GetTextWidth();
 		end
-		Rows:SetSize( TotalWidth > 1e-3 and TotalWidth or 1e-3, #Rows * RowHeight );
+		for _, Row in ipairs( Rows ) do
+			GetElementWidths( NumColumns, Row:GetRegions() );
+		end
+
+		local TotalWidth = 0;
+		for Index = 1, NumColumns do
+			local Width = ColumnWidths[ Index ] + ColumnPadding * 2;
+			Header[ Index ]:SetWidth( Width );
+			TotalWidth = TotalWidth + Width;
+		end
+		local Height = #Rows * RowHeight;
+		Rows:SetSize( TotalWidth > 1e-3 and TotalWidth or 1e-3, Height > 1e-3 and Height or 1e-3 );
 	end
 	local function OnUpdate ( Rows ) -- Handler for tables that limits resizes to once per frame
 		Rows:SetScript( "OnUpdate", nil );
