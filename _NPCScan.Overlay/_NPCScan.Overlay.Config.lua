@@ -131,20 +131,30 @@ if ( IsChildAddOn ) then
 --[[****************************************************************************
   * Function: _NPCScan.Overlay.Config:TableSetHeader                           *
   ****************************************************************************]]
-	local function Recurse ( NewValue, Count, CurrentValue, ... )
-		if ( Count == 0 ) then
-			return NewValue;
-		else
-			return CurrentValue, Recurse( NewValue, Count - 1, ... );
-		end
-	end
+	local Args = {};
+	local select = select;
 	local function Append ( NewValue, ... ) -- Appends a value to a vararg list
-		return Recurse( NewValue, select( "#", ... ), ... );
+		local Count = select( "#", ... );
+		for Index = 1, Count do
+			Args[ Index ] = select( Index, ... );
+		end
+		for Index = Count + 1, #Args do
+			Args[ Index ] = nil;
+		end
+		Args[ Count + 1 ] = NewValue;
+		return unpack( Args, 1, Count + 1 );
 	end
 
 	local SetHeaderBackup;
 	function me:TableSetHeader ( ... )
 		return SetHeaderBackup( self, Append( L.CONFIG_ZONE, ... ) );
+	end
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.Config:TableSetSortHandlers                     *
+  ****************************************************************************]]
+	local SetSortHandlersBackup;
+	function me:TableSetSortHandlers ( ... )
+		return SetSortHandlersBackup( self, Append( true, ... ) ); -- Make map row sortable
 	end
 --[[****************************************************************************
   * Function: _NPCScan.Overlay.Config:TableAddRow                              *
@@ -165,8 +175,10 @@ if ( IsChildAddOn ) then
 	local function HookTable ( Table, ... )
 		if ( Table ) then -- Just created
 			SetHeaderBackup = Table.SetHeader;
+			SetSortHandlersBackup = Table.SetSortHandlers;
 			AddRowBackup = Table.AddRow;
 			Table.SetHeader = me.TableSetHeader;
+			Table.SetSortHandlers = me.TableSetSortHandlers;
 			Table.AddRow = me.TableAddRow;
 		end
 		return Table, ...;
