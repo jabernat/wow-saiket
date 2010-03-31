@@ -65,6 +65,7 @@ local function RowInsert ( Table, Index )
 		Row:SetPoint( "TOP", Rows[ Index - 1 ], "BOTTOM" );
 	end
 
+	Row:SetID( Index );
 	tinsert( Rows, Index, Row );
 	return Row;
 end
@@ -303,20 +304,29 @@ end
   * Description: Schedules rows to be resorted on the next OnUpdate.           *
   ****************************************************************************]]
 do
+	local tostring = tostring;
 	local function SortSimple ( Val1, Val2 )
-		return ( Val1 or "" ) < ( Val2 or "" );
+		Val1, Val2 = Val1 == nil and "" or tostring( Val1 ), Val2 == nil and "" or tostring( Val2 );
+		if ( Val1 ~= Val2 ) then
+			return Val1 < Val2;
+		end
 	end
 	local Handler, Column, Inverted;
 	local function Compare ( Row1, Row2 )
 		if ( Inverted ) then
 			Row1, Row2 = Row2, Row1;
 		end
-		return Handler( Row1[ Column ], Row2[ Column ], Row1, Row2 );
+		local Result = Handler( Row1[ Column ], Row2[ Column ], Row1, Row2 );
+		if ( Result ~= nil ) then -- Not equal
+			return Result;
+		else -- Equal
+			return Row1:GetID() < Row2:GetID(); -- Fall back on previous row order
+		end
 	end
 	local function OnUpdate ( Header )
 		Header:SetScript( "OnUpdate", nil );
-		if ( Header.SortColumn ) then
-			local Rows = Header.Table.Rows;
+		local Rows = Header.Table.Rows;
+		if ( Header.SortColumn and #Rows > 0 ) then
 
 			Column = Header.SortColumn:GetID();
 			Handler, Inverted = Header.SortColumn.Sort, Header.SortInverted;
@@ -327,6 +337,7 @@ do
 
 			-- Clear all old anchors first
 			for Index, Row in ipairs( Rows ) do
+				Row:SetID( Index );
 				Row:SetPoint( "TOP" );
 			end
 			for Index = 2, #Rows do -- First row already anchored at top
