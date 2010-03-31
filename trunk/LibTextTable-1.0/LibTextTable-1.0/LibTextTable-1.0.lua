@@ -418,7 +418,7 @@ do
 			Column:SetWidth( ColumnWidth );
 			TotalWidth = TotalWidth + ColumnWidth;
 		end
-		Rows:SetSize( TotalWidth > 1e-3 and TotalWidth or 1e-3, ( #Rows + 1 ) * RowHeight );
+		Rows:SetSize( TotalWidth > 1e-3 and TotalWidth or 1e-3, #Rows * RowHeight );
 	end
 	local function OnUpdate ( Rows ) -- Handler for tables that limits resizes to once per frame
 		Rows:SetScript( "OnUpdate", nil );
