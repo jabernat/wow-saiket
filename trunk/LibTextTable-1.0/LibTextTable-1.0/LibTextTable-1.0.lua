@@ -266,10 +266,12 @@ do
 	end
 	local Handler, Column, Inverted;
 	local function Compare ( Row1, Row2 )
-		if ( Inverted ) then
-			Row1, Row2 = Row2, Row1;
+		local Result;
+		if ( Inverted ) then -- Flip the handler's args
+			Result = Handler( Row2[ Column ], Row1[ Column ], Row2, Row1 );
+		else
+			Result = Handler( Row1[ Column ], Row2[ Column ], Row1, Row2 );
 		end
-		local Result = Handler( Row1[ Column ], Row2[ Column ], Row1, Row2 );
 		if ( Result ~= nil ) then -- Not equal
 			return Result;
 		else -- Equal
