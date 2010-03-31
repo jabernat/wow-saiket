@@ -216,8 +216,10 @@ function TableMethods:SetSortColumn ( Column, Inverted )
 	if ( tonumber( Column ) ) then
 		Column = Header[ tonumber( Column ) ];
 	end
-	assert( Column, "Invalid colum." );
-	assert( Column.Sort, "Column must have a sort handler assigned." );
+	if ( Column ) then
+		assert( type( Column ) == "table", "Invalid colum." );
+		assert( Column.Sort, "Column must have a sort handler assigned." );
+	end
 
 	if ( Header.SortColumn ~= Column ) then
 		if ( Header.SortColumn ) then
@@ -471,7 +473,7 @@ end
 do
 	local ViewOnSizeChanged, HeaderOnSizeChanged; -- Resizes when viewing area/table data width changes
 	do
-		local Padding = 1 + 1e-3; -- Must be slightly larger than 1, or the Body frame will cause scrolling
+		local Padding = 2; -- Keeps the Body frame from causing scrolling
 		-- Adjusts row widths and table height to fill the scrollframe without changing the scrollable area
 		local function Resize ( Table, RowsX, RowsY, ViewX, ViewY )
 			RowsY = RowsY + RowHeight; -- Allow room for header
