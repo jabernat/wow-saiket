@@ -70,6 +70,9 @@ local function ConvertType ( Value, Type ) -- Cast data types into equivalent Lu
 	end
 end
 function Parse ( Filename, Key, ... )
+	if ( Key ) then
+		Key = assert( tonumber( Key ), "Key must be a column nunber." );
+	end
 	local Data = {};
 
 	for Line in io.lines( Filename ) do
