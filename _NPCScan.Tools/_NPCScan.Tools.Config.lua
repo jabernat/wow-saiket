@@ -12,6 +12,7 @@ Tools.Config = me;
 
 me.Controls = CreateFrame( "Frame", nil, me );
 me.TableContainer = CreateFrame( "Frame", nil, me );
+me.EditBox = CreateFrame( "EditBox", "_NPCScanToolsConfigEditBox", nil, "InputBoxTemplate" );
 
 
 
@@ -20,10 +21,25 @@ me.TableContainer = CreateFrame( "Frame", nil, me );
   * Function: _NPCScan.Tools.Config:TableRowOnClick                            *
   * Description: Clear the selection if it gets clicked again.                 *
   ****************************************************************************]]
-function me:TableRowOnClick ()
-	local Table = self:GetParent().Table;
-	if ( not Table:SetSelection( self ) ) then
-		Table:SetSelection();
+do
+	local function GetMouseoverRegion ( ... )
+		for Index = 1, select( "#", ... ) do
+			local Region = select( Index, ... );
+			if ( Region:IsMouseOver() ) then
+				return Region;
+			end
+		end
+	end
+	function me:TableRowOnClick ( Button )
+		if ( Button == "RightButton" ) then
+			me.EditBox:SetElement( GetMouseoverRegion( self:GetRegions() ) );
+		else
+			me.EditBox:SetElement();
+			local Table = self:GetParent().Table;
+			if ( not Table:SetSelection( self ) ) then
+				Table:SetSelection();
+			end
+		end
 	end
 end
 --[[****************************************************************************
@@ -65,6 +81,10 @@ do
 		CreateRowBackup = me.Table.CreateRow;
 		me.Table.CreateRow = me.TableCreateRow;
 
+		me.EditBox:SetParent( me.Table.Body ); -- Clip to frame
+		me.EditBox:SetFrameStrata( "TOOLTIP" );
+		me.EditBox:SetFontObject( me.Table.ElementFont );
+
 		local Overlay = _NPCScan.Overlay;
 		for NpcID, Name in pairs( Tools.NPCList ) do
 			local MapID = Tools.NPCLocations.MapIDs[ NpcID ];
@@ -75,6 +95,29 @@ do
 				Tools.NPCModels[ NpcID ] or nil );
 		end
 	end
+end
+
+
+--[[****************************************************************************
+  * Function: _NPCScan.Tools.Config.EditBox:SetElement                         *
+  ****************************************************************************]]
+function me.EditBox:SetElement ( Element )
+	if ( Element ) then
+		self:SetAllPoints( Element );
+		self:SetText( Element:GetText() );
+		self:Show();
+		self:HighlightText();
+	else
+		self:Hide();
+	end
+end
+--[[****************************************************************************
+  * Function: _NPCScan.Tools.Config.EditBox:OnHide                             *
+  ****************************************************************************]]
+function me.EditBox:OnHide ()
+	self:ClearFocus();
+	self:SetText( "" );
+	self:Hide(); -- Hide when parent is hidden
 end
 
 
@@ -136,6 +179,11 @@ do
 	me.TableContainer:SetPoint( "TOPLEFT", SubText, -2, -28 );
 	me.TableContainer:SetPoint( "BOTTOMRIGHT", me.Controls, "TOPRIGHT" );
 	me.TableContainer:SetBackdrop( { bgFile = [[Interface\DialogFrame\UI-DialogBox-Background]]; } );
+
+	me.EditBox:Hide();
+	me.EditBox:SetScript( "OnHide", me.EditBox.OnHide );
+	me.EditBox:SetScript( "OnEnterPressed", me.EditBox.OnHide );
+	me.EditBox:SetScript( "OnEscapePressed", me.EditBox.OnHide );
 
 
 	InterfaceOptions_AddCategory( me );
