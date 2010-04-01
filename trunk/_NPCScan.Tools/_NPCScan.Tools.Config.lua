@@ -11,6 +11,7 @@ local L = _NPCScanLocalization.TOOLS;
 local me = CreateFrame( "Frame" );
 Tools.Config = me;
 
+me.Controls = CreateFrame( "Frame", nil, me );
 me.TableContainer = CreateFrame( "Frame", nil, me );
 
 
@@ -27,7 +28,7 @@ function me:TableRowOnClick ()
 	end
 end
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay.Config:TableAddRow                              *
+  * Function: _NPCScan.Tools.Config:TableAddRow                                *
   ****************************************************************************]]
 do
 	local function AddHooks( Row, ... )
@@ -42,8 +43,13 @@ do
 --[[****************************************************************************
   * Function: _NPCScan.Tools.Config:OnShow                                     *
   ****************************************************************************]]
-	local function OnSelect ( self, ID )
-		Tools.Overlay.Select( ID );
+	local function OnSelect ( self, NpcID, ... )
+		Tools.Overlay.Select( NpcID );
+		for Index, Control in ipairs( me.Controls ) do
+			if ( Control.OnSelect ) then
+				Control:OnSelect( NpcID, ... );
+			end
+		end
 	end
 	local OverlayNPCs = _NPCScanOverlayLocalization.NPCS;
 	function me:OnShow ()
@@ -78,6 +84,28 @@ do
 end
 
 
+--[[****************************************************************************
+  * Function: _NPCScan.Tools.Config.Controls:Add                               *
+  ****************************************************************************]]
+function me.Controls:Add ( Control )
+	Control:SetParent( self );
+	if ( #self == 0 ) then
+		Control:SetPoint( "BOTTOMLEFT" );
+	else
+		Control:SetPoint( "LEFT", self[ #self ], "RIGHT" );
+	end
+
+	self[ #self + 1 ] = Control;
+	if ( Control.OnSelect ) then
+		if ( me.Table ) then
+			Control:OnSelect( me.Table:GetSelectionData() );
+		else
+			Control:OnSelect();
+		end
+	end
+end
+
+
 
 
 --------------------------------------------------------------------------------
@@ -104,9 +132,15 @@ do
 	SubText:SetText( L.CONFIG_DESC );
 
 
+	-- Control panel for selected NPC
+	me.Controls:SetPoint( "BOTTOMLEFT", 16, 16 );
+	me.Controls:SetPoint( "RIGHT", -16, 0 );
+	me.Controls:SetHeight( 24 );
+
+
 	-- Place table
 	me.TableContainer:SetPoint( "TOPLEFT", SubText, -2, -28 );
-	me.TableContainer:SetPoint( "BOTTOMRIGHT", -16, 16 );
+	me.TableContainer:SetPoint( "BOTTOMRIGHT", me.Controls, "TOPRIGHT" );
 	me.TableContainer:SetBackdrop( { bgFile = [[Interface\DialogFrame\UI-DialogBox-Background]]; } );
 
 
