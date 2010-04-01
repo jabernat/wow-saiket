@@ -5,7 +5,7 @@
 
 
 local _NPCScan = _NPCScan;
-local me = {};
+local me = select( 2, ... );
 _NPCScan.Tools = me;
 
 me.Matrix = {

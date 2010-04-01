@@ -1,27 +1,22 @@
 --[[ _NPCScan.Tools by Saiket
-Tools/UpdateLocationData.lua - Pulls NPC location data from WoWDB and WowHead.
+Tools/UpdateNPCLocations.lua - Pulls NPC location data from WoWDB and WowHead.
 
-1. Create a file in the Tools folder named <Account.dat>, and type in the account
-   name, server, and character (ex. "AccountName/ServerName/CharacterName") for
-   the character used to configure _NPCScan.  This path is used to find your
-   saved _NPCScan settings.
+1. Run <UpdateNPCList.lua> to compile a list of NPCs to update.
 2. Prepare database files from the WoW client: (Only needs to be done once per WoW patch)
    a. Find the latest versions of these DBC files in WoW's MPQ archives using a
       tool such as WinMPQ:
-      * <DBFilesClient/Achievement.dbc>
-      * <DBFilesClient/Achievement_Criteria.dbc>
       * <DBFilesClient/WorldMapArea.dbc>
-      * <DBFilesClient/AreaTable.dbc>
    b. Extract them to the <DBFilesClient> folder.
    c. Run <DBCUtil.bat> to convert all found *.DBC files into *.CSV files using
       nneonneo's <DBCUtil.exe> program.
-3. Log on to a character and set up its _NPCScan search list with all mobs you
-   want data for.
 
-Once you have selected a set of NPCs and configured the account file, reload your
-UI and run this script with a standalone Lua 5.1 interpreter.  The
-<../../_NPCScan.Overlay/_NPCScan.Overlay.PathData.lua> data file will be overwritten.
+Once data files are ready, run this script with a standalone Lua 5.1 interpreter.
+The <../../_NPCScan.Tools/_NPCScan.Tools.NPCLocations.lua> data file will be overwritten.
 ]]
+
+
+local NPCListFilename = [[../_NPCScan.Tools.NPCList.lua]];
+local OutputFilename = [[../_NPCScan.Tools.NPCLocations.lua]];
 
 
 package.cpath = [[.\Libs\?.dll;]]..package.cpath;
@@ -30,15 +25,6 @@ local http = require( "socket.http" );
 require( "json" );
 require( "bit" );
 require( "DbcCSV" );
-
-
-local AccountFile = assert( io.open( "Account.dat" ) );
-local DataPath = assert( AccountFile:read(), "Account.dat must have account data path on first line." );
-assert( #DataPath > 0, "Missing data path in Account.dat." );
-
-
-local DataFilename = [[../../../../WTF/Account/]]..DataPath..[[/SavedVariables/_NPCScan.lua]];
-local OutputFilename = [[../_NPCScan.Tools.LocationData.lua]];
 
 
 
@@ -57,15 +43,13 @@ end
 
 
 
-local Achievements = DbcCSV.Parse( [[DBFilesClient/Achievement.dbc.csv]], 1,
-	"ID", nil, nil, nil, "Name", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
-	nil --[[Description]], nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
-	nil, nil, nil, nil, nil,
-	nil --[[Rewards]], nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
-	nil, "CriteriaParent" );
+-- Load data files
+print( "Parsing game data..." );
 
-local AchievementCriteria = DbcCSV.Parse( [[DBFilesClient/Achievement_Criteria.dbc.csv]], 1,
-	"ID", "AchievementID", "Type", "AssetID", nil, nil, nil, nil, nil, "Name" );
+-- Load mob list
+local Env = {};
+assert( loadfile( NPCListFilename ) )( nil, Env )
+local NPCList = assert( Env and Env.NPCList, "NPCList missing from data file!" );
 
 -- Create a lookup of AreaTableIDs to zone IDs
 local WorldMapAreas = DbcCSV.Parse( [[DBFilesClient/WorldMapArea.dbc.csv]], 1,
@@ -75,50 +59,6 @@ local MapIDs = {};
 for ID, WorldMapArea in pairs( WorldMapAreas ) do
 	if ( WorldMapArea.AreaTableID ~= 0 ) then -- Not a continent
 		MapIDs[ WorldMapArea.AreaTableID ] = ID;
-	end
-end
-
-
-
-
--- Load _NPCScan saved variables
-assert( loadfile( DataFilename ) )();
-local Success, NpcNames, AchievementsActive = assert( pcall( function ()
-	local Options = _NPCScanOptionsCharacter;
-	return assert( Options.NPCs, "NPC data missing in _NPCScan saved variables." ),
-		assert( Options.Achievements, "Achievement data missing in _NPCScan saved variables." );
-end ) );
-
-local NpcIDs = {};
-for Name, NpcID in pairs( NpcNames ) do
-	NpcIDs[ NpcID ] = Name;
-end
-
-
-
-
--- Find mobs that are criteria for achievements
-local AchievementFilter = {};
-local function AddAchievement ( ID )
-	AchievementFilter[ ID ] = true;
-	-- Recurse any achievements whos criteria must also be met
-	local CriteriaParent = Achievements[ ID ].CriteriaParent;
-	if ( CriteriaParent ~= 0 ) then
-		AddAchievement( CriteriaParent );
-	end
-end
-for AchievementID, Enabled in pairs( AchievementsActive ) do
-	if ( Enabled ) then
-		AddAchievement( AchievementID );
-	end
-end
-
--- Get rare mob kill criteria for found achievements
-for ID, Criteria in pairs( AchievementCriteria ) do
-	if ( AchievementFilter[ Criteria.AchievementID ]
-		and Criteria.Type == 0 -- Mob kill type
-	) then
-		NpcIDs[ Criteria.AssetID ] = Criteria.Name;
 	end
 end
 
@@ -174,15 +114,11 @@ end
 
 print( "Reading NPC data:" );
 local NpcData, NpcMapIDs = {}, {};
-for NpcID, Name in pairs( NpcIDs ) do
+for NpcID, Name in pairs( NPCList ) do
+	print( ( "  [ %d ] %s" ):format( NpcID, Name ) );
 	local Success, ErrorMessage = pcall( function ()
-		print( "+ ID "..NpcID..":", Name );
 		local Text, Status = http.request( [[http://www.wowdb.com/npc.aspx?id=]]..NpcID );
-		assertf( Text and math.floor( Status / 100 ) == 2, "Request failed: Status code %d.", Status );
-
-		if ( Status ~= 200 ) then
-			print( "  + Status code "..Status..":", #Text.." bytes." );
-		end
+		assertf( Text and Status == 200, "Request failed: Status code %d.", Status );
 
 		Text = assertf( Text:match( [[<script>addMapLocations%((.-)%)</script>]] ), "Could not find map location data!" );
 		NpcMapIDs[ NpcID ], NpcData[ NpcID ] = EncodeNpcData( json.decode( Text ) );
@@ -191,7 +127,6 @@ for NpcID, Name in pairs( NpcIDs ) do
 		print( "  - "..ErrorMessage );
 	end
 end
-
 
 -- Sort by npc ID
 local SortOrder = {};
@@ -205,23 +140,20 @@ table.sort( SortOrder );
 
 local Outfile = assert( io.open( OutputFilename, "w+" ) );
 
-Outfile:write( "-- AUTOMATICALLY GENERATED BY <_NPCScan.Tools/Tools/UpdateLocationData.lua>!\n" );
-Outfile:write( "_NPCScan.Tools.LocationData = {\n" );
+Outfile:write( "-- AUTOMATICALLY GENERATED BY <_NPCScan.Tools/Tools/UpdateNPCLocations.lua>!\n" );
+Outfile:write( "select( 2, ... ).NPCLocations = {\n" );
 
-
-Outfile:write( "\tNpcMapIDs = {\n" );
+Outfile:write( "\tMapIDs = {\n" );
 for _, NpcID in ipairs( SortOrder ) do
-	Outfile:write( "\t\t[ "..NpcID.." ] = "..NpcMapIDs[ NpcID ]..";\n" );
+	Outfile:write( ( "\t\t[ %d ] = %d;\n" ):format( NpcID, NpcMapIDs[ NpcID ] ) );
 end
 Outfile:write( "\t};\n" );
 
-
-Outfile:write( "\tNpcData = {\n" );
+Outfile:write( "\tPositionData = {\n" );
 for _, NpcID in ipairs( SortOrder ) do
 	Outfile:write( ( "\t\t[ %d ] = %q;\n" ):format( NpcID, NpcData[ NpcID ] ) );
 end
 Outfile:write( "\t};\n" );
-
 
 Outfile:write( "};\n" );
 

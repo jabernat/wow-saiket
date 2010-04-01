@@ -4,7 +4,7 @@
   ****************************************************************************]]
 
 
-local Tools = _NPCScan.Tools;
+local Tools = select( 2, ... );
 local Button = _NPCScan.Button;
 local L = _NPCScanLocalization.TOOLS;
 local me = CreateFrame( "Frame", nil, Button );
@@ -43,7 +43,7 @@ end
   ****************************************************************************]]
 function me.Control:OnSelect ( NpcID, _, _, Name, Model )
 	self.NpcID, self.Name, self.Model = NpcID, Name, Model;
-	if ( Tools.ModelData[ NpcID ] and not InCombatLockdown() ) then
+	if ( Tools.NPCModels[ NpcID ] and not InCombatLockdown() ) then
 		self:Enable();
 	else
 		self:Disable();

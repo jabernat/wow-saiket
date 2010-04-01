@@ -5,8 +5,7 @@
   ****************************************************************************]]
 
 
-local Overlay = _NPCScan.Overlay;
-local Tools = _NPCScan.Tools;
+local Tools = select( 2, ... );
 local L = _NPCScanLocalization.TOOLS;
 local me = CreateFrame( "Frame" );
 Tools.Config = me;
@@ -66,19 +65,14 @@ do
 		CreateRowBackup = me.Table.CreateRow;
 		me.Table.CreateRow = me.TableCreateRow;
 
-		-- Cache custom mob names
-		local NPCNames = {};
-		for Name, NpcID in pairs( _NPCScan.OptionsCharacter.NPCs ) do
-			NPCNames[ NpcID ] = Name;
-		end
-		local AchievementNPCNames = Overlay.WorldMap.AchievementNPCNames;
-
-		for NpcID, MapID in pairs( Tools.LocationData.NpcMapIDs ) do
+		local Overlay = _NPCScan.Overlay;
+		for NpcID, Name in pairs( Tools.NPCList ) do
+			local MapID = Tools.NPCLocations.MapIDs[ NpcID ];
 			me.Table:AddRow( NpcID,
-				Overlay.GetZoneName( MapID ) or MapID,
+				Overlay and Overlay.GetZoneName( MapID ) or MapID,
 				NpcID,
-				AchievementNPCNames[ NpcID ] or OverlayNPCs[ NpcID ] or NPCNames[ NpcID ] or nil,
-				Tools.ModelData[ NpcID ] or nil );
+				Name,
+				Tools.NPCModels[ NpcID ] or nil );
 		end
 	end
 end
