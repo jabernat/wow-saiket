@@ -4,10 +4,9 @@
   ****************************************************************************]]
 
 
-local AddOnName = ...;
 _NPCScan = _NPCScan or {};
 local _NPCScan = _NPCScan;
-local me = {};
+local AddOnName, me = ...;
 _NPCScan.Overlay = me;
 
 me.Version = GetAddOnMetadata( AddOnName, "Version" ):match( "^([%d.]+)" );

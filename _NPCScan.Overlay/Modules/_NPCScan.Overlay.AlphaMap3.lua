@@ -4,7 +4,7 @@
   ****************************************************************************]]
 
 
-local Overlay = _NPCScan.Overlay;
+local Overlay = select( 2, ... );
 local me = CreateFrame( "Frame" );
 Overlay.AlphaMap3 = me;
 

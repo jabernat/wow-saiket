@@ -9,7 +9,7 @@ if ( IsAddOnLoaded( "Cartographer3" ) or not IsAddOnLoaded( "Carbonite" ) ) then
 	return;
 end
 
-local Overlay = _NPCScan.Overlay;
+local Overlay = select( 2, ... );
 local CarboniteMap = NxMap1.NxM1;
 local WorldMap = Overlay.WorldMap;
 local Key = WorldMap.Key;

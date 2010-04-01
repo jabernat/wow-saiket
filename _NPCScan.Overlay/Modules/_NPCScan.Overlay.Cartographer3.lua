@@ -9,7 +9,7 @@ if ( not IsAddOnLoaded( "Cartographer3" ) ) then
 	return;
 end
 
-local Overlay = _NPCScan.Overlay;
+local Overlay = select( 2, ... );
 local WorldMap = Overlay.WorldMap;
 local me = {};
 Overlay.Cartographer3 = me;

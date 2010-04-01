@@ -4,7 +4,7 @@
   ****************************************************************************]]
 
 
-local Overlay = _NPCScan.Overlay;
+local Overlay = select( 2, ... );
 Overlay.ZoneMaps = {}; -- [ LocalizedZoneName ] = MapFile;
 
 local Indexes = {};
