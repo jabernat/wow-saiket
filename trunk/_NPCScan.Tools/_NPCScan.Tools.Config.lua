@@ -76,7 +76,7 @@ do
 		me.Table.OnSelect = OnSelect;
 
 		me.Table:SetHeader( L.CONFIG_MAPID, L.CONFIG_ID, L.CONFIG_NAME, L.CONFIG_MODEL );
-		me.Table:SetSortHandlers( true, true, true, false );
+		me.Table:SetSortHandlers( true, true, true, true );
 		me.Table:SetSortColumn( 1 ); -- Default to MapID
 		CreateRowBackup = me.Table.CreateRow;
 		me.Table.CreateRow = me.TableCreateRow;
