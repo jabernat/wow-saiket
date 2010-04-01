@@ -8,10 +8,10 @@ if ( not IsAddOnLoaded( "Mapster" ) ) then
 	return;
 end
 
-local AddOnName = ...;
+local AddOnName, Overlay = ...;
 local Mapster = LibStub( "AceAddon-3.0" ):GetAddon( "Mapster" );
 local me = Mapster:NewModule( AddOnName );
-_NPCScan.Overlay.Mapster = me;
+Overlay.Mapster = me;
 
 me.Toggle = _NPCScan.Overlay.WorldMap.Toggle;
 

@@ -5,7 +5,7 @@
 
 
 local L = _NPCScanOverlayLocalization;
-local Overlay = _NPCScan.Overlay;
+local Overlay = select( 2, ... );
 local Minimap = Minimap;
 local ScrollFrame = CreateFrame( "ScrollFrame", nil, Minimap );
 local me = CreateFrame( "Frame", nil, ScrollFrame );

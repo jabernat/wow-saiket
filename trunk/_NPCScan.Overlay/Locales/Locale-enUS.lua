@@ -26,6 +26,8 @@ do
 		MODULE_RANGERING_FORMAT = "Show %dyd ring for approximate detection range";
 		MODULE_RANGERING_DESC = "Note: The range ring only appears in zones with tracked rares.";
 		MODULE_ALPHAMAP3 = "AlphaMap3 AddOn";
+		MODULE_AVR = "AVR AddOn";
+		MODULE_AVR_MESH = "NPC Path";
 
 		NPCS = { -- Note: Don't use a metatable default; Missing keys must return nil
 			[ 5842 ] = "Takk the Leaper";

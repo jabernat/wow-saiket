@@ -5,7 +5,7 @@
 
 
 local L = _NPCScanOverlayLocalization;
-local Overlay = _NPCScan.Overlay;
+local Overlay = select( 2, ... );
 local me = CreateFrame( "Frame", nil, WorldMapDetailFrame );
 Overlay.WorldMap = me;
 

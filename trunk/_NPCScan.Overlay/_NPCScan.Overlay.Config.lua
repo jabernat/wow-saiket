@@ -5,7 +5,7 @@
   ****************************************************************************]]
 
 
-local Overlay = _NPCScan.Overlay;
+local Overlay = select( 2, ... );
 local L = _NPCScanOverlayLocalization;
 local me = CreateFrame( "Frame" );
 Overlay.Config = me;
