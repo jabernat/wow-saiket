@@ -14,6 +14,9 @@ do
 		CONFIG_NAME = "Name";
 		CONFIG_MODEL = "Model File Path";
 
+		MODEL_CONTROL = "Show Model";
+
 		OVERLAY_TITLE = select( 2, GetAddOnInfo( "_NPCScan.Tools" ) );
+		OVERLAY_CONTROL = "Show Map";
 	}, getmetatable( _NPCScanLocalization ) );
 end

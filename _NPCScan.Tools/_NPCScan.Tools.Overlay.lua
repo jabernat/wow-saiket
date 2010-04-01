@@ -4,11 +4,14 @@
   ****************************************************************************]]
 
 
+local Routes = LibStub( "AceAddon-3.0" ):GetAddon( "Routes" );
 local Tools = _NPCScan.Tools;
 local Overlay = _NPCScan.Overlay;
 local L = _NPCScanLocalization.TOOLS;
 local me = CreateFrame( "Frame", nil, WorldMapButton );
 Tools.Overlay = me;
+
+me.Control = CreateFrame( "Button", nil, nil, "GameMenuButtonTemplate" );
 
 me.Label = L.OVERLAY_TITLE;
 me.AlphaDefault = 1;
@@ -145,6 +148,54 @@ function me:Enable ()
 end
 
 
+--[[****************************************************************************
+  * Function: _NPCScan.Tools.Overlay.Control:SetRoutesEnabled                  *
+  ****************************************************************************]]
+function me.Control:SetRoutesEnabled ( NpcID, Enable )
+	local RoutesDB = Routes.db.global.routes[ self.MapFile ];
+	if ( RoutesDB ) then
+		for Name, Route in pairs( RoutesDB ) do
+			local NpcID = tonumber( Name:match( "^Overlay:([^:]+)" ) );
+			if ( NpcID == self.NpcID ) then -- Path of selected mob
+				Route.hidden = not Enable;
+				Routes:DrawWorldmapLines();
+				Routes:DrawMinimapLines( true );
+			end
+		end
+	end
+end
+--[[****************************************************************************
+  * Function: _NPCScan.Tools.Overlay.Control:OnSelect                          *
+  ****************************************************************************]]
+function me.Control:OnSelect ( NpcID )
+	if ( self.MapFile ) then
+		-- Re-hide routes for last shown mob
+		self:SetRoutesEnabled( NpcID, false );
+		self.MapFile = nil;
+	end
+
+	self.NpcID, self.MapID = NpcID, Tools.LocationData.NpcMapIDs[ NpcID ];
+	if ( self.MapID ) then
+		self:Enable();
+	else
+		self:Disable();
+	end
+end
+--[[****************************************************************************
+  * Function: _NPCScan.Tools.Overlay.Control:OnClick                           *
+  * Description: Shows the selected NPC's map.                                 *
+  ****************************************************************************]]
+function me.Control:OnClick ()
+	ShowUIPanel( WorldMapFrame );
+	SetMapByID( self.MapID );
+
+	-- Show Routes for this mob
+	local MapFile = GetMapInfo();
+	self.MapFile = MapFile;
+	self:SetRoutesEnabled( self.NpcID, true );
+end
+
+
 
 
 --------------------------------------------------------------------------------
@@ -158,4 +209,10 @@ do
 	me:SetScript( "OnEvent", me.OnEvent );
 
 	Overlay.ModuleRegister( "_NPCScan.Tools", me );
+
+
+	me.Control:SetText( L.OVERLAY_CONTROL );
+	me.Control:SetScript( "OnClick", me.Control.OnClick );
+
+	Tools.Config.Controls:Add( me.Control );
 end
