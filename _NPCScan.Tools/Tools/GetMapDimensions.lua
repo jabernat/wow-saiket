@@ -21,12 +21,12 @@ Note: Multi-level maps such as Dalaran are unsupported.
 ]]
 
 
+local InputFilename = [[../../_NPCScan.Overlay/_NPCScan.Overlay.PathData.lua]];
+
+
 package.cpath = [[.\Libs\?.dll;]]..package.cpath;
 package.path = [[.\Libs\?.lua;]]..package.path;
 require( "DbcCSV" );
-
-
-local InputFilename = [[../../_NPCScan.Overlay/_NPCScan.Overlay.PathData.lua]];
 
 
 
@@ -36,11 +36,9 @@ local InputFile = assert( io.open( InputFilename, "rb" ) );
 local InputData = assert( InputFile:read( "*a" ) );
 assert( InputFile:close() );
 
--- Simulate the _NPCScanOverlay hierarchy to fill with path data
-_NPCScan = {};
-_NPCScan.Overlay = {};
-assert( loadstring( InputData ) )();
-local MapIDs = assert( _NPCScan.Overlay.PathData, "PathData missing from _NPCScan.Overlay.PathData.lua." );
+local Env = {};
+assert( loadstring( InputData ) )( nil, Env );
+local MapIDs = assert( Env.PathData, "PathData missing from _NPCScan.Overlay.PathData.lua." );
 
 
 -- Create lookup tables from DBC CSV files
@@ -52,6 +50,9 @@ local WorldMapAreas = DbcCSV.Parse( [[DBFilesClient/WorldMapArea.dbc.csv]], 1,
 	"ID", "ParentMapID", "AreaTableID", nil, "Ax", "Bx", "Ay", "By", "VirtualMapID" );
 local AreaTable = DbcCSV.Parse( [[DBFilesClient/AreaTable.dbc.csv]], 1,
 	"ID", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, "Localization" );
+
+
+
 
 local MapNames = {};
 -- Sort maps into their parent continents
@@ -67,7 +68,6 @@ for ID in pairs( MapIDs ) do
 		end
 	end
 end
-
 
 -- Sort by the order continents are added to the game
 local ContinentOrder = {};

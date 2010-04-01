@@ -1,5 +1,5 @@
 --[[ _NPCScan.Tools by Saiket
-Tools/UpdateModelData.lua - Gets model file paths for rares from WowHead.
+Tools/UpdateNPCList.lua - Compiles a list of all mobs to get info for.
 
 1. Create a file in the Tools folder named <Account.dat>, and type in the account
    name, server, and character (ex. "AccountName/ServerName/CharacterName") for
@@ -13,30 +13,23 @@ Tools/UpdateModelData.lua - Gets model file paths for rares from WowHead.
    b. Extract them to the <DBFilesClient> folder.
    c. Run <DBCUtil.bat> to convert all found *.DBC files into *.CSV files using
       nneonneo's <DBCUtil.exe> program.
-3. Log on to a character and set up its _NPCScan search list with all mobs you
-   want data for.
+3. Log on to the character specified in <Account.dat> and set up its _NPCScan
+   search list with all mobs you want data for.
 
 Once you have selected a set of NPCs and configured the account file, reload your
 UI and run this script with a standalone Lua 5.1 interpreter.  The
-<../../_NPCScan.Tools/_NPCScan.Tools.ModelData.lua> data file will be overwritten.
+<../../_NPCScan.Tools/_NPCScan.Tools.NPCList.lua> data file will be overwritten.
 ]]
+
+
+local AccountFilename = [[Account.dat]];
+local DataFilename = [[../../../../WTF/Account/%s/SavedVariables/_NPCScan.lua]]; -- 1st arg is account file contents
+local OutputFilename = [[../_NPCScan.Tools.NPCList.lua]];
 
 
 package.cpath = [[.\Libs\?.dll;]]..package.cpath;
 package.path = [[.\Libs\?.lua;]]..package.path;
-local http = require( "socket.http" );
-require( "json" );
-require( "bit" );
 require( "DbcCSV" );
-
-
-local AccountFile = assert( io.open( "Account.dat" ) );
-local DataPath = assert( AccountFile:read(), "Account.dat must have account data path on first line." );
-assert( #DataPath > 0, "Missing data path in Account.dat." );
-
-
-local DataFilename = [[../../../../WTF/Account/]]..DataPath..[[/SavedVariables/_NPCScan.lua]];
-local OutputFilename = [[../_NPCScan.Tools.ModelData.lua]];
 
 
 
@@ -55,9 +48,16 @@ end
 
 
 
-print( "Parsing game data..." ); -- This takes a while
+-- Load data files
+print( "Parsing game data..." );
+
+local AccountFile = assert( io.open( AccountFilename ) );
+local DataPath = assertf( AccountFile:read(), "<%s> must have account data path on first line.", AccountFilename );
+assertf( #DataPath > 0, "Missing account data path in <%s>.", AccountFilename );
+
 local Achievements = DbcCSV.Parse( [[DBFilesClient/Achievement.dbc.csv]], 1,
-	"ID", nil, nil, nil, "Name", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
+	"ID", nil, nil, nil,
+	"Name", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
 	nil --[[Description]], nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
 	nil, nil, nil, nil, nil,
 	nil --[[Rewards]], nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
@@ -66,38 +66,34 @@ local Achievements = DbcCSV.Parse( [[DBFilesClient/Achievement.dbc.csv]], 1,
 local AchievementCriteria = DbcCSV.Parse( [[DBFilesClient/Achievement_Criteria.dbc.csv]], 1,
 	"ID", "AchievementID", "Type", "AssetID", nil, nil, nil, nil, nil, "Name" );
 
--- WowHead serves mob graphic data as its CreatureDisplayInfo ID
-local CreatureDisplayInfo = DbcCSV.Parse( [[DBFilesClient/CreatureDisplayInfo.dbc.csv]], 1,
-	"ID", "ModelDataID" );
-
-local CreatureModelData = DbcCSV.Parse( [[DBFilesClient/CreatureModelData.dbc.csv]], 1,
-	"ID", nil, "Path" );
-
-
-
-
 -- Load _NPCScan saved variables
-assert( loadfile( DataFilename ) )();
+assert( loadfile( DataFilename:format( DataPath ) ) )();
 local Success, NpcNames, AchievementsActive = assert( pcall( function ()
 	local Options = _NPCScanOptionsCharacter;
 	return assert( Options.NPCs, "NPC data missing in _NPCScan saved variables." ),
 		assert( Options.Achievements, "Achievement data missing in _NPCScan saved variables." );
 end ) );
 
+
+
+
+-- Add custom NPCs
 local NpcIDs = {};
+print( "Adding custom NPCs:" );
 for Name, NpcID in pairs( NpcNames ) do
 	NpcIDs[ NpcID ] = Name;
+	print( ( "  [ %d ] %s" ):format( NpcID, Name ) );
 end
-
-
-
 
 -- Find mobs that are criteria for achievements
 local AchievementFilter = {};
 local function AddAchievement ( ID )
 	AchievementFilter[ ID ] = true;
+
+	local Achievement = Achievements[ ID ];
+	print( ( "Adding achievement [ %d ] %s." ):format( ID, Achievement.Name ) );
 	-- Recurse any achievements whos criteria must also be met
-	local CriteriaParent = Achievements[ ID ].CriteriaParent;
+	local CriteriaParent = Achievement.CriteriaParent;
 	if ( CriteriaParent ~= 0 ) then
 		AddAchievement( CriteriaParent );
 	end
@@ -114,52 +110,29 @@ for ID, Criteria in pairs( AchievementCriteria ) do
 		and Criteria.Type == 0 -- Mob kill type
 	) then
 		NpcIDs[ Criteria.AssetID ] = Criteria.Name;
+		print( ( "  [ %d ] %s" ):format( Criteria.AssetID, Criteria.Name ) );
 	end
 end
 
-
-
-
-print( "Reading NPC model IDs:" );
-local NpcModelPaths = {};
-for NpcID, Name in pairs( NpcIDs ) do
-	local Success, ErrorMessage = pcall( function ()
-		print( "+ ID "..NpcID..":", Name );
-		local Text, Status = http.request( [[http://www.wowhead.com/?npc=]]..NpcID );
-		assertf( Text and math.floor( Status / 100 ) == 2, "Request failed: Status code %d.", Status );
-
-		if ( Status ~= 200 ) then
-			print( "  + Status code "..Status..":", #Text.." bytes." );
-		end
-
-		Text = assert( Text:match( [[onclick="this%.blur%(%); ModelViewer%.show%((.-)%)">]] ), "Could not find model data!" );
-		local DisplayID = json.decode( Text ).displayId;
-		local DisplayInfo = assertf( CreatureDisplayInfo[ DisplayID ], "Invalid displayID %s.", DisplayID );
-		NpcModelPaths[ NpcID ] = CreatureModelData[ DisplayInfo.ModelDataID ].Path;
-	end );
-	if ( not Success ) then
-		print( "  - "..ErrorMessage );
-	end
-end
-
-
--- Sort by npc ID
+-- Sort by name
 local SortOrder = {};
-for NpcID in pairs( NpcModelPaths ) do
+for NpcID in pairs( NpcIDs ) do
 	SortOrder[ #SortOrder + 1 ] = NpcID;
 end
-table.sort( SortOrder );
+table.sort( SortOrder, function ( ID1, ID2 )
+	return NpcIDs[ ID1 ]:lower() < NpcIDs[ ID2 ]:lower();
+end );
 
 
 
 
 local Outfile = assert( io.open( OutputFilename, "w+" ) );
 
-Outfile:write( "-- AUTOMATICALLY GENERATED BY <_NPCScan.Tools/Tools/UpdateModelData.lua>!\n" );
-Outfile:write( "_NPCScan.Tools.ModelData = {\n" );
+Outfile:write( "-- AUTOMATICALLY GENERATED BY <_NPCScan.Tools/Tools/UpdateNPCList.lua>!\n" );
+Outfile:write( "select( 2, ... ).NPCList = {\n" );
 
 for _, NpcID in ipairs( SortOrder ) do
-	Outfile:write( ( "\t\t[ %d ] = %q;\n" ):format( NpcID, NpcModelPaths[ NpcID ] ) );
+	Outfile:write( ( "\t[ %d ] = %q;\n" ):format( NpcID, NpcIDs[ NpcID ] ) );
 end
 
 Outfile:write( "};\n" );

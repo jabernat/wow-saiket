@@ -5,7 +5,7 @@
 
 
 local Routes = LibStub( "AceAddon-3.0" ):GetAddon( "Routes" );
-local Tools = _NPCScan.Tools;
+local Tools = select( 2, ... );
 local Overlay = _NPCScan.Overlay;
 local L = _NPCScanLocalization.TOOLS;
 local me = CreateFrame( "Frame", nil, WorldMapButton );
@@ -27,7 +27,7 @@ do
 	local X, X2, Y, Y2, Density;
 	local Width, Height, Texture;
 	local function PaintPoints ( self, _, _, _, R, G, B, NpcID )
-		local Data = Tools.LocationData.NpcData[ NpcID ];
+		local Data = Tools.NPCLocations.PositionData[ NpcID ];
 		if ( Data ) then
 			Width, Height = self:GetWidth(), self:GetHeight();
 			for Index = 1, #Data, 5 do
@@ -45,7 +45,7 @@ do
 	end
 	function me:Paint ( Map )
 		if ( me.NpcIDSelected ) then
-			local NpcMap = Tools.LocationData.NpcMapIDs[ me.NpcIDSelected ];
+			local NpcMap = Tools.NPCLocations.MapIDs[ me.NpcIDSelected ];
 			if ( Map == NpcMap ) then
 				-- Attempt to find the NPC's normal draw color
 				local Color, ColorIndex = HIGHLIGHT_FONT_COLOR, 0;
@@ -114,7 +114,7 @@ function me.Select ( NpcID )
 	if ( me.NpcIDSelected ~= NpcID ) then
 		me.NpcIDSelected = NpcID;
 
-		local MapID = Tools.LocationData.NpcMapIDs[ NpcID ];
+		local MapID = Tools.NPCLocations.MapIDs[ NpcID ];
 		if ( not NpcID or MapID ) then
 			me:Update( MapID );
 		end
@@ -174,7 +174,7 @@ function me.Control:OnSelect ( NpcID )
 		self.MapFile = nil;
 	end
 
-	self.NpcID, self.MapID = NpcID, Tools.LocationData.NpcMapIDs[ NpcID ];
+	self.NpcID, self.MapID = NpcID, Tools.NPCLocations.MapIDs[ NpcID ];
 	if ( self.MapID ) then
 		self:Enable();
 	else
