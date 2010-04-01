@@ -11,6 +11,7 @@ local me = CreateFrame( "Frame", nil, Button );
 Tools.Model = me;
 
 me.Control = CreateFrame( "Button", nil, nil, "GameMenuButtonTemplate" );
+me.EditBox = CreateFrame( "EditBox", "_NPCScanToolsModelEditBox", me, "InputBoxTemplate" );
 
 
 
@@ -21,6 +22,7 @@ me.Control = CreateFrame( "Button", nil, nil, "GameMenuButtonTemplate" );
   ****************************************************************************]]
 function me.ButtonUpdate ()
 	me:Hide();
+	me.Backdrop:Hide();
 end
 --[[****************************************************************************
   * Function: _NPCScan.Tools.Model:PLAYER_REGEN_ENABLED                        *
@@ -35,6 +37,22 @@ end
   ****************************************************************************]]
 function me:PLAYER_REGEN_DISABLED ()
 	self.Control:Disable();
+end
+
+
+--[[****************************************************************************
+  * Function: _NPCScan.Tools.Model.EditBox:Save                                *
+  ****************************************************************************]]
+function me.EditBox:Save ()
+	Button.Model:Reset();
+	Button.Model:SetCreature( self.NpcID );
+	local Model = Button.Model:GetModel();
+	if ( type( Model ) ~= "string" ) then
+		Model = Tools.NPCModels[ self.NpcID ];
+		Button.Model:SetModel( Model );
+	end
+
+	Button.ModelCameras[ Model:lower() ] = self:GetText():gsub( "||", "|" );
 end
 
 
@@ -55,10 +73,18 @@ end
   ****************************************************************************]]
 function me.Control:OnClick ()
 	Button:Update( self.Name, self.NpcID );
-	if ( type( Button.Model:GetModel() ) ~= "string" ) then -- Wasn't in cache
+
+	local Model = Button.Model:GetModel();
+	if ( type( Model ) ~= "string" ) then -- Wasn't in cache
 		Button.Model:SetModel( self.Model );
+		Model = self.Model;
 	end
+
+	me.EditBox:SetText( ( Button.ModelCameras[ Model:lower() ] or "" ):gsub( "|", "||" ) );
+	me.EditBox.NpcID = self.NpcID;
 	me:Show();
+	me.Backdrop:Show();
+	me.EditBox:SetFocus();
 end
 
 
@@ -74,6 +100,19 @@ do
 	me:RegisterEvent( "PLAYER_REGEN_ENABLED" );
 	me:RegisterEvent( "PLAYER_REGEN_DISABLED" );
 	hooksecurefunc( Button, "Update", me.ButtonUpdate );
+
+	me.EditBox:SetPoint( "TOPLEFT", Button, "BOTTOMLEFT", 8, 0 );
+	me.EditBox:SetPoint( "RIGHT", Button, -4, 0 );
+	me.EditBox:SetHeight( 16 );
+	me.EditBox:SetAutoFocus( false );
+	me.EditBox:SetScript( "OnEnterPressed", me.EditBox.Save );
+	me.EditBox:SetScript( "OnEditFocusGained", nil );
+
+	me.Backdrop = Button.Model:CreateTexture( nil, "BACKGROUND" );
+	me.Backdrop:Hide();
+	me.Backdrop:SetAllPoints();
+	me.Backdrop:SetTexture( [[textures\ShaneCube]] );
+	me.Backdrop:SetVertexColor( 0.5, 0.5, 0.5 );
 
 
 	me.Control:SetText( L.MODEL_CONTROL );

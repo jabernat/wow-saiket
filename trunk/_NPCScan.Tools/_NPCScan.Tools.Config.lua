@@ -81,8 +81,6 @@ do
 		CreateRowBackup = me.Table.CreateRow;
 		me.Table.CreateRow = me.TableCreateRow;
 
-		me.EditBox:SetParent( me.Table.Body ); -- Clip to frame
-		me.EditBox:SetFrameStrata( "TOOLTIP" );
 		me.EditBox:SetFontObject( me.Table.ElementFont );
 
 		local Overlay = _NPCScan.Overlay;
@@ -103,10 +101,10 @@ end
   ****************************************************************************]]
 function me.EditBox:SetElement ( Element )
 	if ( Element ) then
+		self:SetParent( Element:GetParent() );
 		self:SetAllPoints( Element );
-		self:SetText( Element:GetText() );
+		self:SetText( Element:GetText() or "" );
 		self:Show();
-		self:HighlightText();
 	else
 		self:Hide();
 	end
