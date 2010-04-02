@@ -48,8 +48,8 @@ function me.EditBox:Save ()
 	Button.Model:SetCreature( self.NpcID );
 	local Model = Button.Model:GetModel();
 	if ( type( Model ) ~= "string" ) then
-		Model = Tools.NPCModels[ self.NpcID ];
-		Button.Model:SetModel( Model );
+		Button.Model:SetModel( Tools.NPCModels[ self.NpcID ] );
+		Model = Button.Model:GetModel(); -- Extension changes to *.m2
 	end
 
 	Button.ModelCameras[ Model:lower() ] = self:GetText():gsub( "||", "|" );
@@ -77,7 +77,7 @@ function me.Control:OnClick ()
 	local Model = Button.Model:GetModel();
 	if ( type( Model ) ~= "string" ) then -- Wasn't in cache
 		Button.Model:SetModel( self.Model );
-		Model = self.Model;
+		Model = Button.Model:GetModel(); -- Extension changes to *.m2
 	end
 
 	me.EditBox:SetText( ( Button.ModelCameras[ Model:lower() ] or "" ):gsub( "|", "||" ) );
