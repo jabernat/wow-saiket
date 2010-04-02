@@ -101,7 +101,7 @@ do
 
 		Column:SetScript( "OnClick", ColumnOnClick );
 		Column:SetID( Index );
-		Column:SetFontString( Column:CreateFontString( nil, "ARTWORK", Header.Table.HeaderFont or "GameFontHighlightSmall" ) );
+		Column:SetFontString( Column:CreateFontString( nil, "ARTWORK", Header.Table.HeaderFont ) );
 		Column:SetPoint( "TOP" );
 		Column:SetPoint( "BOTTOM" );
 		if ( Index == 1 ) then
@@ -331,7 +331,7 @@ do
 	local function RowAddElements ( Table, Row ) -- Adds and anchors missing element strings
 		local Columns = Table.Header;
 		for Index = Row:GetNumRegions() + 1, Table.NumColumns do
-			local Element = Row:CreateFontString( nil, "ARTWORK", Table.ElementFont or "GameFontNormalSmall" );
+			local Element = Row:CreateFontString( nil, "ARTWORK", Table.ElementFont );
 			Element:SetPoint( "TOP" );
 			Element:SetPoint( "BOTTOM" );
 			Element:SetPoint( "LEFT", Columns[ Index ], ColumnPadding, 0 );
@@ -656,8 +656,8 @@ do
 
 		Table.Keys = {};
 		Table.UnusedRows = {};
-		Table.HeaderFont = HeaderFont;
-		Table.ElementFont = ElementFont;
+		Table.HeaderFont = HeaderFont or "GameFontHighlightSmall";
+		Table.ElementFont = ElementFont or "GameFontNormalSmall";
 
 		Table:SetScript( "OnMouseWheel", OnMouseWheel );
 		Table:SetHeader(); -- Clear all and resize
