@@ -462,7 +462,7 @@ do
 		-- Health bar
 		Health:SetParent( Visual );
 		Health:SetFrameLevel( Visual:GetFrameLevel() );
-		Health:GetStatusBarTexture():Hide();
+		Health:SetStatusBarTexture( "" ); -- Keeps the texture region, but keeps its path value set to nil
 		Health:SetAlpha( TextDimAlpha ); -- To fade out the health text parented to it
 		-- Separate filled and empty halves of the statusbar
 		Health.Left = Visual:CreateTexture( nil, "ARTWORK" );
