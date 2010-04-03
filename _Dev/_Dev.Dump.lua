@@ -40,7 +40,12 @@ local me = {
 _Dev.Dump = me;
 local EscapeSequences = me.EscapeSequences;
 
-local Temp = {}; -- Private: Lists of known data structures
+local Temp = { -- Private: Lists of known object references
+	[ "table" ] = {};
+	[ "function" ] = {};
+	[ "userdata" ] = {};
+	[ "thread" ] = {};
+};
 
 
 
@@ -75,8 +80,8 @@ end
 --[[****************************************************************************
   * Function: _Dev.Dump.ToString                                               *
   * Description: Returns a nicely formatted string representation of the given *
-  *   value. Relies on Temp and should only be called by _Dev. If called for   *
-  *   a type that requires Temp and Temp is nil, returns plain tostring value. *
+  *   value. If called for an object reference not in Temp, returns plain      *
+  *   tostring value.                                                          *
   ****************************************************************************]]
 do
 	local IsUIObject = _Dev.IsUIObject;
@@ -85,7 +90,7 @@ do
 	local type = type;
 	function me.ToString ( Input )
 		local Type = type( Input );
-		local Count = Temp and Temp[ Type ] and Temp[ Type ][ Input ];
+		local Count = Temp[ Type ] and Temp[ Type ][ Input ];
 
 		if ( Count ) then -- Table, function, userdata, or thread
 			Input = IsUIObject( Input )
@@ -101,26 +106,6 @@ do
 		return L.DUMP_TYPE_FORMATS[ Type ]:format( Input );
 	end
 end
---[[****************************************************************************
-  * Function: _Dev.Dump.AddHistory                                             *
-  * Description: Adds the given value to History if it's a new table,          *
-  *   function, thread, or userdata, and returns whether or not anything was   *
-  *   actually added.                                                          *
-  ****************************************************************************]]
-do
-	local type = type;
-
-	local History;
-	function me.AddHistory ( Input )
-		History = Temp[ type( Input ) ];
-	
-		if ( History and not History[ Input ] ) then
-			History.n = History.n + 1;
-			History[ Input ] = History.n;
-			return true;
-		end
-	end
-end
 
 
 --[[****************************************************************************
@@ -128,27 +113,37 @@ end
   * Description: Prints the contents of a variable to the default chat frame.  *
   ****************************************************************************]]
 do
+	local type = type;
+	local function AddHistory ( Input ) -- Adds Input to History if it's an object reference, and returns true if successfull
+		local History = Temp[ type( Input ) ];
+
+		if ( History and not History[ Input ] ) then
+			History.n = History.n + 1;
+			History[ Input ] = History.n;
+			return true;
+		end
+	end
+
 	local Depth = nil; -- Depth of recursion; nil if first call.
 	local EndTime = nil; -- Set to the cutoff execution time when limited.
 	local OverTime = false; -- Boolean, true when ran out of time.
 
 	local ToString = me.ToString;
-	local AddHistory = me.AddHistory;
 	local Print = _Dev.Print;
 	local GetTime = GetTime;
-	local type = type;
 	local next = next;
 	local pairs = pairs;
 	local select = select;
 	local rawequal = rawequal;
+	local wipe = wipe;
 	function me.Explore ( LValueString, ... )
 		local ArgCount = 1;
 		if ( not Depth ) then -- First iteration, initialize
 			Depth = 0;
-			Temp[ "table" ]    = { n = 0 };
-			Temp[ "function" ] = { n = 0 };
-			Temp[ "userdata" ] = { n = 0 };
-			Temp[ "thread" ]   = { n = 0 };
+			Temp[ "table" ].n = 0;
+			Temp[ "function" ].n = 0;
+			Temp[ "userdata" ].n = 0;
+			Temp[ "thread" ].n = 0;
 			if ( _DevOptions.Dump.SkipGlobalEnv ) then
 				Temp[ "table" ][ getfenv( 0 ) ] = L.DUMP_GLOBALENV;
 			end
@@ -227,7 +222,10 @@ do
 
 		if ( Depth == 0 ) then -- Clean up
 			Depth = nil;
-			wipe( Temp );
+			wipe( Temp[ "table" ] );
+			wipe( Temp[ "function" ] );
+			wipe( Temp[ "userdata" ] );
+			wipe( Temp[ "thread" ] );
 			if ( OverTime ) then
 				return L.DUMP_TIME_EXCEEDED;
 			end
