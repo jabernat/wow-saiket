@@ -23,6 +23,7 @@ local Plates = {};
 me.Plates = Plates;
 me.PlatesVisible = {};
 me.TargetOutline = CreateFrame( "Frame" );
+me.TargetUpdater = CreateFrame( "Frame" );
 
 me.NameFont = CreateFont( "_UnderscoreNameplatesNameFont" );
 me.LevelFont = CreateFont( "_UnderscoreNameplatesLevelFont" );
@@ -72,9 +73,6 @@ function me:PlateOnShow ()
 	Visual.Cast:Hide(); -- Note: Fix for cast bars occasionally being shown without any spellcast
 
 	me.VisualClassificationUpdate( Visual, true ); -- Force
-	if ( HasTarget ) then
-		self:SetScript( "OnUpdate", me.PlateOnUpdate ); -- Begin updating target border
-	end
 	if ( not InCombat ) then
 		self:SetSize( PlateWidth, PlateHeight );
 	end
@@ -85,33 +83,10 @@ end
 function me:PlateOnHide ()
 	me.PlatesVisible[ self ] = nil;
 
-	if ( HasTarget ) then
-		self:SetScript( "OnUpdate", nil ); -- Stop updating target border
-		-- Hide target outline if shown
-		if ( me.TargetOutline:GetParent() == self ) then
-			me.TargetOutline:Hide();
-			me.TargetOutline:SetParent( nil );
-		end
-	end
-end
---[[****************************************************************************
-  * Function: _Underscore.Nameplates:PlateOnUpdate                             *
-  * Description: Keeps the nameplate's alpha set properly.                     *
-  ****************************************************************************]]
-do
-	local TargetOutline = me.TargetOutline;
-	function me:PlateOnUpdate ()
-		if ( self:GetAlpha() == 1 ) then -- Current target
-			if ( TargetOutline:GetParent() ~= self ) then -- Not already positioned
-				-- Position outline
-				TargetOutline:SetParent( self );
-				TargetOutline:SetFrameLevel( self:GetFrameLevel() );
-				TargetOutline:SetPoint( "TOP" );
-				TargetOutline:Show();
-			end
-		else
-			self:SetAlpha( 1 );
-		end
+	-- Hide target outline if shown
+	if ( HasTarget and me.TargetOutline:GetParent() == self ) then
+		me.TargetOutline:Hide();
+		me.TargetOutline:SetParent( nil );
 	end
 end
 
@@ -389,6 +364,31 @@ do
 end
 
 
+--[[****************************************************************************
+  * Function: _Underscore.Nameplates.TargetUpdater:OnUpdate                    *
+  * Description: Keeps the nameplate's alpha set properly, and updates target. *
+  ****************************************************************************]]
+do
+	local pairs = pairs;
+	function me.TargetUpdater:OnUpdate ()
+		for Plate in pairs( me.PlatesVisible ) do
+			if ( Plate:GetAlpha() == 1 ) then -- Current target
+				local TargetOutline = me.TargetOutline;
+				if ( TargetOutline:GetParent() ~= Plate ) then -- Not already positioned
+					-- Position outline
+					TargetOutline:SetParent( Plate );
+					TargetOutline:SetFrameLevel( Plate:GetFrameLevel() );
+					TargetOutline:SetPoint( "TOP" );
+					TargetOutline:Show();
+				end
+			else -- Not target
+				Plate:SetAlpha( 1 );
+			end
+		end
+	end
+end
+
+
 
 
 --[[****************************************************************************
@@ -609,16 +609,16 @@ end
   * Function: _Underscore.Nameplates:PLAYER_TARGET_CHANGED                     *
   ****************************************************************************]]
 function me:PLAYER_TARGET_CHANGED ()
+	if ( HasTarget ) then -- Clear previous target indicator
+		me.TargetOutline:Hide();
+		me.TargetOutline:SetParent( nil );
+	end
 	HasTarget = UnitExists( "target" );
 
-	-- Reset target indicator
-	me.TargetOutline:Hide();
-	me.TargetOutline:SetParent( nil );
-
-	-- Set or clear individual plate update handlers
-	local UpdateScript = HasTarget and me.PlateOnUpdate or nil;
-	for Plate in pairs( me.PlatesVisible ) do
-		Plate:SetScript( "OnUpdate", UpdateScript );
+	if ( HasTarget ) then
+		me.TargetUpdater:Show();
+	else
+		me.TargetUpdater:Hide();
 	end
 end
 
@@ -759,6 +759,12 @@ do
 	local Mask = me.TargetOutline:CreateTexture( nil, "ARTWORK" );
 	Mask:SetTexture( 0, 0, 0 );
 	Mask:SetAllPoints();
+
+	-- Target outline updater
+	me.TargetUpdater:Hide();
+	me.TargetUpdater:SetScript( "OnUpdate", me.TargetUpdater.OnUpdate );
+	-- Higher frame stratas execute OnUpdates later
+	me.TargetUpdater:SetFrameStrata( "TOOLTIP" );
 
 
 	-- Interrupt flash
