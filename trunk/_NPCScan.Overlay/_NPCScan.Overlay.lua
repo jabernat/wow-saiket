@@ -495,7 +495,7 @@ do
   ****************************************************************************]]
 	me[ MESSAGE_ADD ] = function ( _, _, NpcID, AddOn )
 		if ( AddOn == ScannerAddOn ) then
-			me.NPCAdd( assert( NpcID, "Add message missing Npc ID." ) );
+			me.NPCAdd( assert( tonumber( NpcID ), "Add message Npc ID must be a number." ) );
 		end
 	end;
 --[[****************************************************************************
@@ -503,14 +503,14 @@ do
   ****************************************************************************]]
 	me[ MESSAGE_REMOVE ] = function ( _, _, NpcID, AddOn )
 		if ( AddOn == ScannerAddOn ) then
-			me.NPCRemove( assert( NpcID, "Remove message missing Npc ID." ) );
+			me.NPCRemove( assert( tonumber( NpcID ), "Remove message Npc ID must be a number." ) );
 		end
 	end;
 --[[****************************************************************************
   * Function: _NPCScan.Overlay[ MESSAGE_FOUND ]                                *
   ****************************************************************************]]
 	me[ MESSAGE_FOUND ] = function ( _, _, NpcID )
-		me.NPCFound( assert( NpcID, "Found message missing Npc ID." ) );
+		me.NPCFound( assert( tonumber( NpcID ), "Found message Npc ID must be a number." ) );
 	end;
 end
 
