@@ -5,7 +5,7 @@
   ****************************************************************************]]
 
 
-if ( IsAddOnLoaded( "Cartographer3" ) or not IsAddOnLoaded( "Carbonite" ) ) then
+if ( not IsAddOnLoaded( "Carbonite" ) ) then
 	return;
 end
 
