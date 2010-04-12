@@ -4,8 +4,9 @@
   ****************************************************************************]]
 
 
+local AddOnName = ...;
 local me = CreateFrame( "Frame", "_VirtualPlates", WorldFrame );
-me.Version = GetAddOnMetadata( ..., "Version" ):match( "^([%d.]+)" );
+me.Version = GetAddOnMetadata( AddOnName, "Version" ):match( "^([%d.]+)" );
 
 local Plates = {};
 me.Plates = Plates;
@@ -225,25 +226,28 @@ function me:LibCamera_UpdateDistance ( Event, NewDepth )
 	DepthCamera = NewDepth;
 end
 --[[****************************************************************************
-  * Function: _VirtualPlates:VARIABLES_LOADED                                  *
+  * Function: _VirtualPlates:ADDON_LOADED                                      *
   ****************************************************************************]]
-function me:VARIABLES_LOADED ()
-	me.VARIABLES_LOADED = nil;
+function me:ADDON_LOADED ( Event, AddOn )
+	if ( AddOn == AddOnName ) then
+		me:UnregisterEvent( Event );
+		me[ Event ] = nil;
 
-	local OptionsCharacter = _VirtualPlatesOptionsCharacter;
-	_VirtualPlatesOptionsCharacter = me.OptionsCharacter;
+		local OptionsCharacter = _VirtualPlatesOptionsCharacter;
+		_VirtualPlatesOptionsCharacter = me.OptionsCharacter;
 
-	if ( OptionsCharacter and OptionsCharacter.Version ~= me.Version ) then -- Update settings of old versions
-		local Version = OptionsCharacter.Version;
-		if ( Version == "3.2.2.1" or Version == "3.2.2.2" or Version == "3.2.2.3" ) then
-			Version = "3.2.2.4"; -- Added max scale option
-			OptionsCharacter.MaxScale = 3;
-			OptionsCharacter.MaxScaleEnabled = false;
+		if ( OptionsCharacter and OptionsCharacter.Version ~= me.Version ) then -- Update settings of old versions
+			local Version = OptionsCharacter.Version;
+			if ( Version == "3.2.2.1" or Version == "3.2.2.2" or Version == "3.2.2.3" ) then
+				Version = "3.2.2.4"; -- Added max scale option
+				OptionsCharacter.MaxScale = 3;
+				OptionsCharacter.MaxScaleEnabled = false;
+			end
+			OptionsCharacter.Version = me.Version;
 		end
-		OptionsCharacter.Version = me.Version;
-	end
 
-	me.Synchronize( OptionsCharacter ); -- Loads defaults if either are nil
+		me.Synchronize( OptionsCharacter ); -- Loads defaults if either are nil
+	end
 end
 --[[****************************************************************************
   * Function: _VirtualPlates:PLAYER_REGEN_ENABLED                              *
@@ -420,7 +424,7 @@ end
 do
 	me:SetScript( "OnEvent", me.OnEvent );
 	WorldFrame:HookScript( "OnUpdate", me.OnUpdate ); -- First OnUpdate handler to run
-	me:RegisterEvent( "VARIABLES_LOADED" );
+	me:RegisterEvent( "ADDON_LOADED" );
 	me:RegisterEvent( "PLAYER_REGEN_DISABLED" );
 	me:RegisterEvent( "PLAYER_REGEN_ENABLED" );
 
