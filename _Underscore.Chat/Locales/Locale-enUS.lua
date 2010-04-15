@@ -6,6 +6,8 @@
 
 do
 	_UnderscoreLocalization.Chat = setmetatable( {
+		DEBUG_MAXLINES_PRESERVED = "_|cffcccc88Underscore|r.Chat: Chat frame MaxLines preserved for debugging.";
+
 		TIMESTAMP_FORMAT = GRAY_FONT_COLOR_CODE.."[%02d:%02d:%02d]|r %s"; -- Hour, Minute, Second, Message
 		TIMESTAMP_PATTERN = "^"..GRAY_FONT_COLOR_CODE.."%[%d%d:%d%d:%d%d%]|r ";
 
