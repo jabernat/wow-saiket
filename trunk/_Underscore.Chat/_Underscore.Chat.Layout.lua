@@ -9,7 +9,6 @@ local _Underscore = _Underscore;
 local me = CreateFrame( "Frame", nil, UIParent );
 _Underscore.Chat.Layout = me;
 
-me.MaxLines = 1024;
 me.ButtonAlpha = DEFAULT_CHATFRAME_ALPHA + 0.25;
 me.ExpandedAlpha = min( DEFAULT_CHATFRAME_ALPHA + 0.25, 1 );
 
@@ -309,9 +308,6 @@ do
 
 		ChatFrame:HookScript( "OnShow", me.ChatFrameOnShow );
 
-		-- Modify chat message frame
-		ChatFrame:SetMaxLines( me.MaxLines );
-		ChatFrame:SetFading( false );
 		FCF_SetChatWindowFontSize( nil, ChatFrame, 12 );
 
 

@@ -13,6 +13,7 @@ me.ChatFrames = {};
 me.AddMessageBackups = {};
 local AddMessageFilters = {};
 
+me.MaxLines = 1024;
 me.ScrollBindOverrides = {
 	CAMERAZOOMIN = true;
 	CAMERAZOOMOUT = true;
@@ -213,14 +214,23 @@ do
 	hooksecurefunc( "CameraOrSelectOrMoveStop", me.CameraMoveStop );
 
 
+	local PreserveMaxLines = IsShiftKeyDown();
 	for Index = 1, NUM_CHAT_WINDOWS do
 		local ChatFrame = _G[ "ChatFrame"..Index ];
 
 		me.ChatFrames[ Index ] = ChatFrame;
 		ChatFrame:SetScript( "OnMouseWheel", me.OnMouseWheel );
+		ChatFrame:SetFading( false );
+		if ( not PreserveMaxLines ) then -- Keep early messages in window if shift is held
+			ChatFrame:SetMaxLines( me.MaxLines );
+		end
 
 		me.AddMessageBackups[ ChatFrame ] = ChatFrame.AddMessage;
 		ChatFrame.AddMessage = me.AddMessage;
+	end
+	if ( PreserveMaxLines ) then
+		local Color = RED_FONT_COLOR;
+		DEFAULT_CHAT_FRAME:AddMessage( L.DEBUG_MAXLINES_PRESERVED, Color.r, Color.g, Color.b );
 	end
 
 
