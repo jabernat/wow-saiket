@@ -6,7 +6,7 @@
 
 
 local L = GridStatusHealthFadeLocalization;
-local me = GridStatus:NewModule( "GridStatusHealthFade" );
+local me = Grid:GetModule( "GridStatus" ):NewModule( "GridStatusHealthFade" );
 GridStatusHealthFade = me;
 
 local STATUS_ID = "alert_healthFade";
