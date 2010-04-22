@@ -120,6 +120,7 @@ do
 	end
 
 
+	WatchFrame:SetScale( 0.75 );
 	-- Right-align the header text
 	WatchFrameTitle:SetPoint( "RIGHT", WatchFrameCollapseExpandButton, "LEFT", -8, 0 );
 	WatchFrameTitle:SetJustifyH( "RIGHT" );
