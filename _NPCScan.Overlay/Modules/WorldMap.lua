@@ -1,52 +1,41 @@
 --[[****************************************************************************
   * _NPCScan.Overlay by Saiket                                                 *
-  * _NPCScan.Overlay.WorldMap.lua - Canvas for the WorldMap.                   *
+  * Modules/WorldMap.lua - Canvas for the WorldMapFrame.                       *
   ****************************************************************************]]
 
 
 local L = _NPCScanOverlayLocalization;
 local Overlay = select( 2, ... );
-local me = CreateFrame( "Frame", nil, WorldMapDetailFrame );
-Overlay.WorldMap = me;
+local me = Overlay.Modules.WorldMapTemplate.Embed( CreateFrame( "Frame", nil, WorldMapDetailFrame ) );
 
-me.Label = L.MODULE_WORLDMAP;
-me.AlphaDefault = 0.55;
-
-me.Key = CreateFrame( "Frame", nil, WorldMapButton );
-me.Toggle = CreateFrame( "CheckButton", "_NPCScanOverlayWorldMapToggle", WorldMapFrame, "OptionsCheckButtonTemplate" );
-
-me.AchievementNPCNames = {};
-
-local KeyFont = CreateFont( "_NPCScanOverlayWorldMapKeyFont" );
-local IsChildAddOn = IsAddOnLoaded( "_NPCScan" );
+me.KeyMinScale = 0.5; -- Minimum effective scale to render the key at
+me.KeyMaxSize = 1 / 3; -- If the key takes up more than this fraction of the canvas, hide it
 
 
 
 
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay.WorldMap.Key:OnEnter                            *
+  * Function: _NPCScan.Overlay.Modules.List.WorldMap:KeyOnEnter                *
   ****************************************************************************]]
 do
 	local Points = { "BOTTOMLEFT", "BOTTOMRIGHT", "TOPRIGHT" };
 	local Point = 0;
-	function me.Key:OnEnter ()
-		local AnchorTarget = select( 2, self:GetPoint() );
+	function me:KeyOnEnter ()
 		self:ClearAllPoints();
-		self:SetPoint( Points[ Point % #Points + 1 ], AnchorTarget );
+		self:SetPoint( Points[ Point % #Points + 1 ] );
 		Point = Point + 1;
 	end
 end
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay.WorldMap.Key:Paint                              *
+  * Function: _NPCScan.Overlay.Modules.List.WorldMap:KeyPaint                  *
   ****************************************************************************]]
 do
 	local Count, Height, Width;
-	local NPCNames = {}; -- Cache of names used by _NPCScan searches
-	local function PaintKey ( self, PathData, FoundX, FoundY, R, G, B, NpcID )
+	local function KeyAddLine ( self, PathData, FoundX, FoundY, R, G, B, NpcID )
 		Count = Count + 1;
 		local Line = self[ Count ];
 		if ( not Line ) then
-			Line = self.Body:CreateFontString( nil, "OVERLAY", KeyFont:GetName() );
+			Line = self.Body:CreateFontString( nil, "OVERLAY", self.Font:GetName() );
 			Line:SetPoint( "TOPLEFT", Count == 1 and self.Title or self[ Count - 1 ], "BOTTOMLEFT" );
 			Line:SetPoint( "RIGHT", self.Title );
 			self[ Count ] = Line;
@@ -54,7 +43,7 @@ do
 			Line:Show();
 		end
 
-		Line:SetText( L.MODULE_WORLDMAP_KEY_FORMAT:format( me.AchievementNPCNames[ NpcID ] or L.NPCS[ NpcID ] or NPCNames[ NpcID ] or NpcID ) );
+		Line:SetText( L.MODULE_WORLDMAP_KEY_FORMAT:format( me.AchievementNPCNames[ NpcID ] or L.NPCS[ NpcID ] or NpcID ) );
 		Line:SetTextColor( R, G, B );
 
 		Width = max( Width, Line:GetStringWidth() );
@@ -73,181 +62,130 @@ do
 			end
 		end
 	end
-	function me.Key:Paint ( Map )
+	function me:KeyPaint ( Map )
 		if ( MapHasNPCs( Map ) ) then
 			Width = self.Title:GetStringWidth();
 			Height = self.Title:GetStringHeight();
 			Count = 0;
 
-			if ( IsChildAddOn ) then -- Cache _NPCScan's custom mob names
-				for Name, NpcID in pairs( _NPCScan.OptionsCharacter.NPCs ) do
-					NPCNames[ NpcID ] = Name;
-				end
-			end
-			Overlay.ApplyZone( self, Map, PaintKey );
-			if ( IsChildAddOn ) then
-				wipe( NPCNames );
-			end
+			Overlay.ApplyZone( self, Map, KeyAddLine );
 
 			for Index = Count + 1, #self do
 				self[ Index ]:Hide();
 			end
-			self:SetWidth( Width + 32 );
-			self:SetHeight( Height + 32 );
+			self:SetSize( Width + 32, Height + 32 );
 			self:Show();
 		else
 			self:Hide();
 		end
 	end
 end
-
-
-
-
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay.WorldMap:Paint                                  *
+  * Function: _NPCScan.Overlay.Modules.List.WorldMap:KeyParentValidateSize     *
   ****************************************************************************]]
-do
-	local function PaintPath ( self, PathData, FoundX, FoundY, R, G, B, NpcID )
-		Overlay.DrawPath( self, PathData, "ARTWORK", R, G, B );
-		if ( FoundX ) then
-			Overlay.DrawFound( self, FoundX, FoundY, Overlay.DetectionRadius / Overlay.GetZoneSize( Overlay.NPCMaps[ NpcID ] ), "OVERLAY", R, G, B );
-		end
+function me:KeyParentValidateSize ()
+	local Width, Height = self:GetSize();
+	local KeyScale, KeyWidth, KeyHeight = self.Key:GetScale(), self.Key:GetSize();
+	-- Hide if it covers too much of the canvas
+	if ( KeyWidth * KeyScale > Width * me.KeyMaxSize or KeyHeight * KeyScale > Height * me.KeyMaxSize ) then
+		self.Container:Hide(); -- KeyParent must remain visible so OnSizeChanged still fires
+	else
+		self.Container:Show();
 	end
-	function me:Paint ( Map )
-		Overlay.ApplyZone( self, Map, PaintPath );
-	end
+end
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.Modules.List.WorldMap:KeyParentOnSizeChanged    *
+  ****************************************************************************]]
+function me:KeyParentOnSizeChanged ()
+	self.Key:SetScale( max( 1, me.KeyMinScale / self:GetEffectiveScale() ) );
+	me.KeyParentValidateSize( self );
+end
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.Modules.List.WorldMap:KeyOnSizeChanged          *
+  ****************************************************************************]]
+function me:KeyOnSizeChanged ()
+	me.KeyParentValidateSize( self.KeyParent );
 end
 
 
---[[****************************************************************************
-  * Function: local MapUpdate                                                  *
-  ****************************************************************************]]
-local MapUpdate;
-do
-	local function OnUpdate ( self )
-		self:SetScript( "OnUpdate", nil );
-
-		local Map = GetCurrentMapAreaID() - 1;
-		if ( Map ~= self.MapLast ) then
-			self.MapLast = Map;
-
-			Overlay.TextureRemoveAll( self );
-			self:Paint( Map );
-			if ( self.Key ) then
-				self.Key:Paint( Map );
-			end
-		end
-	end
-	function MapUpdate ( self, Force )
-		if ( Force ) then
-			self.MapLast = nil;
-		end
-		self:SetScript( "OnUpdate", OnUpdate );
-	end
-end
 
 
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay.WorldMap.Toggle.setFunc                         *
+  * Function: _NPCScan.Overlay.Modules.List.WorldMap.ToggleSetFunc             *
   * Description: Toggles the module from the WorldMap frame.                   *
   ****************************************************************************]]
-function me.Toggle.setFunc ( Enable )
-	Overlay[ Enable == "1" and "ModuleEnable" or "ModuleDisable" ]( "WorldMap" );
+function me.ToggleSetFunc ( Enable )
+	Overlay.Modules[ Enable == "1" and "Enable" or "Disable" ]( "WorldMap" );
 end
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay.WorldMap.Toggle:OnEnter                         *
+  * Function: _NPCScan.Overlay.Modules.List.WorldMap:ToggleOnEnter             *
   ****************************************************************************]]
-function me.Toggle:OnEnter ()
-	WorldMapTooltip:SetOwner( self, "ANCHOR_LEFT" );
+function me:ToggleOnEnter ()
+	WorldMapTooltip:SetOwner( self, "ANCHOR_TOPLEFT" );
 	WorldMapTooltip:SetText( L.MODULE_WORLDMAP_TOGGLE_DESC, nil, nil, nil, nil, 1 );
 end
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay.WorldMap.Toggle:OnLeave                         *
+  * Function: _NPCScan.Overlay.Modules.List.WorldMap:ToggleOnLeave             *
   ****************************************************************************]]
-function me.Toggle:OnLeave ()
+function me:ToggleOnLeave ()
 	WorldMapTooltip:Hide();
 end
 
 
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.WorldMap:OnShow                                 *
-  ****************************************************************************]]
-function me:OnShow ()
-	MapUpdate( self );
-end
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.WorldMap:OnEvent                                *
-  ****************************************************************************]]
-function me:OnEvent ()
-	MapUpdate( self ); -- WORLD_MAP_UPDATE
-end
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.WorldMap:OnLoad                                 *
-  ****************************************************************************]]
-function me:OnLoad ()
-	self:Hide();
-	self:SetAllPoints();
-	self:SetScript( "OnShow", me.OnShow );
-	self:SetScript( "OnEvent", me.OnEvent );
-end
 
 
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay.WorldMap:Update                                 *
+  * Function: _NPCScan.Overlay.Modules.List.WorldMap:Paint                     *
   ****************************************************************************]]
-function me:Update ( Map )
-	if ( not Map or Map == self.MapLast ) then
-		MapUpdate( self, true );
-	end
+function me:Paint ( ... )
+	self.KeyPaint( self.KeyParent.Key, ... );
+	return self.super.Paint( self, ... );
+end
+
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.Modules.List.WorldMap:OnEnable                  *
+  ****************************************************************************]]
+function me:OnEnable ( ... )
+	self.Toggle:SetChecked( true );
+	self.KeyParent:Show();
+	return self.super.OnEnable( self, ... );
 end
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay.WorldMap:Disable                                *
+  * Function: _NPCScan.Overlay.Modules.List.WorldMap:OnDisable                 *
   ****************************************************************************]]
-function me:Disable ()
-	self:UnregisterEvent( "WORLD_MAP_UPDATE" );
-	self:Hide();
-	if ( self.Key ) then
-		self.Key:Hide();
-	end
-	Overlay.TextureRemoveAll( self );
-
-	if ( self.Toggle ) then
-		self.Toggle:SetChecked( false );
-	end
+function me:OnDisable ( ... )
+	self.Toggle:SetChecked( false );
+	self.KeyParent:Hide();
+	return self.super.OnDisable( self, ... );
 end
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay.WorldMap:Enable                                 *
+  * Function: _NPCScan.Overlay.Modules.List.WorldMap:OnLoad                    *
   ****************************************************************************]]
-function me:Enable ()
-	self:RegisterEvent( "WORLD_MAP_UPDATE" );
-	self:Show();
+function me:OnLoad ( ... )
+	-- Add key frame to map
+	local KeyParent = CreateFrame( "Frame", nil, WorldMapButton );
+	self.KeyParent = KeyParent;
+	KeyParent:Hide();
+	KeyParent:SetAllPoints();
+	KeyParent:SetScript( "OnSizeChanged", me.KeyParentOnSizeChanged );
 
-	if ( self.Toggle ) then
-		self.Toggle:SetChecked( true );
-	end
-end
+	KeyParent.Container = CreateFrame( "Frame", nil, KeyParent );
+	KeyParent.Container:SetAllPoints();
 
-
-
-
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
-
-do
-	KeyFont:SetFontObject( ChatFontNormal );
-	KeyFont:SetJustifyH( "LEFT" );
-
-
-	local Key = me.Key;
-	Key:SetPoint( "BOTTOMLEFT" );
-	Key:SetScript( "OnEnter", Key.OnEnter );
-	Key:OnEnter();
+	local Key = CreateFrame( "Frame", nil, KeyParent.Container );
+	KeyParent.Key, Key.KeyParent = Key, KeyParent;
+	Key:SetScript( "OnEnter", self.KeyOnEnter );
+	Key:SetScript( "OnSizeChanged", me.KeyOnSizeChanged );
+	self.KeyOnEnter( Key ); -- Initialize starting point
 	Key:EnableMouse( true );
 	Key:SetBackdrop( {
 		edgeFile = [[Interface\AchievementFrame\UI-Achievement-WoodBorder]]; edgeSize = 48;
 	} );
+
+	Key.Font = CreateFont( "_NPCScanOverlayWorldMapKeyFont" );
+	Key.Font:SetFontObject( ChatFontNormal );
+	Key.Font:SetJustifyH( "LEFT" );
+
 	Key.Body = CreateFrame( "Frame", nil, Key );
 	Key.Body:SetPoint( "BOTTOMLEFT", 10, 10 );
 	Key.Body:SetPoint( "TOPRIGHT", -10, -10 );
@@ -273,27 +211,53 @@ do
 
 
 	-- Create toggle button on the WorldMap
-	local Toggle = me.Toggle;
+	local Toggle = CreateFrame( "CheckButton", "_NPCScanOverlayWorldMapToggle", WorldMapFrame, "OptionsCheckButtonTemplate" );
+	self.Toggle = Toggle;
 	local Label = _G[ Toggle:GetName().."Text" ];
 	Label:SetText( L.MODULE_WORLDMAP_TOGGLE );
 	local LabelWidth = Label:GetStringWidth();
 	Toggle:SetHitRectInsets( 4, 4 - LabelWidth, 4, 4 );
 	Toggle:SetPoint( "RIGHT", WorldMapQuestShowObjectives, "LEFT", -LabelWidth - 8, 0 );
-	Toggle:SetScript( "OnEnter", Toggle.OnEnter );
-	Toggle:SetScript( "OnLeave", Toggle.OnLeave );
+	Toggle:SetScript( "OnEnter", self.ToggleOnEnter );
+	Toggle:SetScript( "OnLeave", self.ToggleOnLeave );
+	Toggle.setFunc = self.ToggleSetFunc;
 
 
 	-- Cache achievement NPC names
+	self.AchievementNPCNames = {};
 	for AchievementID in pairs( Overlay.Achievements ) do
 		for Criteria = 1, GetAchievementNumCriteria( AchievementID ) do
 			local Name, CriteriaType, _, _, _, _, _, AssetID = GetAchievementCriteriaInfo( AchievementID, Criteria );
 			if ( CriteriaType == 0 ) then -- Mob kill type
-				me.AchievementNPCNames[ AssetID ] = Name;
+				self.AchievementNPCNames[ AssetID ] = Name;
 			end
 		end
 	end
 
+	return self.super.OnLoad( self, ... );
+end
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.Modules.List.WorldMap:OnUnload                  *
+  ****************************************************************************]]
+function me:OnUnload ( ... )
+	self.KeyParent:SetScript( "OnSizeChanged", nil );
+	self.KeyParent.Key:SetScript( "OnEnter", nil );
+	self.KeyParent.Key:SetScript( "OnSizeChanged", nil );
 
-	me:OnLoad();
-	Overlay.ModuleRegister( "WorldMap", me );
+	self.Toggle:Hide();
+	self.Toggle:SetScript( "OnEnter", nil );
+	self.Toggle:SetScript( "OnLeave", nil );
+
+	return self.super.OnUnload( self, ... );
+end
+
+
+
+
+--------------------------------------------------------------------------------
+-- Function Hooks / Execution
+-----------------------------
+
+do
+	Overlay.Modules.Register( "WorldMap", me, L.MODULE_WORLDMAP );
 end

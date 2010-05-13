@@ -15,18 +15,17 @@ me.Options = {
 	Version = me.Version;
 	Modules = {};
 	ModulesAlpha = {};
+	ModulesExtra = {};
 };
 
 me.OptionsDefault = {
 	Version = me.Version;
 	Modules = {};
 	ModulesAlpha = {};
+	ModulesExtra = {};
 	ShowAll = false;
 };
 
-
-me.Modules = {};
-me.ModuleInitializers = {}; -- [ ParentAddOn ] = Module;
 
 me.NPCMaps = {}; -- [ NpcID ] = MapName;
 me.NPCsEnabled = {};
@@ -64,16 +63,17 @@ local MESSAGE_FOUND = "NpcOverlay_Found";
   * Function: _NPCScan.Overlay.SafeCall                                        *
   * Description: Catches errors and throws them without ending execution.      *
   ****************************************************************************]]
-local SafeCall;
 do
-	local pcall = pcall;
-	function SafeCall ( Function, ... )
-		local Success, ErrorMessage = pcall( Function, ... );
+	local function Catch ( Success, ... )
 		if ( not Success ) then
-			geterrorhandler()( ErrorMessage );
+			geterrorhandler()( ... );
 		end
+		return Success, ...;
 	end
-	me.SafeCall = SafeCall;
+	local pcall = pcall;
+	function me.SafeCall ( Function, ... )
+		return Catch( pcall( Function, ... ) );
+	end
 end
 
 
@@ -275,151 +275,6 @@ function me:ApplyZone ( Map, Callback )
 		end
 	end
 end
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.UpdateMap                                       *
-  * Description: Updates a map for all active modules.                         *
-  ****************************************************************************]]
-function me.UpdateMap ( Map )
-	for Name, Enabled in pairs( me.Options.Modules ) do
-		if ( Enabled ) then
-			local Module = me.Modules[ Name ];
-			if ( Module.Update ) then
-				SafeCall( Module.Update, Module, Map );
-			end
-		end
-	end
-end
-
-
-
-
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.ModuleRegister                                  *
-  * Description: Registers a canvas module to paint polygons on.               *
-  ****************************************************************************]]
-function me.ModuleRegister ( Name, Module, ParentAddon )
-	me.Modules[ Name ] = Module;
-	local Config = me.Config.ModuleRegister( Name, Module.Label );
-
-	if ( ParentAddon ) then
-		local Reason = select( 6, GetAddOnInfo( ParentAddon ) );
-		if ( Reason and not ( Reason == "DISABLED" and IsAddOnLoadOnDemand( ParentAddon ) ) ) then
-			me.ModuleUnregister( Name );
-		elseif ( IsAddOnLoaded( ParentAddon ) ) then
-			if ( Module.OnLoad ) then
-				SafeCall( Module.OnLoad, Module );
-				Module.OnLoad = nil;
-			end
-		else
-			me.ModuleInitializers[ ParentAddon:upper() ] = Module;
-		end
-	end
-	return Config;
-end
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.ModuleUnregister                                *
-  * Description: Disables the module for the session and disables its          *
-  *   configuration controls.                                                  *
-  ****************************************************************************]]
-function me.ModuleUnregister ( Name )
-	local Config = me.Config.Modules[ Name ];
-
-	local Color = GRAY_FONT_COLOR;
-	_G[ Config:GetName().."Title" ]:SetTextColor( Color.r, Color.g, Color.b );
-
-	if ( Config.Enabled:IsEnabled() == 1 ) then
-		Config.Enabled:SetEnabled( false );
-		for _, Control in ipairs( Config ) do
-			Control:SetEnabled( false );
-		end
-
-		local Module = me.Modules[ Name ];
-		if ( me.Options.Modules[ Name ] ) then
-			if ( Module.Disable ) then
-				SafeCall( Module.Disable, Module );
-			end
-		end
-
-		Module.Update = nil;
-		Module.Enable = nil;
-		Module.Disable = nil;
-		Module.OnLoad = nil;
-		return true;
-	end
-end
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.ModuleEnable                                    *
-  ****************************************************************************]]
-function me.ModuleEnable ( Name )
-	if ( not me.Options.Modules[ Name ] ) then
-		me.Options.Modules[ Name ] = true;
-
-		local Config = me.Config.Modules[ Name ];
-		Config.Enabled:SetChecked( true );
-		if ( Config.Enabled:IsEnabled() == 1 ) then -- Still registered
-			local Module = me.Modules[ Name ];
-			for _, Control in ipairs( Config ) do
-				Control:SetEnabled( true );
-			end
-			if ( Module.Enable ) then
-				SafeCall( Module.Enable, Module );
-			end
-			if ( Module.Update ) then
-				SafeCall( Module.Update, Module );
-			end
-		end
-		return true;
-	end
-end
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.ModuleDisable                                   *
-  ****************************************************************************]]
-function me.ModuleDisable ( Name )
-	local Enabled = me.Options.Modules[ Name ];
-	if ( Enabled ~= false ) then -- True or nil, which defaults to enabled
-		me.Options.Modules[ Name ] = false;
-
-		local Config = me.Config.Modules[ Name ];
-		for _, Control in ipairs( Config ) do
-			Control:SetEnabled( false );
-		end
-
-		if ( Enabled ~= nil ) then -- Was previously enabled
-			Config.Enabled:SetChecked( false );
-			local Module = me.Modules[ Name ];
-			if ( Config.Enabled:IsEnabled() == 1 and Module.Disable ) then -- Still registered
-				SafeCall( Module.Disable, Module );
-			end
-		end
-		return true;
-	end
-end
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.ModuleSetAlpha                                  *
-  ****************************************************************************]]
-function me.ModuleSetAlpha ( Name, Alpha )
-	if ( Alpha ~= me.Options.ModulesAlpha[ Name ] ) then
-		me.Options.ModulesAlpha[ Name ] = Alpha;
-
-		me.Config.Modules[ Name ].Alpha:SetValue( Alpha );
-		me.Modules[ Name ]:SetAlpha( Alpha );
-		return true;
-	end
-end
---[[****************************************************************************
-  * Function: _NPCScan.Overlay:ADDON_LOADED                                    *
-  ****************************************************************************]]
-function me:ADDON_LOADED ( _, Addon )
-	Addon = Addon:upper(); -- For case insensitive file systems (Windows')
-	local Module = me.ModuleInitializers[ Addon ];
-	if ( Module ) then
-		me.ModuleInitializers[ Addon ] = nil;
-		if ( Module.OnLoad ) then
-			SafeCall( Module.OnLoad, Module );
-			Module.OnLoad = nil;
-		end
-	end
-end
 
 
 
@@ -433,7 +288,7 @@ function me.NPCAdd ( NpcID )
 		me.NPCsEnabled[ NpcID ] = true;
 
 		if ( not me.Options.ShowAll ) then
-			me.UpdateMap( Map );
+			me.Modules.UpdateMap( Map );
 		end
 		return true;
 	end
@@ -446,7 +301,7 @@ function me.NPCRemove ( NpcID )
 		me.NPCsEnabled[ NpcID ] = nil;
 
 		if ( not me.Options.ShowAll ) then
-			me.UpdateMap( me.NPCMaps[ NpcID ] );
+			me.Modules.UpdateMap( me.NPCMaps[ NpcID ] );
 		end
 		return true;
 	end
@@ -464,7 +319,7 @@ function me.NPCFound ( NpcID )
 			if ( X ~= 0 and Y ~= 0 ) then
 				me.NPCsFoundX[ NpcID ], me.NPCsFoundY[ NpcID ] = X, Y;
 				if ( me.NPCsEnabled[ NpcID ] ) then
-					me.UpdateMap( Map );
+					me.Modules.UpdateMap( Map );
 				end
 
 				return true;
@@ -533,7 +388,7 @@ function me.SetShowAll ( Enable )
 			-- If a map has a disabled path, it must be redrawn
 			for NpcID in pairs( MapData ) do
 				if ( not me.NPCsEnabled[ NpcID ] ) then
-					me.UpdateMap( Map );
+					me.Modules.UpdateMap( Map );
 					break;
 				end
 			end
@@ -555,45 +410,34 @@ function me.Synchronize ( Options )
 	end
 
 	me.SetShowAll( Options.ShowAll );
-
-	for Name, Module in pairs( me.Modules ) do
-		if ( Options.Modules[ Name ] ~= false ) then -- New modules (nil) default to enabled
-			me.ModuleEnable( Name );
-		else
-			me.ModuleDisable( Name );
-		end
-		me.ModuleSetAlpha( Name, Options.ModulesAlpha[ Name ] or Module.AlphaDefault );
-		if ( Module.Synchronize ) then
-			SafeCall( Module.Synchronize, Module, Options );
-		end
-	end
+	me.Modules.OnSynchronize( Options );
 end
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay:PLAYER_ENTERING_WORLD                           *
+  * Function: _NPCScan.Overlay:ADDON_LOADED                                    *
   ****************************************************************************]]
-function me:PLAYER_ENTERING_WORLD ( Event )
-	me[ Event ] = nil;
-	me:UnregisterEvent( Event );
+function me:ADDON_LOADED ( Event, AddOn )
+	if ( AddOn == AddOnName ) then
+		me[ Event ] = nil;
+		me:UnregisterEvent( Event );
 
-	local Options = _NPCScanOverlayOptions;
-	_NPCScanOverlayOptions = me.Options;
-
-	me.Synchronize( Options ); -- Loads defaults if nil
-end
---[[****************************************************************************
-  * Function: _NPCScan.Overlay:OnLoad                                          *
-  ****************************************************************************]]
-function me:OnLoad ()
-	-- Build a reverse lookup of NPC IDs to zones, and add them all by default
-	for Map, MapData in pairs( me.PathData ) do
-		for NpcID in pairs( MapData ) do
-			me.NPCMaps[ NpcID ] = Map;
-			me.NPCAdd( NpcID );
+		-- Build a reverse lookup of NPC IDs to zones, and add them all by default
+		for Map, MapData in pairs( me.PathData ) do
+			for NpcID in pairs( MapData ) do
+				me.NPCMaps[ NpcID ] = Map;
+				me.NPCAdd( NpcID );
+			end
 		end
-	end
 
-	me:RegisterMessage( MESSAGE_REGISTER );
-	me:RegisterMessage( MESSAGE_FOUND );
+		local Options = _NPCScanOverlayOptions;
+		_NPCScanOverlayOptions = me.Options;
+		if ( not Options.ModulesExtra ) then -- 3.3.0.8: Moved module options to options sub-tables
+			Options.ModulesExtra = {};
+		end
+		me.Synchronize( Options ); -- Loads defaults if nil
+
+		me:RegisterMessage( MESSAGE_REGISTER );
+		me:RegisterMessage( MESSAGE_FOUND );
+	end
 end
 
 
@@ -606,7 +450,4 @@ end
 do
 	LibStub( "AceEvent-3.0" ):Embed( me );
 	me:RegisterEvent( "ADDON_LOADED" );
-	me:RegisterEvent( "PLAYER_ENTERING_WORLD" );
-
-	me.ModuleInitializers[ AddOnName:upper() ] = me;
 end
