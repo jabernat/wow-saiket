@@ -12,9 +12,47 @@ Overlay.Config = me;
 
 me.ShowAll = CreateFrame( "CheckButton", "_NPCScanOverlayConfigShowAllCheckbox", me, "InterfaceOptionsCheckButtonTemplate" );
 
-me.Modules = {};
+local ModuleMethods = setmetatable( {}, getmetatable( me ) );
+me.ModuleMeta = { __index = ModuleMethods; };
 
 local IsChildAddOn = IsAddOnLoaded( "_NPCScan" );
+
+
+
+
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.Config.ModuleMeta.__index:AddControl            *
+  ****************************************************************************]]
+function ModuleMethods:AddControl ( Control )
+	self[ #self + 1 ] = Control;
+	Control:SetEnabled( self.Module.Registered and self.Enabled:GetChecked() );
+end
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.Config.ModuleMeta.__index:SetEnabled            *
+  ****************************************************************************]]
+do
+	local function SetControlsEnabled ( Config, Enabled ) -- Enables/disables all registered controls
+		for _, Control in ipairs( Config ) do
+			Control:SetEnabled( Enabled );
+		end
+	end
+	function ModuleMethods:SetEnabled ( Enabled )
+		self.Enabled:SetChecked( Enabled );
+		if ( self.Module.Registered ) then
+			SetControlsEnabled( self, Enabled );
+		end
+	end
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.Config.ModuleMeta.__index:Unregister            *
+  ****************************************************************************]]
+	function ModuleMethods:Unregister ()
+		self.Enabled:SetEnabled( false );
+		SetControlsEnabled( self, false );
+
+		local Color = GRAY_FONT_COLOR;
+		_G[ self:GetName().."Title" ]:SetTextColor( Color.r, Color.g, Color.b );
+	end
+end
 
 
 
@@ -29,16 +67,6 @@ function me:ControlOnEnter ()
 		GameTooltip:SetText( self.tooltipText, nil, nil, nil, nil, 1 );
 	end
 end
-
-
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.Config.ShowAll.setFunc                          *
-  ****************************************************************************]]
-function me.ShowAll.setFunc ( Enable )
-	Overlay.SetShowAll( Enable == "1" );
-end
-
-
 --[[****************************************************************************
   * Function: _NPCScan.Overlay.Config:ModuleCheckboxSetEnabled                 *
   ****************************************************************************]]
@@ -52,6 +80,12 @@ function me:ModuleSliderSetEnabled ( Enable )
 	( Enable and BlizzardOptionsPanel_Slider_Enable or BlizzardOptionsPanel_Slider_Disable )( self );
 end
 
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.Config.ShowAll.setFunc                          *
+  ****************************************************************************]]
+function me.ShowAll.setFunc ( Enable )
+	Overlay.SetShowAll( Enable == "1" );
+end
 
 --[[****************************************************************************
   * Function: _NPCScan.Overlay.Config:ModuleEnabledOnClick                     *
@@ -60,25 +94,29 @@ function me:ModuleEnabledOnClick ()
 	local Enable = self:GetChecked() == 1;
 
 	PlaySound( Enable and "igMainMenuOptionCheckBoxOn" or "igMainMenuOptionCheckBoxOff" );
-	Overlay[ Enable and "ModuleEnable" or "ModuleDisable" ]( self:GetParent().Name );
+	Overlay.Modules[ Enable and "Enable" or "Disable" ]( self:GetParent().Module.Name );
 end
 --[[****************************************************************************
   * Function: _NPCScan.Overlay.Config:ModuleAlphaOnValueChanged                *
   ****************************************************************************]]
 function me:ModuleAlphaOnValueChanged ( Value )
-	Overlay.ModuleSetAlpha( self:GetParent().Name, Value );
+	Overlay.Modules.SetAlpha( self:GetParent().Module.Name, Value );
 end
+
+
+
+
 --[[****************************************************************************
   * Function: _NPCScan.Overlay.Config.ModuleRegister                           *
   ****************************************************************************]]
 do
 	local LastFrame;
-	function me.ModuleRegister ( Name, Text )
-		local Frame = CreateFrame( "Frame", "_NPCScanOverlayModule"..Name, me.ScrollChild, "OptionsBoxTemplate" );
-		Frame.Name = Name;
-		me.Modules[ Name ] = Frame;
+	function me.ModuleRegister ( Module, Label )
+		local Frame = CreateFrame( "Frame", "_NPCScanOverlayModule"..Module.Name, me.ScrollChild, "OptionsBoxTemplate" );
+		Frame.Module = Module;
+		setmetatable( Frame, me.ModuleMeta );
 
-		_G[ Frame:GetName().."Title" ]:SetText( Text );
+		_G[ Frame:GetName().."Title" ]:SetText( Label );
 		Frame:SetPoint( "RIGHT", me.ScrollChild:GetParent(), -4, 0 );
 		if ( LastFrame ) then
 			Frame:SetPoint( "TOPLEFT", LastFrame, "BOTTOMLEFT", 0, -16 );
@@ -105,11 +143,11 @@ do
 		Alpha:SetMinMaxValues( 0, 1 );
 		Alpha:SetScript( "OnValueChanged", me.ModuleAlphaOnValueChanged );
 		Alpha.SetEnabled = me.ModuleSliderSetEnabled;
-		tinsert( Frame, Alpha );
 		local AlphaName = Alpha:GetName();
 		_G[ AlphaName.."Text" ]:SetText( L.CONFIG_ALPHA );
 		_G[ AlphaName.."Low" ]:Hide();
 		_G[ AlphaName.."High" ]:Hide();
+		Frame:AddControl( Alpha );
 
 		Frame:SetHeight( Alpha:GetHeight() + 16 + 4 );
 		return Frame;
@@ -127,6 +165,7 @@ end
 
 
 
+local TableCreateBackup;
 if ( IsChildAddOn ) then
 --[[****************************************************************************
   * Function: _NPCScan.Overlay.Config:TableSetHeader                           *
@@ -183,7 +222,6 @@ if ( IsChildAddOn ) then
 		end
 		return Table, ...;
 	end
-	local TableCreateBackup = _NPCScan.Config.Search.TableCreate;
 	function me:TableCreate ( ... )
 		return HookTable( TableCreateBackup( self, ... ) );
 	end
@@ -252,7 +290,10 @@ do
 	if ( IsChildAddOn ) then
 		me.parent = _NPCScanLocalization.CONFIG_TITLE;
 
-		_NPCScan.Config.Search.TableCreate = me.TableCreate;
+		Overlay.SafeCall( function ()
+			TableCreateBackup = assert( _NPCScan.Config.Search.TableCreate );
+			_NPCScan.Config.Search.TableCreate = me.TableCreate;
+		end );
 	end
 	InterfaceOptions_AddCategory( me );
 

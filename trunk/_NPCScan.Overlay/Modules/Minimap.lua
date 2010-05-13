@@ -1,25 +1,18 @@
 --[[****************************************************************************
   * _NPCScan.Overlay by Saiket                                                 *
-  * _NPCScan.Overlay.Minimap.lua - Canvas for the Minimap.                     *
+  * Modules/Minimap.lua - Canvas for the Minimap.                              *
   ****************************************************************************]]
 
 
 local L = _NPCScanOverlayLocalization;
 local Overlay = select( 2, ... );
 local Minimap = Minimap;
-local ScrollFrame = CreateFrame( "ScrollFrame", nil, Minimap );
-local me = CreateFrame( "Frame", nil, ScrollFrame );
-Overlay.Minimap = me;
-
-me.Label = L.MODULE_MINIMAP;
-me.AlphaDefault = 0.55;
+local me = CreateFrame( "Frame" );
 
 me.UpdateDistance = 0.5;
 me.UpdateRateDefault  = 0.04;
 me.UpdateRateRotating = 0.02; -- Faster so that spinning the minimap appears smooth
 local UpdateRate = me.UpdateRateDefault;
-
-me.RangeRing = CreateFrame( "Frame", nil, ScrollFrame ); -- [ Quadrant ] = Texture;
 
 local UpdateForce, IsInside, RotateMinimap, Radius, Quadrants;
 
@@ -29,7 +22,7 @@ local UpdateForce, IsInside, RotateMinimap, Radius, Quadrants;
 
 
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay.Minimap:Paint                                   *
+  * Function: _NPCScan.Overlay.Modules.List.Minimap:Paint                      *
   ****************************************************************************]]
 do
 	local SplitPoints = {};
@@ -405,14 +398,12 @@ do
 		[ "TRICORNER-TOPRIGHT" ]    = {  true,  true, false,  true };
 		[ "TRICORNER-TOPLEFT" ]     = {  true,  true,  true, false };
 	};
-	local LastQuadrants;
+	local LastQuadrants, UpdateRangeRing;
 	local RadiiInside = { 150, 120, 90, 60, 40, 25 };
 	local RadiiOutside = { 233 + 1 / 3, 200, 166 + 2 / 3, 133 + 1 / 3, 100, 66 + 2 / 3 };
 	local Cos, Sin = math.cos, math.sin;
 	function me:Paint ( Map, NewX, NewY, NewFacing )
 		Overlay.TextureRemoveAll( self );
-
-		local UpdateRangeRing;
 
 		Quadrants = MinimapShapes[ GetMinimapShape and GetMinimapShape() ] or MinimapShapes[ "ROUND" ];
 		if ( Quadrants ~= LastQuadrants ) then -- Minimap shape changed
@@ -445,11 +436,23 @@ do
 			Radius = ( IsInside and RadiiInside or RadiiOutside )[ Minimap:GetZoom() + 1 ];
 			UpdateRangeRing = true;
 		end
+		if ( Overlay.Options.ModulesExtra[ "Minimap" ].RangeRing ) then
+			if ( UpdateRangeRing ) then -- Re-fit ring quadrants to minimap shape and size
+				UpdateRangeRing = nil;
+				local RingRadius = Radius / Overlay.DetectionRadius / 2;
+				local Min, Max = 0.5 - RingRadius, 0.5 + RingRadius;
 
-		if ( UpdateRangeRing ) then
-			self.RangeRing:Update();
-		end
-		if ( Overlay.Options.MinimapRangeRing ) then
+				for Index = 1, 4 do
+					local Texture = self.RangeRing[ Index ];
+					if ( Quadrants[ Index ] and Radius < Overlay.DetectionRadius ) then -- Round and too large to fit
+						Texture:Hide();
+					else
+						local Left, Top = Index == 2 or Index == 3, Index <= 2;
+						Texture:SetTexCoord( Left and Min or 0.5, Left and 0.5 or Max, Top and Min or 0.5, Top and 0.5 or Max );
+						Texture:Show();
+					end
+				end
+			end
 			self.RangeRing:Show();
 		end
 
@@ -473,59 +476,12 @@ end
 
 
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay.Minimap.RangeRing:Update                        *
-  ****************************************************************************]]
-function me.RangeRing:Update ()
-	local RingRadius = Radius / Overlay.DetectionRadius / 2;
-	local Min, Max = 0.5 - RingRadius, 0.5 + RingRadius;
-
-	for Index = 1, 4 do
-		local Texture = me.RangeRing[ Index ];
-		if ( Quadrants[ Index ] and Radius < Overlay.DetectionRadius ) then -- Round and too large to fit
-			Texture:Hide();
-		else
-			local Left, Top = Index == 2 or Index == 3, Index <= 2;
-			Texture:SetTexCoord( Left and Min or 0.5, Left and 0.5 or Max, Top and Min or 0.5, Top and 0.5 or Max );
-			Texture:Show();
-		end
-	end
-end
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.Minimap.RangeRing:CheckboxOnClick               *
-  ****************************************************************************]]
-function me.RangeRing:CheckboxOnClick ( Enable )
-	local Enable = self:GetChecked() == 1;
-
-	PlaySound( Enable and "igMainMenuOptionCheckBoxOn" or "igMainMenuOptionCheckBoxOff" );
-	me.RangeRing.SetEnabled( Enable );
-end
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.Minimap.RangeRing.SetEnabled                    *
-  ****************************************************************************]]
-function me.RangeRing.SetEnabled ( Enable )
-	if ( Enable ~= Overlay.Options.MinimapRangeRing ) then
-		Overlay.Options.MinimapRangeRing = Enable;
-
-		me.RangeRing.Checkbox:SetChecked( Enable );
-		if ( Enable ) then
-			UpdateForce = true;
-		else
-			me.RangeRing:Hide();
-		end
-		return true;
-	end
-end
-
-
-
-
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.Minimap:SetZoom                                 *
+  * Function: _NPCScan.Overlay.Modules.List.Minimap:SetZoom                    *
   ****************************************************************************]]
 do
 	local Backup = Minimap.SetZoom;
 	function me:SetZoom ( Zoom, ... )
-		if ( self:GetZoom() ~= Zoom ) then
+		if ( me.Loaded and self:GetZoom() ~= Zoom ) then
 			Radius = nil;
 			UpdateForce = true;
 		end
@@ -534,7 +490,7 @@ do
 end
 
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay.Minimap:MINIMAP_UPDATE_ZOOM                     *
+  * Function: _NPCScan.Overlay.Modules.List.Minimap:MINIMAP_UPDATE_ZOOM        *
   * Description: Fires when the minimap swaps between indoor and outdoor zoom. *
   ****************************************************************************]]
 function me:MINIMAP_UPDATE_ZOOM ()
@@ -553,7 +509,7 @@ function me:MINIMAP_UPDATE_ZOOM ()
 	end
 end
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay.Minimap:ZONE_CHANGED_NEW_AREA                   *
+  * Function: _NPCScan.Overlay.Modules.List.Minimap:ZONE_CHANGED_NEW_AREA      *
   ****************************************************************************]]
 function me:ZONE_CHANGED_NEW_AREA ()
 	UpdateForce = true;
@@ -562,7 +518,7 @@ function me:ZONE_CHANGED_NEW_AREA ()
 	end
 end
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay.Minimap:WORLD_MAP_UPDATE                        *
+  * Function: _NPCScan.Overlay.Modules.List.Minimap:WORLD_MAP_UPDATE           *
   ****************************************************************************]]
 do
 	local GetCurrentMapAreaID = GetCurrentMapAreaID;
@@ -579,13 +535,13 @@ do
 	end
 end
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay.Minimap:OnShow                                  *
+  * Function: _NPCScan.Overlay.Modules.List.Minimap:OnShow                     *
   ****************************************************************************]]
 function me:OnShow ()
 	UpdateForce = true;
 end
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay.Minimap:OnUpdate                                *
+  * Function: _NPCScan.Overlay.Modules.List.Minimap:OnUpdate                   *
   ****************************************************************************]]
 do
 	local GetPlayerMapPosition = GetPlayerMapPosition;
@@ -608,13 +564,13 @@ do
 				or Map ~= GetCurrentMapAreaID() - 1 -- Coordinates will be for wrong map
 			) then
 				UpdateForce = nil;
-				me.RangeRing:Hide();
+				self.RangeRing:Hide();
 				Overlay.TextureRemoveAll( self );
 				return;
 			end
 
 			RotateMinimap = GetCVarBool( "rotateMinimap" );
-			UpdateRate = me[ RotateMinimap and "UpdateRateRotating" or "UpdateRateDefault" ];
+			UpdateRate = self[ RotateMinimap and "UpdateRateRotating" or "UpdateRateDefault" ];
 
 			Facing = RotateMinimap and GetPlayerFacing() or 0;
 			Width, Height = Overlay.GetZoneSize( Map );
@@ -632,88 +588,64 @@ do
 		end
 	end
 end
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.Minimap:OnEvent                                 *
-  ****************************************************************************]]
-do
-	local type = type;
-	function me:OnEvent ( Event, ... )
-		if ( type( self[ Event ] ) == "function" ) then
-			self[ Event ]( self, Event, ... );
-		end
-	end
-end
+
+
 
 
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay.Minimap:SetAlpha                                *
-  * Description: Uses half opacity when indoors.                               *
+  * Function: _NPCScan.Overlay.Modules.List.Minimap:SetAlpha                   *
+  * Description: Fades overlay when indoors.                                   *
   ****************************************************************************]]
 do
 	local SetAlphaBackup = me.SetAlpha;
 	function me:SetAlpha ( Alpha, ... )
-		self.Alpha = Alpha;
-		if ( IsInside ) then
-			Alpha = Alpha / 3;
-		end
-		return SetAlphaBackup( self, Alpha, ... );
+		return SetAlphaBackup( self, IsInside and Alpha / 3 or Alpha, ... );
 	end
-end
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.Minimap:Synchronize                             *
-  ****************************************************************************]]
-function me:Synchronize ( Options )
-	me.RangeRing.SetEnabled( Options.MinimapRangeRing );
 end
 
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay.Minimap:Update                                  *
+  * Function: _NPCScan.Overlay.Modules.List.Minimap:OnMapUpdate                *
   ****************************************************************************]]
-function me:Update ( Map )
+function me:OnMapUpdate ( Map )
 	if ( not Map or Map == Overlay.ZoneMaps[ GetRealZoneText() ] ) then
 		UpdateForce = true;
 	end
 end
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay.Minimap:Disable                                 *
+  * Function: _NPCScan.Overlay.Modules.List.Minimap:OnEnable                   *
   ****************************************************************************]]
-function me:Disable ()
-	ScrollFrame:Hide();
+function me:OnEnable ()
+	self.ScrollFrame:Show();
+	self:RegisterEvent( "WORLD_MAP_UPDATE" );
+	self:RegisterEvent( "ZONE_CHANGED_NEW_AREA" );
+end
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.Modules.List.Minimap:OnDisable                  *
+  ****************************************************************************]]
+function me:OnDisable ()
+	self.ScrollFrame:Hide();
 	Overlay.TextureRemoveAll( self );
 	self:UnregisterEvent( "WORLD_MAP_UPDATE" );
 	self:UnregisterEvent( "ZONE_CHANGED_NEW_AREA" );
 end
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay.Minimap:Enable                                  *
+  * Function: _NPCScan.Overlay.Modules.List.Minimap:OnLoad                     *
   ****************************************************************************]]
-function me:Enable ()
-	ScrollFrame:Show();
-	self:RegisterEvent( "WORLD_MAP_UPDATE" );
-	self:RegisterEvent( "ZONE_CHANGED_NEW_AREA" );
-end
+function me:OnLoad ()
+	self.ScrollFrame = CreateFrame( "ScrollFrame", nil, Minimap );
+	self.ScrollFrame:Hide();
+	self.ScrollFrame:SetAllPoints();
+	self.ScrollFrame:SetScrollChild( self );
 
+	self:SetAllPoints();
+	self:SetScript( "OnShow", self.OnShow );
+	self:SetScript( "OnUpdate", self.OnUpdate );
+	self:SetScript( "OnEvent", Overlay.Modules.OnEvent );
+	self:RegisterEvent( "MINIMAP_UPDATE_ZOOM" );
 
-
-
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
-
-do
-	ScrollFrame:Hide();
-	ScrollFrame:SetAllPoints();
-	ScrollFrame:SetScrollChild( me );
-
-	me:SetAllPoints();
-	me:SetScript( "OnShow", me.OnShow );
-	me:SetScript( "OnUpdate", me.OnUpdate );
-	me:SetScript( "OnEvent", me.OnEvent );
-	me:RegisterEvent( "MINIMAP_UPDATE_ZOOM" );
-	Overlay.OptionsDefault.MinimapRangeRing = true;
-
-
+	local RangeRing = CreateFrame( "Frame", nil, self.ScrollFrame ); -- [ Quadrant ] = Texture;
+	self.RangeRing = RangeRing;
 	-- Setup the range ring's textures
-	local RangeRing = me.RangeRing;
 	RangeRing:SetAllPoints();
 	RangeRing:SetAlpha( 0.8 );
 	local Color = NORMAL_FONT_COLOR;
@@ -731,21 +663,81 @@ do
 		Texture:SetVertexColor( Color.r, Color.g, Color.b );
 	end
 
-	Minimap.SetZoom = me.SetZoom;
+	Minimap.SetZoom = self.SetZoom;
+end
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.Modules.List.Minimap:OnUnload                   *
+  ****************************************************************************]]
+function me:OnUnload ()
+	self:SetScript( "OnShow", nil );
+	self:SetScript( "OnUpdate", nil );
+	self:SetScript( "OnEvent", nil );
+	self:UnregisterEvent( "MINIMAP_UPDATE_ZOOM" );
+end
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.Modules.List.Minimap:OnUnregister               *
+  ****************************************************************************]]
+function me:OnUnregister ()
+	self.Paint, self.OnShow, self.OnUpdate = nil;
+	self.MINIMAP_UPDATE_ZOOM = nil;
+	self.ZONE_CHANGED_NEW_AREA = nil;
+	self.WORLD_MAP_UPDATE = nil;
+end
 
 
-	-- Register and create GUI for the range ring option
-	local Config = Overlay.ModuleRegister( "Minimap", me );
 
+
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.Modules.List.Minimap:RangeRingCheckboxOnClick   *
+  ****************************************************************************]]
+function me:RangeRingCheckboxOnClick ( Enable )
+	local Enable = self:GetChecked() == 1;
+
+	PlaySound( Enable and "igMainMenuOptionCheckBoxOn" or "igMainMenuOptionCheckBoxOff" );
+	me.RangeRingSetEnabled( Enable );
+end
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.Modules.List.Minimap.RangeRingSetEnabled        *
+  ****************************************************************************]]
+function me.RangeRingSetEnabled ( Enable )
+	if ( Enable ~= Overlay.Options.ModulesExtra[ "Minimap" ].RangeRing ) then
+		Overlay.Options.ModulesExtra[ "Minimap" ].RangeRing = Enable;
+
+		me.Config.RangeRing:SetChecked( Enable );
+
+		if ( Enable ) then
+			UpdateForce = true;
+		elseif ( me.Loaded ) then
+			me.RangeRing:Hide();
+		end
+		return true;
+	end
+end
+--[[****************************************************************************
+  * Function: _NPCScan.Overlay.Modules.List.Minimap:OnSynchronize              *
+  ****************************************************************************]]
+function me:OnSynchronize ( OptionsExtra )
+	self.RangeRingSetEnabled( OptionsExtra.RangeRing ~= false );
+end
+
+
+
+
+--------------------------------------------------------------------------------
+-- Function Hooks / Execution
+-----------------------------
+
+do
+	Overlay.Modules.Register( "Minimap", me, L.MODULE_MINIMAP );
+
+	local Config = me.Config;
 	local Checkbox = CreateFrame( "CheckButton", "$parentRangeRing", Config, "UICheckButtonTemplate" );
-	RangeRing.Checkbox = Checkbox;
 	Config.RangeRing = Checkbox;
-	tinsert( Config, Checkbox );
 
 	Checkbox:SetPoint( "TOPLEFT", Config.Enabled, "BOTTOMLEFT" );
 	Checkbox:SetWidth( 26 );
 	Checkbox:SetHeight( 26 );
-	Checkbox:SetScript( "OnClick", RangeRing.CheckboxOnClick );
+	Checkbox:SetScript( "OnClick", me.RangeRingCheckboxOnClick );
 	local Label = _G[ Checkbox:GetName().."Text" ];
 	Label:SetPoint( "RIGHT", Config, "RIGHT", -6, 0 );
 	Label:SetJustifyH( "LEFT" );
@@ -755,6 +747,7 @@ do
 	Checkbox.tooltipText = L.MODULE_RANGERING_DESC;
 	Checkbox:SetScript( "OnEnter", Overlay.Config.ControlOnEnter );
 	Checkbox:SetScript( "OnLeave", GameTooltip_Hide );
+	Config:AddControl( Checkbox );
 
 	Config:SetHeight( Config:GetHeight() + Checkbox:GetHeight() );
 end
