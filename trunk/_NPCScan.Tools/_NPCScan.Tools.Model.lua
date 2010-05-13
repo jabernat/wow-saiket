@@ -72,7 +72,7 @@ end
   * Description: Shows the selected NPC in _NPCScan's alert button.            *
   ****************************************************************************]]
 function me.Control:OnClick ()
-	Button:Update( self.Name, self.NpcID );
+	Button:Update( self.NpcID, self.Name );
 
 	local Model = Button.Model:GetModel();
 	if ( type( Model ) ~= "string" ) then -- Wasn't in cache
