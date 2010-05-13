@@ -133,17 +133,17 @@ do
 		Middle:SetPoint( "BOTTOMRIGHT", Right, "BOTTOMLEFT" );
 		Middle:SetTexture( [[Interface\FriendsFrame\WhoFrame-ColumnTabs]] );
 		Middle:SetTexCoord( 0.078125, 0.90625, 0, 0.75 );
-		local Highlight = Column:CreateTexture( nil, "HIGHLIGHT" );
-		Highlight:SetAllPoints();
-		Highlight:SetTexture( [[Interface\Buttons\UI-Panel-Button-Highlight]] );
-		Highlight:SetTexCoord( 0, 0.625, 0, 0.6875 );
-		Highlight:SetBlendMode( "ADD" );
-		local Backdrop = Column:CreateTexture();
+
+		Column:SetHighlightTexture( [[Interface\Buttons\UI-Panel-Button-Highlight]], "ADD" );
+		Column:GetHighlightTexture():SetTexCoord( 0, 0.625, 0, 0.6875 );
+		local Backdrop = Column:CreateTexture( nil, "OVERLAY" );
+		Backdrop:Hide();
 		Backdrop:SetPoint( "TOPLEFT", Column, "BOTTOMLEFT" );
 		Backdrop:SetPoint( "RIGHT" );
 		Backdrop:SetPoint( "BOTTOM", Header.Table.Body ); -- Expand to bottom of view
 		Backdrop:SetTexture( 0.15, 0.15, 0.15, 0.25 );
-		Column:SetHighlightTexture( Backdrop, "ADD" );
+		Backdrop:SetBlendMode( "ADD" );
+		Column.Backdrop = Backdrop;
 
 		Header[ Index ] = Column;
 		return Column;
@@ -224,12 +224,12 @@ function TableMethods:SetSortColumn ( Column, Inverted )
 	if ( Header.SortColumn ~= Column ) then
 		if ( Header.SortColumn ) then
 			Header.SortColumn.Arrow:Hide();
-			Header.SortColumn:UnlockHighlight();
+			Header.SortColumn.Backdrop:Hide();
 		end
 		Header.SortColumn, Header.SortInverted = Column, Inverted or false;
 		if ( Column ) then
-			Column:LockHighlight();
 			Column.Arrow:Show();
+			Column.Backdrop:Show();
 			self:Sort();
 		end
 	elseif ( Column ) then -- Selected same sort column
