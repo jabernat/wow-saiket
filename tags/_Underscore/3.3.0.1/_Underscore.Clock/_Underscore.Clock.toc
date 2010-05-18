@@ -1,0 +1,18 @@
+## Interface: 30300
+## Title: _|cffCCCC88Underscore|r.Clock
+## Notes: Adds a clock to the top left of the screen.
+## Author: Saiket
+## Version: 3.3.0.1
+## X-Date: 2009-11-23
+## X-Category: Miscellaneous
+## X-License: GPLv3
+## X-Email: saiket.wow@gmail.com
+## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons
+## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Underscore
+## X-Localizations: enUS
+## RequiredDeps: _Underscore
+## OptionalDeps: _Underscore.Font
+Locales.xml
+
+_Underscore.Clock.lua
+_Underscore.Clock.BlizzardTimeManager.lua

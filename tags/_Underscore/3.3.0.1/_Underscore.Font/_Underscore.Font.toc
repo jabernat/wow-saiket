@@ -1,0 +1,13 @@
+## Interface: 30300
+## Title: _|cffCCCC88Underscore|r.Font
+## Notes: Changes some of the default fonts.
+## Author: Saiket
+## Version: 3.3.0.1
+## X-Date: 2009-11-23
+## X-Category: Miscellaneous
+## X-License: GPLv3, Bitstream Vera Fonts Copyright (c) 2003 by Bitstream, Inc.
+## X-Email: saiket.wow@gmail.com
+## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons
+## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Underscore
+## RequiredDeps: _Underscore
+_Underscore.Font.lua

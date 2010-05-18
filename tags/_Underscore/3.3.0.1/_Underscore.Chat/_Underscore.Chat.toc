@@ -1,0 +1,22 @@
+## Interface: 30300
+## Title: _|cffCCCC88Underscore|r.Chat
+## Notes: Skins the default UI's chat frames.
+## Author: Saiket
+## Version: 3.3.0.1
+## X-Date: 2010-04-15
+## X-Category: Frame Modification, Chat/Communication
+## X-License: GPLv3
+## X-Email: saiket.wow@gmail.com
+## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons
+## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Underscore
+## X-Localizations: enUS
+## RequiredDeps: _Underscore.ActionBars
+Locales.xml
+
+_Underscore.Chat.lua
+_Underscore.Chat.URLs.lua
+_Underscore.Chat.Icons.lua
+_Underscore.Chat.RaidWarning.lua
+_Underscore.Chat.Layout.lua
+
+_Underscore.Chat.CombatLogDisable.lua
