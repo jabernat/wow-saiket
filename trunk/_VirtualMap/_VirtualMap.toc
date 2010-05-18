@@ -3,7 +3,7 @@
 ## Notes: Virtual 3D map overlay for GatherMate.
 ## Author: Saiket
 ## X-Credits: GatherHud by Grum and Xinhuan
-## Version: 3.3.0.1
+## Version: 3.3.0.2
 ## X-Date: 2010-01-11
 ## X-Category: Map
 ## X-License: GPLv3
