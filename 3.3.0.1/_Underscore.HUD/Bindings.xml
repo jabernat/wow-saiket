@@ -1,0 +1,6 @@
+<Bindings>
+	<Binding name="_UNDERSCORE_HUD_PUSHTOTALK" runOnUp="true" header="_UNDERSCORE_HUD">
+		_Underscore.HUD.PushToTalk.OnKeypress( keystate );
+	</Binding>
+	<ModifiedClick action="_UNDERSCORE_HUD_PUSHTOTALK_MOD" default="NONE"/>
+</Bindings>
