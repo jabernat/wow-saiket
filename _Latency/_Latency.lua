@@ -217,16 +217,16 @@ end
 --[[****************************************************************************
   * Function: _Latency:ADDON_LOADED                                            *
   ****************************************************************************]]
-function me:ADDON_LOADED ( _, AddOn )
+function me:ADDON_LOADED ( Event, AddOn )
 	if ( AddOn:lower() == AddOnName:lower() ) then
-		me:UnregisterEvent( "ADDON_LOADED" );
-		me.ADDON_LOADED = nil;
+		me:UnregisterEvent( Event );
+		me[ Event ] = nil;
+
 		local Options = _LatencyOptions;
-
-		me.ToggleLocked( Options.IsLocked );
-
-		me:SetSize( Options.Width or 300, Options.Height or 80 );
+		me:ClearAllPoints();
 		me:SetPoint( Options.Point or "CENTER", nil, Options.Point or "CENTER", Options.X or 0, Options.Y or 0 );
+		me:SetSize( Options.Width or 300, Options.Height or 80 );
+		me.ToggleLocked( Options.IsLocked );
 	end
 end
 --[[****************************************************************************
@@ -257,6 +257,8 @@ end
 function me:OnHide ()
 	-- Only print message when directly hidden (i.e. not hidding the interface)
 	if ( not self:IsShown() ) then
+		self:SetScript( "OnHide", nil ); -- Only print once
+		self.OnHide = nil;
 		print( L.ONCLOSE_NOTICE );
 	end
 end
@@ -281,11 +283,8 @@ end
 do
 	-- Set up window
 	me:Hide();
-	me:SetSize( 300, 80 );
 	me:SetScale( 0.8 );
-	me:SetPoint( "CENTER" );
 	me:SetFrameStrata( "MEDIUM" );
-	me:EnableMouse( true );
 	me:SetToplevel( true );
 	me:SetBackdrop( {
 		bgFile = [[Interface\TutorialFrame\TutorialFrameBackground]];
@@ -294,6 +293,7 @@ do
 		insets = { left = 7; right = 5; top = 3; bottom = 6; };
 	} );
 	-- Make dragable
+	me:EnableMouse( true );
 	me:SetResizable( true );
 	me:SetClampedToScreen( true );
 	me:SetClampRectInsets( me.Padding + 2, -me.Padding, -me.Padding - 18, me.Padding );
