@@ -3,7 +3,7 @@
 ## Notes: Adds mob patrol paths to your map.
 ## Author: Saiket
 ## Version: 3.3.0.8
-## X-Date: 2010-04-11
+## X-Date: 2010-06-01
 ## X-Category: Maps
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
