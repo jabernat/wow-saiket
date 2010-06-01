@@ -22,9 +22,7 @@ me.OptionsCharacterDefault = {
 	MinScale = 0;
 	MaxScale = 3;
 	MaxScaleEnabled = false;
-	ScaleFactor1 = 10;
-	ScaleFactor2 = 30;
-	ScaleFactor2Enabled = false;
+	ScaleFactor = 10;
 };
 
 
@@ -33,7 +31,6 @@ me.PlateLevels = 3; -- Frame level difference between plates so one plate's chil
 
 
 local InCombat = false;
-local DepthCamera = 0;
 
 local WorldFrameGetChildren = WorldFrame.GetChildren;
 local PlateOverrides = {}; -- [ MethodName ] = Function overrides for Visuals
@@ -183,10 +180,7 @@ do
 
 		if ( #SortOrder > 0 ) then
 			MinScale, MaxScale = me.OptionsCharacter.MinScale, me.OptionsCharacter.MaxScaleEnabled and me.OptionsCharacter.MaxScale;
-			ScaleFactor = me.OptionsCharacter.ScaleFactor1;
-			if ( me.OptionsCharacter.ScaleFactor2Enabled ) then -- Adjust with camera zoom
-				ScaleFactor = ScaleFactor + ( me.OptionsCharacter.ScaleFactor2 - ScaleFactor ) * DepthCamera / 50
-			end
+			ScaleFactor = me.OptionsCharacter.ScaleFactor;
 
 			sort( SortOrder, SortFunc );
 			for Index, Plate in ipairs( SortOrder ) do
@@ -220,12 +214,6 @@ end
 
 
 --[[****************************************************************************
-  * Function: _VirtualPlates:LibCamera_UpdateDistance                          *
-  ****************************************************************************]]
-function me:LibCamera_UpdateDistance ( Event, NewDepth )
-	DepthCamera = NewDepth;
-end
---[[****************************************************************************
   * Function: _VirtualPlates:ADDON_LOADED                                      *
   ****************************************************************************]]
 function me:ADDON_LOADED ( Event, AddOn )
@@ -242,6 +230,10 @@ function me:ADDON_LOADED ( Event, AddOn )
 				Version = "3.2.2.4"; -- Added max scale option
 				OptionsCharacter.MaxScale = 3;
 				OptionsCharacter.MaxScaleEnabled = false;
+			end
+			if ( Version == "3.2.2.4" or Version == "3.2.2.5" or Version == "3.3.0.1" ) then
+				Version = "3.3.5.1"; -- Removed support for LibCamera-1.0 and variable ScaleFactors
+				OptionsCharacter.ScaleFactor = OptionsCharacter.ScaleFactor1;
 			end
 			OptionsCharacter.Version = me.Version;
 		end
@@ -356,41 +348,14 @@ function me.SetMaxScaleEnabled ( Enable )
 	end
 end
 --[[****************************************************************************
-  * Function: _VirtualPlates.SetScaleFactor1                                   *
+  * Function: _VirtualPlates.SetScaleFactor                                    *
   * Description: Sets the normal scale factor.                                 *
   ****************************************************************************]]
-function me.SetScaleFactor1 ( Value )
-	if ( Value ~= me.OptionsCharacter.ScaleFactor1 ) then
-		me.OptionsCharacter.ScaleFactor1 = Value;
+function me.SetScaleFactor ( Value )
+	if ( Value ~= me.OptionsCharacter.ScaleFactor ) then
+		me.OptionsCharacter.ScaleFactor = Value;
 
-		me.Config.ScaleFactor1:SetValue( Value );
-		return true;
-	end
-end
---[[****************************************************************************
-  * Function: _VirtualPlates.SetScaleFactor2                                   *
-  * Description: Sets the scale factor used at max camera zoom.                *
-  ****************************************************************************]]
-function me.SetScaleFactor2 ( Value )
-	if ( Value ~= me.OptionsCharacter.ScaleFactor2 ) then
-		me.OptionsCharacter.ScaleFactor2 = Value;
-
-		me.Config.ScaleFactor2:SetValue( Value );
-		return true;
-	end
-end
---[[****************************************************************************
-  * Function: _VirtualPlates.SetScaleFactor2Enabled                            *
-  * Description: Enables increasing scale factor based on camera zoom.         *
-  ****************************************************************************]]
-function me.SetScaleFactor2Enabled ( Enable )
-	if ( Enable ~= me.OptionsCharacter.ScaleFactor2Enabled ) then
-		me.OptionsCharacter.ScaleFactor2Enabled = Enable;
-
-		me.Config.ScaleFactor2Enabled:SetChecked( Enable );
-		me.Config.ScaleFactor2Enabled.setFunc( Enable and "1" or "0" );
-
-		LibStub( "LibCamera-1.0" )[ Enable and "RegisterCallback" or "UnregisterCallback" ]( me, "LibCamera_UpdateDistance" );
+		me.Config.ScaleFactor:SetValue( Value );
 		return true;
 	end
 end
@@ -409,9 +374,7 @@ function me.Synchronize ( OptionsCharacter )
 	me.SetMinScale( OptionsCharacter.MinScale );
 	me.SetMaxScale( OptionsCharacter.MaxScale );
 	me.SetMaxScaleEnabled( OptionsCharacter.MaxScaleEnabled );
-	me.SetScaleFactor1( OptionsCharacter.ScaleFactor1 );
-	me.SetScaleFactor2( OptionsCharacter.ScaleFactor2 );
-	me.SetScaleFactor2Enabled( OptionsCharacter.ScaleFactor2Enabled );
+	me.SetScaleFactor( OptionsCharacter.ScaleFactor );
 end
 
 

@@ -35,13 +35,7 @@ do
 		CONFIG_MAXSCALE_DESC = false; -- Self explanatory
 
 
-		CONFIG_SCALEFACTOR1 = "Scale Factor";
-		CONFIG_SCALEFACTOR1_DESC = "Nameplates this far from the camera will be normal sized.";
-
-		CONFIG_SCALEFACTOR2ENABLED = "Change scale factor with camera zoom";
-		CONFIG_SCALEFACTOR2ENABLED_DESC = "Allows nameplates to grow larger when zoomed far out.  When enabled, the slider above determines the starting scale used in first-person view.";
-
-		CONFIG_SCALEFACTOR2 = "Scale Factor When Zoomed Out";
-		CONFIG_SCALEFACTOR2_DESC = "As you zoom your camera further out towards 50 yards, the nameplate scale factor will change to this value.";
+		CONFIG_SCALEFACTOR = "Scale Factor";
+		CONFIG_SCALEFACTOR_DESC = "Nameplates this far from the camera will be normal sized.";
 	}, Metatable );
 end
