@@ -9,15 +9,12 @@ local L = _VirtualPlatesLocalization;
 local me = CreateFrame( "Frame", "_VirtualPlatesConfig" );
 _VirtualPlates.Config = me;
 
+me.ScaleFactor = CreateFrame( "Slider", "$parentScaleFactor", me, "OptionsSliderTemplate" );
+
 local LimitsOptions = CreateFrame( "Frame", "$parentLimitsOptions", me, "OptionsBoxTemplate" );
 me.MinScale = CreateFrame( "Slider", "$parentMinScale", LimitsOptions, "OptionsSliderTemplate" );
 me.MaxScaleEnabled = CreateFrame( "CheckButton", "$parentMaxScaleEnabled", LimitsOptions, "InterfaceOptionsCheckButtonTemplate" );
 me.MaxScale = CreateFrame( "Slider", "$parentMaxScale", LimitsOptions, "OptionsSliderTemplate" );
-
-local ScaleFactorOptions = CreateFrame( "Frame", "$parentScaleFactorOptions", me, "OptionsBoxTemplate" );
-me.ScaleFactor1 = CreateFrame( "Slider", "$parentScaleFactor1", ScaleFactorOptions, "OptionsSliderTemplate" );
-me.ScaleFactor2Enabled = CreateFrame( "CheckButton", "$parentScaleFactor2Enabled", ScaleFactorOptions, "InterfaceOptionsCheckButtonTemplate" );
-me.ScaleFactor2 = CreateFrame( "Slider", "$parentScaleFactor2", ScaleFactorOptions, "OptionsSliderTemplate" );
 
 me.MaxScaleMax = 10;
 me.ScaleFactorMin =  5;
@@ -73,23 +70,6 @@ function me.MaxScaleEnabled.setFunc ( Enable )
 end
 
 
---[[****************************************************************************
-  * Function: _VirtualPlates.Config.ScaleFactor1:OnValueChanged                *
-  ****************************************************************************]]
-function me.ScaleFactor1:OnValueChanged ( Value )
-	me.SliderSetRange( me.ScaleFactor2, Value, me.ScaleFactorMax );
-end
---[[****************************************************************************
-  * Function: _VirtualPlates.Config.ScaleFactor2Enabled.setFunc                *
-  ****************************************************************************]]
-function me.ScaleFactor2Enabled.setFunc ( Enable )
-	Enable = Enable == "1";
-
-	me.SliderSetEnabled( me.ScaleFactor2, Enable );
-	_VirtualPlates.SetScaleFactor2Enabled( Enable );
-end
-
-
 
 
 --[[****************************************************************************
@@ -134,8 +114,15 @@ do
 	end
 
 
+	SetupSlider( me.ScaleFactor, L.CONFIG_SLIDERYARD_FORMAT ):SetPoint( "TOPLEFT", SubText, "BOTTOMLEFT", 6, -16 );
+	me.ScaleFactor.Update = _VirtualPlates.SetScaleFactor;
+	_G[ me.ScaleFactor:GetName().."Text" ]:SetText( L.CONFIG_SCALEFACTOR );
+	me.ScaleFactor.tooltipText = L.CONFIG_SCALEFACTOR_DESC;
+	me.SliderSetRange( me.ScaleFactor, me.ScaleFactorMin, me.ScaleFactorMax );
+
+
 	-- Size limit options section
-	LimitsOptions:SetPoint( "TOPLEFT", SubText, "BOTTOMLEFT", 2, -24 );
+	LimitsOptions:SetPoint( "TOPLEFT", me.ScaleFactor, "BOTTOMLEFT", -8, -38 );
 	LimitsOptions:SetPoint( "RIGHT", -14, 0 );
 	_G[ LimitsOptions:GetName().."Title" ]:SetText( L.CONFIG_LIMITS );
 
@@ -156,29 +143,7 @@ do
 	_G[ me.MaxScale:GetName().."Text" ]:SetText( L.CONFIG_MAXSCALE );
 	me.MaxScale.tooltipText = L.CONFIG_MAXSCALE_DESC;
 
-	LimitsOptions:SetHeight( me.MinScale:GetHeight() + me.MaxScaleEnabled:GetHeight() + me.MaxScale:GetHeight() + 68 );
-
-
-	-- Scale factor options section
-	ScaleFactorOptions:SetPoint( "TOPLEFT", LimitsOptions, "BOTTOMLEFT", 0, -40 );
-	ScaleFactorOptions:SetPoint( "BOTTOMRIGHT", -14, 16 );
-	_G[ ScaleFactorOptions:GetName().."Title" ]:SetText( L.CONFIG_SCALEFACTOR1 );
-
-	SetupSlider( me.ScaleFactor1, L.CONFIG_SLIDERYARD_FORMAT ):SetPoint( "TOPLEFT", 16, -8 );
-	me.ScaleFactor1.Update = _VirtualPlates.SetScaleFactor1;
-	me.ScaleFactor1.tooltipText = L.CONFIG_SCALEFACTOR1_DESC;
-	me.SliderSetRange( me.ScaleFactor1, me.ScaleFactorMin, me.ScaleFactorMax );
-
-	me.ScaleFactor2Enabled:SetPoint( "TOPLEFT", me.ScaleFactor1, "BOTTOMLEFT", -4, -28 );
-	local Label = _G[ me.ScaleFactor2Enabled:GetName().."Text" ];
-	Label:SetText( L.CONFIG_SCALEFACTOR2ENABLED );
-	me.ScaleFactor2Enabled:SetHitRectInsets( 4, 4 - Label:GetStringWidth(), 4, 4 );
-	me.ScaleFactor2Enabled.tooltipText = L.CONFIG_SCALEFACTOR2ENABLED_DESC;
-
-	SetupSlider( me.ScaleFactor2, L.CONFIG_SLIDERYARD_FORMAT ):SetPoint( "TOPLEFT", me.ScaleFactor2Enabled, "BOTTOMLEFT", 4, -8 );
-	me.ScaleFactor2.Update = _VirtualPlates.SetScaleFactor2;
-	_G[ me.ScaleFactor2:GetName().."Text" ]:SetText( L.CONFIG_SCALEFACTOR2 );
-	me.ScaleFactor2.tooltipText = L.CONFIG_SCALEFACTOR2_DESC;
+	LimitsOptions:SetHeight( me.MinScale:GetHeight() + me.MaxScaleEnabled:GetHeight() + me.MaxScale:GetHeight() + 72 );
 
 
 	InterfaceOptions_AddCategory( me );
