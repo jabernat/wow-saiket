@@ -3,7 +3,7 @@
 ## Notes: Adds mob patrol paths to your map.
 ## Author: Saiket
 ## X-Credits: s8095324 (zhTW)
-## Version: 3.3.0.8
+## Version: 3.3.5.1
 ## X-Date: 2010-06-03
 ## X-Category: Maps
 ## X-License: GPLv3

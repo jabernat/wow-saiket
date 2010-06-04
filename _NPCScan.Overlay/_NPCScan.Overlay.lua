@@ -430,7 +430,7 @@ function me:ADDON_LOADED ( Event, AddOn )
 
 		local Options = _NPCScanOverlayOptions;
 		_NPCScanOverlayOptions = me.Options;
-		if ( Options and not Options.ModulesExtra ) then -- 3.3.0.8: Moved module options to options sub-tables
+		if ( Options and not Options.ModulesExtra ) then -- 3.3.5.1: Moved module options to options sub-tables
 			Options.ModulesExtra = {};
 		end
 		me.Synchronize( Options ); -- Loads defaults if nil
