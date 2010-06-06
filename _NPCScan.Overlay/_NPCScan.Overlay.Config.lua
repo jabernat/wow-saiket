@@ -288,9 +288,8 @@ do
 
 
 	if ( IsChildAddOn ) then
-		me.parent = _NPCScanLocalization.CONFIG_TITLE;
-
 		Overlay.SafeCall( function ()
+			me.parent = assert( _NPCScan.Config.name );
 			TableCreateBackup = assert( _NPCScan.Config.Search.TableCreate );
 			_NPCScan.Config.Search.TableCreate = me.TableCreate;
 		end );
