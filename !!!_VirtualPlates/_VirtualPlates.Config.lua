@@ -141,7 +141,6 @@ do
 	SetupSlider( me.MaxScale, L.CONFIG_SLIDER_FORMAT ):SetPoint( "TOPLEFT", me.MaxScaleEnabled, "BOTTOMLEFT", 4, -8 );
 	me.MaxScale.Update = _VirtualPlates.SetMaxScale;
 	_G[ me.MaxScale:GetName().."Text" ]:SetText( L.CONFIG_MAXSCALE );
-	me.MaxScale.tooltipText = L.CONFIG_MAXSCALE_DESC;
 
 	LimitsOptions:SetHeight( me.MinScale:GetHeight() + me.MaxScaleEnabled:GetHeight() + me.MaxScale:GetHeight() + 72 );
 

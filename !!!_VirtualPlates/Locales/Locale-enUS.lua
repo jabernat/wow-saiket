@@ -32,7 +32,6 @@ do
 		CONFIG_MAXSCALEENABLED_DESC = "Prevents nameplates from growing too large when they're near the screen.";
 
 		CONFIG_MAXSCALE = "Maximum";
-		CONFIG_MAXSCALE_DESC = false; -- Self explanatory
 
 
 		CONFIG_SCALEFACTOR = "Scale Factor";
