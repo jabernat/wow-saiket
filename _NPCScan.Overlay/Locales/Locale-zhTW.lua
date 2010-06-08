@@ -7,7 +7,7 @@
 
 if ( GetLocale() == "zhTW" ) then
 	local Title = "_|cffCCCC88NPCScan|r.Overlay";
-	_NPCScanLocalization.OVERLAY = setmetatable( {
+	_NPCScanOverlayLocalization = setmetatable( {
 		CONFIG_TITLE = "路徑圖";
 		CONFIG_ALPHA = "透明度";
 		CONFIG_ZONE = "地區:";
@@ -20,21 +20,21 @@ if ( GetLocale() == "zhTW" ) then
 		MODULE_RANGERING_DESC = "提示： 在有稀有怪的地圖才顯示距離環(例如主城跟冬握就不會顯示).";
 		MODULE_ALPHAMAP3 = "AlphaMap3 插件";
 
-		NPCS = { -- Note: Don't use a metatable default; Missing keys must return nil
-			[ 5842 ] = "『跳躍者』塔克";
-			[ 14232 ] = "達爾特";
-			[ 6581 ] = "暴掠龍族母";
+		NPCS = setmetatable( {
 			[ 1140 ] = "刺喉龍族母";
+			[ 5842 ] = "『跳躍者』塔克";
+			[ 6581 ] = "暴掠龍族母";
+			[ 14232 ] = "達爾特";
 
 			-- Outlands
 			[ 18684 ] = "無氏族的伯卡茲";
 
 			-- Northrend
+			[ 32491 ] = "時光流逝元龍";
 			[ 33776 ] = "剛卓亞";
 			[ 35189 ] = "史科爾";
 			[ 38453 ] = "大角";
-			[ 32491 ] = "時光流逝元龍";
-		};
-	}, { __index = _NPCScanLocalization.OVERLAY; } );
+		}, { __index = _NPCScanOverlayLocalization.NPCS; } );
+	}, { __index = _NPCScanOverlayLocalization; } );
 end
 
