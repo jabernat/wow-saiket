@@ -28,19 +28,19 @@ do
 		MODULE_ALPHAMAP3 = "AlphaMap3 AddOn";
 
 		NPCS = { -- Note: Don't use a metatable default; Missing keys must return nil
-			[ 5842 ] = "Takk the Leaper";
-			[ 14232 ] = "Dart";
-			[ 6581 ] = "Ravasaur Matriarch";
 			[ 1140 ] = "Razormaw Matriarch";
+			[ 5842 ] = "Takk the Leaper";
+			[ 6581 ] = "Ravasaur Matriarch";
+			[ 14232 ] = "Dart";
 
 			-- Outlands
 			[ 18684 ] = "Bro'Gaz the Clanless";
 
 			-- Northrend
+			[ 32491 ] = "Time-Lost Proto Drake";
 			[ 33776 ] = "Gondria";
 			[ 35189 ] = "Skoll";
 			[ 38453 ] = "Arcturis";
-			[ 32491 ] = "Time-Lost Proto Drake";
 		};
 	}, {
 		__index = function ( self, Key )
