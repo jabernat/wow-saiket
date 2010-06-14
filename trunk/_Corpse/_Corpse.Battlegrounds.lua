@@ -31,7 +31,7 @@ function me.GetBattlefieldInfo ( Name, Server )
 	local NameServerBG, NameBG, ServerBG, Faction, Race, Class, _;
 	for Index = 1, GetNumBattlefieldScores() do
 		NameServerBG, _, _, _, _, Faction, _, Race, Class = GetBattlefieldScore( Index );
-		NameBG, ServerBG = L.SERVER_DELIMITER:split( NameServerBG );
+		NameBG, ServerBG = ( "-" ):split( NameServerBG );
 
 		if ( Name == NameBG and ( not Server or Server == ServerBG ) ) then
 			-- Score can be 0 = Horde, 1 = Alliance

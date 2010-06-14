@@ -4,16 +4,14 @@
   ****************************************************************************]]
 
 
-local Title = "_|cffcccc88Underscore|r.Units";
-
 _UnderscoreLocalization.Units = setmetatable( {
 	DEAD    = "DEAD";
 	GHOST   = "GHOST";
 	OFFLINE = "OFFLINE";
 	FEIGN   = "FEIGN";
 
-	GRID_LAYOUT_GROUP = Title..": Groups";
-	GRID_LAYOUT_CLASS = Title..": Classes";
+	GRID_LAYOUT_GROUP = "_|cffcccc88Underscore|r.Units: Groups";
+	GRID_LAYOUT_CLASS = "_|cffcccc88Underscore|r.Units: Classes";
 
 	OUF_GROUP_FORMAT = "(G%d)";
 	OUF_CLASSIFICATION_FORMAT = "(|cff%02x%02x%02x%s|r)"; -- R, G, B, Classification

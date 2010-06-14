@@ -308,7 +308,7 @@ do
 		CloseDropDownMenus(); -- Close dropdown if open
 		-- Sync controls
 		if ( Cursor ) then
-			UIDropDownMenu_SetText( Type, L.TYPES[ Cursor.Type ] );
+			UIDropDownMenu_SetText( Type, Cursor.Type == "" and L.TYPE_CUSTOM or L.TYPES[ Cursor.Type ] );
 
 			if ( #Cursor.Type == 0 ) then -- Custom
 				UIDropDownMenu_SetText( Value, "" );
@@ -508,7 +508,7 @@ do
 		UIDropDownMenu_AddButton( Info );
 		-- Custom
 		Info.disabled = nil;
-		Info.text = L.TYPES[ "" ];
+		Info.text = L.TYPE_CUSTOM;
 		Info.arg1 = "";
 		Info.func = self.OnSelect;
 		Info.checked = #Selected == 0;

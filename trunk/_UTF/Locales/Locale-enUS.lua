@@ -4,9 +4,6 @@
   ****************************************************************************]]
 
 
-local Title = "_|cffCCCC88UTF|r";
-
-
 _UTFLocalization = setmetatable( {
 	BROWSE_TITLE = "Browse";
 	BROWSE_CODEPOINT = "Codepoint:";
@@ -25,8 +22,8 @@ _UTFLocalization = setmetatable( {
 	CUSTOMIZE_TEXTREPLACE_REPLACE = "Replace:";
 	CUSTOMIZE_TEXTREPLACE_INDEX = "Index";
 
-	OPTIONS_TITLE = Title;
-	OPTIONS_DESC = "These options control the general text-replacement behaviors of _UTF.  The character browsing dialog can be brought up with \226\128\156/utf\226\128\157 or by keybinding.";
+	OPTIONS_TITLE = "_|cffCCCC88UTF|r";
+	OPTIONS_DESC = "These options control the general text-replacement behaviors of _UTF.  The character browsing dialog can be brought up with “/utf” or by keybinding.";
 	OPTIONS_ENTITYREPLACE = "Replace Entity References";
 	OPTIONS_ENTITYREPLACE_DESC = "Replace XML entity references in the chat edit box when you press tab, and also when found in any non-secure macro commands.";
 	OPTIONS_TEXTREPLACE = "Text Replacement";
@@ -44,5 +41,5 @@ _UTFLocalization = setmetatable( {
 SLASH__UTFTOGGLE1 = "/utf";
 
 -- Bindings
-BINDING_HEADER__UTF = Title;
+BINDING_HEADER__UTF = "_|cffCCCC88UTF|r";
 BINDING_NAME__UTF_TOGGLE = "Toggle Window";

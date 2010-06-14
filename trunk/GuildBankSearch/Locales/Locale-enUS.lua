@@ -4,27 +4,21 @@
   ****************************************************************************]]
 
 
-local Title = "GuildBank|cffccccccSearch|r";
-
-
+-- See http://wow.curseforge.com/addons/guild-bank-search/localization/enUS/
 GuildBankSearchLocalization = setmetatable( {
-	TITLE = Title;
-
-	FILTER = "Filter";
-	CLEAR = "Clear";
-
-	NAME = "Name:";
-	QUALITY = "Quality:";
-	ITEM_LEVEL = "Item Level:";
-	REQUIRED_LEVEL = "Required Level:";
-	LEVELRANGE_SEPARATOR = "-";
-
-	ITEM_CATEGORY = "Item Category";
-	TYPE = "Type:";
-	SUB_TYPE = "Sub-Type:";
-	SLOT = "Slot:";
-
-	ALL = "|cffcccccc(All)|r";
+	ALL = "|cffcccccc(All)|r",
+	CLEAR = "Clear",
+	FILTER = "Filter",
+	ITEM_CATEGORY = "Item Category",
+	ITEM_LEVEL = "Item Level:",
+	LEVELRANGE_SEPARATOR = "-",
+	NAME = "Name:",
+	QUALITY = "Quality:",
+	REQUIRED_LEVEL = "Required Level:",
+	SLOT = "Slot:",
+	SUB_TYPE = "Sub-Type:",
+	TITLE = "GuildBank|cffccccccSearch|r",
+	TYPE = "Type:",
 }, {
 	__index = function ( self, Key )
 		if ( Key ~= nil ) then

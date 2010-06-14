@@ -4,15 +4,11 @@
   ****************************************************************************]]
 
 
-local Title = "_|cffCCCC88Latency|r";
-local LDQuo, RDQuo = GRAY_FONT_COLOR_CODE.."\226\128\156", "\226\128\157|r";
-
-
 _LatencyLocalization = setmetatable( {
-	TITLE = Title;
-	SUBTITLE_FORMAT = GRAY_FONT_COLOR_CODE.."(|r%.01fms"..GRAY_FONT_COLOR_CODE..")";
 	LOCK = "lock";
-	ONCLOSE_NOTICE = Title..": To reopen the meter, use "..LDQuo.."/latency"..RDQuo.." or "..LDQuo.."/lag"..RDQuo..".";
+	ONCLOSE_NOTICE = "_|cffCCCC88Latency|r: To reopen the meter, use |cff808080“/latency”|r or |cff808080“/lag”|r.";
+	SUBTITLE_FORMAT = "|cff808080(|r%.01fms|cff808080)";
+	TITLE = "_|cffCCCC88Latency|r";
 }, {
 	__index = function ( self, Key )
 		if ( Key ~= nil ) then

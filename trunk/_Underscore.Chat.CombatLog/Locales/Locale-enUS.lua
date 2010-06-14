@@ -5,9 +5,6 @@
 
 
 local Meta = getmetatable( _UnderscoreLocalization );
-local LightGray = "|cffaaaaaa";
-local ResultFormat = LIGHTYELLOW_FONT_COLOR_CODE.."("..LightGray.."%s"..LIGHTYELLOW_FONT_COLOR_CODE..")|r";
-
 _UnderscoreLocalization.Chat.CombatLog = setmetatable( {
 	TRUNCATE_SUFFIX = "-";
 
@@ -64,39 +61,39 @@ _UnderscoreLocalization.Chat.CombatLog = setmetatable( {
 		SLIME   = "Slime";
 	}, Meta );
 	Results = setmetatable( {
-		ABSORB = ResultFormat:format( "Abs:%d" );
-		BLOCK  = ResultFormat:format( "Block:%d" );
-		CRITICAL = ResultFormat:format( "Crit" ); -- Slightly darker
-		CRITICAL_SPELL = ResultFormat:format( "Crit" ); -- Spell crit
-		CRUSHING = ResultFormat:format( "Crush" );
-		GLANCING = ResultFormat:format( "Glance" );
-		REFLECT  = ResultFormat:format( "Reflect" );
-		RESIST = ResultFormat:format( "Resist:%d" );
-		VULNERABILITY = ResultFormat:format( "Vuln:%d" );
+		ABSORB = "|cffffff9a(|cffaaaaaaAbs:%d|cffffff9a)|r";
+		BLOCK  = "|cffffff9a(|cffaaaaaaBlock:%d|cffffff9a)|r";
+		CRITICAL = "|cffffff9a(|cffaaaaaaCrit|cffffff9a)|r";
+		CRITICAL_SPELL = "|cffffff9a(|cffaaaaaaCrit|cffffff9a)|r";
+		CRUSHING = "|cffffff9a(|cffaaaaaaCrush|cffffff9a)|r";
+		GLANCING = "|cffffff9a(|cffaaaaaaGlance|cffffff9a)|r";
+		REFLECT  = "|cffffff9a(|cffaaaaaaReflect|cffffff9a)|r";
+		RESIST = "|cffffff9a(|cffaaaaaaResist:%d|cffffff9a)|r";
+		VULNERABILITY = "|cffffff9a(|cffaaaaaaVuln:%d|cffffff9a)|r";
 		OVERHEALING = "|cff33aa33{%d}|r";
 		OVERKILLING = "|cffff1111{%d}|r";
 	}, Meta );
 }, Meta );
 
 
-TEXT_MODE_A_STRING_TIMESTAMP = GRAY_FONT_COLOR_CODE.."[%s]|r %s";
+TEXT_MODE_A_STRING_TIMESTAMP = "|cff808080[%s]|r %s";
 TEXT_MODE_A_TIMESTAMP = "%02d:%02d:%02d";
 
-TEXT_MODE_A_STRING_ACTION = HIGHLIGHT_FONT_COLOR_CODE.."%2$s"; -- Non-clickable, does not end color codes
+TEXT_MODE_A_STRING_ACTION = "|cffffffff%2$s"; -- Non-clickable, does not end color codes
 
 -- Unit names
-TEXT_MODE_A_STRING_BRACE_UNIT = LightGray.."[%2$s"..LightGray.."]|r";
+TEXT_MODE_A_STRING_BRACE_UNIT = "|cffaaaaaa[%2$s|cffaaaaaa]|r";
 TEXT_MODE_A_STRING_POSSESSIVE = "%s";
 UNIT_YOU_DEST_POSSESSIVE   = UNIT_YOU_DEST; -- "You" instead of "Your"
 UNIT_YOU_SOURCE_POSSESSIVE = UNIT_YOU_SOURCE;
 
 -- Spell/item links
-TEXT_MODE_A_STRING_ITEM        = LightGray.."|Hitem:%s|h%s|h|r";
-TEXT_MODE_A_STRING_SPELL       = LightGray.."|Hspell:%s:%s|h%s|h|r";
-TEXT_MODE_A_STRING_SPELL_EXTRA = LightGray.."|Hspell:%s:%s|h%s|h|r";
+TEXT_MODE_A_STRING_ITEM        = "|cffaaaaaa|Hitem:%s|h%s|h|r";
+TEXT_MODE_A_STRING_SPELL       = "|cffaaaaaa|Hspell:%s:%s|h%s|h|r";
+TEXT_MODE_A_STRING_SPELL_EXTRA = "|cffaaaaaa|Hspell:%s:%s|h%s|h|r";
 -- Optional inner-link braces
-TEXT_MODE_A_STRING_BRACE_ITEM  = LightGray.."[%2$s"..LightGray.."]";
-TEXT_MODE_A_STRING_BRACE_SPELL = LightGray.."[%2$s"..LightGray.."]";
+TEXT_MODE_A_STRING_BRACE_ITEM  = "|cffaaaaaa[%2$s|cffaaaaaa]";
+TEXT_MODE_A_STRING_BRACE_SPELL = "|cffaaaaaa[%2$s|cffaaaaaa]";
 
-TEXT_MODE_A_STRING_VALUE_TYPE   = "%s "..GRAY_FONT_COLOR_CODE.."%s|r";
-TEXT_MODE_A_STRING_VALUE_SCHOOL = "%s"..GRAY_FONT_COLOR_CODE.."%s|r";
+TEXT_MODE_A_STRING_VALUE_TYPE   = "%s |cff808080%s|r";
+TEXT_MODE_A_STRING_VALUE_SCHOOL = "%s|cff808080%s|r";
