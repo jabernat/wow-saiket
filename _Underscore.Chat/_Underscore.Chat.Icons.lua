@@ -7,41 +7,41 @@
 local me = {};
 _Underscore.Chat.Icons = me;
 
+me.LinkFilters = {};
+
 
 
 
 --[[****************************************************************************
-  * Function: _Underscore.Chat.Icons.SpellGsub                                 *
+  * Function: _Underscore.Chat.Icons.LinkFilters.spell                         *
   ****************************************************************************]]
 do
 	local GetSpellInfo = GetSpellInfo;
-	local Texture, _;
-	function me.SpellGsub ( Full, ID )
-		_, _, Texture = GetSpellInfo( ID );
-		return Texture and "|T"..Texture..":0|t"..Full;
+	function me.LinkFilters.spell ( SpellID )
+		local _, _, Texture = GetSpellInfo( SpellID );
+		return Texture;
 	end
 end
 --[[****************************************************************************
-  * Function: _Underscore.Chat.Icons.ItemGsub                                  *
+  * Function: _Underscore.Chat.Icons.LinkFilters.trade                         *
   ****************************************************************************]]
-do
-	local GetItemIcon = GetItemIcon;
-	local Texture;
-	function me.ItemGsub ( Full, ItemString )
-		Texture = GetItemIcon( ItemString );
-		return Texture and "|T"..Texture..":0|t"..Full;
-	end
-end
+me.LinkFilters.trade = me.LinkFilters.spell;
 --[[****************************************************************************
-  * Function: _Underscore.Chat.Icons.AchievementGsub                           *
+  * Function: _Underscore.Chat.Icons.LinkFilters.enchant                       *
+  ****************************************************************************]]
+me.LinkFilters.enchant = me.LinkFilters.spell;
+--[[****************************************************************************
+  * Function: _Underscore.Chat.Icons.LinkFilters.item                          *
+  ****************************************************************************]]
+me.LinkFilters.item = GetItemIcon;
+--[[****************************************************************************
+  * Function: _Underscore.Chat.Icons.LinkFilters.achievement                   *
   ****************************************************************************]]
 do
 	local GetAchievementInfo = GetAchievementInfo;
 	local select = select;
-	local Texture;
-	function me.AchievementGsub ( Full, ID )
-		Texture = select( 10, GetAchievementInfo( ID ) );
-		return Texture and "|T"..Texture..":0|t"..Full;
+	function me.LinkFilters.achievement ( AchievementID )
+		return select( 10, GetAchievementInfo( AchievementID ) );
 	end
 end
 
@@ -49,13 +49,17 @@ end
 --[[****************************************************************************
   * Function: _Underscore.Chat.Icons.Filter                                    *
   ****************************************************************************]]
-function me.Filter ( Text )
-	Text = Text:gsub( "(|cff%x%x%x%x%x%x|Hspell:(%d+))", me.SpellGsub );
-	Text = Text:gsub( "(|cff%x%x%x%x%x%x|Htrade:(%d+))", me.SpellGsub );
-	Text = Text:gsub( "(|cff%x%x%x%x%x%x|Henchant:(%d+))", me.SpellGsub );
-	Text = Text:gsub( "(|cff%x%x%x%x%x%x|H(item:[^|]+))", me.ItemGsub );
-	Text = Text:gsub( "(|cff%x%x%x%x%x%x|Hachievement:(%d+))", me.AchievementGsub );
-	return Text;
+do
+	local function LinkGsub ( Full, Pipes, Type, ID )
+		local LinkFilter = me.LinkFilters[ Type ];
+		if ( LinkFilter and #Pipes % 2 == 1 ) then -- Recognized type, not escaped
+			local Texture = LinkFilter( ID );
+			return Texture and "|T"..Texture..":0:0:0:0:100:100:8:92:8:92|t"..Full; -- Cropped like in _Underscore.SkinButtonIcon
+		end
+	end
+	function me.Filter ( Text )
+		return Text:gsub( "((|+)H([^:]+):(%d+))", LinkGsub );
+	end
 end
 
 
