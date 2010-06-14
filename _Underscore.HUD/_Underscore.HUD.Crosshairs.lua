@@ -34,25 +34,19 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
+Screenshot = me.Screenshot;
+me:SetScript( "OnEvent", me.OnEvent );
+me:RegisterEvent( "SCREENSHOT_FAILED" );
+me:RegisterEvent( "SCREENSHOT_SUCCEEDED" );
 
-do
-	Screenshot = me.Screenshot;
-	me:SetScript( "OnEvent", me.OnEvent );
-	me:RegisterEvent( "SCREENSHOT_FAILED" );
-	me:RegisterEvent( "SCREENSHOT_SUCCEEDED" );
+me:SetFrameStrata( "BACKGROUND" );
+me:SetWidth( 32 );
+me:SetHeight( 32 );
+me:SetAlpha( 0.75 );
+me:SetPoint( "CENTER" );
 
-	me:SetFrameStrata( "BACKGROUND" );
-	me:SetWidth( 32 );
-	me:SetHeight( 32 );
-	me:SetAlpha( 0.75 );
-	me:SetPoint( "CENTER" );
-
-	local Texture = me:CreateTexture( nil, "ARTWORK" );
-	Texture:SetAllPoints();
-	Texture:SetTexture( [[Interface\AddOns\]]..( ... )..[[\Skin\Crosshairs]] );
-	Texture:SetTexCoord( 1, 0, 1, 0 ); -- Note: For some reason, flipping it makes it sharper
-	Texture:SetVertexColor( unpack( _Underscore.Colors.Highlight ) );
-end
+local Texture = me:CreateTexture( nil, "ARTWORK" );
+Texture:SetAllPoints();
+Texture:SetTexture( [[Interface\AddOns\]]..( ... )..[[\Skin\Crosshairs]] );
+Texture:SetTexCoord( 1, 0, 1, 0 ); -- Note: For some reason, flipping it makes it sharper
+Texture:SetVertexColor( unpack( _Underscore.Colors.Highlight ) );

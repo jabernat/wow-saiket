@@ -127,16 +127,10 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
-
-do
-	Overlay.Modules.Register( ..., me, L.OVERLAY_TITLE );
+Overlay.Modules.Register( ..., me, L.OVERLAY_TITLE );
 
 
-	me.Control:SetText( L.OVERLAY_CONTROL );
-	me.Control:SetScript( "OnClick", me.Control.OnClick );
+me.Control:SetText( L.OVERLAY_CONTROL );
+me.Control:SetScript( "OnClick", me.Control.OnClick );
 
-	Tools.Config.Controls:Add( me.Control );
-end
+Tools.Config.Controls:Add( me.Control );

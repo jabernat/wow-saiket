@@ -259,17 +259,9 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
+me:SetFrameStrata( "TOOLTIP" );
+me.Update();
 
-do
-	-- Set up frame
-	me:SetFrameStrata( "TOOLTIP" );
-	me.Update();
+outline = me.Toggle;
 
-	-- Hooks
-	outline = me.Toggle;
-
-	SlashCmdList[ "_DEV_OUTLINE" ] = me.SlashCommand;
-end
+SlashCmdList[ "_DEV_OUTLINE" ] = me.SlashCommand;

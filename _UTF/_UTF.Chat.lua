@@ -70,7 +70,7 @@ do
 				Message = Message:gsub( Replacement[ 1 ], Replacement[ 2 ] );
 			end
 		end
-	
+
 		me.SendChatMessageBackup( Message, ... );
 	end
 end
@@ -78,14 +78,8 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
+--hooksecurefunc( ChatFrameEditBox, "SetText", me.ReplaceEditBoxText );
+hooksecurefunc( MacroEditBox, "SetText", me.ReplaceEditBoxText );
+ChatEdit_CustomTabPressed = me.ChatEditCustomTabPressed;
 
-do
-	--hooksecurefunc( ChatFrameEditBox, "SetText", me.ReplaceEditBoxText );
-	hooksecurefunc( MacroEditBox, "SetText", me.ReplaceEditBoxText );
-	ChatEdit_CustomTabPressed = me.ChatEditCustomTabPressed;
-
-	SendChatMessage = me.SendChatMessage;
-end
+SendChatMessage = me.SendChatMessage;

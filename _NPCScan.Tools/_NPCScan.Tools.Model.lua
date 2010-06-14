@@ -90,33 +90,27 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
+me:Hide();
+me:SetScript( "OnEvent", _NPCScan.OnEvent );
+me:RegisterEvent( "PLAYER_REGEN_ENABLED" );
+me:RegisterEvent( "PLAYER_REGEN_DISABLED" );
+hooksecurefunc( Button, "Update", me.ButtonUpdate );
 
-do
-	me:Hide();
-	me:SetScript( "OnEvent", _NPCScan.OnEvent );
-	me:RegisterEvent( "PLAYER_REGEN_ENABLED" );
-	me:RegisterEvent( "PLAYER_REGEN_DISABLED" );
-	hooksecurefunc( Button, "Update", me.ButtonUpdate );
+me.EditBox:SetPoint( "TOPLEFT", Button, "BOTTOMLEFT", 8, 0 );
+me.EditBox:SetPoint( "RIGHT", Button, -4, 0 );
+me.EditBox:SetHeight( 16 );
+me.EditBox:SetAutoFocus( false );
+me.EditBox:SetScript( "OnEnterPressed", me.EditBox.Save );
+me.EditBox:SetScript( "OnEditFocusGained", nil );
 
-	me.EditBox:SetPoint( "TOPLEFT", Button, "BOTTOMLEFT", 8, 0 );
-	me.EditBox:SetPoint( "RIGHT", Button, -4, 0 );
-	me.EditBox:SetHeight( 16 );
-	me.EditBox:SetAutoFocus( false );
-	me.EditBox:SetScript( "OnEnterPressed", me.EditBox.Save );
-	me.EditBox:SetScript( "OnEditFocusGained", nil );
-
-	me.Backdrop = Button.Model:CreateTexture( nil, "BACKGROUND" );
-	me.Backdrop:Hide();
-	me.Backdrop:SetAllPoints();
-	me.Backdrop:SetTexture( [[textures\ShaneCube]] );
-	me.Backdrop:SetVertexColor( 0.5, 0.5, 0.5 );
+me.Backdrop = Button.Model:CreateTexture( nil, "BACKGROUND" );
+me.Backdrop:Hide();
+me.Backdrop:SetAllPoints();
+me.Backdrop:SetTexture( [[textures\ShaneCube]] );
+me.Backdrop:SetVertexColor( 0.5, 0.5, 0.5 );
 
 
-	me.Control:SetText( L.MODEL_CONTROL );
-	me.Control:SetScript( "OnClick", me.Control.OnClick );
+me.Control:SetText( L.MODEL_CONTROL );
+me.Control:SetScript( "OnClick", me.Control.OnClick );
 
-	Tools.Config.Controls:Add( me.Control );
-end
+Tools.Config.Controls:Add( me.Control );

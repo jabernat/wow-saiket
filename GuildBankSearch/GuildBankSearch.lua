@@ -392,171 +392,165 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
-
-do
-	-- Fill in quality labels
-	for Index = 0, #ITEM_QUALITY_COLORS do
-		me.Qualities[ Index ] = ITEM_QUALITY_COLORS[ Index ].hex.._G[ "ITEM_QUALITY"..Index.."_DESC" ]..FONT_COLOR_CODE_CLOSE;
-	end
-	-- Fill in and sort subtypes
-	for Index, Type in ipairs( me.Types ) do
-		me.SubTypes[ Type ] = { GetAuctionItemSubClasses( Index ) };
-		sort( me.SubTypes[ Type ] );
-	end
-	-- Sort types
-	sort( me.Types ); -- Note: Use after subtypes are populated so indices don't get mixed up
-	-- Fill in and sort slots table
-	for InvType in pairs( me.SlotGroups ) do
-		tinsert( me.Slots, InvType );
-	end
-	sort( me.Slots, function ( Type1, Type2 )
-		return _G[ Type1 ] < _G[ Type2 ];
-	end );
-
-	-- Cache all item buttons
-	for Index = 1, MAX_GUILDBANK_SLOTS_PER_TAB do
-		me.Buttons[ Index ] = _G[ "GuildBankColumn"..( floor( ( Index - 1 ) / NUM_SLOTS_PER_GUILDBANK_GROUP ) + 1 )
-			.."Button"..( ( Index - 1 ) % NUM_SLOTS_PER_GUILDBANK_GROUP + 1 ) ];
-	end
-
-
-	-- Set up filter button
-	me.FilterButton:SetSize( 100, 21 );
-	me.FilterButton:SetPoint( "TOPRIGHT", -11, -40 );
-	me.FilterButton:SetText( L.FILTER );
-	me.FilterButton:SetScript( "OnClick", me.Toggle );
-
-
-	-- Set up filter pane
-	me:Hide();
-	me:SetSize( 187, 389 );
-	me:SetPoint( "TOPLEFT", GuildBankFrame, "TOPRIGHT", -2, -28 );
-	me:EnableMouse( true );
-	me:SetToplevel( true );
-
-	me:SetScript( "OnShow", me.OnShow );
-	me:SetScript( "OnHide", me.OnHide );
-	me:SetScript( "OnUpdate", me.OnUpdate );
-	me:SetScript( "OnEvent", me.OnEvent );
-	me:RegisterEvent( "GUILDBANKBAGSLOTS_CHANGED" );
-	me:RegisterEvent( "GUILDBANKLOG_UPDATE" );
-
-
-	-- Artwork
-	do
-		local Label = me:CreateFontString( nil, "ARTWORK", "GameFontNormal" );
-		Label:SetPoint( "TOPLEFT", 4, -10 );
-		Label:SetText( L.TITLE );
-
-		local Top = me:CreateTexture( nil, "BACKGROUND" );
-		Top:SetTexture( "Interface\\AuctionFrame\\AuctionHouseDressUpFrame-Top" );
-		Top:SetSize( 256, 256 );
-		Top:SetPoint( "TOPLEFT" );
-		local Bottom = me:CreateTexture( nil, "BACKGROUND" );
-		Bottom:SetTexture( "Interface\\AuctionFrame\\AuctionHouseDressUpFrame-Bottom" );
-		Bottom:SetSize( 256, 256 );
-		Bottom:SetPoint( "TOPLEFT", Top, "BOTTOMLEFT" );
-		local Corner = me:CreateTexture( nil, "BACKGROUND" );
-		Corner:SetTexture( "Interface\\AuctionFrame\\AuctionHouseDressUpFrame-Corner" );
-		Corner:SetSize( 32, 32 );
-		Corner:SetPoint( "TOPRIGHT", -5, -5 );
-	end
-
-
-	-- Close button
-	CreateFrame( "Button", nil, me, "UIPanelCloseButton" ):SetPoint( "TOPRIGHT", 1, 0 );
-
-	local ClearButton = me.ClearButton;
-	ClearButton:SetSize( 45, 18 );
-	ClearButton:SetPoint( "TOPRIGHT", -31, -8 );
-	ClearButton:SetText( L.CLEAR );
-	ClearButton:SetScript( "OnClick", me.FilterClear );
-
-
-	-- Filter controls
-	local function InitializeDropdown ( self, Parameter, Label )
-		self:SetPoint( "LEFT", -8, 0 );
-		self:SetPoint( "RIGHT", -8, 0 );
-		_G[ self:GetName().."Middle" ]:SetPoint( "RIGHT", -16, 0 );
-		UIDropDownMenu_JustifyText( self, "LEFT" );
-		if ( not self.OnSelect ) then
-			self.OnSelect = me.DropdownOnSelect;
-		end
-		self.initialize = me.DropdownInitialize;
-		self.Parameter = Parameter;
-		self.Label = self:CreateFontString( nil, "OVERLAY", "GameFontHighlightSmall" );
-		self.Label:SetText( Label );
-		self.Label:SetPoint( "BOTTOMLEFT", self, "TOPLEFT", 24, 0 );
-		return self;
-	end
-	local function InitializeLevelEditBox ( self, Parameter, Label )
-		self:SetSize( 25, 16 );
-		self:SetNumeric( true );
-		self:SetMaxLetters( 3 );
-		self:SetAutoFocus( false );
-		self:SetScript( "OnTextChanged", me.LevelEditBoxOnTextChanged );
-		self.Parameter = Parameter;
-		self.Label = self:CreateFontString( nil, "OVERLAY", "GameFontHighlightSmall" );
-		self.Label:SetText( Label );
-	end
-
-	local NameEditBox = me.NameEditBox;
-	NameEditBox:SetHeight( 16 );
-	NameEditBox:SetAutoFocus( false );
-	NameEditBox:SetPoint( "TOP", ClearButton, "BOTTOM", 0, -20 );
-	NameEditBox:SetPoint( "LEFT", 16, 0 );
-	NameEditBox:SetPoint( "RIGHT", -16, 0 );
-	NameEditBox:SetScript( "OnTextChanged", NameEditBox.OnTextChanged );
-	Label = NameEditBox:CreateFontString( nil, "OVERLAY", "GameFontHighlightSmall" );
-	Label:SetPoint( "BOTTOMLEFT", NameEditBox, "TOPLEFT", 1, 0 );
-	Label:SetText( L.NAME );
-
-	InitializeDropdown( me.QualityMenu, "Quality", L.QUALITY ):SetPoint( "TOP", NameEditBox, "BOTTOM", 0, -12 );
-
-	-- Item level range
-	local Min = me.ItemLevelMinEditBox;
-	InitializeLevelEditBox( Min, "ItemLevelMin", L.ITEM_LEVEL );
-	Min:SetPoint( "TOP", me.QualityMenu, "BOTTOM", 0, -16 );
-	Min:SetPoint( "LEFT", 16, 0 );
-	local Max = me.ItemLevelMaxEditBox;
-	InitializeLevelEditBox( Max, "ItemLevelMax", L.LEVELRANGE_SEPARATOR );
-	Max.Label:SetPoint( "LEFT", Min, "RIGHT", 2, 0 );
-	Max:SetPoint( "LEFT", Max.Label, "RIGHT", 8, 0 );
-	Min.Label:SetPoint( "CENTER", Max.Label ); -- Center above dash between edit boxes
-	Min.Label:SetPoint( "BOTTOM", Min, "TOP" );
-
-	-- Required level range
-	Max = me.ReqLevelMaxEditBox;
-	InitializeLevelEditBox( Max, "ReqLevelMax", L.REQUIRED_LEVEL );
-	Max:SetPoint( "TOP", me.ItemLevelMinEditBox );
-	Max:SetPoint( "RIGHT", -24, 0 );
-	Min = me.ReqLevelMinEditBox;
-	InitializeLevelEditBox( Min, "ReqLevelMin", L.LEVELRANGE_SEPARATOR );
-	Min.Label:SetPoint( "RIGHT", Max, "LEFT", -8, 0 );
-	Min:SetPoint( "RIGHT", Min.Label, "LEFT", -2, 0 );
-	Max.Label:SetPoint( "CENTER", Min.Label );
-	Max.Label:SetPoint( "BOTTOM", Max, "TOP" );
-
-	-- Item category section
-	local CategorySection = me.CategorySection;
-	_G[ CategorySection:GetName().."Title" ]:SetText( L.ITEM_CATEGORY );
-	CategorySection:SetPoint( "TOP", me.ItemLevelMinEditBox, "BOTTOM", 0, -38 );
-	CategorySection:SetPoint( "LEFT", 8, 0 );
-	CategorySection:SetPoint( "BOTTOMRIGHT", -16, 16 );
-
-	InitializeDropdown( me.TypeMenu, "Type", L.TYPE ):SetPoint( "TOP", 0, -16 );
-	InitializeDropdown( me.SubTypeMenu, "SubType", L.SUB_TYPE ):SetPoint( "TOP", me.TypeMenu, "BOTTOM", 0, -6 );
-	InitializeDropdown( me.SlotMenu, "Slot", L.SLOT ):SetPoint( "TOP", me.SubTypeMenu, "BOTTOM", 0, -16 );
-
-
-	-- Hooks
-	hooksecurefunc( "GuildBankFrameTab_OnClick", me.GuildBankFrameTabOnClick );
-	hooksecurefunc( "GuildBankFrame_Update", me.GuildBankFrameUpdate );
-	GuildBankMessageFrame.AddMessage = me.GuildBankMessageFrameAddMessage;
-	ChatEdit_InsertLink = me.ChatEditInsertLink;
-
-	me.FilterClear();
+-- Fill in quality labels
+for Index = 0, #ITEM_QUALITY_COLORS do
+	me.Qualities[ Index ] = ITEM_QUALITY_COLORS[ Index ].hex.._G[ "ITEM_QUALITY"..Index.."_DESC" ]..FONT_COLOR_CODE_CLOSE;
 end
+-- Fill in and sort subtypes
+for Index, Type in ipairs( me.Types ) do
+	me.SubTypes[ Type ] = { GetAuctionItemSubClasses( Index ) };
+	sort( me.SubTypes[ Type ] );
+end
+-- Sort types
+sort( me.Types ); -- Note: Use after subtypes are populated so indices don't get mixed up
+-- Fill in and sort slots table
+for InvType in pairs( me.SlotGroups ) do
+	tinsert( me.Slots, InvType );
+end
+sort( me.Slots, function ( Type1, Type2 )
+	return _G[ Type1 ] < _G[ Type2 ];
+end );
+
+-- Cache all item buttons
+for Index = 1, MAX_GUILDBANK_SLOTS_PER_TAB do
+	me.Buttons[ Index ] = _G[ "GuildBankColumn"..( floor( ( Index - 1 ) / NUM_SLOTS_PER_GUILDBANK_GROUP ) + 1 )
+		.."Button"..( ( Index - 1 ) % NUM_SLOTS_PER_GUILDBANK_GROUP + 1 ) ];
+end
+
+
+-- Set up filter button
+me.FilterButton:SetSize( 100, 21 );
+me.FilterButton:SetPoint( "TOPRIGHT", -11, -40 );
+me.FilterButton:SetText( L.FILTER );
+me.FilterButton:SetScript( "OnClick", me.Toggle );
+
+
+-- Set up filter pane
+me:Hide();
+me:SetSize( 187, 389 );
+me:SetPoint( "TOPLEFT", GuildBankFrame, "TOPRIGHT", -2, -28 );
+me:EnableMouse( true );
+me:SetToplevel( true );
+
+me:SetScript( "OnShow", me.OnShow );
+me:SetScript( "OnHide", me.OnHide );
+me:SetScript( "OnUpdate", me.OnUpdate );
+me:SetScript( "OnEvent", me.OnEvent );
+me:RegisterEvent( "GUILDBANKBAGSLOTS_CHANGED" );
+me:RegisterEvent( "GUILDBANKLOG_UPDATE" );
+
+
+-- Artwork
+do
+	local Label = me:CreateFontString( nil, "ARTWORK", "GameFontNormal" );
+	Label:SetPoint( "TOPLEFT", 4, -10 );
+	Label:SetText( L.TITLE );
+
+	local Top = me:CreateTexture( nil, "BACKGROUND" );
+	Top:SetTexture( "Interface\\AuctionFrame\\AuctionHouseDressUpFrame-Top" );
+	Top:SetSize( 256, 256 );
+	Top:SetPoint( "TOPLEFT" );
+	local Bottom = me:CreateTexture( nil, "BACKGROUND" );
+	Bottom:SetTexture( "Interface\\AuctionFrame\\AuctionHouseDressUpFrame-Bottom" );
+	Bottom:SetSize( 256, 256 );
+	Bottom:SetPoint( "TOPLEFT", Top, "BOTTOMLEFT" );
+	local Corner = me:CreateTexture( nil, "BACKGROUND" );
+	Corner:SetTexture( "Interface\\AuctionFrame\\AuctionHouseDressUpFrame-Corner" );
+	Corner:SetSize( 32, 32 );
+	Corner:SetPoint( "TOPRIGHT", -5, -5 );
+end
+
+
+-- Close button
+CreateFrame( "Button", nil, me, "UIPanelCloseButton" ):SetPoint( "TOPRIGHT", 1, 0 );
+
+local ClearButton = me.ClearButton;
+ClearButton:SetSize( 45, 18 );
+ClearButton:SetPoint( "TOPRIGHT", -31, -8 );
+ClearButton:SetText( L.CLEAR );
+ClearButton:SetScript( "OnClick", me.FilterClear );
+
+
+-- Filter controls
+local function InitializeDropdown ( self, Parameter, Label )
+	self:SetPoint( "LEFT", -8, 0 );
+	self:SetPoint( "RIGHT", -8, 0 );
+	_G[ self:GetName().."Middle" ]:SetPoint( "RIGHT", -16, 0 );
+	UIDropDownMenu_JustifyText( self, "LEFT" );
+	if ( not self.OnSelect ) then
+		self.OnSelect = me.DropdownOnSelect;
+	end
+	self.initialize = me.DropdownInitialize;
+	self.Parameter = Parameter;
+	self.Label = self:CreateFontString( nil, "OVERLAY", "GameFontHighlightSmall" );
+	self.Label:SetText( Label );
+	self.Label:SetPoint( "BOTTOMLEFT", self, "TOPLEFT", 24, 0 );
+	return self;
+end
+local function InitializeLevelEditBox ( self, Parameter, Label )
+	self:SetSize( 25, 16 );
+	self:SetNumeric( true );
+	self:SetMaxLetters( 3 );
+	self:SetAutoFocus( false );
+	self:SetScript( "OnTextChanged", me.LevelEditBoxOnTextChanged );
+	self.Parameter = Parameter;
+	self.Label = self:CreateFontString( nil, "OVERLAY", "GameFontHighlightSmall" );
+	self.Label:SetText( Label );
+end
+
+local NameEditBox = me.NameEditBox;
+NameEditBox:SetHeight( 16 );
+NameEditBox:SetAutoFocus( false );
+NameEditBox:SetPoint( "TOP", ClearButton, "BOTTOM", 0, -20 );
+NameEditBox:SetPoint( "LEFT", 16, 0 );
+NameEditBox:SetPoint( "RIGHT", -16, 0 );
+NameEditBox:SetScript( "OnTextChanged", NameEditBox.OnTextChanged );
+Label = NameEditBox:CreateFontString( nil, "OVERLAY", "GameFontHighlightSmall" );
+Label:SetPoint( "BOTTOMLEFT", NameEditBox, "TOPLEFT", 1, 0 );
+Label:SetText( L.NAME );
+
+InitializeDropdown( me.QualityMenu, "Quality", L.QUALITY ):SetPoint( "TOP", NameEditBox, "BOTTOM", 0, -12 );
+
+-- Item level range
+local Min = me.ItemLevelMinEditBox;
+InitializeLevelEditBox( Min, "ItemLevelMin", L.ITEM_LEVEL );
+Min:SetPoint( "TOP", me.QualityMenu, "BOTTOM", 0, -16 );
+Min:SetPoint( "LEFT", 16, 0 );
+local Max = me.ItemLevelMaxEditBox;
+InitializeLevelEditBox( Max, "ItemLevelMax", L.LEVELRANGE_SEPARATOR );
+Max.Label:SetPoint( "LEFT", Min, "RIGHT", 2, 0 );
+Max:SetPoint( "LEFT", Max.Label, "RIGHT", 8, 0 );
+Min.Label:SetPoint( "CENTER", Max.Label ); -- Center above dash between edit boxes
+Min.Label:SetPoint( "BOTTOM", Min, "TOP" );
+
+-- Required level range
+Max = me.ReqLevelMaxEditBox;
+InitializeLevelEditBox( Max, "ReqLevelMax", L.REQUIRED_LEVEL );
+Max:SetPoint( "TOP", me.ItemLevelMinEditBox );
+Max:SetPoint( "RIGHT", -24, 0 );
+Min = me.ReqLevelMinEditBox;
+InitializeLevelEditBox( Min, "ReqLevelMin", L.LEVELRANGE_SEPARATOR );
+Min.Label:SetPoint( "RIGHT", Max, "LEFT", -8, 0 );
+Min:SetPoint( "RIGHT", Min.Label, "LEFT", -2, 0 );
+Max.Label:SetPoint( "CENTER", Min.Label );
+Max.Label:SetPoint( "BOTTOM", Max, "TOP" );
+
+-- Item category section
+local CategorySection = me.CategorySection;
+_G[ CategorySection:GetName().."Title" ]:SetText( L.ITEM_CATEGORY );
+CategorySection:SetPoint( "TOP", me.ItemLevelMinEditBox, "BOTTOM", 0, -38 );
+CategorySection:SetPoint( "LEFT", 8, 0 );
+CategorySection:SetPoint( "BOTTOMRIGHT", -16, 16 );
+
+InitializeDropdown( me.TypeMenu, "Type", L.TYPE ):SetPoint( "TOP", 0, -16 );
+InitializeDropdown( me.SubTypeMenu, "SubType", L.SUB_TYPE ):SetPoint( "TOP", me.TypeMenu, "BOTTOM", 0, -6 );
+InitializeDropdown( me.SlotMenu, "Slot", L.SLOT ):SetPoint( "TOP", me.SubTypeMenu, "BOTTOM", 0, -16 );
+
+
+-- Hooks
+hooksecurefunc( "GuildBankFrameTab_OnClick", me.GuildBankFrameTabOnClick );
+hooksecurefunc( "GuildBankFrame_Update", me.GuildBankFrameUpdate );
+GuildBankMessageFrame.AddMessage = me.GuildBankMessageFrameAddMessage;
+ChatEdit_InsertLink = me.ChatEditInsertLink;
+
+me.FilterClear();

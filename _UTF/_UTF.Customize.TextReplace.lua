@@ -102,10 +102,4 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
-
-do
-	_UTF.Customize.AddPane( me, L.CUSTOMIZE_TEXTREPLACE_TITLE );
-end
+_UTF.Customize.AddPane( me, L.CUSTOMIZE_TEXTREPLACE_TITLE );

@@ -8,7 +8,7 @@ local _NPCScan = _NPCScan;
 local me = select( 2, ... );
 _NPCScan.Tools = me;
 
-me.Matrix = {
+me.Matrix = { -- A simple implementation of affine (3x3) transformation matrices.
 	Meta = { __index = {}; };
 	MetaSymbolic = { __index = {}; };
 };
@@ -17,10 +17,6 @@ local MatrixMetaSymbolic = me.Matrix.MetaSymbolic;
 
 
 
-
---------------------------------------------------------------------------------
--- _NPCScan.Tools.Matrix: A simple implementation of affine (3x3) transformation matrices.
----------------------------
 
 --[[****************************************************************************
   * Function: _NPCScan.Tools.Matrix.Meta.__index:New                           *
@@ -133,15 +129,9 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
+MatrixMeta.__index.Meta = MatrixMeta;
+Identity = MatrixMeta.__index:New();
 
-do
-	MatrixMeta.__index.Meta = MatrixMeta;
-	Identity = MatrixMeta.__index:New();
-
-	setmetatable( MatrixMetaSymbolic.__index, MatrixMeta );
-	MatrixMetaSymbolic.__index.Meta = MatrixMetaSymbolic;
-	IdentitySymbolic = MatrixMetaSymbolic.__index:New();
-end
+setmetatable( MatrixMetaSymbolic.__index, MatrixMeta );
+MatrixMetaSymbolic.__index.Meta = MatrixMetaSymbolic;
+IdentitySymbolic = MatrixMetaSymbolic.__index:New();

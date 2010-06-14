@@ -193,30 +193,23 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
-
-do
-	local function SkinAll ( self ) -- Skins a tooltip and its child shopping tooltips
-		me.Skin( self );
-		for _, ShoppingTooltip in ipairs( self.shoppingTooltips ) do
-			me.Skin( ShoppingTooltip );
-		end
+local function SkinAll ( self ) -- Skins a tooltip and its child shopping tooltips
+	me.Skin( self );
+	for _, ShoppingTooltip in ipairs( self.shoppingTooltips ) do
+		me.Skin( ShoppingTooltip );
 	end
-
-
-	me.UnitRegister( GameTooltip );
-	SkinAll( GameTooltip );
-	hooksecurefunc( "GameTooltip_SetDefaultAnchor", me.SetDefaultAnchor );
-	GameTooltip:SetScale( 0.75 );
-
-	me.UnitRegister( ItemRefTooltip );
-	me.ItemRegister( ItemRefTooltip );
-	me.SpellRegister( ItemRefTooltip );
-	me.AchievementRegister( ItemRefTooltip );
-	SkinAll( ItemRefTooltip );
-	ItemRefTooltip:SetPadding( 0 ); -- Remove padding on right side that close button occupies
-
-	SkinAll( WorldMapTooltip );
 end
+
+me.UnitRegister( GameTooltip );
+SkinAll( GameTooltip );
+hooksecurefunc( "GameTooltip_SetDefaultAnchor", me.SetDefaultAnchor );
+GameTooltip:SetScale( 0.75 );
+
+me.UnitRegister( ItemRefTooltip );
+me.ItemRegister( ItemRefTooltip );
+me.SpellRegister( ItemRefTooltip );
+me.AchievementRegister( ItemRefTooltip );
+SkinAll( ItemRefTooltip );
+ItemRefTooltip:SetPadding( 0 ); -- Remove padding on right side that close button occupies
+
+SkinAll( WorldMapTooltip );

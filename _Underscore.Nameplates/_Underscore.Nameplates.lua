@@ -721,70 +721,64 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
-
-do
-	me:SetScript( "OnEvent", _Underscore.OnEvent );
-	me:SetScript( "OnUpdate", me.OnUpdate );
-	me:RegisterEvent( "VARIABLES_LOADED" );
-	me:RegisterEvent( "PLAYER_REGEN_DISABLED" );
-	me:RegisterEvent( "PLAYER_REGEN_ENABLED" );
-	me:RegisterEvent( "PLAYER_TARGET_CHANGED" );
-	_Underscore.RegisterAddOnInitializer( ..., me.OnLoad );
+me:SetScript( "OnEvent", _Underscore.OnEvent );
+me:SetScript( "OnUpdate", me.OnUpdate );
+me:RegisterEvent( "VARIABLES_LOADED" );
+me:RegisterEvent( "PLAYER_REGEN_DISABLED" );
+me:RegisterEvent( "PLAYER_REGEN_ENABLED" );
+me:RegisterEvent( "PLAYER_TARGET_CHANGED" );
+_Underscore.RegisterAddOnInitializer( ..., me.OnLoad );
 
 
-	-- Fonts
-	me.NameFont:SetFont( [[Fonts\ARIALN.TTF]], 11, "OUTLINE" );
-	me.NameFont:SetShadowColor( 0, 0, 0, 0 ); -- Hide shadow
-	me.NameFont:SetJustifyV( "MIDDLE" );
-	me.NameFont:SetJustifyH( "LEFT" );
+-- Fonts
+me.NameFont:SetFont( [[Fonts\ARIALN.TTF]], 11, "OUTLINE" );
+me.NameFont:SetShadowColor( 0, 0, 0, 0 ); -- Hide shadow
+me.NameFont:SetJustifyV( "MIDDLE" );
+me.NameFont:SetJustifyH( "LEFT" );
 
-	me.LevelFont:SetFont( [[Fonts\ARIALN.TTF]], 9, "OUTLINE" );
-	me.LevelFont:SetShadowColor( 0, 0, 0, 1 );
-	me.LevelFont:SetShadowOffset( 1.5, -1.5 );
+me.LevelFont:SetFont( [[Fonts\ARIALN.TTF]], 9, "OUTLINE" );
+me.LevelFont:SetShadowColor( 0, 0, 0, 1 );
+me.LevelFont:SetShadowOffset( 1.5, -1.5 );
 
-	me.CastFont:SetFont( [[Fonts\ARIALN.TTF]], 14, "OUTLINE" );
-	me.CastFont:SetJustifyV( "MIDDLE" );
-	me.CastFont:SetJustifyH( "LEFT" );
-
-
-	-- Target outline
-	me.TargetOutline:SetSize( PlateWidth, PlateHeight );
-	local Outline = me.TargetOutline:CreateTexture( nil, "BORDER" );
-	Outline:SetTexture( 1, 1, 1 );
-	Outline:SetPoint( "TOPRIGHT", PlateBorder, PlateBorder );
-	Outline:SetPoint( "BOTTOMLEFT", -PlateBorder, -PlateBorder );
-	local Mask = me.TargetOutline:CreateTexture( nil, "ARTWORK" );
-	Mask:SetTexture( 0, 0, 0 );
-	Mask:SetAllPoints();
-
-	-- Target outline updater
-	me.TargetUpdater:Hide();
-	me.TargetUpdater:SetScript( "OnUpdate", me.TargetUpdater.OnUpdate );
-	-- Higher frame stratas execute OnUpdates later
-	me.TargetUpdater:SetFrameStrata( "TOOLTIP" );
+me.CastFont:SetFont( [[Fonts\ARIALN.TTF]], 14, "OUTLINE" );
+me.CastFont:SetJustifyV( "MIDDLE" );
+me.CastFont:SetJustifyH( "LEFT" );
 
 
-	-- Interrupt flash
-	local Flash = me:CreateTexture( nil, "OVERLAY" );
-	Flash:SetSize( 400 / 300 * ( PlateWidth + 2 * ( CastHeight - PlateHeight ) ), 171 / 70 * CastHeight );
-	Flash:SetTexture( [[Interface\AchievementFrame\UI-Achievement-Alert-Glow]] );
-	Flash:SetBlendMode( "ADD" );
-	Flash:SetTexCoord( 0, 0.78125, 0, 0.66796875 );
-	Flash:SetAlpha( 0 );
-	Flash:Hide();
-	me.Flash = Flash;
-	Flash.Animation = Flash:CreateAnimationGroup();
-	local FadeIn = Flash.Animation:CreateAnimation( "Alpha" );
-	FadeIn:SetChange( 1.0 );
-	FadeIn:SetDuration( 0.1 );
-	local FadeOut = Flash.Animation:CreateAnimation( "Alpha" );
-	FadeOut:SetOrder( 2 );
-	FadeOut:SetChange( -1.0 );
-	FadeOut:SetDuration( 0.3 );
+-- Target outline
+me.TargetOutline:SetSize( PlateWidth, PlateHeight );
+local Outline = me.TargetOutline:CreateTexture( nil, "BORDER" );
+Outline:SetTexture( 1, 1, 1 );
+Outline:SetPoint( "TOPRIGHT", PlateBorder, PlateBorder );
+Outline:SetPoint( "BOTTOMLEFT", -PlateBorder, -PlateBorder );
+local Mask = me.TargetOutline:CreateTexture( nil, "ARTWORK" );
+Mask:SetTexture( 0, 0, 0 );
+Mask:SetAllPoints();
+
+-- Target outline updater
+me.TargetUpdater:Hide();
+me.TargetUpdater:SetScript( "OnUpdate", me.TargetUpdater.OnUpdate );
+-- Higher frame stratas execute OnUpdates later
+me.TargetUpdater:SetFrameStrata( "TOOLTIP" );
 
 
-	SlashCmdList[ "_UNDERSCORE_NAMEPLATES" ] = me.SlashCommand;
-end
+-- Interrupt flash
+local Flash = me:CreateTexture( nil, "OVERLAY" );
+Flash:SetSize( 400 / 300 * ( PlateWidth + 2 * ( CastHeight - PlateHeight ) ), 171 / 70 * CastHeight );
+Flash:SetTexture( [[Interface\AchievementFrame\UI-Achievement-Alert-Glow]] );
+Flash:SetBlendMode( "ADD" );
+Flash:SetTexCoord( 0, 0.78125, 0, 0.66796875 );
+Flash:SetAlpha( 0 );
+Flash:Hide();
+me.Flash = Flash;
+Flash.Animation = Flash:CreateAnimationGroup();
+local FadeIn = Flash.Animation:CreateAnimation( "Alpha" );
+FadeIn:SetChange( 1.0 );
+FadeIn:SetDuration( 0.1 );
+local FadeOut = Flash.Animation:CreateAnimation( "Alpha" );
+FadeOut:SetOrder( 2 );
+FadeOut:SetChange( -1.0 );
+FadeOut:SetDuration( 0.3 );
+
+
+SlashCmdList[ "_UNDERSCORE_NAMEPLATES" ] = me.SlashCommand;

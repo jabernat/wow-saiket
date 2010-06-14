@@ -71,15 +71,9 @@ me.PLAYER_FOCUS_CHANGED = me.PLAYER_TARGET_CHANGED;
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
+me:SetScript( "OnEvent", _Underscore.OnEvent );
+me:RegisterEvent( "PLAYER_TARGET_CHANGED" );
+me:RegisterEvent( "PLAYER_FOCUS_CHANGED" );
 
-do
-	me:SetScript( "OnEvent", _Underscore.OnEvent );
-	me:RegisterEvent( "PLAYER_TARGET_CHANGED" );
-	me:RegisterEvent( "PLAYER_FOCUS_CHANGED" );
-
-	tinsert( UnitPopupFrames, me.DropDown:GetName() );
-	UIDropDownMenu_Initialize( me.DropDown, me.DropDown.initialize, "MENU" );
-end
+tinsert( UnitPopupFrames, me.DropDown:GetName() );
+UIDropDownMenu_Initialize( me.DropDown, me.DropDown.initialize, "MENU" );

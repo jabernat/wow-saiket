@@ -176,16 +176,10 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
-
-do
-	me:SetScript( "OnEvent", me.OnEvent );
-	me:RegisterEvent( "PLAYER_ENTERING_WORLD" );
-	if ( IsLoggedIn() ) then -- Loaded on-demand
-		me:PLAYER_ENTERING_WORLD();
-	end
-
-	GameTooltip:HookScript( "OnShow", me.GameTooltipOnShow );
+me:SetScript( "OnEvent", me.OnEvent );
+me:RegisterEvent( "PLAYER_ENTERING_WORLD" );
+if ( IsLoggedIn() ) then -- Loaded on-demand
+	me:PLAYER_ENTERING_WORLD();
 end
+
+GameTooltip:HookScript( "OnShow", me.GameTooltipOnShow );

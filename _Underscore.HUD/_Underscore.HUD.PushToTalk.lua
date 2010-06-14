@@ -71,24 +71,18 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
+me:Hide();
+me:SetScript( "OnEvent", _Underscore.OnEvent );
+me:RegisterEvent( "VOICE_PUSH_TO_TALK_START" );
+me:RegisterEvent( "VOICE_PUSH_TO_TALK_STOP" );
+me:RegisterEvent( "UPDATE_BINDINGS" );
 
-do
-	me:Hide();
-	me:SetScript( "OnEvent", _Underscore.OnEvent );
-	me:RegisterEvent( "VOICE_PUSH_TO_TALK_START" );
-	me:RegisterEvent( "VOICE_PUSH_TO_TALK_STOP" );
-	me:RegisterEvent( "UPDATE_BINDINGS" );
+me:SetFrameStrata( "BACKGROUND" );
+me:SetWidth( 64 );
+me:SetHeight( 64 );
+me:SetAlpha( 0.5 );
+me:SetPoint( "CENTER", WorldFrame, 8, 0 );
 
-	me:SetFrameStrata( "BACKGROUND" );
-	me:SetWidth( 64 );
-	me:SetHeight( 64 );
-	me:SetAlpha( 0.5 );
-	me:SetPoint( "CENTER", WorldFrame, 8, 0 );
-
-	local Icon = me:CreateTexture( nil, "ARTWORK" );
-	Icon:SetTexture( [[Interface\Common\VoiceChat-Speaker]] );
-	Icon:SetAllPoints();
-end
+local Icon = me:CreateTexture( nil, "ARTWORK" );
+Icon:SetTexture( [[Interface\Common\VoiceChat-Speaker]] );
+Icon:SetAllPoints();

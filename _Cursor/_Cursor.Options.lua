@@ -691,274 +691,268 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
+me.name = L.OPTIONS_TITLE;
+me:Hide();
+me:SetScript( "OnHide", me.OnHide );
 
-do
-	me.name = L.OPTIONS_TITLE;
-	me:Hide();
-	me:SetScript( "OnHide", me.OnHide );
-
-	InterfaceOptions_AddCategory( me );
+InterfaceOptions_AddCategory( me );
 
 
-	-- Pane title
-	me.Title = me:CreateFontString( nil, "ARTWORK", "GameFontNormalLarge" );
-	me.Title:SetPoint( "TOPLEFT", 16, -16 );
-	me.Title:SetText( L.OPTIONS_TITLE );
-	local SubText = me:CreateFontString( nil, "ARTWORK", "GameFontHighlightSmall" );
-	me.SubText = SubText;
-	SubText:SetPoint( "TOPLEFT", me.Title, "BOTTOMLEFT", 0, -8 );
-	SubText:SetPoint( "RIGHT", -32, 0 );
-	SubText:SetHeight( 32 );
-	SubText:SetJustifyH( "LEFT" );
-	SubText:SetJustifyV( "TOP" );
-	SubText:SetText( L.OPTIONS_DESC );
+-- Pane title
+me.Title = me:CreateFontString( nil, "ARTWORK", "GameFontNormalLarge" );
+me.Title:SetPoint( "TOPLEFT", 16, -16 );
+me.Title:SetText( L.OPTIONS_TITLE );
+local SubText = me:CreateFontString( nil, "ARTWORK", "GameFontHighlightSmall" );
+me.SubText = SubText;
+SubText:SetPoint( "TOPLEFT", me.Title, "BOTTOMLEFT", 0, -8 );
+SubText:SetPoint( "RIGHT", -32, 0 );
+SubText:SetHeight( 32 );
+SubText:SetJustifyH( "LEFT" );
+SubText:SetJustifyV( "TOP" );
+SubText:SetText( L.OPTIONS_DESC );
 
 
 
 
-	-- Sets pane
-	_G[ SetsPanel:GetName().."Title" ]:SetText( L.OPTIONS.SETS );
-	SetsPanel:SetPoint( "TOPLEFT", SubText, "BOTTOMLEFT", -2, -16 );
-	SetsPanel:SetPoint( "RIGHT", -14, 0 );
-	SetsPanel:SetHeight( 64 );
+-- Sets pane
+_G[ SetsPanel:GetName().."Title" ]:SetText( L.OPTIONS.SETS );
+SetsPanel:SetPoint( "TOPLEFT", SubText, "BOTTOMLEFT", -2, -16 );
+SetsPanel:SetPoint( "RIGHT", -14, 0 );
+SetsPanel:SetHeight( 64 );
 
-	-- Set editbox
-	local Set = SetsPanel.Set;
-	Set:SetPoint( "TOPLEFT", 16, -10 );
-	Set:SetPoint( "RIGHT", -16, 0 );
-	Set:SetHeight( 20 );
-	Set.SetHeight = function () end;
-	Set:SetAutoFocus( false );
-	Set:SetScript( "OnEnterPressed", Set.OnEnterPressed );
-	Set:SetScript( "OnTextChanged", Set.OnTextChanged );
-	Set:SetScript( "OnEnter", me.ControlOnEnter );
-	Set:SetScript( "OnLeave", GameTooltip_Hide );
-	Set.point = "TOPRIGHT";
-	Set.relativePoint = "BOTTOMRIGHT";
-	Set.tooltipText = L.OPTIONS[ "SET_DESC" ];
-	local SetButton = Set.Button;
-	SetButton:SetPoint( "RIGHT", Set, 3, 1 );
-	SetButton:SetSize( 24, 24 );
-	SetButton:SetNormalTexture( "Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Up" );
-	SetButton:SetPushedTexture( "Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Down" );
-	SetButton:SetHighlightTexture( "Interface\\Buttons\\UI-Common-MouseHilight", "ADD" );
-	SetButton:SetScript( "OnClick", SetButton.OnClick );
-	SetButton:SetScript( "OnHide", SetButton.OnHide );
+-- Set editbox
+local Set = SetsPanel.Set;
+Set:SetPoint( "TOPLEFT", 16, -10 );
+Set:SetPoint( "RIGHT", -16, 0 );
+Set:SetHeight( 20 );
+Set.SetHeight = function () end;
+Set:SetAutoFocus( false );
+Set:SetScript( "OnEnterPressed", Set.OnEnterPressed );
+Set:SetScript( "OnTextChanged", Set.OnTextChanged );
+Set:SetScript( "OnEnter", me.ControlOnEnter );
+Set:SetScript( "OnLeave", GameTooltip_Hide );
+Set.point = "TOPRIGHT";
+Set.relativePoint = "BOTTOMRIGHT";
+Set.tooltipText = L.OPTIONS[ "SET_DESC" ];
+local SetButton = Set.Button;
+SetButton:SetPoint( "RIGHT", Set, 3, 1 );
+SetButton:SetSize( 24, 24 );
+SetButton:SetNormalTexture( "Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Up" );
+SetButton:SetPushedTexture( "Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Down" );
+SetButton:SetHighlightTexture( "Interface\\Buttons\\UI-Common-MouseHilight", "ADD" );
+SetButton:SetScript( "OnClick", SetButton.OnClick );
+SetButton:SetScript( "OnHide", SetButton.OnHide );
 
-	local SaveButton = SetsPanel.SaveButton;
-	SaveButton:SetPoint( "BOTTOMLEFT", 8, 10 );
-	SaveButton:SetSize( 74, 22 );
-	SaveButton:SetText( L.OPTIONS.SAVE );
-	SaveButton:SetScript( "OnClick", SaveButton.OnClick );
+local SaveButton = SetsPanel.SaveButton;
+SaveButton:SetPoint( "BOTTOMLEFT", 8, 10 );
+SaveButton:SetSize( 74, 22 );
+SaveButton:SetText( L.OPTIONS.SAVE );
+SaveButton:SetScript( "OnClick", SaveButton.OnClick );
 
-	local LoadButton = SetsPanel.LoadButton;
-	LoadButton:SetPoint( "LEFT", SaveButton, "RIGHT", 4, 0 );
-	LoadButton:SetSize( 74, 22 );
-	LoadButton:SetText( L.OPTIONS.LOAD );
-	LoadButton:SetScript( "OnClick", LoadButton.OnClick );
+local LoadButton = SetsPanel.LoadButton;
+LoadButton:SetPoint( "LEFT", SaveButton, "RIGHT", 4, 0 );
+LoadButton:SetSize( 74, 22 );
+LoadButton:SetText( L.OPTIONS.LOAD );
+LoadButton:SetScript( "OnClick", LoadButton.OnClick );
 
-	local DeleteButton = SetsPanel.DeleteButton;
-	DeleteButton:SetPoint( "BOTTOMRIGHT", -8, 10 );
-	DeleteButton:SetSize( 74, 22 );
-	DeleteButton:SetText( L.OPTIONS.DELETE );
-	DeleteButton:SetScript( "OnClick", DeleteButton.OnClick );
-	DeleteButton:SetScript( "OnEnter", me.ControlOnEnter );
-	DeleteButton:SetScript( "OnLeave", GameTooltip_Hide );
-	DeleteButton.tooltipText = L.OPTIONS.DELETE_DESC;
-
-
-
-
-	-- Cursors tabbed pane
-	CursorsPanel:SetPoint( "TOPLEFT", SetsPanel, "BOTTOMLEFT", 0, -64 );
-	CursorsPanel:SetPoint( "BOTTOMRIGHT", -14, 16 );
-	local Text = _G[ CursorsPanel:GetName().."Title" ];
-	Text:SetText( L.OPTIONS.CURSORS );
-	Text:SetPoint( "BOTTOMLEFT", CursorsPanel, "TOPLEFT", 9, 20 );
-
-
-	-- Apply button
-	local ApplyButton = CursorsPanel.ApplyButton;
-	ApplyButton:SetScript( "OnClick", me.OnApply );
-	ApplyButton:SetPoint( "BOTTOMRIGHT", CursorsPanel, "TOPRIGHT", 0, 2 );
-	ApplyButton:SetSize( 64, 16 );
-	ApplyButton:SetText( L.OPTIONS.APPLY );
-
-
-	-- Enable button
-	local Enabled = CursorsPanel.Enabled;
-	Enabled:SetPoint( "TOPLEFT", 16, -8 );
-	Enabled:SetScale( 0.75 );
-	Enabled:SetScript( "OnClick", Enabled.OnClick );
-	Enabled.tooltipText = L.OPTIONS.ENABLED_DESC;
-	_G[ Enabled:GetName().."Text" ]:SetText( L.OPTIONS.ENABLED );
-
-	-- Preview window
-	local Preview = CursorsPanel.Preview;
-	Preview:SetPoint( "TOPRIGHT", -16, -8 );
-	Preview:SetSize( 96, 96 );
-	Preview:SetBackdrop( {
-		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border"; edgeSize = 16;
-	} );
-	Preview:SetScript( "OnMouseUp", Preview.OnMouseUp );
-	Preview:SetScript( "OnEnter", me.ControlOnEnter );
-	Preview:SetScript( "OnLeave", GameTooltip_Hide );
-	Preview.Rate = math.pi;
-	Preview.tooltipText = L.OPTIONS.PREVIEW_DESC;
-
-	local Backdrop = Preview:CreateTexture( nil, "BACKGROUND" );
-	Preview.Backdrop = Backdrop;
-	Backdrop:SetPoint( "TOPRIGHT", -4, -4 );
-	Backdrop:SetPoint( "BOTTOMLEFT", 4, 4 );
-	Backdrop:SetTexture( "textures\\ShaneCube.blp" );
-	Backdrop:SetGradient( "VERTICAL", 0.5, 0.5, 0.5, 0.25, 0.25, 0.25 );
-
-	Preview.Model = CreateFrame( "Model", nil, Preview );
-	Preview.Model:SetAllPoints( Backdrop );
-	Preview.Model:SetLight( 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ); -- Allows trails like warriors' intervene to work
-
-	local Cursor = Preview.Model:CreateTexture( nil, "OVERLAY" );
-	Preview.Cursor = Cursor;
-	Cursor:SetSize( 24, 24 );
-	Cursor:SetTexture( "Interface\\Cursor\\Point.blp" );
-	Cursor:SetVertexColor( 0.4, 0.4, 0.4 );
-
-	-- X-axis slider
-	local X = CursorsPanel.X;
-	X:SetPoint( "LEFT", Preview, "BOTTOMLEFT" );
-	X:SetPoint( "RIGHT", Preview );
-	X:SetHeight( 14 );
-	X:SetScale( 0.8 );
-	X:SetMinMaxValues( -32, 32 );
-	X:SetScript( "OnValueChanged", X.OnValueChanged );
-	X:SetScript( "OnEnter", me.ControlOnEnter );
-	X:SetScript( "OnLeave", GameTooltip_Hide );
-	X.tooltipText = L.OPTIONS[ "X_DESC" ];
-	Text = _G[ X:GetName().."Low" ];
-	Text:SetText( -32 );
-	Text:ClearAllPoints();
-	Text:SetPoint( "LEFT" );
-	Text = _G[ X:GetName().."High" ];
-	Text:SetText( 32 );
-	Text:ClearAllPoints();
-	Text:SetPoint( "RIGHT" );
-
-	-- Y-axis slider
-	local Y = CursorsPanel.Y;
-	Y:SetOrientation( "VERTICAL" );
-	Y:SetPoint( "TOP", Preview, "TOPLEFT" );
-	Y:SetPoint( "BOTTOM", Preview );
-	Y:SetWidth( 10 );
-	Y:SetScale( 0.8 );
-	Y:SetThumbTexture( "Interface\\Buttons\\UI-SliderBar-Button-Vertical" );
-	Y:SetMinMaxValues( -32, 32 );
-	Y:SetScript( "OnValueChanged", Y.OnValueChanged );
-	Y:SetScript( "OnEnter", me.ControlOnEnter );
-	Y:SetScript( "OnLeave", GameTooltip_Hide );
-	Y.tooltipText = L.OPTIONS[ "Y_DESC" ];
-	Text = _G[ Y:GetName().."Low" ];
-	Text:SetText( -32 );
-	Text:ClearAllPoints();
-	Text:SetPoint( "BOTTOM", 0, 6 );
-	Text = _G[ Y:GetName().."High" ];
-	Text:SetText( 32 );
-	Text:ClearAllPoints();
-	Text:SetPoint( "TOP", 0, -2 );
-
-	-- Scale slider
-	local Scale = CursorsPanel.Scale;
-	Scale:SetPoint( "LEFT", Y );
-	Scale:SetPoint( "RIGHT", Preview );
-	Scale:SetPoint( "TOP", X, "BOTTOM", 0, -8 );
-	Scale:SetMinMaxValues( 1 / 2, 4 );
-	Scale:SetScript( "OnValueChanged", Scale.OnValueChanged );
-	Scale:SetScript( "OnEnter", me.ControlOnEnter );
-	Scale:SetScript( "OnLeave", GameTooltip_Hide );
-	Scale.tooltipText = L.OPTIONS[ "SCALE_DESC" ];
-	_G[ Scale:GetName().."Low" ]:SetText( 0.5 );
-	_G[ Scale:GetName().."High" ]:SetText( 4 );
-	Text = _G[ Scale:GetName().."Text" ];
-	Text:SetText( L.OPTIONS.SCALE );
-	Text:SetPoint( "BOTTOM", Scale, "TOP", 0, -2 );
-
-	-- Facing slider
-	local Facing = CursorsPanel.Facing;
-	Facing:SetPoint( "TOPLEFT", Scale, "BOTTOMLEFT", 0, -8 );
-	Facing:SetPoint( "RIGHT", Scale );
-	Facing:SetMinMaxValues( 0, math.pi * 2 );
-	Facing:SetScript( "OnValueChanged", Facing.OnValueChanged );
-	Facing:SetScript( "OnEnter", me.ControlOnEnter );
-	Facing:SetScript( "OnLeave", GameTooltip_Hide );
-	Facing.tooltipText = L.OPTIONS[ "FACING_DESC" ];
-	_G[ Facing:GetName().."Low" ]:SetText( L.OPTIONS.FACING_LOW );
-	_G[ Facing:GetName().."High" ]:SetText( L.OPTIONS.FACING_HIGH );
-	Text = _G[ Facing:GetName().."Text" ];
-	Text:SetText( L.OPTIONS.FACING );
-	Text:SetPoint( "BOTTOM", Facing, "TOP", 0, -2 );
-
-	-- Type dropdown
-	local Type = CursorsPanel.Type;
-	Type:SetPoint( "LEFT", -6, 0 );
-	Type:SetPoint( "TOP", Enabled, "BOTTOM", 0, -12 );
-	Type:SetPoint( "RIGHT", Y, "LEFT", -8, 0 );
-	Type:SetScript( "OnEnter", me.ControlOnEnter );
-	Type:SetScript( "OnLeave", GameTooltip_Hide );
-	UIDropDownMenu_JustifyText( Type, "LEFT" );
-	_G[ Type:GetName().."Middle" ]:SetPoint( "RIGHT", -16, 0 );
-	Type.tooltipText = L.OPTIONS.TYPE_DESC;
-	Text = Type:CreateFontString( nil, "ARTWORK", "GameFontNormalSmall" );
-	Type.Text = Text;
-	Text:SetPoint( "BOTTOMLEFT", Type, "TOPLEFT", 16, -2 );
-	Text:SetText( L.OPTIONS.TYPE );
-
-	-- Value dropdown
-	local Value = CursorsPanel.Value;
-	Value:SetPoint( "LEFT", Type );
-	Value:SetPoint( "RIGHT", Type );
-	Value:SetPoint( "BOTTOM", Preview );
-	Value:SetScript( "OnEnter", me.ControlOnEnter );
-	Value:SetScript( "OnLeave", GameTooltip_Hide );
-	UIDropDownMenu_JustifyText( Value, "LEFT" );
-	_G[ Value:GetName().."Middle" ]:SetPoint( "RIGHT", -16, 0 );
-	Value.tooltipText = L.OPTIONS.VALUE_DESC;
-	Text = Value:CreateFontString( nil, "ARTWORK", "GameFontNormalSmall" );
-	Value.Text = Text;
-	Text:SetPoint( "BOTTOMLEFT", Value, "TOPLEFT", 16, -2 );
-	Text:SetText( L.OPTIONS.VALUE );
-
-	-- Path editbox
-	local Path = CursorsPanel.Path;
-	Path:SetPoint( "BOTTOMLEFT", 16, 16 );
-	Path:SetPoint( "RIGHT", Value, -8, 0 );
-	Path:SetHeight( 20 );
-	Path:SetAutoFocus( false );
-	Path:SetScript( "OnEnterPressed", Path.OnEnterPressed );
-	Path:SetScript( "OnEscapePressed", Path.OnEscapePressed );
-	Path:SetScript( "OnEnter", me.ControlOnEnter );
-	Path:SetScript( "OnLeave", GameTooltip_Hide );
-	Path.tooltipText = L.OPTIONS[ "PATH_DESC" ];
-	Text = Path:CreateFontString( nil, "ARTWORK", "GameFontNormalSmall" );
-	Path.Text = Text;
-	Text:SetPoint( "BOTTOMLEFT", Path, "TOPLEFT", -6, 0 );
-	Text:SetText( L.OPTIONS.PATH );
+local DeleteButton = SetsPanel.DeleteButton;
+DeleteButton:SetPoint( "BOTTOMRIGHT", -8, 10 );
+DeleteButton:SetSize( 74, 22 );
+DeleteButton:SetText( L.OPTIONS.DELETE );
+DeleteButton:SetScript( "OnClick", DeleteButton.OnClick );
+DeleteButton:SetScript( "OnEnter", me.ControlOnEnter );
+DeleteButton:SetScript( "OnLeave", GameTooltip_Hide );
+DeleteButton.tooltipText = L.OPTIONS.DELETE_DESC;
 
 
 
 
-	StaticPopupDialogs[ "_CURSOR_RESET_CONFIRM" ] = {
-		text    = L.RESET_CONFIRM;
-		button1 = L.RESET_ALL;
-		button3 = L.RESET_CHARACTER;
-		button2 = L.RESET_CANCEL;
-		OnAccept = me.ResetAll;
-		OnAlt    = me.ResetCharacter;
-		timeout = 0;
-		exclusive = 1;
-		hideOnEscape = 1;
-		whileDead = 1;
-	};
-	SlashCmdList[ "_CURSOR_OPTIONS" ] = me.SlashCommand;
-end
+-- Cursors tabbed pane
+CursorsPanel:SetPoint( "TOPLEFT", SetsPanel, "BOTTOMLEFT", 0, -64 );
+CursorsPanel:SetPoint( "BOTTOMRIGHT", -14, 16 );
+local Text = _G[ CursorsPanel:GetName().."Title" ];
+Text:SetText( L.OPTIONS.CURSORS );
+Text:SetPoint( "BOTTOMLEFT", CursorsPanel, "TOPLEFT", 9, 20 );
+
+
+-- Apply button
+local ApplyButton = CursorsPanel.ApplyButton;
+ApplyButton:SetScript( "OnClick", me.OnApply );
+ApplyButton:SetPoint( "BOTTOMRIGHT", CursorsPanel, "TOPRIGHT", 0, 2 );
+ApplyButton:SetSize( 64, 16 );
+ApplyButton:SetText( L.OPTIONS.APPLY );
+
+
+-- Enable button
+local Enabled = CursorsPanel.Enabled;
+Enabled:SetPoint( "TOPLEFT", 16, -8 );
+Enabled:SetScale( 0.75 );
+Enabled:SetScript( "OnClick", Enabled.OnClick );
+Enabled.tooltipText = L.OPTIONS.ENABLED_DESC;
+_G[ Enabled:GetName().."Text" ]:SetText( L.OPTIONS.ENABLED );
+
+-- Preview window
+local Preview = CursorsPanel.Preview;
+Preview:SetPoint( "TOPRIGHT", -16, -8 );
+Preview:SetSize( 96, 96 );
+Preview:SetBackdrop( {
+	edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border"; edgeSize = 16;
+} );
+Preview:SetScript( "OnMouseUp", Preview.OnMouseUp );
+Preview:SetScript( "OnEnter", me.ControlOnEnter );
+Preview:SetScript( "OnLeave", GameTooltip_Hide );
+Preview.Rate = math.pi;
+Preview.tooltipText = L.OPTIONS.PREVIEW_DESC;
+
+local Backdrop = Preview:CreateTexture( nil, "BACKGROUND" );
+Preview.Backdrop = Backdrop;
+Backdrop:SetPoint( "TOPRIGHT", -4, -4 );
+Backdrop:SetPoint( "BOTTOMLEFT", 4, 4 );
+Backdrop:SetTexture( "textures\\ShaneCube.blp" );
+Backdrop:SetGradient( "VERTICAL", 0.5, 0.5, 0.5, 0.25, 0.25, 0.25 );
+
+Preview.Model = CreateFrame( "Model", nil, Preview );
+Preview.Model:SetAllPoints( Backdrop );
+Preview.Model:SetLight( 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ); -- Allows trails like warriors' intervene to work
+
+local Cursor = Preview.Model:CreateTexture( nil, "OVERLAY" );
+Preview.Cursor = Cursor;
+Cursor:SetSize( 24, 24 );
+Cursor:SetTexture( "Interface\\Cursor\\Point.blp" );
+Cursor:SetVertexColor( 0.4, 0.4, 0.4 );
+
+-- X-axis slider
+local X = CursorsPanel.X;
+X:SetPoint( "LEFT", Preview, "BOTTOMLEFT" );
+X:SetPoint( "RIGHT", Preview );
+X:SetHeight( 14 );
+X:SetScale( 0.8 );
+X:SetMinMaxValues( -32, 32 );
+X:SetScript( "OnValueChanged", X.OnValueChanged );
+X:SetScript( "OnEnter", me.ControlOnEnter );
+X:SetScript( "OnLeave", GameTooltip_Hide );
+X.tooltipText = L.OPTIONS[ "X_DESC" ];
+Text = _G[ X:GetName().."Low" ];
+Text:SetText( -32 );
+Text:ClearAllPoints();
+Text:SetPoint( "LEFT" );
+Text = _G[ X:GetName().."High" ];
+Text:SetText( 32 );
+Text:ClearAllPoints();
+Text:SetPoint( "RIGHT" );
+
+-- Y-axis slider
+local Y = CursorsPanel.Y;
+Y:SetOrientation( "VERTICAL" );
+Y:SetPoint( "TOP", Preview, "TOPLEFT" );
+Y:SetPoint( "BOTTOM", Preview );
+Y:SetWidth( 10 );
+Y:SetScale( 0.8 );
+Y:SetThumbTexture( "Interface\\Buttons\\UI-SliderBar-Button-Vertical" );
+Y:SetMinMaxValues( -32, 32 );
+Y:SetScript( "OnValueChanged", Y.OnValueChanged );
+Y:SetScript( "OnEnter", me.ControlOnEnter );
+Y:SetScript( "OnLeave", GameTooltip_Hide );
+Y.tooltipText = L.OPTIONS[ "Y_DESC" ];
+Text = _G[ Y:GetName().."Low" ];
+Text:SetText( -32 );
+Text:ClearAllPoints();
+Text:SetPoint( "BOTTOM", 0, 6 );
+Text = _G[ Y:GetName().."High" ];
+Text:SetText( 32 );
+Text:ClearAllPoints();
+Text:SetPoint( "TOP", 0, -2 );
+
+-- Scale slider
+local Scale = CursorsPanel.Scale;
+Scale:SetPoint( "LEFT", Y );
+Scale:SetPoint( "RIGHT", Preview );
+Scale:SetPoint( "TOP", X, "BOTTOM", 0, -8 );
+Scale:SetMinMaxValues( 1 / 2, 4 );
+Scale:SetScript( "OnValueChanged", Scale.OnValueChanged );
+Scale:SetScript( "OnEnter", me.ControlOnEnter );
+Scale:SetScript( "OnLeave", GameTooltip_Hide );
+Scale.tooltipText = L.OPTIONS[ "SCALE_DESC" ];
+_G[ Scale:GetName().."Low" ]:SetText( 0.5 );
+_G[ Scale:GetName().."High" ]:SetText( 4 );
+Text = _G[ Scale:GetName().."Text" ];
+Text:SetText( L.OPTIONS.SCALE );
+Text:SetPoint( "BOTTOM", Scale, "TOP", 0, -2 );
+
+-- Facing slider
+local Facing = CursorsPanel.Facing;
+Facing:SetPoint( "TOPLEFT", Scale, "BOTTOMLEFT", 0, -8 );
+Facing:SetPoint( "RIGHT", Scale );
+Facing:SetMinMaxValues( 0, math.pi * 2 );
+Facing:SetScript( "OnValueChanged", Facing.OnValueChanged );
+Facing:SetScript( "OnEnter", me.ControlOnEnter );
+Facing:SetScript( "OnLeave", GameTooltip_Hide );
+Facing.tooltipText = L.OPTIONS[ "FACING_DESC" ];
+_G[ Facing:GetName().."Low" ]:SetText( L.OPTIONS.FACING_LOW );
+_G[ Facing:GetName().."High" ]:SetText( L.OPTIONS.FACING_HIGH );
+Text = _G[ Facing:GetName().."Text" ];
+Text:SetText( L.OPTIONS.FACING );
+Text:SetPoint( "BOTTOM", Facing, "TOP", 0, -2 );
+
+-- Type dropdown
+local Type = CursorsPanel.Type;
+Type:SetPoint( "LEFT", -6, 0 );
+Type:SetPoint( "TOP", Enabled, "BOTTOM", 0, -12 );
+Type:SetPoint( "RIGHT", Y, "LEFT", -8, 0 );
+Type:SetScript( "OnEnter", me.ControlOnEnter );
+Type:SetScript( "OnLeave", GameTooltip_Hide );
+UIDropDownMenu_JustifyText( Type, "LEFT" );
+_G[ Type:GetName().."Middle" ]:SetPoint( "RIGHT", -16, 0 );
+Type.tooltipText = L.OPTIONS.TYPE_DESC;
+Text = Type:CreateFontString( nil, "ARTWORK", "GameFontNormalSmall" );
+Type.Text = Text;
+Text:SetPoint( "BOTTOMLEFT", Type, "TOPLEFT", 16, -2 );
+Text:SetText( L.OPTIONS.TYPE );
+
+-- Value dropdown
+local Value = CursorsPanel.Value;
+Value:SetPoint( "LEFT", Type );
+Value:SetPoint( "RIGHT", Type );
+Value:SetPoint( "BOTTOM", Preview );
+Value:SetScript( "OnEnter", me.ControlOnEnter );
+Value:SetScript( "OnLeave", GameTooltip_Hide );
+UIDropDownMenu_JustifyText( Value, "LEFT" );
+_G[ Value:GetName().."Middle" ]:SetPoint( "RIGHT", -16, 0 );
+Value.tooltipText = L.OPTIONS.VALUE_DESC;
+Text = Value:CreateFontString( nil, "ARTWORK", "GameFontNormalSmall" );
+Value.Text = Text;
+Text:SetPoint( "BOTTOMLEFT", Value, "TOPLEFT", 16, -2 );
+Text:SetText( L.OPTIONS.VALUE );
+
+-- Path editbox
+local Path = CursorsPanel.Path;
+Path:SetPoint( "BOTTOMLEFT", 16, 16 );
+Path:SetPoint( "RIGHT", Value, -8, 0 );
+Path:SetHeight( 20 );
+Path:SetAutoFocus( false );
+Path:SetScript( "OnEnterPressed", Path.OnEnterPressed );
+Path:SetScript( "OnEscapePressed", Path.OnEscapePressed );
+Path:SetScript( "OnEnter", me.ControlOnEnter );
+Path:SetScript( "OnLeave", GameTooltip_Hide );
+Path.tooltipText = L.OPTIONS[ "PATH_DESC" ];
+Text = Path:CreateFontString( nil, "ARTWORK", "GameFontNormalSmall" );
+Path.Text = Text;
+Text:SetPoint( "BOTTOMLEFT", Path, "TOPLEFT", -6, 0 );
+Text:SetText( L.OPTIONS.PATH );
+
+
+
+
+StaticPopupDialogs[ "_CURSOR_RESET_CONFIRM" ] = {
+	text    = L.RESET_CONFIRM;
+	button1 = L.RESET_ALL;
+	button3 = L.RESET_CHARACTER;
+	button2 = L.RESET_CANCEL;
+	OnAccept = me.ResetAll;
+	OnAlt    = me.ResetCharacter;
+	timeout = 0;
+	exclusive = 1;
+	hideOnEscape = 1;
+	whileDead = 1;
+};
+SlashCmdList[ "_CURSOR_OPTIONS" ] = me.SlashCommand;

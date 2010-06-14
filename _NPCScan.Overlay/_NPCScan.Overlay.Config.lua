@@ -241,60 +241,54 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
+local Label = L[ IsChildAddOn and "CONFIG_TITLE" or "CONFIG_TITLE_STANDALONE" ];
+me.name = Label;
+me:Hide();
 
-do
-	local Label = L[ IsChildAddOn and "CONFIG_TITLE" or "CONFIG_TITLE_STANDALONE" ];
-	me.name = Label;
-	me:Hide();
-
-	-- Pane title
-	me.Title = me:CreateFontString( nil, "ARTWORK", "GameFontNormalLarge" );
-	me.Title:SetPoint( "TOPLEFT", 16, -16 );
-	me.Title:SetText( Label );
-	local SubText = me:CreateFontString( nil, "ARTWORK", "GameFontHighlightSmall" );
-	me.SubText = SubText;
-	SubText:SetPoint( "TOPLEFT", me.Title, "BOTTOMLEFT", 0, -8 );
-	SubText:SetPoint( "RIGHT", -32, 0 );
-	SubText:SetHeight( 32 );
-	SubText:SetJustifyH( "LEFT" );
-	SubText:SetJustifyV( "TOP" );
-	SubText:SetText( L.CONFIG_DESC );
+-- Pane title
+me.Title = me:CreateFontString( nil, "ARTWORK", "GameFontNormalLarge" );
+me.Title:SetPoint( "TOPLEFT", 16, -16 );
+me.Title:SetText( Label );
+local SubText = me:CreateFontString( nil, "ARTWORK", "GameFontHighlightSmall" );
+me.SubText = SubText;
+SubText:SetPoint( "TOPLEFT", me.Title, "BOTTOMLEFT", 0, -8 );
+SubText:SetPoint( "RIGHT", -32, 0 );
+SubText:SetHeight( 32 );
+SubText:SetJustifyH( "LEFT" );
+SubText:SetJustifyV( "TOP" );
+SubText:SetText( L.CONFIG_DESC );
 
 
-	me.ShowAll:SetPoint( "TOPLEFT", SubText, "BOTTOMLEFT", -2, -8 );
-	_G[ me.ShowAll:GetName().."Text" ]:SetText( L.CONFIG_SHOWALL );
-	me.ShowAll.tooltipText = L.CONFIG_SHOWALL_DESC;
+me.ShowAll:SetPoint( "TOPLEFT", SubText, "BOTTOMLEFT", -2, -8 );
+_G[ me.ShowAll:GetName().."Text" ]:SetText( L.CONFIG_SHOWALL );
+me.ShowAll.tooltipText = L.CONFIG_SHOWALL_DESC;
 
 
-	-- Module options scrollframe
-	local Background = CreateFrame( "Frame", nil, me, "OptionsBoxTemplate" );
-	Background:SetPoint( "TOPLEFT", me.ShowAll, "BOTTOMLEFT", 0, -8 );
-	Background:SetPoint( "BOTTOMRIGHT", -32, 16 );
-	local Texture = Background:CreateTexture( nil, "BACKGROUND" );
-	Texture:SetTexture( 0, 0, 0, 0.5 );
-	Texture:SetPoint( "BOTTOMLEFT", 5, 5 );
-	Texture:SetPoint( "TOPRIGHT", -5, -5 );
+-- Module options scrollframe
+local Background = CreateFrame( "Frame", nil, me, "OptionsBoxTemplate" );
+Background:SetPoint( "TOPLEFT", me.ShowAll, "BOTTOMLEFT", 0, -8 );
+Background:SetPoint( "BOTTOMRIGHT", -32, 16 );
+local Texture = Background:CreateTexture( nil, "BACKGROUND" );
+Texture:SetTexture( 0, 0, 0, 0.5 );
+Texture:SetPoint( "BOTTOMLEFT", 5, 5 );
+Texture:SetPoint( "TOPRIGHT", -5, -5 );
 
-	local ScrollFrame = CreateFrame( "ScrollFrame", "_NPCScanOverlayScrollFrame", Background, "UIPanelScrollFrameTemplate" );
-	ScrollFrame:SetPoint( "TOPLEFT", 4, -4 );
-	ScrollFrame:SetPoint( "BOTTOMRIGHT", -4, 4 );
+local ScrollFrame = CreateFrame( "ScrollFrame", "_NPCScanOverlayScrollFrame", Background, "UIPanelScrollFrameTemplate" );
+ScrollFrame:SetPoint( "TOPLEFT", 4, -4 );
+ScrollFrame:SetPoint( "BOTTOMRIGHT", -4, 4 );
 
-	me.ScrollChild = CreateFrame( "Frame" );
-	ScrollFrame:SetScrollChild( me.ScrollChild );
-	me.ScrollChild:SetSize( 1, 1 );
+me.ScrollChild = CreateFrame( "Frame" );
+ScrollFrame:SetScrollChild( me.ScrollChild );
+me.ScrollChild:SetSize( 1, 1 );
 
 
-	if ( IsChildAddOn ) then
-		Overlay.SafeCall( function ()
-			me.parent = assert( _NPCScan.Config.name );
-			TableCreateBackup = assert( _NPCScan.Config.Search.TableCreate );
-			_NPCScan.Config.Search.TableCreate = me.TableCreate;
-		end );
-	end
-	InterfaceOptions_AddCategory( me );
-
-	SlashCmdList[ "_NPCSCAN_OVERLAY" ] = me.SlashCommand;
+if ( IsChildAddOn ) then
+	Overlay.SafeCall( function ()
+		me.parent = assert( _NPCScan.Config.name );
+		TableCreateBackup = assert( _NPCScan.Config.Search.TableCreate );
+		_NPCScan.Config.Search.TableCreate = me.TableCreate;
+	end );
 end
+InterfaceOptions_AddCategory( me );
+
+SlashCmdList[ "_NPCSCAN_OVERLAY" ] = me.SlashCommand;

@@ -324,77 +324,71 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
+me:SetWidth( 1 );
+me:SetHeight( 1 );
+me:SetPoint( "CENTER" );
+me:SetFrameStrata( "BACKGROUND" );
+me:SetAlpha( TableAlpha );
 
-do
-	me:SetWidth( 1 );
-	me:SetHeight( 1 );
-	me:SetPoint( "CENTER" );
-	me:SetFrameStrata( "BACKGROUND" );
-	me:SetAlpha( TableAlpha );
-
-	me:SetScript( "OnEvent", _Underscore.OnEvent );
-	me:SetScript( "OnUpdate", me.OnUpdate );
-	me:RegisterEvent( "UNIT_NAME_UPDATE" );
-	me:RegisterEvent( "UNIT_HEALTH" );
-	me:RegisterEvent( "UNIT_MAXHEALTH" );
-	me:RegisterEvent( "UNIT_AURA" );
-	me:RegisterEvent( "PLAYER_TARGET_CHANGED" );
-	me:RegisterEvent( "PLAYER_FOCUS_CHANGED" );
-	me:RegisterEvent( "UNIT_PET" );
-	me:RegisterEvent( "PLAYER_ENTERING_WORLD" );
+me:SetScript( "OnEvent", _Underscore.OnEvent );
+me:SetScript( "OnUpdate", me.OnUpdate );
+me:RegisterEvent( "UNIT_NAME_UPDATE" );
+me:RegisterEvent( "UNIT_HEALTH" );
+me:RegisterEvent( "UNIT_MAXHEALTH" );
+me:RegisterEvent( "UNIT_AURA" );
+me:RegisterEvent( "PLAYER_TARGET_CHANGED" );
+me:RegisterEvent( "PLAYER_FOCUS_CHANGED" );
+me:RegisterEvent( "UNIT_PET" );
+me:RegisterEvent( "PLAYER_ENTERING_WORLD" );
 
 
-	-- Setup all columns
-	local function CreateColumn ( Name, Align )
-		local Frame = CreateFrame( "Frame", nil, me );
-		me.Columns[ Name ] = Frame;
-		Frame.Align = Align;
+-- Setup all columns
+local function CreateColumn ( Name, Align )
+	local Frame = CreateFrame( "Frame", nil, me );
+	me.Columns[ Name ] = Frame;
+	Frame.Align = Align;
 
-		Frame:SetWidth( 1 );
-		Frame:SetHeight( 1 );
+	Frame:SetWidth( 1 );
+	Frame:SetHeight( 1 );
 
-		return Frame;
-	end
-
-	CreateColumn( "Name", "RIGHT" ):SetPoint( "RIGHT", me, "LEFT", -16, 0 );
-	CreateColumn( "Health", "RIGHT" ):SetPoint( "LEFT", me, "RIGHT", 4, 0 );
-	CreateColumn( "Power", "RIGHT" ):SetPoint( "LEFT", me.Columns[ "Health" ], "RIGHT", 4, 0 );
-	CreateColumn( "Condition", "LEFT" ):SetPoint( "LEFT", me.Columns[ "Power" ], "RIGHT", 16, 0 );
-
-
-	-- Setup all rows
-	local function CreateRow ( UnitID, Margin )
-		local Frame = CreateFrame( "Frame", nil, me );
-		me.Units[ UnitID ] = Frame;
-		Frame.UnitID = UnitID;
-		Frame.Margin = Margin;
-
-		Frame:SetScript( "OnShow", me.UnitOnShow );
-		Frame:SetScript( "OnHide", me.UnitOnHide );
-		Frame:SetScript( "OnUpdate", me.UnitOnUpdate );
-
-		Frame:SetWidth( 1 );
-
-		-- Create all fields
-		for Name, Column in pairs( me.Columns ) do
-			local Field = Frame:CreateFontString( nil, "ARTWORK", "NumberFontNormalLarge" );
-			Frame[ Name ] = Field;
-			Field:SetPoint( "BOTTOM" );
-			Field:SetPoint( Column.Align, Column );
-		end
-		local Color = GRAY_FONT_COLOR;
-		Frame[ "Condition" ]:SetTextColor( Color.r, Color.g, Color.b );
-		Frame:Hide();
-
-		return Frame;
-	end
-
-	CreateRow( "target" ):SetPoint( "BOTTOM", me, "TOP", 0, 16 );
-	CreateRow( "player" ):SetPoint( "TOP", me, "BOTTOM" );
-	CreateRow( "pet", -4 ):SetPoint( "TOP", me.Units[ "player" ], "BOTTOM" );
-	me.Units[ "pet" ]:SetScale( 0.8 );
-	CreateRow( "focus", 8 ):SetPoint( "TOP", me.Units[ "pet" ], "BOTTOM", 0, -8 );
+	return Frame;
 end
+
+CreateColumn( "Name", "RIGHT" ):SetPoint( "RIGHT", me, "LEFT", -16, 0 );
+CreateColumn( "Health", "RIGHT" ):SetPoint( "LEFT", me, "RIGHT", 4, 0 );
+CreateColumn( "Power", "RIGHT" ):SetPoint( "LEFT", me.Columns[ "Health" ], "RIGHT", 4, 0 );
+CreateColumn( "Condition", "LEFT" ):SetPoint( "LEFT", me.Columns[ "Power" ], "RIGHT", 16, 0 );
+
+
+-- Setup all rows
+local function CreateRow ( UnitID, Margin )
+	local Frame = CreateFrame( "Frame", nil, me );
+	me.Units[ UnitID ] = Frame;
+	Frame.UnitID = UnitID;
+	Frame.Margin = Margin;
+
+	Frame:SetScript( "OnShow", me.UnitOnShow );
+	Frame:SetScript( "OnHide", me.UnitOnHide );
+	Frame:SetScript( "OnUpdate", me.UnitOnUpdate );
+
+	Frame:SetWidth( 1 );
+
+	-- Create all fields
+	for Name, Column in pairs( me.Columns ) do
+		local Field = Frame:CreateFontString( nil, "ARTWORK", "NumberFontNormalLarge" );
+		Frame[ Name ] = Field;
+		Field:SetPoint( "BOTTOM" );
+		Field:SetPoint( Column.Align, Column );
+	end
+	local Color = GRAY_FONT_COLOR;
+	Frame[ "Condition" ]:SetTextColor( Color.r, Color.g, Color.b );
+	Frame:Hide();
+
+	return Frame;
+end
+
+CreateRow( "target" ):SetPoint( "BOTTOM", me, "TOP", 0, 16 );
+CreateRow( "player" ):SetPoint( "TOP", me, "BOTTOM" );
+CreateRow( "pet", -4 ):SetPoint( "TOP", me.Units[ "player" ], "BOTTOM" );
+me.Units[ "pet" ]:SetScale( 0.8 );
+CreateRow( "focus", 8 ):SetPoint( "TOP", me.Units[ "pet" ], "BOTTOM", 0, -8 );

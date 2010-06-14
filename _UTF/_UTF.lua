@@ -1,17 +1,6 @@
 --[[****************************************************************************
   * _UTF by Saiket                                                             *
   * _UTF.lua - Common Unicode translation functions.                           *
-  *                                                                            *
-  * + Provides various functions to convert between code points and the UTF-   *
-  *   encoded characters they represent.                                       *
-  * + Replaces HTML character entities with the characters they represent. The *
-  *   following example formats are supported:                                 *
-  *   + &<EntityName>;, where <EntityName> is found in the                     *
-  *     _UTF.CharacterEntities.lua file.                                       *
-  *   + &#<DecCodePoint>;, where <DecCodePoint> is a decimal representation of *
-  *     the character's code point.                                            *
-  *   + &#x<HexCodePoint>;, where <HexCodePoint> is a hexadecimal              *
-  *     representation of the character's code point.                          *
   ****************************************************************************]]
 
 
@@ -81,7 +70,7 @@ do
 	local lshift = bit.lshift;
 	function me.UTFToDec ( String )
 		local Length = #String;
-	
+
 		if ( Length == 1 ) then
 			local B1 = String:byte();
 			return B1 < 128 and B1;
@@ -130,7 +119,7 @@ do
 	local tonumber = tonumber;
 	local function GsubReplace ( Start, Flags, Name, End )
 		local CodePoint;
-	
+
 		if ( #Flags == 0 ) then -- Character entity
 			CodePoint = _UTFOptions.CharacterEntities[ Name ]
 				or me.CharacterEntities[ Name ];
@@ -139,7 +128,7 @@ do
 		elseif ( Flags:lower() == "#x" ) then -- Hexadecimal
 			CodePoint = HexToDec( Name );
 		end
-	
+
 		if ( CodePoint ) then
 			CodePoint = DecToUTF( CodePoint );
 			if ( CursorPosition ) then

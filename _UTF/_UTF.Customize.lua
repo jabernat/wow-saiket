@@ -162,86 +162,80 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
+me.name = L.CUSTOMIZE_TITLE;
+me.parent = L.OPTIONS_TITLE;
+me:SetScript( "OnShow", function ( self )
+	self:SetScript( "OnShow", nil );
+	if ( #Panes > 0 ) then
+		me.SetPane( 1 );
+	end
+end );
 
-do
-	me.name = L.CUSTOMIZE_TITLE;
-	me.parent = L.OPTIONS_TITLE;
-	me:SetScript( "OnShow", function ( self )
-		self:SetScript( "OnShow", nil );
-		if ( #Panes > 0 ) then
-			me.SetPane( 1 );
-		end
-	end );
-
-	-- Pane title
-	me.Title = me:CreateFontString( nil, "ARTWORK", "GameFontNormalLarge" );
-	me.Title:SetPoint( "TOPLEFT", 16, -16 );
-	me.Title:SetText( L.CUSTOMIZE_TITLE );
-	local SubText = me:CreateFontString( nil, "ARTWORK", "GameFontHighlightSmall" );
-	me.SubText = SubText;
-	SubText:SetPoint( "TOPLEFT", me.Title, "BOTTOMLEFT", 0, -8 );
-	SubText:SetPoint( "RIGHT", -32, 0 );
-	SubText:SetHeight( 32 );
-	SubText:SetJustifyH( "LEFT" );
-	SubText:SetJustifyV( "TOP" );
-	SubText:SetText( L.CUSTOMIZE_DESC );
+-- Pane title
+me.Title = me:CreateFontString( nil, "ARTWORK", "GameFontNormalLarge" );
+me.Title:SetPoint( "TOPLEFT", 16, -16 );
+me.Title:SetText( L.CUSTOMIZE_TITLE );
+local SubText = me:CreateFontString( nil, "ARTWORK", "GameFontHighlightSmall" );
+me.SubText = SubText;
+SubText:SetPoint( "TOPLEFT", me.Title, "BOTTOMLEFT", 0, -8 );
+SubText:SetPoint( "RIGHT", -32, 0 );
+SubText:SetHeight( 32 );
+SubText:SetJustifyH( "LEFT" );
+SubText:SetJustifyV( "TOP" );
+SubText:SetText( L.CUSTOMIZE_DESC );
 
 
-	-- Create add and remove buttons
-	local RemoveButton = CreateFrame( "Button", nil, me, "GameMenuButtonTemplate" );
-	me.RemoveButton = RemoveButton;
-	RemoveButton:SetSize( 16, 20 );
-	RemoveButton:SetPoint( "BOTTOMRIGHT", -16, 16 );
-	RemoveButton:SetText( L.CUSTOMIZE_REMOVE );
-	RemoveButton:SetScript( "OnClick", me.Remove );
-	local AddButton = CreateFrame( "Button", nil, me, "GameMenuButtonTemplate" );
-	me.AddButton = AddButton;
-	AddButton:SetSize( 16, 20 );
-	AddButton:SetPoint( "BOTTOMRIGHT", RemoveButton, "TOPRIGHT", 0, 4 );
-	AddButton:SetText( L.CUSTOMIZE_ADD );
-	AddButton:SetScript( "OnClick", me.Add );
+-- Create add and remove buttons
+local RemoveButton = CreateFrame( "Button", nil, me, "GameMenuButtonTemplate" );
+me.RemoveButton = RemoveButton;
+RemoveButton:SetSize( 16, 20 );
+RemoveButton:SetPoint( "BOTTOMRIGHT", -16, 16 );
+RemoveButton:SetText( L.CUSTOMIZE_REMOVE );
+RemoveButton:SetScript( "OnClick", me.Remove );
+local AddButton = CreateFrame( "Button", nil, me, "GameMenuButtonTemplate" );
+me.AddButton = AddButton;
+AddButton:SetSize( 16, 20 );
+AddButton:SetPoint( "BOTTOMRIGHT", RemoveButton, "TOPRIGHT", 0, 4 );
+AddButton:SetText( L.CUSTOMIZE_ADD );
+AddButton:SetScript( "OnClick", me.Add );
 
 
-	-- Create edit boxes
-	local Label2 = me:CreateFontString( nil, "ARTWORK", "GameFontHighlight" );
-	me.Label2 = Label2;
-	Label2:SetPoint( "BOTTOMLEFT", 16, 16 );
-	Label2:SetPoint( "TOP", RemoveButton );
-	local Label1 = me:CreateFontString( nil, "ARTWORK", "GameFontHighlight" );
-	me.Label1 = Label1;
-	Label1:SetPoint( "BOTTOMLEFT", Label2, "TOPLEFT", 0, 4 );
-	Label1:SetPoint( "TOP", AddButton );
+-- Create edit boxes
+local Label2 = me:CreateFontString( nil, "ARTWORK", "GameFontHighlight" );
+me.Label2 = Label2;
+Label2:SetPoint( "BOTTOMLEFT", 16, 16 );
+Label2:SetPoint( "TOP", RemoveButton );
+local Label1 = me:CreateFontString( nil, "ARTWORK", "GameFontHighlight" );
+me.Label1 = Label1;
+Label1:SetPoint( "BOTTOMLEFT", Label2, "TOPLEFT", 0, 4 );
+Label1:SetPoint( "TOP", AddButton );
 
-	local EditBox1 = CreateFrame( "EditBox", "_UTFCustomizeEditBox1", me, "InputBoxTemplate" );
-	me.EditBox1 = EditBox1;
-	local EditBox2 = CreateFrame( "EditBox", "_UTFCustomizeEditBox2", me, "InputBoxTemplate" );
-	me.EditBox2 = EditBox2;
+local EditBox1 = CreateFrame( "EditBox", "_UTFCustomizeEditBox1", me, "InputBoxTemplate" );
+me.EditBox1 = EditBox1;
+local EditBox2 = CreateFrame( "EditBox", "_UTFCustomizeEditBox2", me, "InputBoxTemplate" );
+me.EditBox2 = EditBox2;
 
-	EditBox2:SetPoint( "TOP", Label2 );
-	EditBox2:SetPoint( "BOTTOMRIGHT", RemoveButton, "BOTTOMLEFT", -4, 0 );
-	EditBox2:SetAutoFocus( false );
-	EditBox2:SetScript( "OnTabPressed", function () EditBox1:SetFocus(); end );
-	EditBox2:SetScript( "OnEnterPressed", me.Add );
-	EditBox2:SetScript( "OnTextChanged", me.ValidateButtons );
+EditBox2:SetPoint( "TOP", Label2 );
+EditBox2:SetPoint( "BOTTOMRIGHT", RemoveButton, "BOTTOMLEFT", -4, 0 );
+EditBox2:SetAutoFocus( false );
+EditBox2:SetScript( "OnTabPressed", function () EditBox1:SetFocus(); end );
+EditBox2:SetScript( "OnEnterPressed", me.Add );
+EditBox2:SetScript( "OnTextChanged", me.ValidateButtons );
 
-	EditBox1:SetPoint( "TOP", Label1 );
-	EditBox1:SetPoint( "LEFT", EditBox2 );
-	EditBox1:SetPoint( "BOTTOMRIGHT", EditBox2, "TOPRIGHT" );
-	EditBox1:SetAutoFocus( false );
-	EditBox1:SetScript( "OnTabPressed", function () EditBox2:SetFocus(); end );
-	EditBox1:SetScript( "OnEnterPressed", me.Add );
-	EditBox1:SetScript( "OnTextChanged", me.ValidateButtons );
+EditBox1:SetPoint( "TOP", Label1 );
+EditBox1:SetPoint( "LEFT", EditBox2 );
+EditBox1:SetPoint( "BOTTOMRIGHT", EditBox2, "TOPRIGHT" );
+EditBox1:SetAutoFocus( false );
+EditBox1:SetScript( "OnTabPressed", function () EditBox2:SetFocus(); end );
+EditBox1:SetScript( "OnEnterPressed", me.Add );
+EditBox1:SetScript( "OnTextChanged", me.ValidateButtons );
 
-	me.UpdateEditBoxLabels();
+me.UpdateEditBoxLabels();
 
-	me.TableContainer:SetPoint( "TOPLEFT", SubText, "BOTTOMLEFT", -2, -32 );
-	me.TableContainer:SetPoint( "RIGHT", -16, 0 );
-	me.TableContainer:SetPoint( "BOTTOM", AddButton, "TOP", 0, 4 );
-	me.TableContainer:SetBackdrop( { bgFile = [[Interface\DialogFrame\UI-DialogBox-Background]]; } );
+me.TableContainer:SetPoint( "TOPLEFT", SubText, "BOTTOMLEFT", -2, -32 );
+me.TableContainer:SetPoint( "RIGHT", -16, 0 );
+me.TableContainer:SetPoint( "BOTTOM", AddButton, "TOP", 0, 4 );
+me.TableContainer:SetBackdrop( { bgFile = [[Interface\DialogFrame\UI-DialogBox-Background]]; } );
 
 
-	InterfaceOptions_AddCategory( me );
-end
+InterfaceOptions_AddCategory( me );

@@ -61,20 +61,14 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
+me:SetPoint( "TOPLEFT", _Underscore.TopMargin, "BOTTOMLEFT", BagPadding, -BagPadding );
+me:SetPoint( "BOTTOMRIGHT", _Underscore.ActionBars.BackdropRight, "BOTTOMLEFT", -BagPadding, BagPadding );
+me:SetScale( BagScale );
 
-do
-	me:SetPoint( "TOPLEFT", _Underscore.TopMargin, "BOTTOMLEFT", BagPadding, -BagPadding );
-	me:SetPoint( "BOTTOMRIGHT", _Underscore.ActionBars.BackdropRight, "BOTTOMLEFT", -BagPadding, BagPadding );
-	me:SetScale( BagScale );
-
-	setfenv( updateContainerFrameAnchors, me.ContainerEnv );
-	updateContainerFrameAnchors = me.Update;
+setfenv( updateContainerFrameAnchors, me.ContainerEnv );
+updateContainerFrameAnchors = me.Update;
 
 
-	-- Enable scrolling the stack split dialog
-	StackSplitFrame:EnableMouseWheel( true );
-	StackSplitFrame:SetScript( "OnMouseWheel", me.StackOnMouseWheel );
-end
+-- Enable scrolling the stack split dialog
+StackSplitFrame:EnableMouseWheel( true );
+StackSplitFrame:SetScript( "OnMouseWheel", me.StackOnMouseWheel );

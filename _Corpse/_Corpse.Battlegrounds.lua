@@ -90,12 +90,6 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
+me:SetScript( "OnEvent", _Corpse.OnEvent );
 
-do
-	me:SetScript( "OnEvent", _Corpse.OnEvent );
-
-	hooksecurefunc( "RequestBattlefieldScoreData", me.RequestBattlefieldScoreData );
-end
+hooksecurefunc( "RequestBattlefieldScoreData", me.RequestBattlefieldScoreData );

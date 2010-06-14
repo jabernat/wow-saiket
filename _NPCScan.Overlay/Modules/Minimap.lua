@@ -206,7 +206,7 @@ do
 					if ( PerpDist2 < 0.25 ) then
 						Length = ABx * ABx + ABy * ABy;
 						Temp = ABx * Bx + ABy * By;
-	
+
 						IntersectPos = ( ( Temp * Temp - Length * ( Bx * Bx + By * By - 0.25 ) ) ^ 0.5 - Temp ) / Length;
 						if ( IntersectPos >= 0 and IntersectPos <= 1 ) then
 							PointX, PointY = Bx + ABx * IntersectPos, By + ABy * IntersectPos;
@@ -723,31 +723,25 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
+Overlay.Modules.Register( "Minimap", me, L.MODULE_MINIMAP );
 
-do
-	Overlay.Modules.Register( "Minimap", me, L.MODULE_MINIMAP );
+local Config = me.Config;
+local Checkbox = CreateFrame( "CheckButton", "$parentRangeRing", Config, "UICheckButtonTemplate" );
+Config.RangeRing = Checkbox;
 
-	local Config = me.Config;
-	local Checkbox = CreateFrame( "CheckButton", "$parentRangeRing", Config, "UICheckButtonTemplate" );
-	Config.RangeRing = Checkbox;
+Checkbox:SetPoint( "TOPLEFT", Config.Enabled, "BOTTOMLEFT" );
+Checkbox:SetWidth( 26 );
+Checkbox:SetHeight( 26 );
+Checkbox:SetScript( "OnClick", me.RangeRingCheckboxOnClick );
+local Label = _G[ Checkbox:GetName().."Text" ];
+Label:SetPoint( "RIGHT", Config, "RIGHT", -6, 0 );
+Label:SetJustifyH( "LEFT" );
+Label:SetFormattedText( L.MODULE_RANGERING_FORMAT, Overlay.DetectionRadius );
+Checkbox:SetHitRectInsets( 4, 4 - Label:GetStringWidth(), 4, 4 );
+Checkbox.SetEnabled = Overlay.Config.ModuleCheckboxSetEnabled;
+Checkbox.tooltipText = L.MODULE_RANGERING_DESC;
+Checkbox:SetScript( "OnEnter", Overlay.Config.ControlOnEnter );
+Checkbox:SetScript( "OnLeave", GameTooltip_Hide );
+Config:AddControl( Checkbox );
 
-	Checkbox:SetPoint( "TOPLEFT", Config.Enabled, "BOTTOMLEFT" );
-	Checkbox:SetWidth( 26 );
-	Checkbox:SetHeight( 26 );
-	Checkbox:SetScript( "OnClick", me.RangeRingCheckboxOnClick );
-	local Label = _G[ Checkbox:GetName().."Text" ];
-	Label:SetPoint( "RIGHT", Config, "RIGHT", -6, 0 );
-	Label:SetJustifyH( "LEFT" );
-	Label:SetFormattedText( L.MODULE_RANGERING_FORMAT, Overlay.DetectionRadius );
-	Checkbox:SetHitRectInsets( 4, 4 - Label:GetStringWidth(), 4, 4 );
-	Checkbox.SetEnabled = Overlay.Config.ModuleCheckboxSetEnabled;
-	Checkbox.tooltipText = L.MODULE_RANGERING_DESC;
-	Checkbox:SetScript( "OnEnter", Overlay.Config.ControlOnEnter );
-	Checkbox:SetScript( "OnLeave", GameTooltip_Hide );
-	Config:AddControl( Checkbox );
-
-	Config:SetHeight( Config:GetHeight() + Checkbox:GetHeight() );
-end
+Config:SetHeight( Config:GetHeight() + Checkbox:GetHeight() );

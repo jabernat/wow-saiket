@@ -371,10 +371,6 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
-
 if ( not ItemRackUser or not ItemRackUser.Sets ) then
 	me.InvalidVersionError();
 elseif ( me.SafeCall( function ()

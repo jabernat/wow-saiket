@@ -21,4 +21,3 @@ Locales.xml
 _Underscore.lua
 _Underscore.Backdrop.lua
 _Underscore.ColorPicker.lua
-

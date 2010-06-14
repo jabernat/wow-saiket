@@ -380,75 +380,69 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
+me:SetScript( "OnEvent", me.OnEvent );
+WorldFrame:HookScript( "OnUpdate", me.OnUpdate ); -- First OnUpdate handler to run
+me:RegisterEvent( "ADDON_LOADED" );
+me:RegisterEvent( "PLAYER_REGEN_DISABLED" );
+me:RegisterEvent( "PLAYER_REGEN_ENABLED" );
 
+
+-- Add method overrides to be applied to plates' Visuals
+local GetParent = me.GetParent;
 do
-	me:SetScript( "OnEvent", me.OnEvent );
-	WorldFrame:HookScript( "OnUpdate", me.OnUpdate ); -- First OnUpdate handler to run
-	me:RegisterEvent( "ADDON_LOADED" );
-	me:RegisterEvent( "PLAYER_REGEN_DISABLED" );
-	me:RegisterEvent( "PLAYER_REGEN_ENABLED" );
-
-
-	-- Add method overrides to be applied to plates' Visuals
-	local GetParent = me.GetParent;
-	do
-		local function AddPlateOverride( MethodName )
-			PlateOverrides[ MethodName ] = function ( self, ... )
-				self = GetParent( self );
-				return self[ MethodName ]( self, ... );
-			end
+	local function AddPlateOverride( MethodName )
+		PlateOverrides[ MethodName ] = function ( self, ... )
+			self = GetParent( self );
+			return self[ MethodName ]( self, ... );
 		end
-		AddPlateOverride( "GetParent" );
-		AddPlateOverride( "SetAlpha" );
-		AddPlateOverride( "GetAlpha" );
-		AddPlateOverride( "GetEffectiveAlpha" );
 	end
-	-- Method overrides to use plates' OnUpdate script handlers instead of their Visuals' to preserve handler execution order
+	AddPlateOverride( "GetParent" );
+	AddPlateOverride( "SetAlpha" );
+	AddPlateOverride( "GetAlpha" );
+	AddPlateOverride( "GetEffectiveAlpha" );
+end
+-- Method overrides to use plates' OnUpdate script handlers instead of their Visuals' to preserve handler execution order
+do
+	local type = type;
 	do
-		local type = type;
-		do
-			local function OnUpdateOverride ( self, ... ) -- Wrapper to replace self parameter with plate's Visual
-				self.OnUpdate( Plates[ self ], ... );
-			end
-			local SetScript = me.SetScript;
-			function PlateOverrides:SetScript ( Script, Handler, ... )
-				if ( type( Script ) == "string" and Script:lower() == "onupdate" ) then
-					self = GetParent( self );
-					self.OnUpdate = Handler;
-					return self:SetScript( Script, Handler and OnUpdateOverride or nil, ... );
-				else
-					return SetScript( self, Script, Handler, ... );
-				end
+		local function OnUpdateOverride ( self, ... ) -- Wrapper to replace self parameter with plate's Visual
+			self.OnUpdate( Plates[ self ], ... );
+		end
+		local SetScript = me.SetScript;
+		function PlateOverrides:SetScript ( Script, Handler, ... )
+			if ( type( Script ) == "string" and Script:lower() == "onupdate" ) then
+				self = GetParent( self );
+				self.OnUpdate = Handler;
+				return self:SetScript( Script, Handler and OnUpdateOverride or nil, ... );
+			else
+				return SetScript( self, Script, Handler, ... );
 			end
 		end
-		do
-			local GetScript = me.GetScript;
-			function PlateOverrides:GetScript ( Script, ... )
-				if ( type( Script ) == "string" and Script:lower() == "onupdate" ) then
-					return GetParent( self ).OnUpdate;
-				else
-					return GetScript( self, Script, ... );
-				end
+	end
+	do
+		local GetScript = me.GetScript;
+		function PlateOverrides:GetScript ( Script, ... )
+			if ( type( Script ) == "string" and Script:lower() == "onupdate" ) then
+				return GetParent( self ).OnUpdate;
+			else
+				return GetScript( self, Script, ... );
 			end
 		end
-		do
-			local function VarArg ( self, ... ) -- Saves a reference to the hooked script
-				self.OnUpdate = self:GetScript( "OnUpdate" );
-				return ...;
-			end
-			local HookScript = me.HookScript;
-			function PlateOverrides:HookScript ( Script, Handler, ... )
-				if ( type( Script ) == "string" and Script:lower() == "onupdate" ) then
-					self = GetParent( self );
-					return VarArg( self, self:HookScript( Script, function ( self, ... ) -- Wrapper to replace self parameter with plate's Visual
-						Handler( Plates[ self ], ... );
-					end, ... ) );
-				else
-					return HookScript( self, Script, Handler, ... );
-				end
+	end
+	do
+		local function VarArg ( self, ... ) -- Saves a reference to the hooked script
+			self.OnUpdate = self:GetScript( "OnUpdate" );
+			return ...;
+		end
+		local HookScript = me.HookScript;
+		function PlateOverrides:HookScript ( Script, Handler, ... )
+			if ( type( Script ) == "string" and Script:lower() == "onupdate" ) then
+				self = GetParent( self );
+				return VarArg( self, self:HookScript( Script, function ( self, ... ) -- Wrapper to replace self parameter with plate's Visual
+					Handler( Plates[ self ], ... );
+				end, ... ) );
+			else
+				return HookScript( self, Script, Handler, ... );
 			end
 		end
 	end

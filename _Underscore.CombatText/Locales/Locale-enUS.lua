@@ -4,9 +4,7 @@
   ****************************************************************************]]
 
 
-do
-	_UnderscoreLocalization.CombatText = setmetatable( {
-		HEAL_FORMAT = "%s +%d %s"; -- Caster, Amount, Target
-		OVERHEAL_FORMAT = "%s +%d %s {%d}"; -- Caster, Amount, Target, Overhealed
-	}, getmetatable( _UnderscoreLocalization ) );
-end
+_UnderscoreLocalization.CombatText = setmetatable( {
+	HEAL_FORMAT = "%s +%d %s"; -- Caster, Amount, Target
+	OVERHEAL_FORMAT = "%s +%d %s {%d}"; -- Caster, Amount, Target, Overhealed
+}, getmetatable( _UnderscoreLocalization ) );

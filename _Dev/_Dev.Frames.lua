@@ -196,22 +196,16 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
+me:Hide();
+me:SetScript( "OnUpdate", me.OnUpdate );
 
-do
-	me:Hide();
-	me:SetScript( "OnUpdate", me.OnUpdate );
+Primary:SetScript( "OnMouseWheel", Primary.OnMouseWheel );
+Primary:SetScript( "OnMouseUp", Primary.OnMouseUp );
+Primary:EnableMouseWheel( true );
+Primary:SetScale( 2.0 );
 
-	Primary:SetScript( "OnMouseWheel", Primary.OnMouseWheel );
-	Primary:SetScript( "OnMouseUp", Primary.OnMouseUp );
-	Primary:EnableMouseWheel( true );
-	Primary:SetScale( 2.0 );
-
-	for _, Region in ipairs( { Primary:GetRegions() } ) do
-		Region:SetVertexColor( L.COLOR.r, L.COLOR.g, L.COLOR.b );
-	end
-
-	SlashCmdList[ "_DEV_FRAMESTOGGLE" ] = me.ToggleSlashCommand;
+for _, Region in ipairs( { Primary:GetRegions() } ) do
+	Region:SetVertexColor( L.COLOR.r, L.COLOR.g, L.COLOR.b );
 end
+
+SlashCmdList[ "_DEV_FRAMESTOGGLE" ] = me.ToggleSlashCommand;

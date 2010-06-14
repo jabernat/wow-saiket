@@ -35,21 +35,15 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
+me:SetScript( "OnUpdate", me.OnUpdate );
 
-do
-	me:SetScript( "OnUpdate", me.OnUpdate );
-
-	me.Text:SetPoint( "TOPLEFT", WorldFrame );
-	me.Text:SetAlpha( 0.5 );
-	if ( IsAddOnLoaded( "_Underscore.Font" ) ) then
-		me.Text:SetFontObject( _Underscore.Font.MonospaceNumber );
-	end
-
-	_Underscore.RegisterAddOnInitializer( "_Dev", function ()
-		_Dev.Stats:ClearAllPoints();
-		_Dev.Stats:SetPoint( "TOPLEFT", me.Text, "TOPRIGHT" );
-	end );
+me.Text:SetPoint( "TOPLEFT", WorldFrame );
+me.Text:SetAlpha( 0.5 );
+if ( IsAddOnLoaded( "_Underscore.Font" ) ) then
+	me.Text:SetFontObject( _Underscore.Font.MonospaceNumber );
 end
+
+_Underscore.RegisterAddOnInitializer( "_Dev", function ()
+	_Dev.Stats:ClearAllPoints();
+	_Dev.Stats:SetPoint( "TOPLEFT", me.Text, "TOPRIGHT" );
+end );

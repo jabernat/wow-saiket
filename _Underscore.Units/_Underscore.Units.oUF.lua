@@ -231,456 +231,450 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
-
-do
-	me.FontNormal:SetFont( [[Fonts\ARIALN.TTF]], 10, "OUTLINE" );
-	me.FontTiny:SetFont( [[Fonts\ARIALN.TTF]], 8, "OUTLINE" );
-	me.FontMicro:SetFont( [[Fonts\ARIALN.TTF]], 6 );
+me.FontNormal:SetFont( [[Fonts\ARIALN.TTF]], 10, "OUTLINE" );
+me.FontTiny:SetFont( [[Fonts\ARIALN.TTF]], 8, "OUTLINE" );
+me.FontMicro:SetFont( [[Fonts\ARIALN.TTF]], 6 );
 
 
-	-- Hide default buff frame
-	BuffFrame:Hide();
-	TemporaryEnchantFrame:Hide();
-	BuffFrame:UnregisterAllEvents();
+-- Hide default buff frame
+BuffFrame:Hide();
+TemporaryEnchantFrame:Hide();
+BuffFrame:UnregisterAllEvents();
 
 
-	-- Custom tags
-	oUF.Tags[ "[_UnderscoreUnitsClassification]" ] = me.TagClassification;
-	oUF.TagEvents[ "[_UnderscoreUnitsClassification]" ] = "UNIT_LEVEL PLAYER_LEVEL_UP RAID_ROSTER_UPDATE "..( oUF.TagEvents[ "[shortclassification]" ] or "" );
+-- Custom tags
+oUF.Tags[ "[_UnderscoreUnitsClassification]" ] = me.TagClassification;
+oUF.TagEvents[ "[_UnderscoreUnitsClassification]" ] = "UNIT_LEVEL PLAYER_LEVEL_UP RAID_ROSTER_UPDATE "..( oUF.TagEvents[ "[shortclassification]" ] or "" );
 
-	oUF.Tags[ "[_UnderscoreUnitsName]" ] = me.TagName;
-	oUF.TagEvents[ "[_UnderscoreUnitsName]" ] = "UNIT_NAME_UPDATE UNIT_FACTION";
+oUF.Tags[ "[_UnderscoreUnitsName]" ] = me.TagName;
+oUF.TagEvents[ "[_UnderscoreUnitsName]" ] = "UNIT_NAME_UPDATE UNIT_FACTION";
 
 
 
 
-	local BarTexture = LibSharedMedia:Fetch( LibSharedMedia.MediaType.STATUSBAR, _Underscore.MediaBar );
-	local function CreateBarBackground ( self, Brightness )
-		local Background = self:CreateTexture( nil, "BACKGROUND" );
-		Background:SetAllPoints( self );
-		Background:SetVertexColor( Brightness, Brightness, Brightness );
-		Background:SetTexture( BarTexture );
-		return Background;
+local BarTexture = LibSharedMedia:Fetch( LibSharedMedia.MediaType.STATUSBAR, _Underscore.MediaBar );
+local function CreateBarBackground ( self, Brightness )
+	local Background = self:CreateTexture( nil, "BACKGROUND" );
+	Background:SetAllPoints( self );
+	Background:SetVertexColor( Brightness, Brightness, Brightness );
+	Background:SetTexture( BarTexture );
+	return Background;
+end
+local function CreateBar ( self, TextFont )
+	local Bar = CreateFrame( "StatusBar", nil, self );
+	Bar:SetStatusBarTexture( BarTexture );
+	if ( TextFont ) then
+		Bar.Text = Bar:CreateFontString( nil, "OVERLAY", TextFont:GetName() );
+		Bar.Text:SetJustifyV( "MIDDLE" );
+		hooksecurefunc( Bar, "SetStatusBarColor", me.SetStatusBarTextColor );
 	end
-	local function CreateBar ( self, TextFont )
-		local Bar = CreateFrame( "StatusBar", nil, self );
-		Bar:SetStatusBarTexture( BarTexture );
-		if ( TextFont ) then
-			Bar.Text = Bar:CreateFontString( nil, "OVERLAY", TextFont:GetName() );
-			Bar.Text:SetJustifyV( "MIDDLE" );
-			hooksecurefunc( Bar, "SetStatusBarColor", me.SetStatusBarTextColor );
-		end
+	return Bar;
+end
+local CreateBarReverse; -- Creates a status bar that fills in reverse.
+do
+	local function UpdateBar ( self )
+		local Texture = self:GetStatusBarTexture();
+		Texture:ClearAllPoints();
+		Texture:SetPoint( "BOTTOMRIGHT" );
+		Texture:SetPoint( "TOPLEFT", self, "TOPRIGHT",
+			( self:GetValue() / select( 2, self:GetMinMaxValues() ) - 1 ) * self:GetWidth(), 0 );
+	end
+	local function BarUpdaterOnUpdate ( self )
+		self:Hide();
+		UpdateBar( self.Bar );
+	end
+	local function OnSizeChanged ( self, Width )
+		UpdateBar( self );
+	end
+	local function OnValueChanged ( self )
+		self.BarUpdater:Show();
+	end
+	local function OnMinMaxChanged ( self )
+		self.BarUpdater:Show();
+	end
+	function CreateBarReverse ( self, ... )
+		local Bar = CreateBar( self, ... );
+		Bar.BarUpdater = CreateFrame( "Frame", nil, Bar );
+		Bar.BarUpdater.Bar = Bar;
+		Bar.BarUpdater:Hide();
+		Bar.BarUpdater:SetScript( "OnUpdate", BarUpdaterOnUpdate );
+
+		Bar:SetScript( "OnSizeChanged", OnSizeChanged );
+		Bar:SetScript( "OnValueChanged", OnValueChanged );
+		Bar:SetScript( "OnMinMaxChanged", OnMinMaxChanged );
+
 		return Bar;
 	end
-	local CreateBarReverse; -- Creates a status bar that fills in reverse.
-	do
-		local function UpdateBar ( self )
-			local Texture = self:GetStatusBarTexture();
-			Texture:ClearAllPoints();
-			Texture:SetPoint( "BOTTOMRIGHT" );
-			Texture:SetPoint( "TOPLEFT", self, "TOPRIGHT",
-				( self:GetValue() / select( 2, self:GetMinMaxValues() ) - 1 ) * self:GetWidth(), 0 );
-		end
-		local function BarUpdaterOnUpdate ( self )
-			self:Hide();
-			UpdateBar( self.Bar );
-		end
-		local function OnSizeChanged ( self, Width )
-			UpdateBar( self );
-		end
-		local function OnValueChanged ( self )
-			self.BarUpdater:Show();
-		end
-		local function OnMinMaxChanged ( self )
-			self.BarUpdater:Show();
-		end
-		function CreateBarReverse ( self, ... )
-			local Bar = CreateBar( self, ... );
-			Bar.BarUpdater = CreateFrame( "Frame", nil, Bar );
-			Bar.BarUpdater.Bar = Bar;
-			Bar.BarUpdater:Hide();
-			Bar.BarUpdater:SetScript( "OnUpdate", BarUpdaterOnUpdate );
+end
 
-			Bar:SetScript( "OnSizeChanged", OnSizeChanged );
-			Bar:SetScript( "OnValueChanged", OnValueChanged );
-			Bar:SetScript( "OnMinMaxChanged", OnMinMaxChanged );
 
-			return Bar;
+local CreateDebuffHighlight; -- Creates a border frame that behaves like a texture for the oUF_DebuffHighlight element.
+if ( IsAddOnLoaded( "oUF_DebuffHighlight" ) ) then
+	local function SetVertexColor ( self, ... )
+		for Index = 1, #self do
+			self[ Index ]:SetVertexColor( ... );
 		end
+	end
+	local function GetVertexColor ( self )
+		return self[ 1 ]:GetVertexColor();
+	end
+	local function CreateTexture( self, Point1, Point1Frame, Point2, Point2Frame, Point2Rel )
+		local Texture = self:CreateTexture( nil, "OVERLAY" );
+		tinsert( self, Texture );
+		Texture:SetTexture( [[Interface\Buttons\WHITE8X8]] );
+		Texture:SetPoint( Point1, Point1Frame );
+		Texture:SetPoint( Point2, Point2Frame, Point2Rel );
+	end
+	function CreateDebuffHighlight ( self, Backdrop )
+		local Frame = CreateFrame( "Frame", nil, self.Health );
+		-- Four separate outline textures so faded frames blend correctly
+		CreateTexture( Frame, "TOPLEFT", Backdrop, "BOTTOMRIGHT", self, "TOPRIGHT" );
+		CreateTexture( Frame, "TOPRIGHT", Backdrop, "BOTTOMLEFT", self, "BOTTOMRIGHT" );
+		CreateTexture( Frame, "BOTTOMRIGHT", Backdrop, "TOPLEFT", self, "BOTTOMLEFT" );
+		CreateTexture( Frame, "BOTTOMLEFT", Backdrop, "TOPRIGHT", self, "TOPLEFT" );
+
+		Frame.GetVertexColor = GetVertexColor;
+		Frame.SetVertexColor = SetVertexColor;
+		Frame:SetVertexColor( 0, 0, 0, 0 ); -- Hide when not debuffed
+		return Frame;
+	end
+end
+
+
+local function Initialize ( Style, self, UnitID ) -- Sets up a unit frame based on its style table.
+	-- Enable the right-click menu
+	SecureUnitButton_OnLoad( self, UnitID, _Underscore.Units.ShowGenericMenu );
+	self:RegisterForClicks( "LeftButtonUp", "RightButtonUp" );
+
+	self.colors = Colors;
+	self.disallowVehicleSwap = true;
+
+	self[ IsAddOnLoaded( "oUF_SpellRange" ) and "SpellRange" or "Range" ] = true;
+	self.inRangeAlpha = 1.0;
+	self.outsideRangeAlpha = 0.4;
+
+	self:SetScript( "OnEnter", UnitFrame_OnEnter );
+	self:SetScript( "OnLeave", UnitFrame_OnLeave );
+
+	local Backdrop = _Underscore.Backdrop.Create( self );
+	self:SetHighlightTexture( [[Interface\QuestFrame\UI-QuestTitleHighlight]] );
+	self:GetHighlightTexture():SetAllPoints( Backdrop );
+	local Background = self:CreateTexture( nil, "BACKGROUND" );
+	Background:SetAllPoints();
+	Background:SetTexture( 0, 0, 0 );
+
+	local Bars = CreateFrame( "Frame", nil, self );
+	self.Bars = Bars;
+	-- Portrait and overlapped elements
+	if ( Style.PortraitSide ) then
+		local Portrait = CreateFrame( "PlayerModel", nil, self );
+		self.Portrait = Portrait;
+		local Side = Style.PortraitSide;
+		local Opposite = Side == "RIGHT" and "LEFT" or "RIGHT";
+		Portrait:SetPoint( "TOP" );
+		Portrait:SetPoint( "BOTTOM" );
+		Portrait:SetPoint( Side );
+		Portrait:SetWidth( Style[ "initial-height" ] );
+
+		local Classification = Portrait:CreateTexture( nil, "OVERLAY" );
+		local Size = Style[ "initial-height" ] * 1.35;
+		self.Classification = Classification;
+		Classification:SetPoint( "CENTER" );
+		Classification:SetSize( Size, Size );
+		Classification:SetTexture( [[Interface\AchievementFrame\UI-Achievement-IconFrame]] );
+		Classification:SetTexCoord( 0, 0.5625, 0, 0.5625 );
+		Classification:SetAlpha( 0.8 );
+		tinsert( self.__elements, me.ClassificationUpdate );
+		self:RegisterEvent( "UNIT_CLASSIFICATION_CHANGED", me.ClassificationUpdate );
+
+		local RaidIcon = Portrait:CreateTexture( nil, "OVERLAY" );
+		Size = Style[ "initial-height" ] / 2;
+		self.RaidIcon = RaidIcon;
+		RaidIcon:SetPoint( "CENTER" );
+		RaidIcon:SetSize( Size, Size );
+
+		if ( IsAddOnLoaded( "oUF_CombatFeedback" ) ) then
+			local FeedbackText = Portrait:CreateFontString( nil, "OVERLAY", "NumberFontNormalLarge" );
+			self.CombatFeedbackText = FeedbackText;
+			FeedbackText:SetPoint( "CENTER" );
+			FeedbackText.ignoreEnergize = true;
+			FeedbackText.ignoreOther = true;
+		end
+
+		Bars:SetPoint( "TOP" );
+		Bars:SetPoint( "BOTTOM" );
+		Bars:SetPoint( Side, Portrait, Opposite );
+		Bars:SetPoint( Opposite );
+	else
+		Bars:SetAllPoints();
 	end
 
 
-	local CreateDebuffHighlight; -- Creates a border frame that behaves like a texture for the oUF_DebuffHighlight element.
-	if ( IsAddOnLoaded( "oUF_DebuffHighlight" ) ) then
-		local function SetVertexColor ( self, ... )
-			for Index = 1, #self do
-				self[ Index ]:SetVertexColor( ... );
-			end
-		end
-		local function GetVertexColor ( self )
-			return self[ 1 ]:GetVertexColor();
-		end
-		local function CreateTexture( self, Point1, Point1Frame, Point2, Point2Frame, Point2Rel )
-			local Texture = self:CreateTexture( nil, "OVERLAY" );
-			tinsert( self, Texture );
-			Texture:SetTexture( [[Interface\Buttons\WHITE8X8]] );
-			Texture:SetPoint( Point1, Point1Frame );
-			Texture:SetPoint( Point2, Point2Frame, Point2Rel );
-		end
-		function CreateDebuffHighlight ( self, Backdrop )
-			local Frame = CreateFrame( "Frame", nil, self.Health );
-			-- Four separate outline textures so faded frames blend correctly
-			CreateTexture( Frame, "TOPLEFT", Backdrop, "BOTTOMRIGHT", self, "TOPRIGHT" );
-			CreateTexture( Frame, "TOPRIGHT", Backdrop, "BOTTOMLEFT", self, "BOTTOMRIGHT" );
-			CreateTexture( Frame, "BOTTOMRIGHT", Backdrop, "TOPLEFT", self, "BOTTOMLEFT" );
-			CreateTexture( Frame, "BOTTOMLEFT", Backdrop, "TOPRIGHT", self, "TOPLEFT" );
+	-- Health bar
+	local Health = CreateBarReverse( self, Style.HealthText and Style.BarTextFont );
+	self.Health = Health;
+	Health:SetPoint( "TOPLEFT", Bars );
+	Health:SetPoint( "RIGHT", Bars );
+	Health:SetHeight( Style[ "initial-height" ] * ( 1 - Style.PowerHeight - Style.ProgressHeight ) );
+	CreateBarBackground( Health, 0.07 );
+	Health.frequentUpdates = true;
+	Health.colorDisconnected = true;
+	Health.colorTapping = true;
+	Health.colorSmooth = true;
+	Health.smoothGradient = Colors.HealthSmooth;
 
-			Frame.GetVertexColor = GetVertexColor;
-			Frame.SetVertexColor = SetVertexColor;
-			Frame:SetVertexColor( 0, 0, 0, 0 ); -- Hide when not debuffed
-			return Frame;
-		end
+	if ( Health.Text ) then
+		Health.Text:SetPoint( "TOPRIGHT", -2, 0 );
+		Health.Text:SetPoint( "BOTTOM" );
+		Health.Text:SetAlpha( 0.75 );
+		Health.TextLength = Style.HealthText;
+	end
+	if ( IsAddOnLoaded( "oUF_Smooth" ) ) then
+		Health.Smooth = true;
+	end
+	if ( IsAddOnLoaded( "oUF_HealComm4" ) ) then
+		local HealCommBar = CreateFrame( "StatusBar", nil, Health );
+		self.HealCommBar = HealCommBar;
+		self.allowHealCommOverflow = true;
+		HealCommBar:SetStatusBarTexture( BarTexture );
+		local R, G, B = unpack( Colors.reaction[ 8 ] );
+		HealCommBar:SetStatusBarColor( R, G, B, 0.5 );
 	end
 
+	self.PostUpdateHealth = me.PostUpdateHealth;
 
-	local function Initialize ( Style, self, UnitID ) -- Sets up a unit frame based on its style table.
-		-- Enable the right-click menu
-		SecureUnitButton_OnLoad( self, UnitID, _Underscore.Units.ShowGenericMenu );
-		self:RegisterForClicks( "LeftButtonUp", "RightButtonUp" );
 
-		self.colors = Colors;
-		self.disallowVehicleSwap = true;
+	-- Power bar
+	local Power = CreateBar( self, Style.PowerText and Style.BarTextFont );
+	self.Power = Power;
+	Power:SetPoint( "TOPLEFT", Health, "BOTTOMLEFT" );
+	Power:SetPoint( "RIGHT", Bars );
+	Power:SetHeight( Style[ "initial-height" ] * Style.PowerHeight );
+	CreateBarBackground( Power, 0.14 );
+	Power.frequentUpdates = true;
+	Power.colorPower = true;
 
-		self[ IsAddOnLoaded( "oUF_SpellRange" ) and "SpellRange" or "Range" ] = true;
-		self.inRangeAlpha = 1.0;
-		self.outsideRangeAlpha = 0.4;
+	if ( Power.Text ) then
+		Power.Text:SetPoint( "TOPRIGHT", -2, 0 );
+		Power.Text:SetPoint( "BOTTOM" );
+		Power.Text:SetAlpha( 0.75 );
+		Power.TextLength = Style.PowerText;
+	end
 
-		self:SetScript( "OnEnter", UnitFrame_OnEnter );
-		self:SetScript( "OnLeave", UnitFrame_OnLeave );
+	self.PostUpdatePower = me.PostUpdatePower;
 
-		local Backdrop = _Underscore.Backdrop.Create( self );
-		self:SetHighlightTexture( [[Interface\QuestFrame\UI-QuestTitleHighlight]] );
-		self:GetHighlightTexture():SetAllPoints( Backdrop );
-		local Background = self:CreateTexture( nil, "BACKGROUND" );
-		Background:SetAllPoints();
-		Background:SetTexture( 0, 0, 0 );
 
-		local Bars = CreateFrame( "Frame", nil, self );
-		self.Bars = Bars;
-		-- Portrait and overlapped elements
-		if ( Style.PortraitSide ) then
-			local Portrait = CreateFrame( "PlayerModel", nil, self );
-			self.Portrait = Portrait;
-			local Side = Style.PortraitSide;
-			local Opposite = Side == "RIGHT" and "LEFT" or "RIGHT";
-			Portrait:SetPoint( "TOP" );
-			Portrait:SetPoint( "BOTTOM" );
-			Portrait:SetPoint( Side );
-			Portrait:SetWidth( Style[ "initial-height" ] );
+	-- Casting/rep/exp bar
+	local Progress = CreateBar( self );
+	Progress:SetStatusBarTexture( BarTexture );
+	Progress:SetPoint( "BOTTOMLEFT", Bars );
+	Progress:SetPoint( "TOPRIGHT", Power, "BOTTOMRIGHT" );
+	Progress:SetAlpha( 0.8 );
+	Progress:Hide();
+	CreateBarBackground( Progress, 0.07 ):SetParent( Bars ); -- Show background while hidden
+	if ( UnitID == "player" ) then
+		if ( IsAddOnLoaded( "oUF_Experience" ) and UnitLevel( "player" ) ~= MAX_PLAYER_LEVEL and not IsXPUserDisabled() ) then
+			self.Experience = Progress;
+			Progress:SetStatusBarColor( unpack( Colors.Experience ) );
+			Progress.PostUpdate = me.ExperiencePostUpdate;
+			Progress:SetScript( "OnSizeChanged", me.ExperienceOnSizeChanged );
+			Progress:Show();
+			local Rest = Progress:CreateTexture( nil, "ARTWORK" );
+			Progress.RestTexture = Rest;
+			Rest:SetTexture( BarTexture );
+			Rest:SetVertexColor( unpack( Colors.ExperienceRested ) );
+			Rest:SetPoint( "TOPLEFT", Progress:GetStatusBarTexture(), "TOPRIGHT" );
+			Rest:SetPoint( "BOTTOM" );
+			Rest:Hide();
+		elseif ( IsAddOnLoaded( "oUF_Reputation" ) ) then
+			self.Reputation = Progress;
+			Progress.PostUpdate = me.ReputationPostUpdate;
+		end
+	elseif ( UnitID == "pet" ) then
+		if ( IsAddOnLoaded( "oUF_Experience" ) and select( 2, UnitClass( "player" ) ) == "HUNTER" ) then
+			self.Experience = Progress;
+			Progress:SetStatusBarColor( unpack( Colors.Experience ) );
+			Progress:Show();
+		end
+	else -- Castbar
+		self.Castbar = Progress;
+		Progress:SetStatusBarColor( unpack( Colors.Cast ) );
 
-			local Classification = Portrait:CreateTexture( nil, "OVERLAY" );
-			local Size = Style[ "initial-height" ] * 1.35;
-			self.Classification = Classification;
-			Classification:SetPoint( "CENTER" );
-			Classification:SetSize( Size, Size );
-			Classification:SetTexture( [[Interface\AchievementFrame\UI-Achievement-IconFrame]] );
-			Classification:SetTexCoord( 0, 0.5625, 0, 0.5625 );
-			Classification:SetAlpha( 0.8 );
-			tinsert( self.__elements, me.ClassificationUpdate );
-			self:RegisterEvent( "UNIT_CLASSIFICATION_CHANGED", me.ClassificationUpdate );
+		local Time;
+		if ( Style.CastTime ) then
+			Time = Progress:CreateFontString( nil, "OVERLAY", me.FontMicro:GetName() );
+			Progress.Time = Time;
+			Time:SetPoint( "BOTTOMRIGHT", -6, 0 );
+		end
 
-			local RaidIcon = Portrait:CreateTexture( nil, "OVERLAY" );
-			Size = Style[ "initial-height" ] / 2;
-			self.RaidIcon = RaidIcon;
-			RaidIcon:SetPoint( "CENTER" );
-			RaidIcon:SetSize( Size, Size );
-
-			if ( IsAddOnLoaded( "oUF_CombatFeedback" ) ) then
-				local FeedbackText = Portrait:CreateFontString( nil, "OVERLAY", "NumberFontNormalLarge" );
-				self.CombatFeedbackText = FeedbackText;
-				FeedbackText:SetPoint( "CENTER" );
-				FeedbackText.ignoreEnergize = true;
-				FeedbackText.ignoreOther = true;
-			end
-
-			Bars:SetPoint( "TOP" );
-			Bars:SetPoint( "BOTTOM" );
-			Bars:SetPoint( Side, Portrait, Opposite );
-			Bars:SetPoint( Opposite );
+		local Text = Progress:CreateFontString( nil, "OVERLAY", me.FontMicro:GetName() );
+		Progress.Text = Text;
+		Text:SetPoint( "BOTTOMLEFT", 2, 0 );
+		if ( Time ) then
+			Text:SetPoint( "RIGHT", Time, "LEFT" );
 		else
-			Bars:SetAllPoints();
+			Text:SetPoint( "RIGHT", -2, 0 );
 		end
+		Text:SetJustifyH( "LEFT" );
+	end
 
 
-		-- Health bar
-		local Health = CreateBarReverse( self, Style.HealthText and Style.BarTextFont );
-		self.Health = Health;
-		Health:SetPoint( "TOPLEFT", Bars );
-		Health:SetPoint( "RIGHT", Bars );
-		Health:SetHeight( Style[ "initial-height" ] * ( 1 - Style.PowerHeight - Style.ProgressHeight ) );
-		CreateBarBackground( Health, 0.07 );
-		Health.frequentUpdates = true;
-		Health.colorDisconnected = true;
-		Health.colorTapping = true;
-		Health.colorSmooth = true;
-		Health.smoothGradient = Colors.HealthSmooth;
-
-		if ( Health.Text ) then
-			Health.Text:SetPoint( "TOPRIGHT", -2, 0 );
-			Health.Text:SetPoint( "BOTTOM" );
-			Health.Text:SetAlpha( 0.75 );
-			Health.TextLength = Style.HealthText;
-		end
-		if ( IsAddOnLoaded( "oUF_Smooth" ) ) then
-			Health.Smooth = true;
-		end
-		if ( IsAddOnLoaded( "oUF_HealComm4" ) ) then
-			local HealCommBar = CreateFrame( "StatusBar", nil, Health );
-			self.HealCommBar = HealCommBar;
-			self.allowHealCommOverflow = true;
-			HealCommBar:SetStatusBarTexture( BarTexture );
-			local R, G, B = unpack( Colors.reaction[ 8 ] );
-			HealCommBar:SetStatusBarColor( R, G, B, 0.5 );
-		end
-
-		self.PostUpdateHealth = me.PostUpdateHealth;
+	-- Name
+	local Name = Health:CreateFontString( nil, "OVERLAY", Style.NameFont:GetName() );
+	self.Name = Name;
+	Name:SetPoint( "LEFT", 2, 0 );
+	if ( Health.Text ) then
+		Name:SetPoint( "RIGHT", Health.Text, "LEFT" );
+	else
+		Name:SetPoint( "RIGHT", -2, 0 );
+	end
+	Name:SetJustifyH( "LEFT" );
+	self:Tag( Name, "[_UnderscoreUnitsName]" );
 
 
-		-- Power bar
-		local Power = CreateBar( self, Style.PowerText and Style.BarTextFont );
-		self.Power = Power;
-		Power:SetPoint( "TOPLEFT", Health, "BOTTOMLEFT" );
-		Power:SetPoint( "RIGHT", Bars );
-		Power:SetHeight( Style[ "initial-height" ] * Style.PowerHeight );
-		CreateBarBackground( Power, 0.14 );
-		Power.frequentUpdates = true;
-		Power.colorPower = true;
-
-		if ( Power.Text ) then
-			Power.Text:SetPoint( "TOPRIGHT", -2, 0 );
-			Power.Text:SetPoint( "BOTTOM" );
-			Power.Text:SetAlpha( 0.75 );
-			Power.TextLength = Style.PowerText;
-		end
-
-		self.PostUpdatePower = me.PostUpdatePower;
+	-- Info string
+	local Info = Health:CreateFontString( nil, "OVERLAY", me.FontTiny:GetName() );
+	self.Info = Info;
+	Info:SetPoint( "BOTTOM", 0, 2 );
+	Info:SetPoint( "TOPLEFT", Name, "BOTTOMLEFT" );
+	Info:SetJustifyV( "BOTTOM" );
+	Info:SetAlpha( 0.8 );
+	self:Tag( Info, "[_UnderscoreUnitsClassification]" );
 
 
-		-- Casting/rep/exp bar
-		local Progress = CreateBar( self );
-		Progress:SetStatusBarTexture( BarTexture );
-		Progress:SetPoint( "BOTTOMLEFT", Bars );
-		Progress:SetPoint( "TOPRIGHT", Power, "BOTTOMRIGHT" );
-		Progress:SetAlpha( 0.8 );
-		Progress:Hide();
-		CreateBarBackground( Progress, 0.07 ):SetParent( Bars ); -- Show background while hidden
-		if ( UnitID == "player" ) then
-			if ( IsAddOnLoaded( "oUF_Experience" ) and UnitLevel( "player" ) ~= MAX_PLAYER_LEVEL and not IsXPUserDisabled() ) then
-				self.Experience = Progress;
-				Progress:SetStatusBarColor( unpack( Colors.Experience ) );
-				Progress.PostUpdate = me.ExperiencePostUpdate;
-				Progress:SetScript( "OnSizeChanged", me.ExperienceOnSizeChanged );
-				Progress:Show();
-				local Rest = Progress:CreateTexture( nil, "ARTWORK" );
-				Progress.RestTexture = Rest;
-				Rest:SetTexture( BarTexture );
-				Rest:SetVertexColor( unpack( Colors.ExperienceRested ) );
-				Rest:SetPoint( "TOPLEFT", Progress:GetStatusBarTexture(), "TOPRIGHT" );
-				Rest:SetPoint( "BOTTOM" );
-				Rest:Hide();
-			elseif ( IsAddOnLoaded( "oUF_Reputation" ) ) then
-				self.Reputation = Progress;
-				Progress.PostUpdate = me.ReputationPostUpdate;
-			end
-		elseif ( UnitID == "pet" ) then
-			if ( IsAddOnLoaded( "oUF_Experience" ) and select( 2, UnitClass( "player" ) ) == "HUNTER" ) then
-				self.Experience = Progress;
-				Progress:SetStatusBarColor( unpack( Colors.Experience ) );
-				Progress:Show();
-			end
-		else -- Castbar
-			self.Castbar = Progress;
-			Progress:SetStatusBarColor( unpack( Colors.Cast ) );
+	if ( Style.Auras ) then
+		-- Buffs
+		local Buffs = CreateFrame( "Frame", nil, self );
+		self.Buffs = Buffs;
+		Buffs:SetPoint( "TOPLEFT", Backdrop, "BOTTOMLEFT" );
+		Buffs:SetPoint( "RIGHT", Backdrop );
+		Buffs:SetHeight( 1 );
+		Buffs.initialAnchor = "TOPLEFT";
+		Buffs[ "growth-y" ] = "DOWN";
+		Buffs.size = Style.AuraSize;
 
-			local Time;
-			if ( Style.CastTime ) then
-				Time = Progress:CreateFontString( nil, "OVERLAY", me.FontMicro:GetName() );
-				Progress.Time = Time;
-				Time:SetPoint( "BOTTOMRIGHT", -6, 0 );
-			end
+		-- Debuffs
+		local Debuffs = CreateFrame( "Frame", nil, self );
+		self.Debuffs = Debuffs;
+		Debuffs:SetPoint( "TOPLEFT", Buffs, "BOTTOMLEFT" );
+		Debuffs:SetPoint( "RIGHT", Backdrop );
+		Debuffs:SetHeight( 1 );
+		Debuffs.initialAnchor = "TOPLEFT";
+		Debuffs[ "growth-y" ] = "DOWN";
+		Debuffs.showDebuffType = true;
+		Debuffs.size = Style.AuraSize;
 
-			local Text = Progress:CreateFontString( nil, "OVERLAY", me.FontMicro:GetName() );
-			Progress.Text = Text;
-			Text:SetPoint( "BOTTOMLEFT", 2, 0 );
-			if ( Time ) then
-				Text:SetPoint( "RIGHT", Time, "LEFT" );
-			else
-				Text:SetPoint( "RIGHT", -2, 0 );
-			end
-			Text:SetJustifyH( "LEFT" );
-		end
+		self.PostCreateAuraIcon = me.PostCreateAuraIcon;
+		self.PostUpdateAura = me.PostUpdateAura;
+	end
+
+	-- Debuff highlight
+	if ( CreateDebuffHighlight and Style.DebuffHighlight ) then
+		self.DebuffHighlight = CreateDebuffHighlight( self, Backdrop );
+		self.DebuffHighlightAlpha = 1;
+		self.DebuffHighlightFilter = Style.DebuffHighlight ~= "ALL";
+	end
 
 
-		-- Name
-		local Name = Health:CreateFontString( nil, "OVERLAY", Style.NameFont:GetName() );
-		self.Name = Name;
-		Name:SetPoint( "LEFT", 2, 0 );
-		if ( Health.Text ) then
-			Name:SetPoint( "RIGHT", Health.Text, "LEFT" );
+	-- Icons
+	local function IconResize ( self )
+		self:SetWidth( self:IsShown() and 16 or 1 );
+	end
+	local LastIcon;
+	local function AddIcon ( Key )
+		local Icon = Health:CreateTexture( nil, "ARTWORK" );
+		hooksecurefunc( Icon, "Show", IconResize );
+		hooksecurefunc( Icon, "Hide", IconResize );
+		self[ Key ] = Icon;
+		Icon:Hide();
+		Icon:SetHeight( 16 );
+		if ( LastIcon ) then
+			Icon:SetPoint( "LEFT", LastIcon, "RIGHT" );
 		else
-			Name:SetPoint( "RIGHT", -2, 0 );
+			Icon:SetPoint( "TOPLEFT", 1, -1 );
 		end
-		Name:SetJustifyH( "LEFT" );
-		self:Tag( Name, "[_UnderscoreUnitsName]" );
-
-
-		-- Info string
-		local Info = Health:CreateFontString( nil, "OVERLAY", me.FontTiny:GetName() );
-		self.Info = Info;
-		Info:SetPoint( "BOTTOM", 0, 2 );
-		Info:SetPoint( "TOPLEFT", Name, "BOTTOMLEFT" );
-		Info:SetJustifyV( "BOTTOM" );
-		Info:SetAlpha( 0.8 );
-		self:Tag( Info, "[_UnderscoreUnitsClassification]" );
-
-
-		if ( Style.Auras ) then
-			-- Buffs
-			local Buffs = CreateFrame( "Frame", nil, self );
-			self.Buffs = Buffs;
-			Buffs:SetPoint( "TOPLEFT", Backdrop, "BOTTOMLEFT" );
-			Buffs:SetPoint( "RIGHT", Backdrop );
-			Buffs:SetHeight( 1 );
-			Buffs.initialAnchor = "TOPLEFT";
-			Buffs[ "growth-y" ] = "DOWN";
-			Buffs.size = Style.AuraSize;
-
-			-- Debuffs
-			local Debuffs = CreateFrame( "Frame", nil, self );
-			self.Debuffs = Debuffs;
-			Debuffs:SetPoint( "TOPLEFT", Buffs, "BOTTOMLEFT" );
-			Debuffs:SetPoint( "RIGHT", Backdrop );
-			Debuffs:SetHeight( 1 );
-			Debuffs.initialAnchor = "TOPLEFT";
-			Debuffs[ "growth-y" ] = "DOWN";
-			Debuffs.showDebuffType = true;
-			Debuffs.size = Style.AuraSize;
-
-			self.PostCreateAuraIcon = me.PostCreateAuraIcon;
-			self.PostUpdateAura = me.PostUpdateAura;
-		end
-
-		-- Debuff highlight
-		if ( CreateDebuffHighlight and Style.DebuffHighlight ) then
-			self.DebuffHighlight = CreateDebuffHighlight( self, Backdrop );
-			self.DebuffHighlightAlpha = 1;
-			self.DebuffHighlightFilter = Style.DebuffHighlight ~= "ALL";
-		end
-
-
-		-- Icons
-		local function IconResize ( self )
-			self:SetWidth( self:IsShown() and 16 or 1 );
-		end
-		local LastIcon;
-		local function AddIcon ( Key )
-			local Icon = Health:CreateTexture( nil, "ARTWORK" );
-			hooksecurefunc( Icon, "Show", IconResize );
-			hooksecurefunc( Icon, "Hide", IconResize );
-			self[ Key ] = Icon;
-			Icon:Hide();
-			Icon:SetHeight( 16 );
-			if ( LastIcon ) then
-				Icon:SetPoint( "LEFT", LastIcon, "RIGHT" );
-			else
-				Icon:SetPoint( "TOPLEFT", 1, -1 );
-			end
-			LastIcon = Icon;
-		end
-		AddIcon( "Leader" );
-		AddIcon( "MasterLooter" );
-		if ( UnitID == "player" ) then
-			AddIcon( "Resting" );
-		end
+		LastIcon = Icon;
 	end
-
-
-
-
-	-- Defaults
-	me.StyleMeta.__call = Initialize;
-	me.StyleMeta.__index = {
-		[ "initial-width" ] = 130;
-		[ "initial-height" ] = 50;
-
-		PortraitSide = "RIGHT"; -- "LEFT"/"RIGHT"/false
-		HealthText = "Small"; -- "Full"/"Small"/"Tiny"
-		PowerText  = "Small"; -- Same as Health
-		NameFont = me.FontNormal;
-		BarTextFont = me.FontTiny;
-		CastTime = true;
-		Auras = true;
-		AuraSize = 15;
-		DebuffHighlight = true;
-
-		PowerHeight = 0.25;
-		ProgressHeight = 0.1;
-	};
-
-	oUF:RegisterStyle( "_UnderscoreUnits", setmetatable( {
-		[ "initial-width" ] = 160;
-	}, me.StyleMeta ) );
-	oUF:RegisterStyle( "_UnderscoreUnitsSelf", setmetatable( {
-		PortraitSide = false;
-		HealthText = "Full";
-		PowerText  = "Full";
-		CastTime = false;
-		DebuffHighlight = "ALL";
-	}, me.StyleMeta ) );
-	oUF:RegisterStyle( "_UnderscoreUnitsSmall", setmetatable( {
-		PortraitSide = "LEFT";
-		HealthText = "Tiny";
-		NameFont = me.FontTiny;
-		CastTime = false;
-		AuraSize = 10;
-	}, me.StyleMeta ) );
-
-
-	-- Top row
-	oUF:SetActiveStyle( "_UnderscoreUnitsSelf" );
-	me.Player = oUF:Spawn( "player", "_UnderscoreUnitsPlayer" );
-	me.Player:SetPoint( "TOPLEFT", _Underscore.TopMargin, "BOTTOMLEFT" );
-
-	oUF:SetActiveStyle( "_UnderscoreUnits" );
-	me.Target = oUF:Spawn( "target", "_UnderscoreUnitsTarget" );
-	me.Target:SetPoint( "TOPLEFT", me.Player, "TOPRIGHT", 28, 0 );
-
-	oUF:SetActiveStyle( "_UnderscoreUnitsSmall" );
-	me.TargetTarget = oUF:Spawn( "targettarget", "_UnderscoreUnitsTargetTarget" );
-	me.TargetTarget:SetPoint( "TOPLEFT", me.Target, "TOPRIGHT", 2 * _Underscore.Backdrop.Padding, 0 );
-
-
-	-- Bottom row
-	oUF:SetActiveStyle( "_UnderscoreUnitsSmall" );
-	me.Pet = oUF:Spawn( "pet", "_UnderscoreUnitsPet" );
-	me.Pet:SetPoint( "TOPLEFT", me.Player, "BOTTOMLEFT", 0, -56 );
-
-	oUF:SetActiveStyle( "_UnderscoreUnits" );
-	me.Focus = oUF:Spawn( "focus", "_UnderscoreUnitsFocus" );
-	me.Focus:SetPoint( "LEFT", me.Target );
-	me.Focus:SetPoint( "TOP", me.Pet );
-
-	oUF:SetActiveStyle( "_UnderscoreUnitsSmall" );
-	me.FocusTarget = oUF:Spawn( "focustarget", "_UnderscoreUnitsFocusTarget" );
-	me.FocusTarget:SetPoint( "LEFT", me.TargetTarget );
-	me.FocusTarget:SetPoint( "TOP", me.Pet );
-
-
-	if ( not _Underscore.IsAddOnLoadable( "_Underscore.Units.Arena" ) ) then
-		-- Garbage collect initialization code
-		me.StyleMeta.__call = nil;
+	AddIcon( "Leader" );
+	AddIcon( "MasterLooter" );
+	if ( UnitID == "player" ) then
+		AddIcon( "Resting" );
 	end
+end
+
+
+
+
+-- Defaults
+me.StyleMeta.__call = Initialize;
+me.StyleMeta.__index = {
+	[ "initial-width" ] = 130;
+	[ "initial-height" ] = 50;
+
+	PortraitSide = "RIGHT"; -- "LEFT"/"RIGHT"/false
+	HealthText = "Small"; -- "Full"/"Small"/"Tiny"
+	PowerText  = "Small"; -- Same as Health
+	NameFont = me.FontNormal;
+	BarTextFont = me.FontTiny;
+	CastTime = true;
+	Auras = true;
+	AuraSize = 15;
+	DebuffHighlight = true;
+
+	PowerHeight = 0.25;
+	ProgressHeight = 0.1;
+};
+
+oUF:RegisterStyle( "_UnderscoreUnits", setmetatable( {
+	[ "initial-width" ] = 160;
+}, me.StyleMeta ) );
+oUF:RegisterStyle( "_UnderscoreUnitsSelf", setmetatable( {
+	PortraitSide = false;
+	HealthText = "Full";
+	PowerText  = "Full";
+	CastTime = false;
+	DebuffHighlight = "ALL";
+}, me.StyleMeta ) );
+oUF:RegisterStyle( "_UnderscoreUnitsSmall", setmetatable( {
+	PortraitSide = "LEFT";
+	HealthText = "Tiny";
+	NameFont = me.FontTiny;
+	CastTime = false;
+	AuraSize = 10;
+}, me.StyleMeta ) );
+
+
+-- Top row
+oUF:SetActiveStyle( "_UnderscoreUnitsSelf" );
+me.Player = oUF:Spawn( "player", "_UnderscoreUnitsPlayer" );
+me.Player:SetPoint( "TOPLEFT", _Underscore.TopMargin, "BOTTOMLEFT" );
+
+oUF:SetActiveStyle( "_UnderscoreUnits" );
+me.Target = oUF:Spawn( "target", "_UnderscoreUnitsTarget" );
+me.Target:SetPoint( "TOPLEFT", me.Player, "TOPRIGHT", 28, 0 );
+
+oUF:SetActiveStyle( "_UnderscoreUnitsSmall" );
+me.TargetTarget = oUF:Spawn( "targettarget", "_UnderscoreUnitsTargetTarget" );
+me.TargetTarget:SetPoint( "TOPLEFT", me.Target, "TOPRIGHT", 2 * _Underscore.Backdrop.Padding, 0 );
+
+
+-- Bottom row
+oUF:SetActiveStyle( "_UnderscoreUnitsSmall" );
+me.Pet = oUF:Spawn( "pet", "_UnderscoreUnitsPet" );
+me.Pet:SetPoint( "TOPLEFT", me.Player, "BOTTOMLEFT", 0, -56 );
+
+oUF:SetActiveStyle( "_UnderscoreUnits" );
+me.Focus = oUF:Spawn( "focus", "_UnderscoreUnitsFocus" );
+me.Focus:SetPoint( "LEFT", me.Target );
+me.Focus:SetPoint( "TOP", me.Pet );
+
+oUF:SetActiveStyle( "_UnderscoreUnitsSmall" );
+me.FocusTarget = oUF:Spawn( "focustarget", "_UnderscoreUnitsFocusTarget" );
+me.FocusTarget:SetPoint( "LEFT", me.TargetTarget );
+me.FocusTarget:SetPoint( "TOP", me.Pet );
+
+
+if ( not _Underscore.IsAddOnLoadable( "_Underscore.Units.Arena" ) ) then
+	-- Garbage collect initialization code
+	me.StyleMeta.__call = nil;
 end

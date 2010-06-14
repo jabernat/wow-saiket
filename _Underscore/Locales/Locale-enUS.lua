@@ -4,14 +4,12 @@
   ****************************************************************************]]
 
 
-do
-	_UnderscoreLocalization = setmetatable( {
-	}, {
-		__index = function ( self, Key )
-			if ( Key ~= nil ) then
-				rawset( self, Key, Key );
-				return Key;
-			end
-		end;
-	} );
-end
+_UnderscoreLocalization = setmetatable( {
+}, {
+	__index = function ( self, Key )
+		if ( Key ~= nil ) then
+			rawset( self, Key, Key );
+			return Key;
+		end
+	end;
+} );

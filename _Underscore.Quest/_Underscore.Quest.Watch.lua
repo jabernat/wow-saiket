@@ -97,41 +97,35 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
+if ( IsAddOnLoaded( "_Underscore.ActionBars" ) ) then
+	-- Reposition list
+	WatchFrameLines:SetPoint( "BOTTOMRIGHT" );
+	_Underscore.RegisterPositionManager( function ()
+		WatchFrame:ClearAllPoints();
+		WatchFrame:SetPoint( "TOPRIGHT", MinimapCluster, "BOTTOMRIGHT", 0, -8 );
+		WatchFrame:SetPoint( "BOTTOM", Dominos.Frame:Get( 3 ), "TOP" );
+	end );
 
-do
-	if ( IsAddOnLoaded( "_Underscore.ActionBars" ) ) then
-		-- Reposition list
-		WatchFrameLines:SetPoint( "BOTTOMRIGHT" );
-		_Underscore.RegisterPositionManager( function ()
-			WatchFrame:ClearAllPoints();
-			WatchFrame:SetPoint( "TOPRIGHT", MinimapCluster, "BOTTOMRIGHT", 0, -8 );
-			WatchFrame:SetPoint( "BOTTOM", Dominos.Frame:Get( 3 ), "TOP" );
-		end );
-
-		-- Reposition quest item buttons
-		local Backup = WatchFrame_DisplayTrackedQuests;
-		hooksecurefunc( "WatchFrame_DisplayTrackedQuests", me.UpdateQuests );
-		if ( WatchFrame_RemoveObjectiveHandler( Backup ) ) then
-			WatchFrame_AddObjectiveHandler( WatchFrame_DisplayTrackedQuests );
-		end
+	-- Reposition quest item buttons
+	local Backup = WatchFrame_DisplayTrackedQuests;
+	hooksecurefunc( "WatchFrame_DisplayTrackedQuests", me.UpdateQuests );
+	if ( WatchFrame_RemoveObjectiveHandler( Backup ) ) then
+		WatchFrame_AddObjectiveHandler( WatchFrame_DisplayTrackedQuests );
 	end
+end
 
 
-	WatchFrame:SetScale( 0.75 );
-	-- Right-align the header text
-	WatchFrameTitle:SetPoint( "RIGHT", WatchFrameCollapseExpandButton, "LEFT", -8, 0 );
-	WatchFrameTitle:SetJustifyH( "RIGHT" );
+WatchFrame:SetScale( 0.75 );
+-- Right-align the header text
+WatchFrameTitle:SetPoint( "RIGHT", WatchFrameCollapseExpandButton, "LEFT", -8, 0 );
+WatchFrameTitle:SetJustifyH( "RIGHT" );
 
-	WatchFrameLinkButtonTemplate_OnLeftClick = me.OnLeftClick;
+WatchFrameLinkButtonTemplate_OnLeftClick = me.OnLeftClick;
 
-	WatchFrame.buttonCache.GetFrame = me.GetFrame;
-	for _, Frame in ipairs( WatchFrame.buttonCache.frames ) do
-		_Underscore.AddLockedButton( Frame );
-	end
-	for _, Frame in ipairs( WatchFrame.buttonCache.usedFrames ) do
-		_Underscore.AddLockedButton( Frame );
-	end
+WatchFrame.buttonCache.GetFrame = me.GetFrame;
+for _, Frame in ipairs( WatchFrame.buttonCache.frames ) do
+	_Underscore.AddLockedButton( Frame );
+end
+for _, Frame in ipairs( WatchFrame.buttonCache.usedFrames ) do
+	_Underscore.AddLockedButton( Frame );
 end
