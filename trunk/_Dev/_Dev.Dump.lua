@@ -260,40 +260,34 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
-
-do
-	-- Add all non-printed characters to replacement table
-	for Index = 0, 31 do
-		local Character = strchar( Index );
-		if ( not EscapeSequences[ Character ] ) then
-			EscapeSequences[ Character ] = ( "\\%03d" ):format( Index );
-		end
+-- Add all non-printed characters to replacement table
+for Index = 0, 31 do
+	local Character = strchar( Index );
+	if ( not EscapeSequences[ Character ] ) then
+		EscapeSequences[ Character ] = ( "\\%03d" ):format( Index );
 	end
-	for Index = 127, 255 do
-		local Character = strchar( Index );
-		if ( not EscapeSequences[ Character ] ) then
-			EscapeSequences[ Character ] = ( "\\%03d" ):format( Index );
-		end
-	end
-
-
-	dump = me.Explore;
-
-	SlashCmdList[ "_DEV_DUMP" ] = me.SlashCommand;
-
-	local Forbidden = {
-		[ "PRINT" ] = true;
-		[ "DUMP" ] = true;
-	};
-	for Key in pairs( Forbidden ) do
-		SlashCmdList[ Key ] = nil;
-	end
-	setmetatable( SlashCmdList, { __newindex = function ( self, Key, Value )
-		if ( not Forbidden[ Key ] ) then
-			rawset( self, Key, Value );
-		end
-	end; } );
 end
+for Index = 127, 255 do
+	local Character = strchar( Index );
+	if ( not EscapeSequences[ Character ] ) then
+		EscapeSequences[ Character ] = ( "\\%03d" ):format( Index );
+	end
+end
+
+
+dump = me.Explore;
+
+SlashCmdList[ "_DEV_DUMP" ] = me.SlashCommand;
+
+local Forbidden = {
+	[ "PRINT" ] = true;
+	[ "DUMP" ] = true;
+};
+for Key in pairs( Forbidden ) do
+	SlashCmdList[ Key ] = nil;
+end
+setmetatable( SlashCmdList, { __newindex = function ( self, Key, Value )
+	if ( not Forbidden[ Key ] ) then
+		rawset( self, Key, Value );
+	end
+end; } );

@@ -18,10 +18,6 @@ AddOnChat.ChatFrames = ChatFrames;
 
 
 
---------------------------------------------------------------------------------
--- _Dev.Events.AddOnChat
-------------------------
-
 --[[****************************************************************************
   * Function: _Dev.Events.AddOnChat.EnableChatType                             *
   * Description: Enables or disables a chat type for the given chat window.    *
@@ -77,7 +73,7 @@ do
 		if ( Type == "WHISPER_INFORM" ) then
 			Type = "WHISPER";
 		end
-	
+
 		for ChatFrame, TypeList in pairs( ChatFrames ) do
 			if ( TypeList[ Type ] ) then
 				Print( Message, ChatFrame, Color );
@@ -145,7 +141,7 @@ do
 			-- Spacer
 			Info.disabled = 1;
 			UIDropDownMenu_AddButton( Info );
-	
+
 			Info.text = L.ADDONCHAT_MESSAGES;
 			Info.hasArrow = 1;
 			Info.notCheckable = 1;
@@ -164,19 +160,13 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
+AddOnChat:SetScript( "OnEvent", AddOnChat.OnEvent );
+hooksecurefunc( "SendAddonMessage", AddOnChat.SendAddonMessage );
 
-do
-	AddOnChat:SetScript( "OnEvent", AddOnChat.OnEvent );
-	hooksecurefunc( "SendAddonMessage", AddOnChat.SendAddonMessage );
+hooksecurefunc( "FCFOptionsDropDown_Initialize", AddOnChat.DropDownInitialize );
 
-	hooksecurefunc( "FCFOptionsDropDown_Initialize", AddOnChat.DropDownInitialize );
-
-	-- Hook chat windows if not hooked already
-	for Index = 1, NUM_CHAT_WINDOWS do
-		hooksecurefunc( _G[ "ChatFrame"..Index.."TabDropDown" ], "initialize",
-			AddOnChat.DropDownInitialize );
-	end
+-- Hook chat windows if not hooked already
+for Index = 1, NUM_CHAT_WINDOWS do
+	hooksecurefunc( _G[ "ChatFrame"..Index.."TabDropDown" ], "initialize",
+		AddOnChat.DropDownInitialize );
 end

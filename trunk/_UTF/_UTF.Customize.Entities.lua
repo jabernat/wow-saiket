@@ -101,13 +101,7 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
+me:SetScript( "OnShow", me.OnShow );
+me:SetScript( "OnHide", me.OnHide );
 
-do
-	me:SetScript( "OnShow", me.OnShow );
-	me:SetScript( "OnHide", me.OnHide );
-
-	_UTF.Customize.AddPane( me, L.CUSTOMIZE_ENTITIES_TITLE );
-end
+_UTF.Customize.AddPane( me, L.CUSTOMIZE_ENTITIES_TITLE );

@@ -270,23 +270,15 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
+ConsoleExec( "fontsize 12" ); -- The console's font size
+me.Font:SetFontObject( NumberFontNormalSmall );
 
-do
-	ConsoleExec( "fontsize 12" ); -- The console's font size
-	me.Font:SetFontObject( NumberFontNormalSmall );
+me:SetScript( "OnEvent", me.OnEvent );
+me:SetScript( "OnUpdate", me.OnUpdate );
+me:RegisterEvent( "ADDON_LOADED" );
 
-	-- Events
-	me:SetScript( "OnEvent", me.OnEvent );
-	me:SetScript( "OnUpdate", me.OnUpdate );
-	me:RegisterEvent( "ADDON_LOADED" );
+math.round = me.Round;
+table.count = me.Count;
 
-	-- Hooks
-	math.round = me.Round;
-	table.count = me.Count;
-
-	SlashCmdList[ "SCRIPT" ] = me.ScriptSlashCommand;
-	SlashCmdList[ "_DEV_TOGGLEADDON" ] = me.ToggleAddOnSlashCommand;
-end
+SlashCmdList[ "SCRIPT" ] = me.ScriptSlashCommand;
+SlashCmdList[ "_DEV_TOGGLEADDON" ] = me.ToggleAddOnSlashCommand;

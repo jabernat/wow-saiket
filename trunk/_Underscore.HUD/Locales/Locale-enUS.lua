@@ -4,26 +4,18 @@
   ****************************************************************************]]
 
 
-do
-	_UnderscoreLocalization.HUD = setmetatable( {
-		DEAD    = "DEAD";
-		GHOST   = "GHOST";
-		OFFLINE = "OFFLINE";
-		FEIGN   = "FEIGN";
+_UnderscoreLocalization.HUD = setmetatable( {
+	DEAD    = "DEAD";
+	GHOST   = "GHOST";
+	OFFLINE = "OFFLINE";
+	FEIGN   = "FEIGN";
 
-		VALUE_IGNORED = "N/A";
+	VALUE_IGNORED = "N/A";
 
-		FLAG_AFK = CHAT_FLAG_AFK;
-		FLAG_DND = CHAT_FLAG_DND;
-	}, getmetatable( _UnderscoreLocalization ) );
-
+	FLAG_AFK = CHAT_FLAG_AFK;
+	FLAG_DND = CHAT_FLAG_DND;
+}, getmetatable( _UnderscoreLocalization ) );
 
 
-
---------------------------------------------------------------------------------
--- Globals
-----------
-
-	BINDING_HEADER__UNDERSCORE_HUD = "_|cffCCCC88Underscore|r.HUD";
-	BINDING_NAME__UNDERSCORE_HUD_PUSHTOTALK = "External Push-to-Talk Key";
-end
+BINDING_HEADER__UNDERSCORE_HUD = "_|cffCCCC88Underscore|r.HUD";
+BINDING_NAME__UNDERSCORE_HUD_PUSHTOTALK = "External Push-to-Talk Key";

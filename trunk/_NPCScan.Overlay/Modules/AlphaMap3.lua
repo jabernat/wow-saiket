@@ -24,12 +24,6 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
-
-do
-	Overlay.Modules.Register( "AlphaMap3", me,
-		_NPCScanOverlayLocalization.MODULE_ALPHAMAP3,
-		"AlphaMap3" );
-end
+Overlay.Modules.Register( "AlphaMap3", me,
+	_NPCScanOverlayLocalization.MODULE_ALPHAMAP3,
+	"AlphaMap3" );

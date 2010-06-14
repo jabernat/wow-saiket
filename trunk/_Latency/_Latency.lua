@@ -276,89 +276,83 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
+-- Set up window
+me:Hide();
+me:SetScale( 0.8 );
+me:SetFrameStrata( "MEDIUM" );
+me:SetToplevel( true );
+me:SetBackdrop( {
+	bgFile = [[Interface\TutorialFrame\TutorialFrameBackground]];
+	edgeFile = [[Interface\TutorialFrame\TutorialFrameBorder]];
+	tile = true; tileSize = 32; edgeSize = 32;
+	insets = { left = 7; right = 5; top = 3; bottom = 6; };
+} );
+-- Make dragable
+me:EnableMouse( true );
+me:SetResizable( true );
+me:SetClampedToScreen( true );
+me:SetClampRectInsets( me.Padding + 2, -me.Padding, -me.Padding - 18, me.Padding );
+me:CreateTitleRegion():SetAllPoints();
+-- Close button
+me.Close = CreateFrame( "Button", nil, me, "UIPanelCloseButton" );
+me.Close:SetPoint( "TOPRIGHT", 4, 4 );
+me.Close:SetScript( "OnClick", function () me.Toggle(); end );
+-- Title
+me.Title = me:CreateFontString( nil, "ARTWORK", "GameFontHighlight" );
+me.Title:SetText( L.TITLE );
+me.Title:SetPoint( "TOPLEFT", me, 11, -6 );
+-- SubTitle
+me.SubTitle = me:CreateFontString( nil, "ARTWORK", "GameFontNormal" );
+me.SubTitle:SetPoint( "LEFT", me.Title, "RIGHT", 4, 0 );
+me.SubTitle:SetPoint( "RIGHT", me.Close, "LEFT", -4, 0 );
+me.SubTitle:SetJustifyH( "RIGHT" );
 
-do
-	-- Set up window
-	me:Hide();
-	me:SetScale( 0.8 );
-	me:SetFrameStrata( "MEDIUM" );
-	me:SetToplevel( true );
-	me:SetBackdrop( {
-		bgFile = [[Interface\TutorialFrame\TutorialFrameBackground]];
-		edgeFile = [[Interface\TutorialFrame\TutorialFrameBorder]];
-		tile = true; tileSize = 32; edgeSize = 32;
-		insets = { left = 7; right = 5; top = 3; bottom = 6; };
-	} );
-	-- Make dragable
-	me:EnableMouse( true );
-	me:SetResizable( true );
-	me:SetClampedToScreen( true );
-	me:SetClampRectInsets( me.Padding + 2, -me.Padding, -me.Padding - 18, me.Padding );
-	me:CreateTitleRegion():SetAllPoints();
-	-- Close button
-	me.Close = CreateFrame( "Button", nil, me, "UIPanelCloseButton" );
-	me.Close:SetPoint( "TOPRIGHT", 4, 4 );
-	me.Close:SetScript( "OnClick", function () me.Toggle(); end );
-	-- Title
-	me.Title = me:CreateFontString( nil, "ARTWORK", "GameFontHighlight" );
-	me.Title:SetText( L.TITLE );
-	me.Title:SetPoint( "TOPLEFT", me, 11, -6 );
-	-- SubTitle
-	me.SubTitle = me:CreateFontString( nil, "ARTWORK", "GameFontNormal" );
-	me.SubTitle:SetPoint( "LEFT", me.Title, "RIGHT", 4, 0 );
-	me.SubTitle:SetPoint( "RIGHT", me.Close, "LEFT", -4, 0 );
-	me.SubTitle:SetJustifyH( "RIGHT" );
+-- Graph
+local Graph = LibGraph:CreateGraphRealtime( "_LatencyGraph", me, "BOTTOMLEFT", "BOTTOMLEFT", me.Padding + 2, me.Padding, me:GetWidth() - me.Padding * 2, me:GetHeight() - me.Padding * 2 - 18 );
+me.Graph = Graph;
+Graph:SetGridSpacing( 1.0, 100 );
+Graph:SetYMax( 2.0 );
+Graph:SetXAxis( -11, -1 );
+Graph:SetFilterRadius( 1 );
+Graph:SetAutoScale( 1 );
+Graph:SetYLabels( true, true );
 
-	-- Graph
-	local Graph = LibGraph:CreateGraphRealtime( "_LatencyGraph", me, "BOTTOMLEFT", "BOTTOMLEFT", me.Padding + 2, me.Padding, me:GetWidth() - me.Padding * 2, me:GetHeight() - me.Padding * 2 - 18 );
-	me.Graph = Graph;
-	Graph:SetGridSpacing( 1.0, 100 );
-	Graph:SetYMax( 2.0 );
-	Graph:SetXAxis( -11, -1 );
-	Graph:SetFilterRadius( 1 );
-	Graph:SetAutoScale( 1 );
-	Graph:SetYLabels( true, true );
-
-	Graph:SetMode( "EXPFAST" );
-	Graph:SetDecay( 0.5 );
-	Graph:SetFilterRadius( 2 );
+Graph:SetMode( "EXPFAST" );
+Graph:SetDecay( 0.5 );
+Graph:SetFilterRadius( 2 );
 
 
-	-- Resize grip
-	local Resize = CreateFrame( "Button", nil, me );
-	me.Resize = Resize;
-	Resize:SetSize( 30, 30 );
-	Resize:SetPoint( "BOTTOMRIGHT", 6, -4 );
-	Resize:SetFrameLevel( Graph:GetFrameLevel() + 2 );
-	Resize:SetNormalTexture( [[Interface\AddOns\]]..( ... )..[[\Skin\ResizeGrip]] );
-	Resize:SetHighlightTexture( [[Interface\AddOns\]]..( ... )..[[\Skin\ResizeGrip]] );
-	Resize:SetScript( "OnMouseDown", function ()
-		me:StartSizing( "BOTTOMRIGHT" );
-	end );
-	Resize:SetScript( "OnMouseUp", function ()
-		me:StopMovingOrSizing();
-	end );
-	me:SetMinResize( 44 + me.Title:GetWidth(), 60 );
+-- Resize grip
+local Resize = CreateFrame( "Button", nil, me );
+me.Resize = Resize;
+Resize:SetSize( 30, 30 );
+Resize:SetPoint( "BOTTOMRIGHT", 6, -4 );
+Resize:SetFrameLevel( Graph:GetFrameLevel() + 2 );
+Resize:SetNormalTexture( [[Interface\AddOns\]]..( ... )..[[\Skin\ResizeGrip]] );
+Resize:SetHighlightTexture( [[Interface\AddOns\]]..( ... )..[[\Skin\ResizeGrip]] );
+Resize:SetScript( "OnMouseDown", function ()
+	me:StartSizing( "BOTTOMRIGHT" );
+end );
+Resize:SetScript( "OnMouseUp", function ()
+	me:StopMovingOrSizing();
+end );
+me:SetMinResize( 44 + me.Title:GetWidth(), 60 );
 
 
-	me:SetScript( "OnUpdate", me.OnUpdate );
-	me:SetScript( "OnEvent", me.OnEvent );
-	me:SetScript( "OnSizeChanged", me.OnSizeChanged );
-	me:SetScript( "OnHide", me.OnHide );
-	me:RegisterEvent( "CHAT_MSG_ADDON" );
-	me:RegisterEvent( "PLAYER_ENTERING_WORLD" );
-	me:RegisterEvent( "ADDON_LOADED" );
-	me:RegisterEvent( "PLAYER_LOGOUT" );
+me:SetScript( "OnUpdate", me.OnUpdate );
+me:SetScript( "OnEvent", me.OnEvent );
+me:SetScript( "OnSizeChanged", me.OnSizeChanged );
+me:SetScript( "OnHide", me.OnHide );
+me:RegisterEvent( "CHAT_MSG_ADDON" );
+me:RegisterEvent( "PLAYER_ENTERING_WORLD" );
+me:RegisterEvent( "ADDON_LOADED" );
+me:RegisterEvent( "PLAYER_LOGOUT" );
 
 
-	SlashCmdList[ "_LATENCY_TOGGLE" ] = me.SlashCommand;
-	-- Un-cache stub slash commands created by AddonLoader
-	for Command in GetAddOnMetadata( ..., "X-LoadOn-Slash" ):gmatch( "/[^%s,]+" ) do
-		Command = Command:upper();
-		hash_SlashCmdList[ Command ] = nil;
-		_G[ "SLASH_"..Command:sub( 2 ).."1" ] = nil;
-	end
+SlashCmdList[ "_LATENCY_TOGGLE" ] = me.SlashCommand;
+-- Un-cache stub slash commands created by AddonLoader
+for Command in GetAddOnMetadata( ..., "X-LoadOn-Slash" ):gmatch( "/[^%s,]+" ) do
+	Command = Command:upper();
+	hash_SlashCmdList[ Command ] = nil;
+	_G[ "SLASH_"..Command:sub( 2 ).."1" ] = nil;
 end

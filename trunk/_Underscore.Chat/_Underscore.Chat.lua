@@ -198,70 +198,64 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
-
-do
-	me:SetScript( "OnEvent", _Underscore.OnEvent );
-	me:SetScript( "OnUpdate", me.OnUpdate );
-	me:RegisterEvent( "MODIFIER_STATE_CHANGED" );
-	me:RegisterEvent( "PLAYER_LOGIN" );
-	me:RegisterEvent( "UPDATE_BINDINGS" );
+me:SetScript( "OnEvent", _Underscore.OnEvent );
+me:SetScript( "OnUpdate", me.OnUpdate );
+me:RegisterEvent( "MODIFIER_STATE_CHANGED" );
+me:RegisterEvent( "PLAYER_LOGIN" );
+me:RegisterEvent( "UPDATE_BINDINGS" );
 
 
-	hooksecurefunc( "CameraOrSelectOrMoveStart", me.CameraMoveStart );
-	hooksecurefunc( "CameraOrSelectOrMoveStop", me.CameraMoveStop );
+hooksecurefunc( "CameraOrSelectOrMoveStart", me.CameraMoveStart );
+hooksecurefunc( "CameraOrSelectOrMoveStop", me.CameraMoveStop );
 
 
-	local PreserveMaxLines = IsShiftKeyDown();
-	for Index = 1, NUM_CHAT_WINDOWS do
-		local ChatFrame = _G[ "ChatFrame"..Index ];
+local PreserveMaxLines = IsShiftKeyDown();
+for Index = 1, NUM_CHAT_WINDOWS do
+	local ChatFrame = _G[ "ChatFrame"..Index ];
 
-		me.ChatFrames[ Index ] = ChatFrame;
-		ChatFrame:SetScript( "OnMouseWheel", me.OnMouseWheel );
-		ChatFrame:SetFading( false );
-		if ( not PreserveMaxLines ) then -- Keep early messages in window if shift is held
-			ChatFrame:SetMaxLines( me.MaxLines );
-		end
-
-		me.AddMessageBackups[ ChatFrame ] = ChatFrame.AddMessage;
-		ChatFrame.AddMessage = me.AddMessage;
-	end
-	if ( PreserveMaxLines ) then
-		local Color = RED_FONT_COLOR;
-		DEFAULT_CHAT_FRAME:AddMessage( L.DEBUG_MAXLINES_PRESERVED, Color.r, Color.g, Color.b );
+	me.ChatFrames[ Index ] = ChatFrame;
+	ChatFrame:SetScript( "OnMouseWheel", me.OnMouseWheel );
+	ChatFrame:SetFading( false );
+	if ( not PreserveMaxLines ) then -- Keep early messages in window if shift is held
+		ChatFrame:SetMaxLines( me.MaxLines );
 	end
 
-
-
-
-	-- Add timestamps
-	me.RegisterFilter( me.FilterTimestamp );
-
-	-- Add new font sizes to menus for the tiny chat log
-	local function AddFontHeight ( NewSize )
-		for Index, Size in ipairs( CHAT_FONT_HEIGHTS ) do
-			if ( Size >= NewSize ) then
-				if ( Size ~= NewSize ) then
-					-- Add to the front of the list
-					tinsert( CHAT_FONT_HEIGHTS, Index, NewSize );
-				end
-				break;
-			end
-		end
-	end
-	AddFontHeight( 8 );
-	AddFontHeight( 9 );
-	AddFontHeight( 10 );
-
-	-- Play sound every time a whisper is recieved
-	CHAT_TELL_ALERT_TIME = 0;
-
-	-- Make less common chat channels sticky
-	ChatTypeInfo.CHANNEL.sticky = 1;
-	ChatTypeInfo.YELL.sticky    = 1;
-	ChatTypeInfo.OFFICER.sticky = 1;
-
-	LoggingChat( true );
+	me.AddMessageBackups[ ChatFrame ] = ChatFrame.AddMessage;
+	ChatFrame.AddMessage = me.AddMessage;
 end
+if ( PreserveMaxLines ) then
+	local Color = RED_FONT_COLOR;
+	DEFAULT_CHAT_FRAME:AddMessage( L.DEBUG_MAXLINES_PRESERVED, Color.r, Color.g, Color.b );
+end
+
+
+
+
+-- Add timestamps
+me.RegisterFilter( me.FilterTimestamp );
+
+-- Add new font sizes to menus for the tiny chat log
+local function AddFontHeight ( NewSize )
+	for Index, Size in ipairs( CHAT_FONT_HEIGHTS ) do
+		if ( Size >= NewSize ) then
+			if ( Size ~= NewSize ) then
+				-- Add to the front of the list
+				tinsert( CHAT_FONT_HEIGHTS, Index, NewSize );
+			end
+			break;
+		end
+	end
+end
+AddFontHeight( 8 );
+AddFontHeight( 9 );
+AddFontHeight( 10 );
+
+-- Play sound every time a whisper is recieved
+CHAT_TELL_ALERT_TIME = 0;
+
+-- Make less common chat channels sticky
+ChatTypeInfo.CHANNEL.sticky = 1;
+ChatTypeInfo.YELL.sticky    = 1;
+ChatTypeInfo.OFFICER.sticky = 1;
+
+LoggingChat( true );

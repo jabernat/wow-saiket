@@ -224,10 +224,6 @@ end
 
 
 
---------------------------------------------------------------------------------
--- _Underscore.Chat.Layout.Tab
-------------------------------
-
 --[[****************************************************************************
   * Function: _Underscore.Chat.Layout.Tab:DropDownInitialize                   *
   * Description: Disables obsolete buttons from dropdown menus.                *
@@ -263,120 +259,114 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
+-- Modify frames
+ChatFrameMenuButton:ClearAllPoints();
+ChatFrameMenuButton:SetPoint( "RIGHT", ChatFrame1TabText, "LEFT", 2, 0 );
+ChatFrameMenuButton:SetScale( 0.5 );
+ChatFrameMenuButton:GetNormalTexture():SetAlpha( 0.5 );
+ChatFrameMenuButton:SetAlpha( 0.5 );
+ChatFrameMenuButton:SetParent( ChatFrame1Tab );
+ChatFrameMenuButton:RegisterForClicks( "RightButtonUp" );
+_Underscore.AddLockedButton( ChatFrameMenuButton );
 
-do
-	-- Modify frames
-	ChatFrameMenuButton:ClearAllPoints();
-	ChatFrameMenuButton:SetPoint( "RIGHT", ChatFrame1TabText, "LEFT", 2, 0 );
-	ChatFrameMenuButton:SetScale( 0.5 );
-	ChatFrameMenuButton:GetNormalTexture():SetAlpha( 0.5 );
-	ChatFrameMenuButton:SetAlpha( 0.5 );
-	ChatFrameMenuButton:SetParent( ChatFrame1Tab );
-	ChatFrameMenuButton:RegisterForClicks( "RightButtonUp" );
-	_Underscore.AddLockedButton( ChatFrameMenuButton );
-
-	local BottomBackdrop = { bgFile = [[Interface\Tooltips\UI-Tooltip-Background]] };
-	local BorderSuffixes = {
-		"Top", "Bottom", "Left", "Right",
-		"TopLeft", "TopRight", "BottomLeft", "BottomRight"
-	};
-	local DisabledMenuButtonsNormal = {
-		[ RESET_ALL_WINDOWS ] = true;
-	};
-	local DisabledMenuButtonsLocked = {
-		[ RESET_ALL_WINDOWS ] = true;
-		[ UNLOCK_WINDOW ] = true;
-		[ LOCK_WINDOW ] = true;
-		[ RENAME_CHAT_WINDOW ] = true;
-		[ CLOSE_CHAT_WINDOW ] = true;
-	};
-	local function ShrinkTabBorder ( TextureName )
-		local Texture = _G[ TextureName ];
-		local Left, Top, _, _, Right = Texture:GetTexCoord();
-		Texture:SetTexCoord( Left, Right, Top, 0.9 );
-	end
-	local R, G, B = unpack( _Underscore.Colors.Foreground );
-	for Index = 1, NUM_CHAT_WINDOWS do
-		local Name = "ChatFrame"..Index;
-		local ChatFrame = _G[ Name ];
-		local TabFrame = _G[ Name.."Tab" ];
-		ChatFrames[ Index ] = ChatFrame;
-		TabFrames[ Index ] = TabFrame;
-
-		ChatFrame:HookScript( "OnShow", me.ChatFrameOnShow );
-
-		FCF_SetChatWindowFontSize( nil, ChatFrame, 12 );
-
-
-		-- Save borders
-		local BorderList = {};
-		for _, Suffix in ipairs( BorderSuffixes ) do
-			local Border = _G[ Name.."Resize"..Suffix ];
-			tinsert( BorderList, Border );
-			if ( Index <= 2 ) then
-				Border:Hide();
-			end
-		end
-		Borders[ ChatFrame ] = BorderList;
-
-
-		-- Hide the scroll buttons
-		local DownButton = _G[ Name.."DownButton" ];
-		DownButton:Hide();
-		local UpButton = _G[ Name.."UpButton" ];
-		UpButton:Hide();
-		-- Reposition the bottom button and redo artwork
-		local BottomButton = _G[ Name.."BottomButton" ];
-		BottomButton:SetNormalTexture( nil );
-		BottomButton:SetPushedTexture( nil );
-		BottomButton:SetDisabledTexture( nil );
-		BottomButton:SetBackdrop( BottomBackdrop );
-		BottomButton:SetBackdropColor( R, G, B, 0.25 );
-		_G[ Name.."BottomButtonFlash" ]:SetTexture( R, G, B, 0.25 );
-		Buttons[ ChatFrame ] = {
-			Up = UpButton;
-			Down = DownButton;
-			Bottom = BottomButton;
-		};
-		me.SetButtonSide( ChatFrame );
-
-
-		-- Modify chat frame tab
-		hooksecurefunc( TabFrame, "StopMovingOrSizing", Tab.StopMovingOrSizing );
-		_Underscore.AddLockedButton( TabFrame );
-		TabFrame:HookScript( "OnDoubleClick", Tab.OnDoubleClick );
-		ShrinkTabBorder( Name.."TabLeft" );
-		ShrinkTabBorder( Name.."TabMiddle" );
-		ShrinkTabBorder( Name.."TabRight" );
-
-		-- Disable some chat frame functions
-		hooksecurefunc( _G[ Name.."TabDropDown" ], "initialize", Tab.DropDownInitialize );
-		DisabledMenuButtons[ TabFrame ]
-			= Index <= 2 and DisabledMenuButtonsLocked or DisabledMenuButtonsNormal;
-	end
-	ChatFrame1TabLeft:SetTexCoord( ChatFrame1TabMiddle:GetTexCoord() );
-	ChatFrame2TabRight:SetTexCoord( ChatFrame2TabMiddle:GetTexCoord() );
-
-
-	-- Hooks
-	UIPARENT_MANAGED_FRAME_POSITIONS[ "ChatFrame1" ] = nil;
-	UIPARENT_MANAGED_FRAME_POSITIONS[ "ChatFrame2" ] = nil;
-
-	hooksecurefunc( "FCF_SetTabPosition", me.SetTabPosition );
-	hooksecurefunc( "FCF_UpdateCombatLogPosition", me.UpdateCombatLogPosition );
-	hooksecurefunc( "FCF_UpdateDockPosition", me.UpdateDockPosition );
-	hooksecurefunc( "FCF_SetButtonSide", me.SetButtonSide );
-	hooksecurefunc( "FCF_SetLocked", me.SetLocked );
-
-	ToggleCombatLog = _Underscore.NilFunction;
-	FCF_Set_SimpleChat = _Underscore.NilFunction;
-	FCF_ToggleLock = me.ToggleLock;
-
-	me:SetScript( "OnUpdate", me.OnUpdate );
-	me:SetScript( "OnEvent", me.OnEvent );
-	me:OnEvent();
-	me:RegisterEvent( "UPDATE_CHAT_WINDOWS" );
+local BottomBackdrop = { bgFile = [[Interface\Tooltips\UI-Tooltip-Background]] };
+local BorderSuffixes = {
+	"Top", "Bottom", "Left", "Right",
+	"TopLeft", "TopRight", "BottomLeft", "BottomRight"
+};
+local DisabledMenuButtonsNormal = {
+	[ RESET_ALL_WINDOWS ] = true;
+};
+local DisabledMenuButtonsLocked = {
+	[ RESET_ALL_WINDOWS ] = true;
+	[ UNLOCK_WINDOW ] = true;
+	[ LOCK_WINDOW ] = true;
+	[ RENAME_CHAT_WINDOW ] = true;
+	[ CLOSE_CHAT_WINDOW ] = true;
+};
+local function ShrinkTabBorder ( TextureName )
+	local Texture = _G[ TextureName ];
+	local Left, Top, _, _, Right = Texture:GetTexCoord();
+	Texture:SetTexCoord( Left, Right, Top, 0.9 );
 end
+local R, G, B = unpack( _Underscore.Colors.Foreground );
+for Index = 1, NUM_CHAT_WINDOWS do
+	local Name = "ChatFrame"..Index;
+	local ChatFrame = _G[ Name ];
+	local TabFrame = _G[ Name.."Tab" ];
+	ChatFrames[ Index ] = ChatFrame;
+	TabFrames[ Index ] = TabFrame;
+
+	ChatFrame:HookScript( "OnShow", me.ChatFrameOnShow );
+
+	FCF_SetChatWindowFontSize( nil, ChatFrame, 12 );
+
+
+	-- Save borders
+	local BorderList = {};
+	for _, Suffix in ipairs( BorderSuffixes ) do
+		local Border = _G[ Name.."Resize"..Suffix ];
+		tinsert( BorderList, Border );
+		if ( Index <= 2 ) then
+			Border:Hide();
+		end
+	end
+	Borders[ ChatFrame ] = BorderList;
+
+
+	-- Hide the scroll buttons
+	local DownButton = _G[ Name.."DownButton" ];
+	DownButton:Hide();
+	local UpButton = _G[ Name.."UpButton" ];
+	UpButton:Hide();
+	-- Reposition the bottom button and redo artwork
+	local BottomButton = _G[ Name.."BottomButton" ];
+	BottomButton:SetNormalTexture( nil );
+	BottomButton:SetPushedTexture( nil );
+	BottomButton:SetDisabledTexture( nil );
+	BottomButton:SetBackdrop( BottomBackdrop );
+	BottomButton:SetBackdropColor( R, G, B, 0.25 );
+	_G[ Name.."BottomButtonFlash" ]:SetTexture( R, G, B, 0.25 );
+	Buttons[ ChatFrame ] = {
+		Up = UpButton;
+		Down = DownButton;
+		Bottom = BottomButton;
+	};
+	me.SetButtonSide( ChatFrame );
+
+
+	-- Modify chat frame tab
+	hooksecurefunc( TabFrame, "StopMovingOrSizing", Tab.StopMovingOrSizing );
+	_Underscore.AddLockedButton( TabFrame );
+	TabFrame:HookScript( "OnDoubleClick", Tab.OnDoubleClick );
+	ShrinkTabBorder( Name.."TabLeft" );
+	ShrinkTabBorder( Name.."TabMiddle" );
+	ShrinkTabBorder( Name.."TabRight" );
+
+	-- Disable some chat frame functions
+	hooksecurefunc( _G[ Name.."TabDropDown" ], "initialize", Tab.DropDownInitialize );
+	DisabledMenuButtons[ TabFrame ]
+		= Index <= 2 and DisabledMenuButtonsLocked or DisabledMenuButtonsNormal;
+end
+ChatFrame1TabLeft:SetTexCoord( ChatFrame1TabMiddle:GetTexCoord() );
+ChatFrame2TabRight:SetTexCoord( ChatFrame2TabMiddle:GetTexCoord() );
+
+
+-- Hooks
+UIPARENT_MANAGED_FRAME_POSITIONS[ "ChatFrame1" ] = nil;
+UIPARENT_MANAGED_FRAME_POSITIONS[ "ChatFrame2" ] = nil;
+
+hooksecurefunc( "FCF_SetTabPosition", me.SetTabPosition );
+hooksecurefunc( "FCF_UpdateCombatLogPosition", me.UpdateCombatLogPosition );
+hooksecurefunc( "FCF_UpdateDockPosition", me.UpdateDockPosition );
+hooksecurefunc( "FCF_SetButtonSide", me.SetButtonSide );
+hooksecurefunc( "FCF_SetLocked", me.SetLocked );
+
+ToggleCombatLog = _Underscore.NilFunction;
+FCF_Set_SimpleChat = _Underscore.NilFunction;
+FCF_ToggleLock = me.ToggleLock;
+
+me:SetScript( "OnUpdate", me.OnUpdate );
+me:SetScript( "OnEvent", me.OnEvent );
+me:OnEvent();
+me:RegisterEvent( "UPDATE_CHAT_WINDOWS" );

@@ -24,12 +24,6 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
-
-do
-	Overlay.Modules.Register( "BattlefieldMinimap", me,
-		_NPCScanOverlayLocalization.MODULE_BATTLEFIELDMINIMAP,
-		"Blizzard_BattlefieldMinimap" );
-end
+Overlay.Modules.Register( "BattlefieldMinimap", me,
+	_NPCScanOverlayLocalization.MODULE_BATTLEFIELDMINIMAP,
+	"Blizzard_BattlefieldMinimap" );

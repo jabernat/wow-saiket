@@ -52,15 +52,9 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
+me:SetScript( "OnUpdate", me.OnUpdate );
+me:SetScript( "OnEvent", _Underscore.OnEvent );
+me:RegisterEvent( "PLAYER_FLAGS_CHANGED" );
 
-do
-	me:SetScript( "OnUpdate", me.OnUpdate );
-	me:SetScript( "OnEvent", _Underscore.OnEvent );
-	me:RegisterEvent( "PLAYER_FLAGS_CHANGED" );
-
-	me:SetFrameStrata( "BACKGROUND" );
-	me.Text:SetPoint( "BOTTOM", AutoFollowStatusText, "TOP" );
-end
+me:SetFrameStrata( "BACKGROUND" );
+me.Text:SetPoint( "BOTTOM", AutoFollowStatusText, "TOP" );

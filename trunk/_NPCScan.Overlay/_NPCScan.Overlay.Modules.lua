@@ -281,11 +281,5 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
-
-do
-	me:SetScript( "OnEvent", me.OnEvent );
-	me:RegisterEvent( "ADDON_LOADED" );
-end
+me:SetScript( "OnEvent", me.OnEvent );
+me:RegisterEvent( "ADDON_LOADED" );

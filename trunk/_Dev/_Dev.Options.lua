@@ -289,63 +289,55 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
+me.name = L.OPTIONS_TITLE;
+me:Hide();
 
-do
-	me.name = L.OPTIONS_TITLE;
-	me:Hide();
-
-	InterfaceOptions_AddCategory( me );
+InterfaceOptions_AddCategory( me );
 
 
-	-- Pane title
-	me.Title = me:CreateFontString( nil, "ARTWORK", "GameFontNormalLarge" );
-	me.Title:SetPoint( "TOPLEFT", 16, -16 );
-	me.Title:SetText( L.OPTIONS_TITLE );
-	local SubText = me:CreateFontString( nil, "ARTWORK", "GameFontHighlightSmall" );
-	me.SubText = SubText;
-	SubText:SetPoint( "TOPLEFT", me.Title, "BOTTOMLEFT", 0, -8 );
-	SubText:SetPoint( "RIGHT", -32, 0 );
-	SubText:SetHeight( 32 );
-	SubText:SetJustifyH( "LEFT" );
-	SubText:SetJustifyV( "TOP" );
-	SubText:SetText( L.OPTIONS_DESC );
+-- Pane title
+me.Title = me:CreateFontString( nil, "ARTWORK", "GameFontNormalLarge" );
+me.Title:SetPoint( "TOPLEFT", 16, -16 );
+me.Title:SetText( L.OPTIONS_TITLE );
+local SubText = me:CreateFontString( nil, "ARTWORK", "GameFontHighlightSmall" );
+me.SubText = SubText;
+SubText:SetPoint( "TOPLEFT", me.Title, "BOTTOMLEFT", 0, -8 );
+SubText:SetPoint( "RIGHT", -32, 0 );
+SubText:SetHeight( 32 );
+SubText:SetJustifyH( "LEFT" );
+SubText:SetJustifyV( "TOP" );
+SubText:SetText( L.OPTIONS_DESC );
 
 
 
 
-	-- Print Lua errors option button
-	me:CreateCheckButton( "PrintLuaErrors" ):SetPoint( "TOPLEFT", SubText, "BOTTOMLEFT", -2, -8 );
+-- Print Lua errors option button
+me:CreateCheckButton( "PrintLuaErrors" ):SetPoint( "TOPLEFT", SubText, "BOTTOMLEFT", -2, -8 );
 
-	-- Create two columns for Dump and Outline options
-	local Column1 = CreateFrame( "Frame", "_DevOptionsDump", me, "OptionsBoxTemplate" );
-	_G[ Column1:GetName().."Title" ]:SetText( L.OPTIONS.DUMP );
-	Column1:SetPoint( "TOPLEFT", Controls[ "PrintLuaErrors" ], "BOTTOMLEFT", 0, -16 );
-	Column1:SetPoint( "BOTTOMRIGHT", me, "BOTTOM", 0, 16 );
-	local Column2 = CreateFrame( "Frame", "_DevOptionsOutline", me, "OptionsBoxTemplate" );
-	_G[ Column2:GetName().."Title" ]:SetText( L.OPTIONS.OUTLINE );
-	Column2:SetPoint( "TOPLEFT", Column1, "TOPRIGHT", 8, 0 );
-	Column2:SetPoint( "BOTTOMRIGHT", -14, 16 );
-
-
-	-- Dump options section
-	me.CreateCheckButton( Column1, "Dump.SkipGlobalEnv" ):SetPoint( "TOPLEFT", 8, -8 );
-	me.CreateEditBox( Column1, "Dump.MaxExploreTime", true ):SetPoint( "TOPLEFT", Controls[ "Dump.SkipGlobalEnv" ], "BOTTOMLEFT", 8, -16 );
-	me.CreateEditBox( Column1, "Dump.MaxDepth", true ):SetPoint( "TOPLEFT", Controls[ "Dump.MaxExploreTime" ], "BOTTOMLEFT", 0, -24 );
-	me.CreateEditBox( Column1, "Dump.MaxTableLen", true ):SetPoint( "TOPLEFT", Controls[ "Dump.MaxDepth" ], "BOTTOMLEFT", 0, -24 );
-	me.CreateEditBox( Column1, "Dump.MaxStrLen", true ):SetPoint( "TOPLEFT", Controls[ "Dump.MaxTableLen" ], "BOTTOMLEFT", 0, -24 );
-	me.CreateDropDown( Column1, "Dump.EscapeMode" ):SetPoint( "TOPLEFT", Controls[ "Dump.MaxStrLen" ], "BOTTOMLEFT", -22, -24 );
+-- Create two columns for Dump and Outline options
+local Column1 = CreateFrame( "Frame", "_DevOptionsDump", me, "OptionsBoxTemplate" );
+_G[ Column1:GetName().."Title" ]:SetText( L.OPTIONS.DUMP );
+Column1:SetPoint( "TOPLEFT", Controls[ "PrintLuaErrors" ], "BOTTOMLEFT", 0, -16 );
+Column1:SetPoint( "BOTTOMRIGHT", me, "BOTTOM", 0, 16 );
+local Column2 = CreateFrame( "Frame", "_DevOptionsOutline", me, "OptionsBoxTemplate" );
+_G[ Column2:GetName().."Title" ]:SetText( L.OPTIONS.OUTLINE );
+Column2:SetPoint( "TOPLEFT", Column1, "TOPRIGHT", 8, 0 );
+Column2:SetPoint( "BOTTOMRIGHT", -14, 16 );
 
 
-	-- Outline options section
-	me.CreateEditBox( Column2, "Outline.BoundsThreshold" ):SetPoint( "TOPLEFT", 16, -24 );
-	me.CreateSlider( Column2, "Outline.BorderAlpha", 0.0, 1.0 ):SetPoint( "TOPLEFT", Controls[ "Outline.BoundsThreshold" ], "BOTTOMLEFT", 0, -18 );
-	me.SetVariableCallback( "Outline.BorderAlpha", function () _Dev.Outline.Update(); end );
+-- Dump options section
+me.CreateCheckButton( Column1, "Dump.SkipGlobalEnv" ):SetPoint( "TOPLEFT", 8, -8 );
+me.CreateEditBox( Column1, "Dump.MaxExploreTime", true ):SetPoint( "TOPLEFT", Controls[ "Dump.SkipGlobalEnv" ], "BOTTOMLEFT", 8, -16 );
+me.CreateEditBox( Column1, "Dump.MaxDepth", true ):SetPoint( "TOPLEFT", Controls[ "Dump.MaxExploreTime" ], "BOTTOMLEFT", 0, -24 );
+me.CreateEditBox( Column1, "Dump.MaxTableLen", true ):SetPoint( "TOPLEFT", Controls[ "Dump.MaxDepth" ], "BOTTOMLEFT", 0, -24 );
+me.CreateEditBox( Column1, "Dump.MaxStrLen", true ):SetPoint( "TOPLEFT", Controls[ "Dump.MaxTableLen" ], "BOTTOMLEFT", 0, -24 );
+me.CreateDropDown( Column1, "Dump.EscapeMode" ):SetPoint( "TOPLEFT", Controls[ "Dump.MaxStrLen" ], "BOTTOMLEFT", -22, -24 );
 
 
+-- Outline options section
+me.CreateEditBox( Column2, "Outline.BoundsThreshold" ):SetPoint( "TOPLEFT", 16, -24 );
+me.CreateSlider( Column2, "Outline.BorderAlpha", 0.0, 1.0 ):SetPoint( "TOPLEFT", Controls[ "Outline.BoundsThreshold" ], "BOTTOMLEFT", 0, -18 );
+me.SetVariableCallback( "Outline.BorderAlpha", function () _Dev.Outline.Update(); end );
 
 
-	SlashCmdList[ "_DEV_OPTIONS" ] = me.SlashCommand;
-end
+SlashCmdList[ "_DEV_OPTIONS" ] = me.SlashCommand;

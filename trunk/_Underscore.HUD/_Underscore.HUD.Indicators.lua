@@ -92,34 +92,28 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
-
-do
-	-- Move capture/worldstate frames
-	WorldStateAlwaysUpFrame:SetParent( _Underscore.BottomPane );
-	WorldStateAlwaysUpFrame:ClearAllPoints();
-	WorldStateAlwaysUpFrame:SetPoint( "BOTTOM", 0, 6 );
-	WorldStateAlwaysUpFrame:SetHeight( 1 );
-	WorldStateAlwaysUpFrame:EnableMouse( false );
-	WorldStateAlwaysUpFrame:SetAlpha( 0.5 );
-	hooksecurefunc( "WorldStateAlwaysUpFrame_Update", me.ManageWorldState );
-	_Underscore.RegisterPositionManager( me.ManageWorldState );
+-- Move capture/worldstate frames
+WorldStateAlwaysUpFrame:SetParent( _Underscore.BottomPane );
+WorldStateAlwaysUpFrame:ClearAllPoints();
+WorldStateAlwaysUpFrame:SetPoint( "BOTTOM", 0, 6 );
+WorldStateAlwaysUpFrame:SetHeight( 1 );
+WorldStateAlwaysUpFrame:EnableMouse( false );
+WorldStateAlwaysUpFrame:SetAlpha( 0.5 );
+hooksecurefunc( "WorldStateAlwaysUpFrame_Update", me.ManageWorldState );
+_Underscore.RegisterPositionManager( me.ManageWorldState );
 
 
-	-- Move the durability frame to the middle
-	DurabilityFrame:SetParent( _Underscore.BottomPane );
-	DurabilityFrame:SetScale( 2.0 );
-	DurabilityFrame:SetAlpha( 0.75 );
-	me.ManageDurability();
-	_Underscore.RegisterPositionManager( me.ManageDurability );
+-- Move the durability frame to the middle
+DurabilityFrame:SetParent( _Underscore.BottomPane );
+DurabilityFrame:SetScale( 2.0 );
+DurabilityFrame:SetAlpha( 0.75 );
+me.ManageDurability();
+_Underscore.RegisterPositionManager( me.ManageDurability );
 
 
-	-- Move the vehicle seat indicator to the middle
-	VehicleSeatIndicator:SetParent( _Underscore.BottomPane );
-	VehicleSeatIndicator:SetAlpha( 0.6 );
-	hooksecurefunc( "VehicleSeatIndicator_Update", me.ManageVehicleSeats );
-	hooksecurefunc( VehicleSeatIndicator, "SetPoint", me.ManageVehicle );
-	me.ManageVehicle();
-end
+-- Move the vehicle seat indicator to the middle
+VehicleSeatIndicator:SetParent( _Underscore.BottomPane );
+VehicleSeatIndicator:SetAlpha( 0.6 );
+hooksecurefunc( "VehicleSeatIndicator_Update", me.ManageVehicleSeats );
+hooksecurefunc( VehicleSeatIndicator, "SetPoint", me.ManageVehicle );
+me.ManageVehicle();

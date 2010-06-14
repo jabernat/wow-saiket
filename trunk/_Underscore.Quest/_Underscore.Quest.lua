@@ -51,22 +51,16 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
-
-do
-	-- Make titles expand when no tag is present
-	for Index, Button in ipairs( QuestLogScrollFrame.buttons ) do
-		Button.tag:SetWidth( 0 ); -- Cause width to scale to text contents
-		Button.normalText:SetPoint( "RIGHT", Button.tag, "LEFT" );
-		Button.groupMates:ClearAllPoints();
-		Button.groupMates:SetPoint( "RIGHT", Button.normalText, "LEFT" );
-		Button.check:ClearAllPoints();
-		Button.check:SetPoint( "RIGHT", Button.normalText, "LEFT" );
-	end
-	QuestLogTitleButton_Resize = _Underscore.NilFunction;
-
-	hooksecurefunc( "QuestLog_Update", me.QuestLogUpdate );
-	QuestLogScrollFrame.update = QuestLog_Update;
+-- Make titles expand when no tag is present
+for Index, Button in ipairs( QuestLogScrollFrame.buttons ) do
+	Button.tag:SetWidth( 0 ); -- Cause width to scale to text contents
+	Button.normalText:SetPoint( "RIGHT", Button.tag, "LEFT" );
+	Button.groupMates:ClearAllPoints();
+	Button.groupMates:SetPoint( "RIGHT", Button.normalText, "LEFT" );
+	Button.check:ClearAllPoints();
+	Button.check:SetPoint( "RIGHT", Button.normalText, "LEFT" );
 end
+QuestLogTitleButton_Resize = _Underscore.NilFunction;
+
+hooksecurefunc( "QuestLog_Update", me.QuestLogUpdate );
+QuestLogScrollFrame.update = QuestLog_Update;

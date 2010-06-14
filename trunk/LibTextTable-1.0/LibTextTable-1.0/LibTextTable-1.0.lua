@@ -492,7 +492,7 @@ do
 	end
 
 	-- Handlers for scrollwheel and scrollbar increment/decrement
-	local function ScrollHorizontal ( View, Delta ) 
+	local function ScrollHorizontal ( View, Delta )
 		local XScroll = View.XScroll;
 		XScroll:SetValue( XScroll:GetValue() + Delta * XScroll:GetWidth() / 2 )
 	end

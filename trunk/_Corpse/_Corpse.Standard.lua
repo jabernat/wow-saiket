@@ -343,13 +343,7 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
+me:SetScript( "OnEvent", _Corpse.OnEvent );
 
-do
-	me:SetScript( "OnEvent", _Corpse.OnEvent );
-
-	UIErrorsFrame:SetScript( "OnEvent", me.UIErrorsFrameOnEvent );
-	ChatFrame_AddMessageEventFilter( "CHAT_MSG_SYSTEM", me.MessageEventHandler );
-end
+UIErrorsFrame:SetScript( "OnEvent", me.UIErrorsFrameOnEvent );
+ChatFrame_AddMessageEventFilter( "CHAT_MSG_SYSTEM", me.MessageEventHandler );

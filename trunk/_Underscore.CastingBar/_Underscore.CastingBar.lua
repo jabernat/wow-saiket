@@ -128,65 +128,59 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
+local function AddCastingBar ( self, UnitID, ... ) -- Skins a casting bar frame and positions it
+	self.UnitID = UnitID;
 
-do
-	local function AddCastingBar ( self, UnitID, ... ) -- Skins a casting bar frame and positions it
-		self.UnitID = UnitID;
+	-- Position the bar between the left and right action bars
+	self:ClearAllPoints();
+	self:SetPoint( "TOPRIGHT", _Underscore.ActionBars.BackdropBottomRight, "TOPLEFT", -BarPadding, -BarPadding );
+	self:SetPoint( "BOTTOMLEFT", _Underscore.ActionBars.BackdropBottomLeft, "BOTTOMRIGHT", BarPadding, BarPadding );
+	self:SetWidth( 0 ); -- Allow GetWidth to return actual width
+	self:SetStatusBarTexture( BarTexture );
 
-		-- Position the bar between the left and right action bars
-		self:ClearAllPoints();
-		self:SetPoint( "TOPRIGHT", _Underscore.ActionBars.BackdropBottomRight, "TOPLEFT", -BarPadding, -BarPadding );
-		self:SetPoint( "BOTTOMLEFT", _Underscore.ActionBars.BackdropBottomLeft, "BOTTOMRIGHT", BarPadding, BarPadding );
-		self:SetWidth( 0 ); -- Allow GetWidth to return actual width
-		self:SetStatusBarTexture( BarTexture );
-
-		-- Replace solid background color
-		for Index = 1, select( "#", ... ) do
-			local Region = select( Index, ... );
-			if ( Region:GetObjectType() == "Texture" and Region:GetDrawLayer() == "BACKGROUND" and Region:GetTexture() == "Solid Texture" ) then
-				Region:Hide();
-				break;
-			end
+	-- Replace solid background color
+	for Index = 1, select( "#", ... ) do
+		local Region = select( Index, ... );
+		if ( Region:GetObjectType() == "Texture" and Region:GetDrawLayer() == "BACKGROUND" and Region:GetTexture() == "Solid Texture" ) then
+			Region:Hide();
+			break;
 		end
-		_Underscore.Backdrop.Create( self, 0 );
-
-		local Text = _G[ self:GetName().."Text" ];
-		Text:ClearAllPoints();
-		Text:SetPoint( "CENTER" );
-		Text:SetWidth( 0 ); -- Allow region to expand with text
-		Text:SetFontObject( GameFontHighlightLarge );
-
-		-- Regions
-		self.Border = _G[ self:GetName().."Border" ];
-		self.Flash = _G[ self:GetName().."Flash" ];
-		self.Spark = _G[ self:GetName().."Spark" ];
-		self.Icon = self:CreateTexture( nil, "ARTWORK" );
-		self.Icon:SetSize( 32, 32 );
-		self.Icon:SetPoint( "LEFT", self, 2, 0 );
-		self.Icon:SetAlpha( 0.75 );
-		_Underscore.SkinButton( nil, self.Icon, self:CreateTexture( nil, "OVERLAY" ) );
-		self.Time = self:CreateFontString( nil, "ARTWORK", "GameFontNormalSmall" );
-		self.Time:SetPoint( "LEFT", Text, "RIGHT" );
-
-		if ( UnitID == "player" ) then
-			self.Lag = self:CreateTexture( nil, "BORDER" );
-			self.Lag:SetPoint( "TOPRIGHT" );
-			self.Lag:SetPoint( "BOTTOM" );
-			self.Lag:SetTexture( BarTexture );
-			self.Lag:SetBlendMode( "ADD" );
-			local R, G, B = unpack( _Underscore.Colors.disconnected );
-			self.Lag:SetVertexColor( R, G, B, 0.5 );
-			self:HookScript( "OnShow", me.OnShow );
-		end
-		self:HookScript( "OnEvent", me.OnEvent );
-		self:HookScript( "OnUpdate", me.OnUpdate );
-		hooksecurefunc( self, "SetStatusBarColor", me.SetStatusBarColor );
 	end
+	_Underscore.Backdrop.Create( self, 0 );
 
-	UIPARENT_MANAGED_FRAME_POSITIONS[ "CastingBarFrame" ] = nil;
-	AddCastingBar( CastingBarFrame, "player", CastingBarFrame:GetRegions() );
-	AddCastingBar( PetCastingBarFrame, "pet", PetCastingBarFrame:GetRegions() );
+	local Text = _G[ self:GetName().."Text" ];
+	Text:ClearAllPoints();
+	Text:SetPoint( "CENTER" );
+	Text:SetWidth( 0 ); -- Allow region to expand with text
+	Text:SetFontObject( GameFontHighlightLarge );
+
+	-- Regions
+	self.Border = _G[ self:GetName().."Border" ];
+	self.Flash = _G[ self:GetName().."Flash" ];
+	self.Spark = _G[ self:GetName().."Spark" ];
+	self.Icon = self:CreateTexture( nil, "ARTWORK" );
+	self.Icon:SetSize( 32, 32 );
+	self.Icon:SetPoint( "LEFT", self, 2, 0 );
+	self.Icon:SetAlpha( 0.75 );
+	_Underscore.SkinButton( nil, self.Icon, self:CreateTexture( nil, "OVERLAY" ) );
+	self.Time = self:CreateFontString( nil, "ARTWORK", "GameFontNormalSmall" );
+	self.Time:SetPoint( "LEFT", Text, "RIGHT" );
+
+	if ( UnitID == "player" ) then
+		self.Lag = self:CreateTexture( nil, "BORDER" );
+		self.Lag:SetPoint( "TOPRIGHT" );
+		self.Lag:SetPoint( "BOTTOM" );
+		self.Lag:SetTexture( BarTexture );
+		self.Lag:SetBlendMode( "ADD" );
+		local R, G, B = unpack( _Underscore.Colors.disconnected );
+		self.Lag:SetVertexColor( R, G, B, 0.5 );
+		self:HookScript( "OnShow", me.OnShow );
+	end
+	self:HookScript( "OnEvent", me.OnEvent );
+	self:HookScript( "OnUpdate", me.OnUpdate );
+	hooksecurefunc( self, "SetStatusBarColor", me.SetStatusBarColor );
 end
+
+UIPARENT_MANAGED_FRAME_POSITIONS[ "CastingBarFrame" ] = nil;
+AddCastingBar( CastingBarFrame, "player", CastingBarFrame:GetRegions() );
+AddCastingBar( PetCastingBarFrame, "pet", PetCastingBarFrame:GetRegions() );

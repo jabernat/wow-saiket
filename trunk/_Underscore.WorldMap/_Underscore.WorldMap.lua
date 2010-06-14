@@ -149,34 +149,28 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
+me:SetAllPoints();
+me:SetScript( "OnUpdate", me.OnUpdate );
 
-do
-	me:SetAllPoints();
-	me:SetScript( "OnUpdate", me.OnUpdate );
+Tooltip:Hide();
+Tooltip:SetFrameStrata( "TOOLTIP" );
+Tooltip:SetClampedToScreen( true );
+_Underscore.Backdrop.Create( Tooltip ):SetAlpha( 0.5 );
 
-	Tooltip:Hide();
-	Tooltip:SetFrameStrata( "TOOLTIP" );
-	Tooltip:SetClampedToScreen( true );
-	_Underscore.Backdrop.Create( Tooltip ):SetAlpha( 0.5 );
-
-	local Color = NORMAL_FONT_COLOR;
-	Tooltip.Text:SetTextColor( Color.r, Color.g, Color.b, 0.7 );
-	Tooltip.Text:SetAllPoints();
+local Color = NORMAL_FONT_COLOR;
+Tooltip.Text:SetTextColor( Color.r, Color.g, Color.b, 0.7 );
+Tooltip.Text:SetAllPoints();
 
 
-	local ScrollHandler = me.ScrollHandler;
-	ScrollHandler:SetAllPoints( WorldMapButton );
-	ScrollHandler:SetScript( "OnMouseWheel", ScrollHandler.OnMouseWheel );
-	ScrollHandler:SetScript( "OnShow", ScrollHandler.OnShow );
-	ScrollHandler:SetScript( "OnHide", ScrollHandler.OnHide );
-	ScrollHandler:SetScript( "OnEvent", _Underscore.OnEvent );
+local ScrollHandler = me.ScrollHandler;
+ScrollHandler:SetAllPoints( WorldMapButton );
+ScrollHandler:SetScript( "OnMouseWheel", ScrollHandler.OnMouseWheel );
+ScrollHandler:SetScript( "OnShow", ScrollHandler.OnShow );
+ScrollHandler:SetScript( "OnHide", ScrollHandler.OnHide );
+ScrollHandler:SetScript( "OnEvent", _Underscore.OnEvent );
 
 
-	WorldMapUnit_Update = me.UpdateUnit;
+WorldMapUnit_Update = me.UpdateUnit;
 
-	hooksecurefunc( "WorldMap_ToggleSizeUp", me.DisableBlackout );
-	me.DisableBlackout();
-end
+hooksecurefunc( "WorldMap_ToggleSizeUp", me.DisableBlackout );
+me.DisableBlackout();

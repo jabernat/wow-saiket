@@ -82,27 +82,19 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
+me:SetWidth( 1 );
+me:SetHeight( 1 );
+me:SetPoint( "TOPLEFT" );
+me:SetFrameStrata( "BACKGROUND" );
+me:SetAlpha( 0.5 );
 
-do
-	-- Set up frame
-	me:SetWidth( 1 );
-	me:SetHeight( 1 );
-	me:SetPoint( "TOPLEFT" );
-	me:SetFrameStrata( "BACKGROUND" );
-	me:SetAlpha( 0.5 );
+me.Framerate:SetPoint( "TOPLEFT" );
+me.Framerate:SetTextColor( NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b );
+me.Latency:SetPoint( "LEFT", me.Framerate, "RIGHT" );
+me.Memory:SetPoint( "LEFT", me.Latency, "RIGHT" );
 
-	me.Framerate:SetPoint( "TOPLEFT" );
-	me.Framerate:SetTextColor( NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b );
-	me.Latency:SetPoint( "LEFT", me.Framerate, "RIGHT" );
-	me.Memory:SetPoint( "LEFT", me.Latency, "RIGHT" );
+me:SetScript( "OnUpdate", me.OnUpdate );
 
-	-- Events
-	me:SetScript( "OnUpdate", me.OnUpdate );
-
-	-- Hook original framerate function
-	ToggleFramerate = me.ToggleFramerate;
-	ToggleFramerate( _DevOptions.Stats.Enabled );
-end
+-- Hook original framerate function
+ToggleFramerate = me.ToggleFramerate;
+ToggleFramerate( _DevOptions.Stats.Enabled );

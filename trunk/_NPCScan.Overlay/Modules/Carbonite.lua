@@ -69,49 +69,43 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
-
-do
-	if ( NxData.NXGOpts.MapMMOwn ) then -- Minimap docked into WorldMap
-		Overlay.Modules.Unregister( "Minimap" );
-	end
+if ( NxData.NXGOpts.MapMMOwn ) then -- Minimap docked into WorldMap
+	Overlay.Modules.Unregister( "Minimap" );
+end
 
 
-	local function HookHandler ( Module, Name, Handler )
-		if ( Module[ Name ] ) then
-			hooksecurefunc( Module, Name, Handler );
-		else
-			Module[ Name ] = Handler;
-		end
-	end
-	local function OnUnload ()
-		me.OnUpdate = nil;
-		if ( WorldMap.Loaded ) then
-			me:SetScript( "OnUpdate", nil );
-		end
-	end
-	local function OnLoad ()
-		HookHandler( WorldMap, "OnUnload", OnUnload );
-		me:SetScript( "OnUpdate", me.OnUpdate );
-
-		-- Give the canvas an explicit size so it paints correctly in Carbonite mode
-		WorldMap:SetSize( WorldMapDetailFrame:GetSize() );
-
-		-- Hooks to swap between Carbonite's map mode and the default UI map mode
-		WorldMapFrame:HookScript( "OnShow", me.WorldMapFrameOnShow );
-		WorldMapFrame:HookScript( "OnHide", me.WorldMapFrameOnHide );
-		me[ WorldMapFrame:IsVisible() and "WorldMapFrameOnShow" or "WorldMapFrameOnHide" ]( WorldMapFrame );
-	end
-
-	if ( WorldMap and WorldMap.Registered ) then
-		if ( WorldMap.Loaded ) then
-			OnLoad();
-		else
-			HookHandler( WorldMap, "OnLoad", OnLoad );
-		end
+local function HookHandler ( Module, Name, Handler )
+	if ( Module[ Name ] ) then
+		hooksecurefunc( Module, Name, Handler );
 	else
-		OnUnload();
+		Module[ Name ] = Handler;
 	end
+end
+local function OnUnload ()
+	me.OnUpdate = nil;
+	if ( WorldMap.Loaded ) then
+		me:SetScript( "OnUpdate", nil );
+	end
+end
+local function OnLoad ()
+	HookHandler( WorldMap, "OnUnload", OnUnload );
+	me:SetScript( "OnUpdate", me.OnUpdate );
+
+	-- Give the canvas an explicit size so it paints correctly in Carbonite mode
+	WorldMap:SetSize( WorldMapDetailFrame:GetSize() );
+
+	-- Hooks to swap between Carbonite's map mode and the default UI map mode
+	WorldMapFrame:HookScript( "OnShow", me.WorldMapFrameOnShow );
+	WorldMapFrame:HookScript( "OnHide", me.WorldMapFrameOnHide );
+	me[ WorldMapFrame:IsVisible() and "WorldMapFrameOnShow" or "WorldMapFrameOnHide" ]( WorldMapFrame );
+end
+
+if ( WorldMap and WorldMap.Registered ) then
+	if ( WorldMap.Loaded ) then
+		OnLoad();
+	else
+		HookHandler( WorldMap, "OnLoad", OnLoad );
+	end
+else
+	OnUnload();
 end

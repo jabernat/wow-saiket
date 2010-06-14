@@ -4,8 +4,6 @@
   ****************************************************************************]]
 
 
-do
-	_UnderscoreLocalization.WorldMap = setmetatable( {
-		COORD_FORMAT = "%.2f, %.2f"; -- X, Y
-	}, getmetatable( _UnderscoreLocalization ) );
-end
+_UnderscoreLocalization.WorldMap = setmetatable( {
+	COORD_FORMAT = "%.2f, %.2f"; -- X, Y
+}, getmetatable( _UnderscoreLocalization ) );

@@ -274,60 +274,54 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
+me:SetScript( "OnEvent", me.OnEvent );
+me:RegisterEvent( "ADDON_LOADED" );
+me:RegisterEvent( "PLAYER_REGEN_ENABLED" );
+me:RegisterEvent( "PLAYER_REGEN_DISABLED" );
+me:RegisterEvent( "MODIFIER_STATE_CHANGED" );
 
-do
-	me:SetScript( "OnEvent", me.OnEvent );
-	me:RegisterEvent( "ADDON_LOADED" );
-	me:RegisterEvent( "PLAYER_REGEN_ENABLED" );
-	me:RegisterEvent( "PLAYER_REGEN_DISABLED" );
-	me:RegisterEvent( "MODIFIER_STATE_CHANGED" );
+-- Place the layout panes
+me.TopMargin:SetPoint( "TOPLEFT" );
+me.TopMargin:SetPoint( "RIGHT" );
+me.TopMargin:SetHeight( 16 );
+me.BottomPane:SetPoint( "LEFT" );
+me.BottomPane:SetPoint( "RIGHT" );
+me.BottomPane:SetPoint( "TOP", UIParent, "CENTER" );
+me.BottomPane:SetPoint( "BOTTOM" );
+me.BottomPane:SetFrameStrata( "BACKGROUND" );
 
-	-- Place the layout panes
-	me.TopMargin:SetPoint( "TOPLEFT" );
-	me.TopMargin:SetPoint( "RIGHT" );
-	me.TopMargin:SetHeight( 16 );
-	me.BottomPane:SetPoint( "LEFT" );
-	me.BottomPane:SetPoint( "RIGHT" );
-	me.BottomPane:SetPoint( "TOP", UIParent, "CENTER" );
-	me.BottomPane:SetPoint( "BOTTOM" );
-	me.BottomPane:SetFrameStrata( "BACKGROUND" );
-
-	-- Remove class icon padding
-	local IconPadding = 0.08 / 4; -- Icons are in a 4x4 grid
-	local function RemoveClassIconBorders ( TCoords )
-		for _, Coords in pairs( TCoords ) do
-			Coords[ 1 ], Coords[ 2 ] = Coords[ 1 ] + IconPadding, Coords[ 2 ] - IconPadding;
-			Coords[ 3 ], Coords[ 4 ] = Coords[ 3 ] + IconPadding, Coords[ 4 ] - IconPadding;
-		end
+-- Remove class icon padding
+local IconPadding = 0.08 / 4; -- Icons are in a 4x4 grid
+local function RemoveClassIconBorders ( TCoords )
+	for _, Coords in pairs( TCoords ) do
+		Coords[ 1 ], Coords[ 2 ] = Coords[ 1 ] + IconPadding, Coords[ 2 ] - IconPadding;
+		Coords[ 3 ], Coords[ 4 ] = Coords[ 3 ] + IconPadding, Coords[ 4 ] - IconPadding;
 	end
-	RemoveClassIconBorders( CLASS_ICON_TCOORDS );
-	RemoveClassIconBorders( CLASS_BUTTONS );
-
-
-	-- Add media to LibSharedMedia
-	LibSharedMedia:Register( LibSharedMedia.MediaType.STATUSBAR, me.MediaBar, [[Interface\AddOns\]]..( ... )..[[\Skin\Glaze]] );
-
-	-- Alert sounds
-	local Sound = LibSharedMedia.MediaType.SOUND;
-	LibSharedMedia:Register( Sound, "Blizzard: Space Impact", [[Sound\Effects\DeathImpacts\SpaceDeathUni.wav]] );
-	LibSharedMedia:Register( Sound, "Blizzard: Whisp", [[Sound\Event Sounds\Wisp\WispReady1.wav]] );
-	LibSharedMedia:Register( Sound, "Blizzard: Alarm Clock", [[Sound\Interface\AlarmClockWarning2.wav]] );
-	LibSharedMedia:Register( Sound, "Blizzard: Glyph Creation", [[Sound\Interface\Glyph_MajorCreate.wav]] );
-	LibSharedMedia:Register( Sound, "Blizzard: Fanfare", [[Sound\Interface\ReadyCheck.wav]] );
-	LibSharedMedia:Register( Sound, "Blizzard: Boss Emote", [[Sound\Interface\RaidBossWarning.wav]] );
-
-
-	-- Hook the secure frame position delegate since parts of the DefaultUI use local copies of the global wrapper function
-	local Frame;
-	for Index = 1, 20 do -- Limit search to first 20 frames
-		Frame = EnumerateFrames( Frame )
-		if ( Frame and Frame.UIParentManageFramePositions ) then
-			hooksecurefunc( Frame, "UIParentManageFramePositions", me.PositionManagerUpdate );
-			return;
-		end
-	end
-	error( "FramePositionDelegate not found!" );
 end
+RemoveClassIconBorders( CLASS_ICON_TCOORDS );
+RemoveClassIconBorders( CLASS_BUTTONS );
+
+
+-- Add media to LibSharedMedia
+LibSharedMedia:Register( LibSharedMedia.MediaType.STATUSBAR, me.MediaBar, [[Interface\AddOns\]]..( ... )..[[\Skin\Glaze]] );
+
+-- Alert sounds
+local Sound = LibSharedMedia.MediaType.SOUND;
+LibSharedMedia:Register( Sound, "Blizzard: Space Impact", [[Sound\Effects\DeathImpacts\SpaceDeathUni.wav]] );
+LibSharedMedia:Register( Sound, "Blizzard: Whisp", [[Sound\Event Sounds\Wisp\WispReady1.wav]] );
+LibSharedMedia:Register( Sound, "Blizzard: Alarm Clock", [[Sound\Interface\AlarmClockWarning2.wav]] );
+LibSharedMedia:Register( Sound, "Blizzard: Glyph Creation", [[Sound\Interface\Glyph_MajorCreate.wav]] );
+LibSharedMedia:Register( Sound, "Blizzard: Fanfare", [[Sound\Interface\ReadyCheck.wav]] );
+LibSharedMedia:Register( Sound, "Blizzard: Boss Emote", [[Sound\Interface\RaidBossWarning.wav]] );
+
+
+-- Hook the secure frame position delegate since parts of the DefaultUI use local copies of the global wrapper function
+local Frame;
+for Index = 1, 20 do -- Limit search to first 20 frames
+	Frame = EnumerateFrames( Frame )
+	if ( Frame and Frame.UIParentManageFramePositions ) then
+		hooksecurefunc( Frame, "UIParentManageFramePositions", me.PositionManagerUpdate );
+		return;
+	end
+end
+error( "FramePositionDelegate not found!" );

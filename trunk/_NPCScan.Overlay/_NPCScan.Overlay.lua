@@ -173,7 +173,7 @@ do
 		Matrix = Matrix:Shear( ShearFactor ); -- Shear the image so its bottom left corner aligns with point A
 		Matrix = Matrix:Scale( ScaleX, ScaleY ); -- Scale X by the length of line BC, and Y by the length of the perpendicular line from BC to point A
 		Matrix = Matrix:Rotate( Sin, Cos ); -- Align the top of the triangle with line BC.
-		
+
 		Matrix = Matrix:Translate( Bx - MinX, By - MinY ); -- Move origin to overlap point B
 		Matrix = Matrix:Scale( 1 / WindowX, 1 / WindowY ); -- Adjust for change in texture size
 
@@ -443,11 +443,5 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
-
-do
-	LibStub( "AceEvent-3.0" ):Embed( me );
-	me:RegisterEvent( "ADDON_LOADED" );
-end
+LibStub( "AceEvent-3.0" ):Embed( me );
+me:RegisterEvent( "ADDON_LOADED" );

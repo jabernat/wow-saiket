@@ -105,35 +105,29 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
+local ChatTypes = {
+	"CHAT_MSG_AFK",
+	"CHAT_MSG_BATTLEGROUND",
+	"CHAT_MSG_BATTLEGROUND_LEADER",
+	"CHAT_MSG_CHANNEL",
+	"CHAT_MSG_DND",
+	"CHAT_MSG_EMOTE", -- Only for custom emotes
+	"CHAT_MSG_GUILD",
+	"CHAT_MSG_OFFICER",
+	"CHAT_MSG_PARTY",
+	"CHAT_MSG_PARTY_LEADER",
+	"CHAT_MSG_RAID",
+	"CHAT_MSG_RAID_LEADER",
+	"CHAT_MSG_RAID_WARNING",
+	"CHAT_MSG_SAY",
+	"CHAT_MSG_WHISPER",
+	"CHAT_MSG_WHISPER_INFORM", -- For when you send a whisper
+	"CHAT_MSG_YELL",
+	"SYSMSG",
+	"CHAT_MSG_SYSTEM",
+};
 
-do
-	local ChatTypes = {
-		"CHAT_MSG_AFK",
-		"CHAT_MSG_BATTLEGROUND",
-		"CHAT_MSG_BATTLEGROUND_LEADER",
-		"CHAT_MSG_CHANNEL",
-		"CHAT_MSG_DND",
-		"CHAT_MSG_EMOTE", -- Only for custom emotes
-		"CHAT_MSG_GUILD",
-		"CHAT_MSG_OFFICER",
-		"CHAT_MSG_PARTY",
-		"CHAT_MSG_PARTY_LEADER",
-		"CHAT_MSG_RAID",
-		"CHAT_MSG_RAID_LEADER",
-		"CHAT_MSG_RAID_WARNING",
-		"CHAT_MSG_SAY",
-		"CHAT_MSG_WHISPER",
-		"CHAT_MSG_WHISPER_INFORM", -- For when you send a whisper
-		"CHAT_MSG_YELL",
-		"SYSMSG",
-		"CHAT_MSG_SYSTEM",
-	};
-
-	for _, Event in ipairs( ChatTypes ) do
-		ChatFrame_AddMessageEventFilter( Event, me.MessageEventHandler );
-	end
-	SetItemRef = me.SetItemRef;
+for _, Event in ipairs( ChatTypes ) do
+	ChatFrame_AddMessageEventFilter( Event, me.MessageEventHandler );
 end
+SetItemRef = me.SetItemRef;

@@ -29,10 +29,4 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
-
-do
-	RaidWarningFrame:SetScript( "OnEvent", me.OnEvent );
-end
+RaidWarningFrame:SetScript( "OnEvent", me.OnEvent );

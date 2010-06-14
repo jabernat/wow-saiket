@@ -61,10 +61,4 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
-
-do
-	_Underscore.Chat.RegisterFilter( me.Filter );
-end
+_Underscore.Chat.RegisterFilter( me.Filter );

@@ -29,19 +29,13 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
+GameTooltip:HookScript( "OnUpdate", me.OnUpdate );
 
-do
-	GameTooltip:HookScript( "OnUpdate", me.OnUpdate );
+me:SetPoint( "TOPLEFT", GameTooltip, "TOPRIGHT" );
+me:SetScale( 0.8 );
+me.Text = _G[ me:GetName().."TextLeft1" ];
 
-	me:SetPoint( "TOPLEFT", GameTooltip, "TOPRIGHT" );
-	me:SetScale( 0.8 );
-	me.Text = _G[ me:GetName().."TextLeft1" ];
-
-	_Underscore.Tooltip.UnitRegister( me );
-	_Underscore.Tooltip.Skin( me );
-	me.Icon:ClearAllPoints();
-	me.Icon:SetPoint( "TOPLEFT", me, "TOPRIGHT", -2, -2 );
-end
+_Underscore.Tooltip.UnitRegister( me );
+_Underscore.Tooltip.Skin( me );
+me.Icon:ClearAllPoints();
+me.Icon:SetPoint( "TOPLEFT", me, "TOPRIGHT", -2, -2 );

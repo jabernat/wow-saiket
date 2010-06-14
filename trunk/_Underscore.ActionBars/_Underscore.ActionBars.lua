@@ -37,7 +37,7 @@ do
 			local LLx, LLy = CalculateCorner( Angle + Angle45 * 3 );
 			local ULx, ULy = CalculateCorner( Angle - Angle45 * 3 );
 			local URx, URy = CalculateCorner( Angle - Angle45 );
-			
+
 			self:SetTexCoord( ULx, ULy, LLx, LLy, URx, URy, LRx, LRy );
 		end
 	end
@@ -194,52 +194,46 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
+me:SetScript( "OnEvent", _Underscore.OnEvent );
+me:RegisterEvent( "PLAYER_LOGIN" );
 
-do
-	me:SetScript( "OnEvent", _Underscore.OnEvent );
-	me:RegisterEvent( "PLAYER_LOGIN" );
-
-	-- Remove icon borders on buttons
-	for Index = 1, NUM_MULTIBAR_BUTTONS do
-		ActionButtonModify( _G[ "ActionButton"..Index ], math.pi );
-		ActionButtonModify( _G[ "MultiBarBottomLeftButton"..Index ], 0 );
-		ActionButtonModify( _G[ "MultiBarBottomRightButton"..Index ], 0 );
-		ActionButtonModify( _G[ "MultiBarLeftButton"..Index ], math.pi / 2 );
-		ActionButtonModify( _G[ "MultiBarRightButton"..Index ], -math.pi / 2 );
-	end
-
-	-- Shapeshift bar (These get replaced by Dominos later)
-	for Index = 1, NUM_SHAPESHIFT_SLOTS do
-		ActionButtonModify( _G[ "ShapeshiftButton"..Index ], math.pi );
-	end
-
-	-- Bag buttons
-	local LastBag = MainMenuBarBackpackButton;
-	ActionButtonModify( LastBag, math.pi );
-	for Index = 0, NUM_BAG_SLOTS - 1 do
-		LastBag = _G[ "CharacterBag"..Index.."Slot" ];
-		ActionButtonModify( LastBag, math.pi );
-	end
-
-	-- Keyring
-	KeyRingButton:ClearAllPoints();
-	KeyRingButton:SetPoint( "TOPLEFT", LastBag );
-	KeyRingButton:SetPoint( "BOTTOM", LastBag );
-	KeyRingButton:SetParent( LastBag );
-	KeyRingButton:SetWidth( 8 );
-	KeyRingButton:GetNormalTexture():SetTexCoord( 0.15, 0.45, 0.1, 0.52 );
-	KeyRingButton:Show();
-
-	-- Add a button for the help window to the main menu
-	local Button = CreateFrame( "Button", nil, GameMenuFrame, "MainMenuBarMicroButton" );
-	Button:SetPoint( "TOPRIGHT", -50, 28 );
-	Button:SetScale( 0.7 );
-	Button:SetFrameLevel( Button:GetFrameLevel() + 1 ); -- Raise above other buttons in the menu
-	Button:SetScript( "OnClick", ToggleHelpFrame );
-	LoadMicroButtonTextures( Button, "Help" );
-	Button.tooltipText = HelpMicroButton.tooltipText;
-	Button.newbieText = HelpMicroButton.newbieText;
+-- Remove icon borders on buttons
+for Index = 1, NUM_MULTIBAR_BUTTONS do
+	ActionButtonModify( _G[ "ActionButton"..Index ], math.pi );
+	ActionButtonModify( _G[ "MultiBarBottomLeftButton"..Index ], 0 );
+	ActionButtonModify( _G[ "MultiBarBottomRightButton"..Index ], 0 );
+	ActionButtonModify( _G[ "MultiBarLeftButton"..Index ], math.pi / 2 );
+	ActionButtonModify( _G[ "MultiBarRightButton"..Index ], -math.pi / 2 );
 end
+
+-- Shapeshift bar (These get replaced by Dominos later)
+for Index = 1, NUM_SHAPESHIFT_SLOTS do
+	ActionButtonModify( _G[ "ShapeshiftButton"..Index ], math.pi );
+end
+
+-- Bag buttons
+local LastBag = MainMenuBarBackpackButton;
+ActionButtonModify( LastBag, math.pi );
+for Index = 0, NUM_BAG_SLOTS - 1 do
+	LastBag = _G[ "CharacterBag"..Index.."Slot" ];
+	ActionButtonModify( LastBag, math.pi );
+end
+
+-- Keyring
+KeyRingButton:ClearAllPoints();
+KeyRingButton:SetPoint( "TOPLEFT", LastBag );
+KeyRingButton:SetPoint( "BOTTOM", LastBag );
+KeyRingButton:SetParent( LastBag );
+KeyRingButton:SetWidth( 8 );
+KeyRingButton:GetNormalTexture():SetTexCoord( 0.15, 0.45, 0.1, 0.52 );
+KeyRingButton:Show();
+
+-- Add a button for the help window to the main menu
+local Button = CreateFrame( "Button", nil, GameMenuFrame, "MainMenuBarMicroButton" );
+Button:SetPoint( "TOPRIGHT", -50, 28 );
+Button:SetScale( 0.7 );
+Button:SetFrameLevel( Button:GetFrameLevel() + 1 ); -- Raise above other buttons in the menu
+Button:SetScript( "OnClick", ToggleHelpFrame );
+LoadMicroButtonTextures( Button, "Help" );
+Button.tooltipText = HelpMicroButton.tooltipText;
+Button.newbieText = HelpMicroButton.newbieText;

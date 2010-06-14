@@ -450,7 +450,7 @@ do
 		if ( AddOn:lower() == AddOnName:lower() ) then
 			me:UnregisterEvent( "ADDON_LOADED" );
 			me.ADDON_LOADED = nil;
-	
+
 			if ( not _CursorOptions ) then
 				_CursorOptions = { Sets = CopyTable( me.DefaultSets ) };
 			end
@@ -525,27 +525,21 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
+me:SetScript( "OnUpdate", me.OnUpdate );
+me:SetScript( "OnEvent", me.OnEvent );
+me:SetScript( "OnShow", me.OnShow );
+me:RegisterEvent( "ADDON_LOADED" );
+me:RegisterEvent( "SCREENSHOT_SUCCEEDED" );
+me:RegisterEvent( "SCREENSHOT_FAILED" );
+me:RegisterEvent( "CINEMATIC_START" );
+me:RegisterEvent( "CINEMATIC_STOP" );
 
-do
-	me:SetScript( "OnUpdate", me.OnUpdate );
-	me:SetScript( "OnEvent", me.OnEvent );
-	me:SetScript( "OnShow", me.OnShow );
-	me:RegisterEvent( "ADDON_LOADED" );
-	me:RegisterEvent( "SCREENSHOT_SUCCEEDED" );
-	me:RegisterEvent( "SCREENSHOT_FAILED" );
-	me:RegisterEvent( "CINEMATIC_START" );
-	me:RegisterEvent( "CINEMATIC_STOP" );
-
-	-- Hide during screenshots
-	hooksecurefunc( "Screenshot", me.ScreenshotStart );
-	-- Hide while FMV movies play
-	MovieFrame:HookScript( "OnShow", me.MovieStart );
-	MovieFrame:HookScript( "OnHide", me.MovieStop );
-	-- Hook camera movement to hide cursor effects
-	hooksecurefunc( "CameraOrSelectOrMoveStart", me.CameraMoveStart );
-	hooksecurefunc( "CameraOrSelectOrMoveStop", me.CameraMoveStop );
-	CreateFrame( "Frame" ):SetScript( "OnUpdate", me.MouselookOnUpdate );
-end
+-- Hide during screenshots
+hooksecurefunc( "Screenshot", me.ScreenshotStart );
+-- Hide while FMV movies play
+MovieFrame:HookScript( "OnShow", me.MovieStart );
+MovieFrame:HookScript( "OnHide", me.MovieStop );
+-- Hook camera movement to hide cursor effects
+hooksecurefunc( "CameraOrSelectOrMoveStart", me.CameraMoveStart );
+hooksecurefunc( "CameraOrSelectOrMoveStop", me.CameraMoveStop );
+CreateFrame( "Frame" ):SetScript( "OnUpdate", me.MouselookOnUpdate );

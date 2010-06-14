@@ -21,7 +21,7 @@ do
 		local Text = self:GetText();
 		local Value = tonumber( Text, 16 );
 		local Color;
-	
+
 		if ( Value and #Text == 6 ) then -- Valid
 			Color = HIGHLIGHT_FONT_COLOR;
 			ColorPickerFrame:SetColorRGB(
@@ -31,7 +31,7 @@ do
 		else -- Invalid
 			Color = RED_FONT_COLOR;
 		end
-	
+
 		self:SetTextColor( Color.r, Color.g, Color.b );
 	end
 end
@@ -54,22 +54,16 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
+-- Make room for the edit box
+ColorPickerCancelButton:SetWidth( 100 );
+ColorPickerOkayButton:SetWidth( 100 );
 
-do
-	-- Make room for the edit box
-	ColorPickerCancelButton:SetWidth( 100 );
-	ColorPickerOkayButton:SetWidth( 100 );
-
-	me:SetPoint( "BOTTOMLEFT", 20, 10 );
-	me:SetPoint( "TOPRIGHT", ColorPickerOkayButton, "TOPLEFT", -2, 0 );
-	me:SetMaxLetters( 6 );
+me:SetPoint( "BOTTOMLEFT", 20, 10 );
+me:SetPoint( "TOPRIGHT", ColorPickerOkayButton, "TOPLEFT", -2, 0 );
+me:SetMaxLetters( 6 );
 
 
-	ColorPickerFrame:HookScript( "OnColorSelect", me.OnColorSelect );
-	me:SetScript( "OnHide", me.ClearFocus );
-	me:SetScript( "OnEscapePressed", ColorPickerCancelButton:GetScript( "OnClick" ) );
-	me:SetScript( "OnTextChanged", me.OnTextChanged );
-end
+ColorPickerFrame:HookScript( "OnColorSelect", me.OnColorSelect );
+me:SetScript( "OnHide", me.ClearFocus );
+me:SetScript( "OnEscapePressed", ColorPickerCancelButton:GetScript( "OnClick" ) );
+me:SetScript( "OnTextChanged", me.OnTextChanged );

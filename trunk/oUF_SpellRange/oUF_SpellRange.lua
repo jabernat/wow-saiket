@@ -176,32 +176,26 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
+local _, Class = UnitClass( "player" );
+-- Optional low level baseline skills with greater than 28 yard range
+HelpID = ( {
+	DRUID = 5185; -- Healing Touch
+	MAGE = 1459; -- Arcane Intellect
+	PALADIN = 635; -- Holy Light
+	PRIEST = 2050; -- Lesser Heal
+	SHAMAN = 331; -- Healing Wave
+	WARLOCK = 5697; -- Unending Breath
+} )[ Class ];
+HarmID = ( {
+	DEATHKNIGHT = 52375; -- Death Coil
+	DRUID = 5176; -- Wrath
+	HUNTER = 75; -- Auto Shot
+	MAGE = 133; -- Fireball
+	PALADIN = 62124; -- Hand of Reckoning
+	PRIEST = 585; -- Smite
+	SHAMAN = 403; -- Lightning Bolt
+	WARLOCK = 686; -- Shadow Bolt
+	WARRIOR = 355; -- Taunt
+} )[ Class ];
 
-do
-	local _, Class = UnitClass( "player" );
-	-- Optional low level baseline skills with greater than 28 yard range
-	HelpID = ( {
-		DRUID = 5185; -- Healing Touch
-		MAGE = 1459; -- Arcane Intellect
-		PALADIN = 635; -- Holy Light
-		PRIEST = 2050; -- Lesser Heal
-		SHAMAN = 331; -- Healing Wave
-		WARLOCK = 5697; -- Unending Breath
-	} )[ Class ];
-	HarmID = ( {
-		DEATHKNIGHT = 52375; -- Death Coil
-		DRUID = 5176; -- Wrath
-		HUNTER = 75; -- Auto Shot
-		MAGE = 133; -- Fireball
-		PALADIN = 62124; -- Hand of Reckoning
-		PRIEST = 585; -- Smite
-		SHAMAN = 403; -- Lightning Bolt
-		WARLOCK = 686; -- Shadow Bolt
-		WARRIOR = 355; -- Taunt
-	} )[ Class ];
-
-	oUF:AddElement( "SpellRange", Update, Enable, Disable );
-end
+oUF:AddElement( "SpellRange", Update, Enable, Disable );

@@ -143,46 +143,40 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
+me.name = L.CONFIG_TITLE;
+me.parent = _NPCScanLocalization.CONFIG_TITLE;
+me:Hide();
+me:SetScript( "OnShow", me.OnShow );
 
-do
-	me.name = L.CONFIG_TITLE;
-	me.parent = _NPCScanLocalization.CONFIG_TITLE;
-	me:Hide();
-	me:SetScript( "OnShow", me.OnShow );
-
-	-- Pane title
-	me.Title = me:CreateFontString( nil, "ARTWORK", "GameFontNormalLarge" );
-	me.Title:SetPoint( "TOPLEFT", 16, -16 );
-	me.Title:SetText( L.CONFIG_TITLE );
-	local SubText = me:CreateFontString( nil, "ARTWORK", "GameFontHighlightSmall" );
-	me.SubText = SubText;
-	SubText:SetPoint( "TOPLEFT", me.Title, "BOTTOMLEFT", 0, -8 );
-	SubText:SetPoint( "RIGHT", -32, 0 );
-	SubText:SetHeight( 32 );
-	SubText:SetJustifyH( "LEFT" );
-	SubText:SetJustifyV( "TOP" );
-	SubText:SetText( L.CONFIG_DESC );
+-- Pane title
+me.Title = me:CreateFontString( nil, "ARTWORK", "GameFontNormalLarge" );
+me.Title:SetPoint( "TOPLEFT", 16, -16 );
+me.Title:SetText( L.CONFIG_TITLE );
+local SubText = me:CreateFontString( nil, "ARTWORK", "GameFontHighlightSmall" );
+me.SubText = SubText;
+SubText:SetPoint( "TOPLEFT", me.Title, "BOTTOMLEFT", 0, -8 );
+SubText:SetPoint( "RIGHT", -32, 0 );
+SubText:SetHeight( 32 );
+SubText:SetJustifyH( "LEFT" );
+SubText:SetJustifyV( "TOP" );
+SubText:SetText( L.CONFIG_DESC );
 
 
-	-- Control panel for selected NPC
-	me.Controls:SetPoint( "BOTTOMLEFT", 16, 16 );
-	me.Controls:SetPoint( "RIGHT", -16, 0 );
-	me.Controls:SetHeight( 24 );
+-- Control panel for selected NPC
+me.Controls:SetPoint( "BOTTOMLEFT", 16, 16 );
+me.Controls:SetPoint( "RIGHT", -16, 0 );
+me.Controls:SetHeight( 24 );
 
 
-	-- Place table
-	me.TableContainer:SetPoint( "TOPLEFT", SubText, -2, -28 );
-	me.TableContainer:SetPoint( "BOTTOMRIGHT", me.Controls, "TOPRIGHT" );
-	me.TableContainer:SetBackdrop( { bgFile = [[Interface\DialogFrame\UI-DialogBox-Background]]; } );
+-- Place table
+me.TableContainer:SetPoint( "TOPLEFT", SubText, -2, -28 );
+me.TableContainer:SetPoint( "BOTTOMRIGHT", me.Controls, "TOPRIGHT" );
+me.TableContainer:SetBackdrop( { bgFile = [[Interface\DialogFrame\UI-DialogBox-Background]]; } );
 
-	me.EditBox:Hide();
-	me.EditBox:SetScript( "OnHide", me.EditBox.OnHide );
-	me.EditBox:SetScript( "OnEnterPressed", me.EditBox.OnHide );
-	me.EditBox:SetScript( "OnEscapePressed", me.EditBox.OnHide );
+me.EditBox:Hide();
+me.EditBox:SetScript( "OnHide", me.EditBox.OnHide );
+me.EditBox:SetScript( "OnEnterPressed", me.EditBox.OnHide );
+me.EditBox:SetScript( "OnEscapePressed", me.EditBox.OnHide );
 
 
-	InterfaceOptions_AddCategory( me );
-end
+InterfaceOptions_AddCategory( me );

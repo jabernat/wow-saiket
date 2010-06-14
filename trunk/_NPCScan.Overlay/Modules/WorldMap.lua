@@ -254,10 +254,4 @@ end
 
 
 
---------------------------------------------------------------------------------
--- Function Hooks / Execution
------------------------------
-
-do
-	Overlay.Modules.Register( "WorldMap", me, L.MODULE_WORLDMAP );
-end
+Overlay.Modules.Register( "WorldMap", me, L.MODULE_WORLDMAP );
