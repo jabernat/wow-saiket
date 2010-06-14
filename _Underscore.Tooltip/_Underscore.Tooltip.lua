@@ -106,13 +106,16 @@ end
   * Description: Add a class icon and guild name brackets to unit tooltips.    *
   ****************************************************************************]]
 do
+	local UnitIsPlayer = UnitIsPlayer;
+	local GetGuildInfo = GetGuildInfo;
+	local select = select;
 	local function Update ( self, UnitID )
-		if ( UnitExists( UnitID ) and UnitIsPlayer( UnitID ) ) then
+		if ( UnitIsPlayer( UnitID ) ) then
 			local GuildName = GetGuildInfo( UnitID );
 			if ( GuildName ) then
-				local Text = _G[ self:GetName().."TextLeft2" ];
+				local Text, Color = _G[ self:GetName().."TextLeft2" ], GRAY_FONT_COLOR;
 				Text:SetFormattedText( L.GUILD_FORMAT, GuildName );
-				Text:SetTextColor( GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b );
+				Text:SetTextColor( Color.r, Color.g, Color.b );
 				self:AppendText( "" ); -- Automatically resize
 			end
 
