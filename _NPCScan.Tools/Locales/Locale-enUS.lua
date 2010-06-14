@@ -15,6 +15,6 @@ _NPCScanLocalization.TOOLS = setmetatable( {
 
 	MODEL_CONTROL = "Show Model";
 
-	OVERLAY_TITLE = select( 2, GetAddOnInfo( "_NPCScan.Tools" ) );
+	OVERLAY_TITLE = "_|cffCCCC88NPCScan|r.|cff888888Tools|r";
 	OVERLAY_CONTROL = "Show Map";
 }, getmetatable( _NPCScanLocalization ) );

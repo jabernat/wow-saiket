@@ -9,11 +9,10 @@ if ( GetLocale() ~= "esES" and GetLocale() ~= "esMX" ) then
 end
 
 
+-- See http://wow.curseforge.com/addons/corpse/localization/esES/
 _CorpseLocalization = setmetatable( {
-	CORPSE_PATTERN = "^Cadáver de ([^ ]+)$"; -- Must also catch cross-realm names based on CORPSE_TOOLTIP
-
-	FRIEND_ADDED_PATTERN = "^([^%s%p%d%c]+) añadido como amigo%.$"; -- Based on ERR_FRIEND_ADDED_S
-	FRIEND_REMOVED_PATTERN = "^([^%s%p%d%c]+) eliminado de la lista de amigos%.$"; -- Based on ERR_FRIEND_REMOVED_S
-
-	ENEMY_OFFLINE_PATTERN = "^No se encuentra al jugador '([^%s%p%d%c]+)'%.$"; -- Based on ERR_BAD_PLAYER_NAME_S
+	CORPSE_PATTERN = "^Cadáver de ([^ ]+)$",
+	ENEMY_OFFLINE_PATTERN = "^No se encuentra al jugador '([^%s%p%d%c]+)'%.$",
+	FRIEND_ADDED_PATTERN = "^([^%s%p%d%c]+) añadido como amigo%.$",
+	FRIEND_REMOVED_PATTERN = "^([^%s%p%d%c]+) eliminado de la lista de amigos%.$",
 }, { __index = _CorpseLocalization; } );

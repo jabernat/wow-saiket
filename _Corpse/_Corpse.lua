@@ -27,7 +27,7 @@ do
 			if ( Text ) then
 				Text = Text:match( L.CORPSE_PATTERN );
 				if ( Text ) then
-					return L.SERVER_DELIMITER:split( Text );
+					return ( "-" ):split( Text );
 				end
 			end
 		end

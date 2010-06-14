@@ -4,21 +4,20 @@
   ****************************************************************************]]
 
 
+-- See http://wow.curseforge.com/addons/corpse/localization/enUS/
 _CorpseLocalization = setmetatable( {
-	CORPSE_PATTERN = "^Corpse of ([^ ]+)$"; -- Must also catch cross-realm names based on CORPSE_TOOLTIP
+	CORPSE_PATTERN = "^Corpse of ([^ ]+)$",
+	ENEMY_OFFLINE_PATTERN = "^Cannot find player '([^%s%p%d%c]+)'%.$",
+	FRIEND_ADDED_PATTERN = "^([^%s%p%d%c]+) added to friends%.$",
+	FRIEND_REMOVED_PATTERN = "^([^%s%p%d%c]+) removed from friends list%.$",
+
+	-- Phrases localized by default UI
 	CORPSE_FORMAT = CORPSE_TOOLTIP;
-	SERVER_DELIMITER = "-";
-
-	LEVEL_CLASS_PATTERN = FRIENDS_LEVEL_TEMPLATE;
-	ONLINE = GUILD_ONLINE_LABEL;
-	OFFLINE = PLAYER_OFFLINE;
-
-	FRIEND_ADDED_PATTERN = "^([^%s%p%d%c]+) added to friends%.$"; -- Based on ERR_FRIEND_ADDED_S
-	FRIEND_REMOVED_PATTERN = "^([^%s%p%d%c]+) removed from friends list%.$"; -- Based on ERR_FRIEND_REMOVED_S
-	FRIEND_IS_ENEMY = ERR_FRIEND_WRONG_FACTION;
-
 	ENEMY_ONLINE = ERR_PLAYER_WRONG_FACTION;
-	ENEMY_OFFLINE_PATTERN = "^Cannot find player '([^%s%p%d%c]+)'%.$"; -- Based on ERR_BAD_PLAYER_NAME_S
+	FRIEND_IS_ENEMY = ERR_FRIEND_WRONG_FACTION;
+	LEVEL_CLASS_PATTERN = FRIENDS_LEVEL_TEMPLATE;
+	OFFLINE = PLAYER_OFFLINE;
+	ONLINE = GUILD_ONLINE_LABEL;
 }, {
 	__index = function ( self, Key )
 		if ( Key ~= nil ) then

@@ -10,19 +10,17 @@ if ( GetLocale() ~= "koKR" ) then
 end
 
 
+-- See http://wow.curseforge.com/addons/guild-bank-search/localization/koKR/
 GuildBankSearchLocalization = setmetatable( {
-	FILTER = "필터";
-	CLEAR = "삭제";
-
-	NAME = "이름:";
-	QUALITY = "품질:";
-	ITEM_LEVEL = "아이템 레벨:";
-	REQUIRED_LEVEL = "필요 레벨:";
-
-	ITEM_CATEGORY = "아이템 분류";
-	TYPE = "종류:";
-	SUB_TYPE = "부-종류:";
-	SLOT = "슬롯:";
-
-	ALL = "|cffcccccc(모두)|r";
+	ALL = "|cffcccccc(모두)|r",
+	CLEAR = "삭제",
+	FILTER = "필터",
+	ITEM_CATEGORY = "아이템 분류",
+	ITEM_LEVEL = "아이템 레벨:",
+	NAME = "이름:",
+	QUALITY = "품질:",
+	REQUIRED_LEVEL = "필요 레벨:",
+	SLOT = "슬롯:",
+	SUB_TYPE = "부-종류:",
+	TYPE = "종류:",
 }, { __index = GuildBankSearchLocalization; } );
