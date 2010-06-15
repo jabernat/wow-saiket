@@ -51,7 +51,6 @@ end
   * Description: Refreshes the stats display's information.                    *
   ****************************************************************************]]
 do
-	local Round = _Dev.Round;
 	local GetNetStats = GetNetStats;
 	local GetFramerate = GetFramerate;
 	local gcinfo = gcinfo;
@@ -67,7 +66,7 @@ do
 			self.Latency:SetFormattedText( L.STATS_MILLISECOND_FORMAT, Latency );
 			self.Latency:SetTextColor( Red, 1 - Red, 0 );
 			self.Framerate:SetFormattedText( L.STATS_HERTZ_FORMAT, GetFramerate() );
-			self.Memory:SetFormattedText( L.STATS_MEGABYTE_FORMAT, Round( gcinfo() / 1024, 3 ) );
+			self.Memory:SetFormattedText( L.STATS_MEGABYTE_FORMAT, _Dev.Round( gcinfo() / 1024, 3 ) );
 		end
 	end
 end
