@@ -85,17 +85,6 @@ end
 
 
 --[[****************************************************************************
-  * Function: _Dev.Frames.Primary:OnMouseWheel                                 *
-  * Description: Handles scrolling through covered frames.                     *
-  ****************************************************************************]]
-function Primary:OnMouseWheel ( Delta )
-	if ( Delta > 0 ) then -- Drill down
-		--_Dev.Print"DOWN"
-	else -- Climb out
-		--_Dev.Print"UP"
-	end
-end
---[[****************************************************************************
   * Function: _Dev.Frames.Primary:OnMouseUp                                    *
   * Description: Handles various clicks on the primary frame.                  *
   ****************************************************************************]]
@@ -199,7 +188,6 @@ end
 me:Hide();
 me:SetScript( "OnUpdate", me.OnUpdate );
 
-Primary:SetScript( "OnMouseWheel", Primary.OnMouseWheel );
 Primary:SetScript( "OnMouseUp", Primary.OnMouseUp );
 Primary:EnableMouseWheel( true );
 Primary:SetScale( 2.0 );
