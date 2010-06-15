@@ -223,9 +223,7 @@ function me.Toggle ( Region, DefaultName )
 			-- Display the color of the added borders in the message
 			local Color = me.Targets[ Region ].Color;
 			_Dev.Print( L.OUTLINE_MESSAGE_FORMAT:format( L.OUTLINE_ADD_FORMAT:format(
-				_Dev.Round( Color.r * 255 ),
-				_Dev.Round( Color.g * 255 ),
-				_Dev.Round( Color.b * 255 ),
+				Color.r * 255 + 0.5, Color.g * 255 + 0.5, Color.b * 255 + 0.5,
 				Region:GetName() or tostring( DefaultName ) ) ) );
 			if ( Region:GetWidth() == 0 or Region:GetHeight() == 0 ) then
 				_Dev.Error( L.OUTLINE_MESSAGE_FORMAT:format( L.OUTLINE_INVALID_DIMENSIONS ), true );
