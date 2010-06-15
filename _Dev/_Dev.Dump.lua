@@ -84,8 +84,6 @@ end
   *   tostring value.                                                          *
   ****************************************************************************]]
 do
-	local IsUIObject = _Dev.IsUIObject;
-	local EscapeString = me.EscapeString;
 	local tostring = tostring;
 	local type = type;
 	function me.ToString ( Input )
@@ -93,11 +91,11 @@ do
 		local Count = Temp[ Type ] and Temp[ Type ][ Input ];
 
 		if ( Count ) then -- Table, function, userdata, or thread
-			Input = IsUIObject( Input )
+			Input = _Dev.IsUIObject( Input )
 				and L.DUMP_UIOBJECT_FORMAT:format( Count, Input:GetObjectType(), me.ToString( Input:GetName() ) )
 				or Count;
 		elseif ( Type == "string" ) then
-			Input = EscapeString( Input );
+			Input = me.EscapeString( Input );
 		else -- Numbers and booleans
 			Type = "other";
 			Input = tostring( Input );
@@ -128,8 +126,6 @@ do
 	local EndTime = nil; -- Set to the cutoff execution time when limited.
 	local OverTime = false; -- Boolean, true when ran out of time.
 
-	local ToString = me.ToString;
-	local Print = _Dev.Print;
 	local GetTime = GetTime;
 	local next = next;
 	local pairs = pairs;
@@ -161,7 +157,7 @@ do
 				end
 			end
 			if ( ArgCount > 1 ) then
-				Print( LValueString.." = ( ... )["..ToString( select( "#", ... ) ).."]:" );
+				_Dev.Print( LValueString.." = ( ... )["..me.ToString( select( "#", ... ) ).."]:" );
 			end
 		end
 
@@ -172,19 +168,19 @@ do
 			-- Only print a nil arg when it's the only arg
 			if ( ArgCount == 1 or not rawequal( Input, nil ) ) then
 				if ( ArgCount > 1 ) then
-					LValueString = "["..ToString( Index ).."]";
+					LValueString = "["..me.ToString( Index ).."]";
 				end
 
 				if ( AddHistory( Input ) and type( Input ) == "table" ) then -- New table
-					local TableString = IndentString..LValueString.." = "..ToString( Input );
+					local TableString = IndentString..LValueString.." = "..me.ToString( Input );
 					if ( next( Input ) == nil ) then -- Empty array
-						Print( TableString.." {};" );
+						_Dev.Print( TableString.." {};" );
 					else -- Display the table's contents
 						local MaxDepth = _DevOptions.Dump.MaxDepth;
 						if ( MaxDepth and Depth >= MaxDepth ) then -- Too deep
-							Print( TableString.." { "..L.DUMP_MAXDEPTH_ABBR.." };" );
+							_Dev.Print( TableString.." { "..L.DUMP_MAXDEPTH_ABBR.." };" );
 						else -- Not too deep
-							Print( TableString.." {" );
+							_Dev.Print( TableString.." {" );
 							local MaxTableLen = _DevOptions.Dump.MaxTableLen;
 							local TableLen = 0;
 							Depth = Depth + 1;
@@ -193,7 +189,7 @@ do
 									if ( OverTime ) then
 										break;
 									elseif ( EndTime <= GetTime() ) then
-										Print( IndentString..L.DUMP_INDENT..L.DUMP_MAXEXPLORETIME_ABBR );
+										_Dev.Print( IndentString..L.DUMP_INDENT..L.DUMP_MAXEXPLORETIME_ABBR );
 										OverTime = true;
 										break;
 									end
@@ -202,20 +198,20 @@ do
 								if ( MaxTableLen ) then
 									TableLen = TableLen + 1;
 									if ( TableLen > MaxTableLen ) then -- Table is too long
-										Print( IndentString..L.DUMP_INDENT..L.DUMP_MAXTABLELEN_ABBR );
+										_Dev.Print( IndentString..L.DUMP_INDENT..L.DUMP_MAXTABLELEN_ABBR );
 										break;
 									end
 								end
 								AddHistory( Key );
 
-								me.Explore( "["..ToString( Key ).."]", Value );
+								me.Explore( "["..me.ToString( Key ).."]", Value );
 							end
 							Depth = Depth - 1;
-							Print( IndentString.."};" );
+							_Dev.Print( IndentString.."};" );
 						end
 					end
 				else
-					Print( IndentString..LValueString.." = "..ToString( Input )..";" );
+					_Dev.Print( IndentString..LValueString.." = "..me.ToString( Input )..";" );
 				end
 			end
 		end
