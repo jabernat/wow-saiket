@@ -4,7 +4,7 @@
   ****************************************************************************]]
 
 
-_NPCScanLocalization.TOOLS = setmetatable( {
+select( 2, ... ).L = setmetatable( {
 	CONFIG_TITLE = "|cff888888Tools|r";
 	CONFIG_DESC = "Manage mob location data for _NPCScan.";
 

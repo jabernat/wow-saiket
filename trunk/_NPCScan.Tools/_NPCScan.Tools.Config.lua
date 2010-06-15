@@ -6,7 +6,7 @@
 
 
 local Tools = select( 2, ... );
-local L = _NPCScanLocalization.TOOLS;
+local L = Tools.L;
 local me = CreateFrame( "Frame" );
 Tools.Config = me;
 
@@ -66,7 +66,6 @@ do
 			end
 		end
 	end
-	local OverlayNPCs = _NPCScanOverlayLocalization.NPCS;
 	function me:OnShow ()
 		self:SetScript( "OnShow", nil );
 		me.OnShow = nil;

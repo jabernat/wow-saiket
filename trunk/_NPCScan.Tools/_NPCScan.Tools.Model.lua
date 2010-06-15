@@ -6,7 +6,7 @@
 
 local Tools = select( 2, ... );
 local Button = _NPCScan.Button;
-local L = _NPCScanLocalization.TOOLS;
+local L = Tools.L;
 local me = CreateFrame( "Frame", nil, Button );
 Tools.Model = me;
 
