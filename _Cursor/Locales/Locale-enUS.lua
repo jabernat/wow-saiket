@@ -68,3 +68,5 @@ _CursorLocalization = setmetatable( {
 
 SLASH__CURSOR_OPTIONS1 = "/cursor";
 SLASH__CURSOR_OPTIONS2 = "/cursoroptions";
+SLASH__CURSOR_OPTIONS3 = "/cursor";
+SLASH__CURSOR_OPTIONS4 = "/cursoroptions";
