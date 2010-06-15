@@ -7,7 +7,7 @@
 local Routes = LibStub( "AceAddon-3.0" ):GetAddon( "Routes" );
 local Tools = select( 2, ... );
 local Overlay = _NPCScan.Overlay;
-local L = _NPCScanLocalization.TOOLS;
+local L = Tools.L;
 local me = Overlay.Modules.WorldMapTemplate.Embed( CreateFrame( "Frame", nil, WorldMapButton ) );
 Tools.Overlay = me;
 
