@@ -249,7 +249,6 @@ do
 
 	local LastShift, LastCtrl, LastAlt; -- Last states of modifiers
 	local Shift, Ctrl, Alt;
-	local Color = ChatTypeInfo[ "SYSTEM" ]; -- ID 1
 	function me:OnUpdate ()
 		Shift, Ctrl, Alt = IsShiftKeyDown(), IsControlKeyDown(), IsAltKeyDown();
 		if ( Shift ~= LastShift ) then
