@@ -4,7 +4,7 @@
   ****************************************************************************]]
 
 
-local MAJOR, MINOR = "LibTextTable-1.0", 4;
+local MAJOR, MINOR = "LibTextTable-1.0", 5;
 
 local lib = LibStub:NewLibrary( MAJOR, MINOR );
 if ( not lib ) then
@@ -257,9 +257,16 @@ end
   * Description: Schedules rows to be resorted on the next OnUpdate.           *
   ****************************************************************************]]
 do
+	local type = type;
 	local tostring = tostring;
 	local function SortSimple ( Val1, Val2 )
-		Val1, Val2 = Val1 == nil and "" or tostring( Val1 ), Val2 == nil and "" or tostring( Val2 );
+		local Type1, Type2 = type( Val1 ), type( Val2 );
+		if ( Type1 ~= "string" and Type1 ~= "number" ) then
+			Val1 = Val1 == nil and "" or tostring( Val1 );
+		end
+		if ( Type2 ~= "string" and Type2 ~= "number" ) then
+			Val2 = Val2 == nil and "" or tostring( Val2 );
+		end
 		if ( Val1 ~= Val2 ) then
 			return Val1 < Val2;
 		end
