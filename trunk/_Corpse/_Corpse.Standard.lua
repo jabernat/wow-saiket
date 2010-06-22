@@ -21,39 +21,28 @@ me.AddFriendSwapLast = nil;
 
 me.UIErrorsFrameOnEventBackup = UIErrorsFrame:GetScript( "OnEvent" );
 
+local MAX_FRIENDS = 100;
 
 
 
---[[****************************************************************************
-  * Function: _Corpse.Standard.GetFriendIndex                                  *
-  * Description: Gets friend index of a given player, or nil if not a friend.  *
-  ****************************************************************************]]
-do
-	local GetNumFriends = GetNumFriends;
-	local GetFriendInfo = GetFriendInfo;
-	function me.GetFriendIndex ( Name )
-		for Index = 1, GetNumFriends() do
-			if ( GetFriendInfo( Index ) == Name ) then
-				return Index;
-			end
-		end
-	end
-end
+
 --[[****************************************************************************
   * Function: _Corpse.Standard:CacheFriendInfo                                 *
   * Description: Caches the online status of results from GetFriendInfo, and   *
   *   then updates the corpse tooltip if necessary.                            *
   ****************************************************************************]]
 function me:CacheFriendInfo ( ... )
-	local Name, ConnectedStatus = ..., select( 5, ... ) or 0;
-
-	if ( ConnectedStatus == 1 or self.Allies[ Name ] ~= 0 ) then
-		-- Info changed
-		if ( Name == _Corpse.GetCorpseName() ) then -- Tooltip still up
-			_Corpse.BuildCorpseTooltip( false, ... );
+	local Name = ...;
+	if ( Name ) then
+		local ConnectedStatus = select( 5, ... ) or 0;
+		if ( ConnectedStatus == 1 or self.Allies[ Name ] ~= 0 ) then
+			-- Info changed
+			if ( Name == _Corpse.GetCorpseName() ) then -- Tooltip still up
+				_Corpse.BuildCorpseTooltip( false, ... );
+			end
 		end
+		self.Allies[ Name ] = ConnectedStatus;
 	end
-	self.Allies[ Name ] = ConnectedStatus;
 end
 
 
@@ -81,8 +70,8 @@ function me:AddFriend ( Name )
 		self.AddFriendLast = Name;
 		self:ReregisterEvent( "CHAT_MSG_SYSTEM" );
 
-		if ( GetNumFriends() >= MAX_IGNORE ) then
-			self:RemoveFriendSwap( ( GetFriendInfo( MAX_IGNORE ) ) );
+		if ( GetNumFriends() >= MAX_FRIENDS ) then
+			self:RemoveFriendSwap( ( GetFriendInfo( MAX_FRIENDS ) ) );
 		end
 		AddFriend( Name, true ); -- "Ignore" flag for friend managing addons
 		return true;
@@ -215,7 +204,7 @@ function me:CHAT_MSG_SYSTEM ( _, Message )
 				-- Added successfully
 				if ( Name == self.AddFriendLast ) then
 					-- Update tooltip
-					self:CacheFriendInfo( GetFriendInfo( self.GetFriendIndex( Name ) ) );
+					self:CacheFriendInfo( GetFriendInfo( Name ) );
 					self:RemoveFriend(); -- Remove temporary friend
 					self:AddFriendSwap(); -- Add swapped friend back onto list
 					self:UnregisterChatMsgSystemSafely();
@@ -283,10 +272,7 @@ end
 function me:FRIENDLIST_UPDATE ()
 	local Name = _Corpse.GetCorpseName();
 	if ( Name ) then
-		local Index = self.GetFriendIndex( Name );
-		if ( Index ) then -- Corpse is a friend
-			self:CacheFriendInfo( GetFriendInfo( Index ) );
-		end
+		self:CacheFriendInfo( GetFriendInfo( Name ) );
 	end
 end
 
@@ -307,11 +293,10 @@ function me:Update ( Name )
 		_Corpse.BuildCorpseTooltip( true, Name, nil, nil, nil, self.Enemies[ Name ] );
 		self:InviteUnit( Name );
 	else
-		local Index = self.GetFriendIndex( Name );
-		if ( Index ) then -- Player already a friend
+		if ( GetFriendInfo( Name ) ) then -- Player already a friend
 			ShowFriends();
 			-- Build tooltip with possibly old data
-			_Corpse.BuildCorpseTooltip( false, GetFriendInfo( Index ) );
+			_Corpse.BuildCorpseTooltip( false, GetFriendInfo( Name ) );
 		else
 			if ( self.Allies[ Name ] ~= nil ) then
 				_Corpse.BuildCorpseTooltip( false, Name , nil, nil, nil,
