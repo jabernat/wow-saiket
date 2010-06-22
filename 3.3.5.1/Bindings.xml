@@ -1,0 +1,5 @@
+<Bindings>
+	<Binding name="_UTF_TOGGLE" header="_UTF">
+		_UTF.Browse.Toggle();
+	</Binding>
+</Bindings>
