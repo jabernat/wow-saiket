@@ -28,12 +28,14 @@ end
 
 
 -- Hook Grid frame creation
+local GridFrame = Grid:GetModule( "GridFrame" );
 hooksecurefunc( GridFrame, "InitialConfigFunction", me.FrameInitialize );
 
 -- Add hook to all existing frames
 GridFrame:WithAllFrames( function ( self ) me.FrameInitialize( self.frame ); end );
 
 -- Add better layouts that include pets from all classes
+local GridLayout = Grid:GetModule( "GridLayout" );
 local PetGroup = { isPetGroup = true; unitsPerColumn = 10; maxColumns = 4; };
 GridLayout:AddLayout( L.GRID_LAYOUT_CLASS, {
 	PetGroup,
