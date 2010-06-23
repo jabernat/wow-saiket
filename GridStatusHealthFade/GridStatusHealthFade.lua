@@ -7,7 +7,6 @@
 
 local L = GridStatusHealthFadeLocalization;
 local me = Grid:GetModule( "GridStatus" ):NewModule( "GridStatusHealthFade" );
-GridStatusHealthFade = me;
 
 local STATUS_ID = "alert_healthFade";
 
@@ -136,9 +135,12 @@ end
   * Function: GridStatusHealthFade:UpdateAllUnits                              *
   * Description: Runs UpdateUnit for all active units.                         *
   ****************************************************************************]]
-function me:UpdateAllUnits ()
-	for GUID, UnitID in GridRoster:IterateRoster() do
-		self:UpdateUnit( GUID, UnitID );
+do
+	local GridRoster = Grid:GetModule( "GridRoster" );
+	function me:UpdateAllUnits ()
+		for GUID, UnitID in GridRoster:IterateRoster() do
+			self:UpdateUnit( GUID, UnitID );
+		end
 	end
 end
 --[[****************************************************************************
