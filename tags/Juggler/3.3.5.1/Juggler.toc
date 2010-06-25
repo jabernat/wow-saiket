@@ -1,0 +1,17 @@
+## Interface: 30300
+## Title: Juggler
+## Notes: Use your mousewheel to throw Midsummer Fire Festival torches.
+## Author: Saiket
+## Version: 3.3.5.1
+## X-Date: 2010-06-21
+## X-Category: Miscellaneous
+## X-License: GPLv3
+## X-Email: saiket.wow@gmail.com
+## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons/
+## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Juggler
+## X-Localizations: enUS
+## X-CompatibleLocales: deDE, enUS, esES, esMX, frFR, koKR, ruRU, zhCN, zhTW
+Locales.xml
+
+StateMachine.lua
+Juggler.lua
