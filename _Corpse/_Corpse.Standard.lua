@@ -4,9 +4,9 @@
   ****************************************************************************]]
 
 
-local L = _CorpseLocalization;
-local _Corpse = _Corpse;
-local me = CreateFrame( "Frame", nil, _Corpse );
+local _Corpse = select( 2, ... );
+local L = _Corpse.L;
+local me = CreateFrame( "Frame" );
 _Corpse.Standard = me;
 
 me.Enemies = {}; -- Name-indexed hash of connection status.  Values: false = Unknown, 0 = Offline, 1 = Online
@@ -19,18 +19,14 @@ me.InviteUnitLast = nil; -- Saved in case invited enemy is online(ambiguous case
 me.RemoveFriendSwapLast = nil;
 me.AddFriendSwapLast = nil;
 
-me.UIErrorsFrameOnEventBackup = UIErrorsFrame:GetScript( "OnEvent" );
-
 local MAX_FRIENDS = 100;
 
 
 
 
---[[****************************************************************************
-  * Function: _Corpse.Standard:CacheFriendInfo                                 *
-  * Description: Caches the online status of results from GetFriendInfo, and   *
-  *   then updates the corpse tooltip if necessary.                            *
-  ****************************************************************************]]
+--- Caches the online status of results from GetFriendInfo, and then updates the corpse tooltip if necessary.
+-- @param ...  Returns from GetFriendInfo.
+-- @see GetFriendInfo
 function me:CacheFriendInfo ( ... )
 	local Name = ...;
 	if ( Name ) then
@@ -48,10 +44,8 @@ end
 
 
 
---[[****************************************************************************
-  * Function: _Corpse.Standard:InviteUnit                                      *
-  * Description: Invites and saves the name of a player.                       *
-  ****************************************************************************]]
+--- Invites and saves the name of a player.
+-- @return True if invite was actually sent.
 function me:InviteUnit ( Name )
 	if ( _Corpse.IsModuleActive( self ) and not self.InviteUnitLast ) then
 		self.InviteUnitLast = Name;
@@ -61,10 +55,8 @@ function me:InviteUnit ( Name )
 		return true;
 	end
 end
---[[****************************************************************************
-  * Function: _Corpse.Standard:AddFriend                                       *
-  * Description: Adds a friend and saves the name.                             *
-  ****************************************************************************]]
+--- Adds a friend and saves the name.
+-- @return True if friend actually added.
 function me:AddFriend ( Name )
 	if ( not ( self.AddFriendLast or self.AddFriendSwapLast ) ) then
 		self.AddFriendLast = Name;
@@ -77,20 +69,17 @@ function me:AddFriend ( Name )
 		return true;
 	end
 end
---[[****************************************************************************
-  * Function: _Corpse.Standard:RemoveFriend                                    *
-  * Description: Removes the last added friend and saves the name.             *
-  ****************************************************************************]]
+--- Removes the previously added friend and saves the name.
 function me:RemoveFriend ()
 	self.RemoveFriendLast = self.AddFriendLast;
 	self.AddFriendLast = nil;
 	self:ReregisterEvent( "CHAT_MSG_SYSTEM" );
 	RemoveFriend( self.RemoveFriendLast, true ); -- "Ignore" flag for friend managing addons
 end
---[[****************************************************************************
-  * Function: _Corpse.Standard:AddFriendSwap                                   *
-  * Description: Adds the last removed friend that was swapped to make room.   *
-  ****************************************************************************]]
+
+
+--- Adds the previously removed friend that was swapped to make room.
+-- @return True if real friend was successfully re-added.
 function me:AddFriendSwap ()
 	if ( self.RemoveFriendSwapLast and not self.AddFriendSwapLast ) then
 		self.AddFriendSwapLast = self.RemoveFriendSwapLast;
@@ -101,10 +90,7 @@ function me:AddFriendSwap ()
 		return true;
 	end
 end
---[[****************************************************************************
-  * Function: _Corpse.Standard:RemoveFriendSwap                                *
-  * Description: Removes a real friend to make room for a temporary friend.    *
-  ****************************************************************************]]
+--- Removes a real friend to make room for a temporary friend.
 function me:RemoveFriendSwap ( Name )
 	self.RemoveFriendSwapLast = Name;
 	--self:ReregisterEvent( "CHAT_MSG_SYSTEM" ); -- Always called before RemoveFriendSwap
@@ -114,20 +100,18 @@ end
 
 
 
---[[****************************************************************************
-  * Function: _Corpse.Standard:UIErrorsFrameOnEvent                            *
-  * Description: Blocks error messages from trying to invite enemies to group. *
-  ****************************************************************************]]
-function me:UIErrorsFrameOnEvent ( Event, Message, ... )
-	if ( not ( me.InviteUnitLast and Event == "UI_ERROR_MESSAGE" and Message == L.ENEMY_ONLINE ) ) then
-		-- Not caused by _Corpse, okay to display error
-		return me.UIErrorsFrameOnEventBackup( self, Event, Message, ... );
+do
+	local Backup = UIErrorsFrame:GetScript( "OnEvent" );
+	--- Blocks error messages about trying to invite enemies to group.
+	function me:UIErrorsFrameOnEvent ( Event, Message, ... )
+		if ( not ( me.InviteUnitLast and Event == "UI_ERROR_MESSAGE" and Message == L.ENEMY_ONLINE ) ) then
+			-- Not caused by _Corpse, okay to display error
+			return Backup( self, Event, Message, ... );
+		end
 	end
 end
---[[****************************************************************************
-  * Function: _Corpse.Standard:MessageEventHandler                             *
-  * Description: Blocks automated invite and remove messages.                  *
-  ****************************************************************************]]
+-- Blocks automated invite and remove messages.
+-- @return True to block a system message.
 function me:MessageEventHandler ( _, Message )
 	local Name;
 
@@ -154,11 +138,7 @@ function me:MessageEventHandler ( _, Message )
 		end
 	end
 end
---[[****************************************************************************
-  * Function: _Corpse.Standard:UnregisterChatMsgSystemSafely                   *
-  * Description: Unregisters for system chat message events when not expecting *
-  *   any more.                                                                *
-  ****************************************************************************]]
+--- Unregisters for system chat message events when not expecting any more.
 function me:UnregisterChatMsgSystemSafely ()
 	if ( not _Corpse.IsModuleActive( self )
 		and not (
@@ -169,10 +149,7 @@ function me:UnregisterChatMsgSystemSafely ()
 		self:UnregisterEvent( "CHAT_MSG_SYSTEM" );
 	end
 end
---[[****************************************************************************
-  * Function: _Corpse.Standard:ReregisterEvent                                 *
-  * Description: Reregisters an event so _Corpse gets it last.                 *
-  ****************************************************************************]]
+--- Reregisters an event so _Corpse gets it last.
 function me:ReregisterEvent ( Event )
 	if ( self:IsEventRegistered( Event ) ) then
 		self:UnregisterEvent( Event );
@@ -183,9 +160,7 @@ end
 
 
 
---[[****************************************************************************
-  * Function: _Corpse.Standard:CHAT_MSG_SYSTEM                                 *
-  ****************************************************************************]]
+--- Reacts to system messages resulting from adding/removing friends.
 function me:CHAT_MSG_SYSTEM ( _, Message )
 	if ( self.AddFriendLast or self.AddFriendSwapLast ) then
 		if ( Message == L.FRIEND_IS_ENEMY ) then
@@ -247,9 +222,7 @@ function me:CHAT_MSG_SYSTEM ( _, Message )
 		end
 	end
 end
---[[****************************************************************************
-  * Function: _Corpse.Standard:UI_ERROR_MESSAGE                                *
-  ****************************************************************************]]
+--- Reacts to error messages resulting from inviting enemies.
 function me:UI_ERROR_MESSAGE ( _, Message )
 	if ( self.InviteUnitLast and Message == L.ENEMY_ONLINE ) then
 		-- Enemy player is online (Ambiguous)
@@ -265,10 +238,7 @@ function me:UI_ERROR_MESSAGE ( _, Message )
 		end
 	end
 end
---[[****************************************************************************
-  * Function: _Corpse.Standard:FRIENDLIST_UPDATE                               *
-  * Description: Called when cached friendlist data is updated.                *
-  ****************************************************************************]]
+--- Refreshes any shown corpse tooltip when cached friendlist data updates.
 function me:FRIENDLIST_UPDATE ()
 	local Name = _Corpse.GetCorpseName();
 	if ( Name ) then
@@ -279,17 +249,9 @@ end
 
 
 
---[[****************************************************************************
-  * Function: _Corpse.Standard:Update                                          *
-  ****************************************************************************]]
+--- Populates the corpse tooltip for the given player using friend list data.
 function me:Update ( Name )
-	local PlayerName = UnitName( "player" );
-
-	if ( Name == PlayerName ) then -- Our own corpse
-		_Corpse.BuildCorpseTooltip( false, PlayerName,
-			UnitLevel( "player" ), UnitClass( "player" ), GetRealZoneText(), 1,
-			( UnitIsAFK( "player" ) and CHAT_FLAG_AFK ) or ( UnitIsDND( "player" ) and CHAT_FLAG_DND ) );
-	elseif ( self.Enemies[ Name ] ~= nil ) then
+	if ( self.Enemies[ Name ] ~= nil ) then
 		_Corpse.BuildCorpseTooltip( true, Name, nil, nil, nil, self.Enemies[ Name ] );
 		self:InviteUnit( Name );
 	else
@@ -306,17 +268,13 @@ function me:Update ( Name )
 		end
 	end
 end
---[[****************************************************************************
-  * Function: _Corpse.Standard:Enable                                          *
-  ****************************************************************************]]
+--- Initialize the module when activated.
 function me:Enable ()
 	self:RegisterEvent( "CHAT_MSG_SYSTEM" );
 	self:RegisterEvent( "UI_ERROR_MESSAGE" );
 	self:RegisterEvent( "FRIENDLIST_UPDATE" );
 end
---[[****************************************************************************
-  * Function: _Corpse.Standard:Disable                                         *
-  ****************************************************************************]]
+--- Uninitialize the module when deactivated.
 function me:Disable ()
 	self:UnregisterEvent( "FRIENDLIST_UPDATE" );
 	if ( not self.InviteUnitLast ) then
@@ -328,7 +286,7 @@ end
 
 
 
-me:SetScript( "OnEvent", _Corpse.OnEvent );
+me:SetScript( "OnEvent", _Corpse.Frame.OnEvent );
 
 UIErrorsFrame:SetScript( "OnEvent", me.UIErrorsFrameOnEvent );
 ChatFrame_AddMessageEventFilter( "CHAT_MSG_SYSTEM", me.MessageEventHandler );

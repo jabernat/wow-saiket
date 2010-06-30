@@ -4,23 +4,21 @@
   ****************************************************************************]]
 
 
-local L = _CorpseLocalization;
-local me = CreateFrame( "Frame", "_Corpse" );
-
-me.ActiveModule = nil;
+local me = select( 2, ... );
+_Corpse = me;
+local L = me.L;
+me.Frame = CreateFrame( "Frame" );
 
 local GameTooltip = GetClickFrame( "GameTooltip" ); -- Gets the original frame named "GameTooltip", in case the global is overriden
 
 
 
 
---[[****************************************************************************
-  * Function: _Corpse.GetCorpseName                                            *
-  * Description: Gets the name from a corpse's tooltip, or nil of no corpse.   *
-  ****************************************************************************]]
 do
 	local UnitExists = UnitExists;
 	local GetMouseFocus = GetMouseFocus;
+	--- Gets the name from a visible corpse tooltip.
+	-- @return Corpse name and optionally also its realm name, or nil if the tooltip isn't for a corpse.
 	function me.GetCorpseName ()
 		if ( not UnitExists( "mouseover" ) and GetMouseFocus() == WorldFrame and GameTooltip:IsVisible() and GameTooltip:NumLines() <= 2 ) then
 			local Text = GameTooltipTextLeft1:GetText();
@@ -33,12 +31,13 @@ do
 		end
 	end
 end
---[[****************************************************************************
-  * Function: _Corpse.BuildCorpseTooltip                                       *
-  * Description: Adds info from friends list to the current corpse tooltip.    *
-  *   Adds info to fontstrings directly; avoids using ClearLines to keep other *
-  *   tooltip addons from thinking the tooltip is being reset.                 *
-  ****************************************************************************]]
+--- Adds detailed unit info to a corpse tooltip.
+-- Adds info to fontstrings directly; avoids using ClearLines to keep other
+-- tooltip addons from thinking the tooltip is being reset.
+-- @param Hostile  Boolean, true if hostile to the player.
+-- @param ConnectedStatus  0 for offline, 1 for online.
+-- @param Status  AFK or DND text label.
+-- @see GetFriendInfo
 function me.BuildCorpseTooltip ( Hostile, Name, Level, Class, Location, ConnectedStatus, Status )
 	if ( Hostile == nil ) then
 		return;
@@ -96,10 +95,8 @@ end
 
 
 
---[[****************************************************************************
-  * Function: _Corpse:PLAYER_ENTERING_WORLD                                    *
-  ****************************************************************************]]
-function me:PLAYER_ENTERING_WORLD ()
+--- Activates different modules when changing between instances/BGs/etc.
+function me.Frame:PLAYER_ENTERING_WORLD ()
 	local Type = select( 2, IsInInstance() );
 	local Module;
 
@@ -113,73 +110,71 @@ function me:PLAYER_ENTERING_WORLD ()
 
 	me.SetActiveModule( Module );
 end
---[[****************************************************************************
-  * Function: _Corpse:PLAYER_LEAVING_WORLD                                     *
-  ****************************************************************************]]
-function me:PLAYER_LEAVING_WORLD ()
+--- Deactivates modules when leaving game worlds.
+function me.Frame:PLAYER_LEAVING_WORLD ()
 	me.SetActiveModule( nil );
 end
---[[****************************************************************************
-  * Function: _Corpse:OnEvent                                                  *
-  * Description: Global event handler.                                         *
-  ****************************************************************************]]
+--- Global event handler.
+function me.Frame:OnEvent ( Event, ... )
+	if ( self[ Event ] ) then
+		self[ Event ]( self, Event, ... );
+	end
+end
+
+
+
+
 do
-	local type = type;
-	function me:OnEvent ( Event, ... )
-		if ( type( self[ Event ] ) == "function" ) then
-			self[ Event ]( self, Event, ... );
+	local ActiveModule;
+	local PlayerName = UnitName( "player" );
+	--- Hook called when GameTooltip updates.
+	function me:GameTooltipOnShow ()
+		-- Tooltip contents updated
+		if ( ActiveModule ) then
+			local Name, Server = me.GetCorpseName();
+			if ( Name ) then -- Found corpse tooltip
+				if ( Name == PlayerName and not Server ) then
+					-- Create a common tooltip for the player's corpse
+					me.BuildCorpseTooltip( false, Name,
+						UnitLevel( "player" ), UnitClass( "player" ), GetRealZoneText(), 1,
+						( UnitIsAFK( "player" ) and CHAT_FLAG_AFK ) or ( UnitIsDND( "player" ) and CHAT_FLAG_DND ) );
+				else -- Add data to tooltip using module's info
+					ActiveModule:Update( Name, Server );
+				end
+			end
 		end
+	end
+	--- Activates a module to handle filling corpse tooltips under specific settings such as cross-realm BGs.
+	-- @param NewModule  Module table containing callbacks.
+	-- @return True if module was changed.
+	function me.SetActiveModule ( NewModule )
+		if ( NewModule ~= ActiveModule ) then
+			local OldModule = ActiveModule;
+			ActiveModule = NewModule;
+
+			if ( OldModule and OldModule.Disable ) then
+				OldModule:Disable();
+			end
+			if ( NewModule and NewModule.Enable ) then
+				NewModule:Enable();
+			end
+
+			return true;
+		end
+	end
+	--- Returns true if a given module is the active one.
+	function me.IsModuleActive ( Module )
+		return Module == ActiveModule;
 	end
 end
 
 
 
 
---[[****************************************************************************
-  * Function: _Corpse:GameTooltipOnShow                                        *
-  * Description: Hook called when GameTooltip updates.                         *
-  ****************************************************************************]]
-function me:GameTooltipOnShow ()
-	-- Tooltip contents updated
-	if ( me.ActiveModule ) then
-		local Name, Server = me.GetCorpseName();
-		if ( Name ) then -- Found corpse tooltip
-			me.ActiveModule:Update( Name, Server ); -- Add data to tooltip using module's info
-		end
-	end
-end
---[[****************************************************************************
-  * Function: _Corpse.SetActiveModule                                          *
-  ****************************************************************************]]
-function me.SetActiveModule ( NewModule )
-	if ( NewModule ~= me.ActiveModule ) then
-		local OldModule = me.ActiveModule;
-		me.ActiveModule = NewModule;
-
-		if ( OldModule and OldModule.Disable ) then
-			OldModule:Disable();
-		end
-		if ( NewModule and NewModule.Enable ) then
-			NewModule:Enable();
-		end
-
-		return true;
-	end
-end
---[[****************************************************************************
-  * Function: _Corpse.IsModuleActive                                           *
-  ****************************************************************************]]
-function me.IsModuleActive ( Module )
-	return Module == me.ActiveModule;
-end
-
-
-
-
-me:SetScript( "OnEvent", me.OnEvent );
-me:RegisterEvent( "PLAYER_ENTERING_WORLD" );
+me.Frame:SetScript( "OnEvent", me.Frame.OnEvent );
+me.Frame:RegisterEvent( "PLAYER_ENTERING_WORLD" );
 if ( IsLoggedIn() ) then -- Loaded on-demand
-	me:PLAYER_ENTERING_WORLD();
+	me.Frame:PLAYER_ENTERING_WORLD();
 end
 
 GameTooltip:HookScript( "OnShow", me.GameTooltipOnShow );

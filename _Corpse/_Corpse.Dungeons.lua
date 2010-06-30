@@ -4,21 +4,20 @@
   ****************************************************************************]]
 
 
-local L = _CorpseLocalization;
-local _Corpse = _Corpse;
+local _Corpse = select( 2, ... );
+local L = _Corpse.L;
 local me = {};
 _Corpse.Dungeons = me;
 
 
 
 
---[[****************************************************************************
-  * Function: _Corpse.Dungeons:Update                                          *
-  ****************************************************************************]]
+--- Populates the corpse tooltip for the given player using party member data.
 function me:Update ( Name, Server )
 	for Index = 1, GetNumPartyMembers() do
 		local UnitID = "party"..Index;
 		local NameParty, ServerParty = UnitName( UnitID );
+
 		if ( Name == NameParty and ( not Server or Server == ServerParty ) ) then
 			_Corpse.BuildCorpseTooltip( false, GetUnitName( UnitID, true ), -- Includes server name
 				UnitLevel( UnitID ), UnitClass( UnitID ), GetRealZoneText(), UnitIsConnected( UnitID ),
