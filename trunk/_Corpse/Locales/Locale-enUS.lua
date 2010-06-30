@@ -5,7 +5,7 @@
 
 
 -- See http://wow.curseforge.com/addons/corpse/localization/enUS/
-_CorpseLocalization = setmetatable( {
+select( 2, ... ).L = setmetatable( {
 	CORPSE_PATTERN = "^Corpse of ([^ ]+)$",
 	ENEMY_OFFLINE_PATTERN = "^Cannot find player '([^%s%p%d%c]+)'%.$",
 	FRIEND_ADDED_PATTERN = "^([^%s%p%d%c]+) added to friends%.$",

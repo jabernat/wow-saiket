@@ -4,9 +4,9 @@
   ****************************************************************************]]
 
 
-local L = _CorpseLocalization;
-local _Corpse = _Corpse;
-local me = CreateFrame( "Frame", nil, _Corpse );
+local _Corpse = select( 2, ... );
+local L = _Corpse.L;
+local me = CreateFrame( "Frame" );
 _Corpse.Battlegrounds = me;
 
 me.RequestBattlefieldScoreDataLast = 0;
@@ -16,17 +16,13 @@ me.UpdateInterval = 5; -- Seconds
 
 
 
---[[****************************************************************************
-  * Function: _Corpse.Battlegrounds.RequestBattlefieldScoreData                *
-  * Description: Hook to keep track of when score was last updated.            *
-  ****************************************************************************]]
+--- Hook to keep track of when score was last updated.
 function me.RequestBattlefieldScoreData ()
 	me.RequestBattlefieldScoreDataLast = GetTime();
 end
---[[****************************************************************************
-  * Function: _Corpse.Battlegrounds.GetBattlefieldInfo                         *
-  * Description: Scans the scoreboard for a given player.                      *
-  ****************************************************************************]]
+--- Scans the scoreboard for a given player.
+-- @return Arguments for BuildCorpseTooltip, similar to GetFriendInfo.
+-- @see _Corpse.BuildCorpseTooltip
 function me.GetBattlefieldInfo ( Name, Server )
 	local NameServerBG, NameBG, ServerBG, Faction, Race, Class, _;
 	for Index = 1, GetNumBattlefieldScores() do
@@ -42,12 +38,7 @@ function me.GetBattlefieldInfo ( Name, Server )
 end
 
 
-
-
---[[****************************************************************************
-  * Function: _Corpse.Battlegrounds:UPDATE_BATTLEFIELD_SCORE                   *
-  * Description: Called when cached score data is updated.                     *
-  ****************************************************************************]]
+--- Called when cached score data is updated.
 function me:UPDATE_BATTLEFIELD_SCORE ()
 	local Name, Server = _Corpse.GetCorpseName();
 	if ( Name and Name ~= UnitName( "player" ) ) then -- Found corpse tooltip
@@ -56,33 +47,18 @@ function me:UPDATE_BATTLEFIELD_SCORE ()
 end
 
 
-
-
---[[****************************************************************************
-  * Function: _Corpse.Battlegrounds:Update                                     *
-  ****************************************************************************]]
+--- Populates the corpse tooltip for the given player using BG scoreboard data.
 function me:Update ( Name, Server )
-	local PlayerName = UnitName( "player" );
-	if ( Name == PlayerName ) then -- Our own corpse
-		_Corpse.BuildCorpseTooltip( false, PlayerName,
-			UnitLevel( "player" ), UnitClass( "player" ), GetRealZoneText(), 1,
-			( UnitIsAFK( "player" ) and CHAT_FLAG_AFK ) or ( UnitIsDND( "player" ) and CHAT_FLAG_DND ) );
-	else
-		if ( GetTime() - self.RequestBattlefieldScoreDataLast > self.UpdateInterval ) then
-			RequestBattlefieldScoreData();
-		end
-		_Corpse.BuildCorpseTooltip( self.GetBattlefieldInfo( Name, Server ) );
+	if ( GetTime() - self.RequestBattlefieldScoreDataLast > self.UpdateInterval ) then
+		RequestBattlefieldScoreData();
 	end
+	_Corpse.BuildCorpseTooltip( self.GetBattlefieldInfo( Name, Server ) );
 end
---[[****************************************************************************
-  * Function: _Corpse.Battlegrounds:Enable                                     *
-  ****************************************************************************]]
+--- Initialize the module when activated.
 function me:Enable ()
 	self:RegisterEvent( "UPDATE_BATTLEFIELD_SCORE" );
 end
---[[****************************************************************************
-  * Function: _Corpse.Battlegrounds:Disable                                    *
-  ****************************************************************************]]
+--- Uninitialize the module when deactivated.
 function me:Disable ()
 	self:UnregisterEvent( "UPDATE_BATTLEFIELD_SCORE" );
 end
@@ -90,6 +66,6 @@ end
 
 
 
-me:SetScript( "OnEvent", _Corpse.OnEvent );
+me:SetScript( "OnEvent", _Corpse.Frame.OnEvent );
 
 hooksecurefunc( "RequestBattlefieldScoreData", me.RequestBattlefieldScoreData );
