@@ -113,9 +113,9 @@ function me.Timer:SetTime ( Elapsed, Duration )
 end
 
 
---- Updates the progress bar's value at most once per frame.
 do
 	local GetAchievementCriteriaInfo = GetAchievementCriteriaInfo;
+	--- Updates the progress bar's value at most once per frame.
 	local function OnUpdate ( self )
 		self:SetScript( "OnUpdate", nil );
 
@@ -183,13 +183,14 @@ function me.Button:TRACKED_ACHIEVEMENT_UPDATE ( _, _, CriteriaID, Elapsed, Durat
 		end
 	end
 end
---- Hides and disables itself when entering combat.
 do
 	local GetItemCount = GetItemCount;
+	--- Updates item count when bag contents change.
 	function me.Button:BAG_UPDATE ()
 		self.Count:SetText( GetItemCount( me.Item ) );
 	end
 end
+--- Global event handler.
 function me.Button:OnEvent ( Event, ... )
 	if ( self[ Event ] ) then
 		self[ Event ]( self, Event, ... );
