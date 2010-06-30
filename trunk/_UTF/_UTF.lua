@@ -1,6 +1,8 @@
 --[[****************************************************************************
   * _UTF by Saiket                                                             *
   * _UTF.lua - Common Unicode translation functions.  See RFC3629.             *
+  *   IntToUTF and UTFToInt based on sarnold@free.fr's library routines at     *
+  *   <http://lua-users.org/wiki/ValidateUnicodeString> under the MIT license. *
   ****************************************************************************]]
 
 
