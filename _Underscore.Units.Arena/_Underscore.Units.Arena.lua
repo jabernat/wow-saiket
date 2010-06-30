@@ -9,8 +9,8 @@ local me = _Underscore.Units.oUF;
 assert( me.StyleMeta.__call, "_Underscore.Units.oUF Initializer already destroyed!" );
 
 oUF:RegisterStyle( "_UnderscoreUnitsArena", setmetatable( {
-	[ "initial-width" ] = 110;
-	[ "initial-height" ] = 36;
+	Width = 110;
+	Height = 36;
 	HealthText = "Tiny";
 	PowerText  = "Tiny";
 	NameFont = me.FontTiny;
@@ -21,8 +21,8 @@ oUF:RegisterStyle( "_UnderscoreUnitsArena", setmetatable( {
 	ProgressHeight = 0.2;
 }, me.StyleMeta ) );
 oUF:RegisterStyle( "_UnderscoreUnitsArenaTarget", setmetatable( {
-	[ "initial-width" ] = 80;
-	[ "initial-height" ] = 36;
+	Width = 80;
+	Height = 36;
 	PortraitSide = "LEFT";
 	HealthText = false;
 	PowerText  = false;
