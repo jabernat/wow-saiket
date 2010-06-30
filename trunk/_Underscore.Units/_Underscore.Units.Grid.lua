@@ -4,79 +4,63 @@
   ****************************************************************************]]
 
 
-local L = _UnderscoreLocalization.Units;
-local _Underscore = _Underscore;
 if ( not IsAddOnLoaded( "Grid" ) ) then
 	return;
 end
-local me = {};
-_Underscore.Units.Grid = me;
+local Units = select( 2, ... );
 
 
 
 
---[[****************************************************************************
-  * Function: _Underscore.Units.Grid:FrameInitialize                           *
-  * Description: Hook to modify new GridFrames.                                *
-  ****************************************************************************]]
-function me:FrameInitialize ()
-	self.menu = _Underscore.Units.ShowGenericMenu;
-	_Underscore.Backdrop.Create( self, -2 );
+-- Disable party frames
+oUF:DisableBlizzard( "party" );
+
+
+do
+	--- Adds a backdrop and enables dropdown menus for new Grid unit frames.
+	local function FrameInitialize ( Frame )
+		Frame.menu = Units.ShowGenericMenu;
+		_Underscore.Backdrop.Create( Frame, -2 );
+	end
+
+	-- Hook Grid frame creation
+	local GridFrame = Grid:GetModule( "GridFrame" );
+	hooksecurefunc( GridFrame, "InitialConfigFunction", FrameInitialize );
+
+	-- Modify all existing frames
+	GridFrame:WithAllFrames( function ( self )
+		FrameInitialize( self.frame );
+	end );
 end
 
 
-
-
--- Hook Grid frame creation
-local GridFrame = Grid:GetModule( "GridFrame" );
-hooksecurefunc( GridFrame, "InitialConfigFunction", me.FrameInitialize );
-
--- Add hook to all existing frames
-GridFrame:WithAllFrames( function ( self ) me.FrameInitialize( self.frame ); end );
-
--- Add better layouts that include pets from all classes
-local GridLayout = Grid:GetModule( "GridLayout" );
-local PetGroup = { isPetGroup = true; unitsPerColumn = 10; maxColumns = 4; };
-GridLayout:AddLayout( L.GRID_LAYOUT_CLASS, {
-	PetGroup,
-	{ groupFilter = "WARRIOR"; },
-	{ groupFilter = "PRIEST"; },
-	{ groupFilter = "DRUID"; },
-	{ groupFilter = "PALADIN"; },
-	{ groupFilter = "SHAMAN"; },
-	{ groupFilter = "MAGE"; },
-	{ groupFilter = "WARLOCK"; },
-	{ groupFilter = "HUNTER"; },
-	{ groupFilter = "ROGUE"; },
-	{ groupFilter = "DEATHKNIGHT"; },
-} );
-GridLayout:AddLayout( L.GRID_LAYOUT_GROUP, {
-	PetGroup,
-	{ groupFilter = "1"; },
-	{ groupFilter = "2"; },
-	{ groupFilter = "3"; },
-	{ groupFilter = "4"; },
-	{ groupFilter = "5"; },
-	{ groupFilter = "6"; },
-	{ groupFilter = "7"; },
-	{ groupFilter = "8"; },
-} );
-
--- Disable party frames
-for Index = 1, MAX_PARTY_MEMBERS do
-	local Frame = _G[ "PartyMemberFrame"..Index ];
-	Frame:Hide();
-	_Underscore:WrapScript( Frame, "OnShow", [[
-		self:Hide();
-		return false; -- Don't call real OnShow script
-	]] );
-
-	UnregisterUnitWatch( Frame );
-	Frame:UnregisterAllEvents();
-	if ( Frame.healthbar ) then
-		Frame.healthbar:UnregisterAllEvents();
-	end
-	if ( Frame.manabar ) then
-		Frame.manabar:UnregisterAllEvents();
-	end
+do
+	-- Add better layouts that include pets from all classes
+	local GridLayout = Grid:GetModule( "GridLayout" );
+	local MaxLength = 10; -- Wrap groups longer than this
+	local PetGroup = { isPetGroup = true; unitsPerColumn = MaxLength; };
+	GridLayout:AddLayout( Units.L.GRID_LAYOUT_CLASS, {
+		PetGroup,
+		{ groupFilter = "WARRIOR"; unitsPerColumn = MaxLength; },
+		{ groupFilter = "PRIEST"; unitsPerColumn = MaxLength; },
+		{ groupFilter = "DRUID"; unitsPerColumn = MaxLength; },
+		{ groupFilter = "PALADIN"; unitsPerColumn = MaxLength; },
+		{ groupFilter = "SHAMAN"; unitsPerColumn = MaxLength; },
+		{ groupFilter = "MAGE"; unitsPerColumn = MaxLength; },
+		{ groupFilter = "WARLOCK"; unitsPerColumn = MaxLength; },
+		{ groupFilter = "HUNTER"; unitsPerColumn = MaxLength; },
+		{ groupFilter = "ROGUE"; unitsPerColumn = MaxLength; },
+		{ groupFilter = "DEATHKNIGHT"; unitsPerColumn = MaxLength; },
+	} );
+	GridLayout:AddLayout( Units.L.GRID_LAYOUT_GROUP, {
+		PetGroup,
+		{ groupFilter = "1"; },
+		{ groupFilter = "2"; },
+		{ groupFilter = "3"; },
+		{ groupFilter = "4"; },
+		{ groupFilter = "5"; },
+		{ groupFilter = "6"; },
+		{ groupFilter = "7"; },
+		{ groupFilter = "8"; },
+	} );
 end

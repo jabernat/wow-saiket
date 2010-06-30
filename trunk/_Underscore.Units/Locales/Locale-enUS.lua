@@ -4,32 +4,35 @@
   ****************************************************************************]]
 
 
-_UnderscoreLocalization.Units = setmetatable( {
+select( 2, ... ).L = setmetatable( {
 	DEAD    = "DEAD";
 	GHOST   = "GHOST";
 	OFFLINE = "OFFLINE";
-	FEIGN   = "FEIGN";
 
 	GRID_LAYOUT_GROUP = "_|cffcccc88Underscore|r.Units: Groups";
 	GRID_LAYOUT_CLASS = "_|cffcccc88Underscore|r.Units: Classes";
 
 	OUF_GROUP_FORMAT = "(G%d)";
-	OUF_CLASSIFICATION_FORMAT = "(|cff%02x%02x%02x%s|r)"; -- R, G, B, Classification
-	OUF_NAME_FORMAT = "|cff%02x%02x%02x%s|r"; -- R, G, B, Name
-	OUF_SERVER_DELIMITER = "-";
+	OUF_CLASSIFICATION_FORMAT = "(%s%s|r)"; -- ColorCode, Classification
+	OUF_NAME_FORMAT = "%s%s|r"; -- ColorCode, Name
 
 
-	NumberFormats = { -- Health value formats used by oUF layout
+	NumberFormats = { -- Health/power value formats used by oUF layout
+		--- Formats values as a fraction with no abbreviations.
+		-- @param Value  Current health value.
+		-- @param ValueMax  Maximum health value.
+		-- @return A format with arguments to be passed to string.format or FontString:SetFormattedText.
 		Full = function ( Value, ValueMax )
 			return "%d/%d", Value, ValueMax;
 		end;
+		--- Formats values as a fraction with large numbers abbreviated and rounded to one decimal place.
 		Small = function ( Value, ValueMax )
 			local Format;
-			if ( Value >= 1e6 ) then
+			if ( Value >= 1e6 ) then -- 7 or more digits
 				Format, Value = "%.1fm", Value / 1e6;
-			elseif ( Value >= 1e3 ) then
+			elseif ( Value >= 1e3 ) then -- 4 or more digits
 				Format, Value = "%.1fk", Value / 1e3;
-			else
+			else -- 3 or less digits
 				Format = "%d";
 			end
 
@@ -43,6 +46,7 @@ _UnderscoreLocalization.Units = setmetatable( {
 
 			return Format, Value, ValueMax;
 		end;
+		--- Formats values as a fraction with large numbers abbreviated and rounded to no decimal places.
 		Tiny = function ( Value, ValueMax )
 			local Format;
 			if ( Value >= 1e6 ) then
