@@ -29,9 +29,10 @@ local HarmID, HarmName, CanHarm;
 
 
 
---[[****************************************************************************
-  * Function: local IsInRange                                                  *
-  ****************************************************************************]]
+--- Uses an appropriate range check for the given unit.
+-- Actual range depends on reaction, known spells, and status of the unit.
+-- @param UnitID  Unit to check range for.
+-- @return True if in casting range.
 local IsInRange;
 do
 	local UnitIsConnected = UnitIsConnected;
@@ -64,9 +65,7 @@ do
 		end
 	end
 end
---[[****************************************************************************
-  * Function: local UpdateRange                                                *
-  ****************************************************************************]]
+--- Rechecks range for a unit frame, and fires callbacks when the unit passes in or out of range.
 local UpdateRange;
 do
 	local InRange;
@@ -83,9 +82,7 @@ do
 		end
 	end
 end
---[[****************************************************************************
-  * Function: local UpdateSpells                                               *
-  ****************************************************************************]]
+--- Checks whether the player knows his or her class-specific range checking spells.
 local UpdateSpells;
 do
 	local IsSpellKnown = IsSpellKnown;
@@ -107,9 +104,7 @@ do
 end
 
 
---[[****************************************************************************
-  * Function: local OnUpdate                                                   *
-  ****************************************************************************]]
+--- Updates the range display for all visible oUF unit frames on an interval.
 local OnUpdate;
 do
 	local NextUpdate = 0;
@@ -129,9 +124,8 @@ do
 end
 
 
---[[****************************************************************************
-  * Function: local Enable                                                     *
-  ****************************************************************************]]
+--- Called by oUF for new unit frames to setup range checking.
+-- @return True if the range element was actually enabled.
 local function Enable ( self, UnitID )
 	if ( self.SpellRange ) then
 		assert( type( self.SpellRangeOverride ) == "function"
@@ -152,9 +146,7 @@ local function Enable ( self, UnitID )
 		return true;
 	end
 end
---[[****************************************************************************
-  * Function: local Disable                                                    *
-  ****************************************************************************]]
+--- Called by oUF to disable range checking on a unit frame.
 local function Disable ( self )
 	Objects[ self ] = nil;
 	ObjectRanges[ self ] = nil;
@@ -162,9 +154,8 @@ local function Disable ( self )
 		UpdateFrame:Hide();
 	end
 end
---[[****************************************************************************
-  * Function: local Update                                                     *
-  ****************************************************************************]]
+--- Called by oUF when the unit frame's unit changes or otherwise needs a complete update.
+-- @param Event  Reason for the update, defined by oUF rather than by real events.
 local function Update ( self, Event, UnitID )
 	if ( Event ~= "OnTargetUpdate" ) then -- Caused by a real event
 		UpdateSpells();
@@ -177,7 +168,7 @@ end
 
 
 local _, Class = UnitClass( "player" );
--- Optional low level baseline skills with greater than 28 yard range
+--- Optional low level baseline skills with greater than 28 yard range
 HelpID = ( {
 	DRUID = 5185; -- Healing Touch
 	MAGE = 1459; -- Arcane Intellect
