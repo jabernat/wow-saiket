@@ -4,21 +4,18 @@
   ****************************************************************************]]
 
 
-local _UTF = _UTF;
-local L = _UTFLocalization;
+local _UTF = select( 2, ... );
+local L = _UTF.L;
 local me = CreateFrame( "Frame" );
 _UTF.Customize.Entities = me;
 
-me.Label1 = L.CUSTOMIZE_ENTITIES_NAME;
-me.Label2 = L.CUSTOMIZE_ENTITIES_VALUE;
+me.Key = L.CUSTOMIZE_ENTITIES_NAME;
+me.Value = L.CUSTOMIZE_ENTITIES_VALUE;
 
 
 
 
---[[****************************************************************************
-  * Function: _UTF.Customize.Entities.Update                                   *
-  * Description: Updates the data display.                                     *
-  ****************************************************************************]]
+--- Rebuilds the table of entities.
 function me.Update ()
 	local Table = _UTF.Customize.Table;
 	Table:SetHeader( L.CUSTOMIZE_ENTITIES_GLYPH, L.CUSTOMIZE_ENTITIES_NAME, L.CUSTOMIZE_ENTITIES_VALUE );
@@ -26,76 +23,60 @@ function me.Update ()
 	Table:SetSortColumn( 2 ); -- Default sort by name
 
 	for Name, ID in pairs( _UTFOptions.CharacterEntities ) do
-		Table:AddRow( Name, _UTF.DecToUTF( ID ), Name, ID );
+		Table:AddRow( Name, _UTF.IntToUTF( ID ), Name, ID );
 	end
 end
---[[****************************************************************************
-  * Function: _UTF.Customize.Entities.OnSelect                                 *
-  * Description: Updates the edit boxes to match the table selection.          *
-  ****************************************************************************]]
+--- Callback that specifies new edit box text when a table entry is selected.
 function me.OnSelect ( Name )
 	return Name, _UTFOptions.CharacterEntities[ Name ];
 end
 
---[[****************************************************************************
-  * Function: _UTF.Customize.Entities.Add                                      *
-  * Description: Adds a pair of values to the data set.                        *
-  ****************************************************************************]]
-function me.Add ( Key, ValueEditBox )
-	if ( me.CanAdd( Key, ValueEditBox ) ) then
-		_UTFOptions.CharacterEntities[ Key ] = ValueEditBox:GetNumber();
 
+--- Adds an entity name and value to the data set.
+-- @return True if added successfully.
+function me.Add ( Key, Value )
+	if ( me.CanAdd( Key, Value ) ) then
+		_UTFOptions.CharacterEntities[ Key ] = tonumber( Value );
 		return true;
 	end
 end
---[[****************************************************************************
-  * Function: _UTF.Customize.Entities.Remove                                   *
-  * Description: Adds a pair of values to the data set.                        *
-  ****************************************************************************]]
+--- Removes an entity by key from the data set.
+-- @return True if removed successfully.
 function me.Remove ( Key )
 	if ( me.CanRemove( Key ) ) then
 		_UTFOptions.CharacterEntities[ Key ] = nil;
-
 		return true;
 	end
 end
 
---[[****************************************************************************
-  * Function: _UTF.Customize.Entities.CanRemove                                *
-  * Description: Returns the input's key if it is present and can be removed.  *
-  ****************************************************************************]]
+
+--- Validates that a key is present and can be removed.
+-- @return The unique identifier that can be used to select this removable value in the table.
 function me.CanRemove ( Key )
-	if ( Key ~= "" and _UTFOptions.CharacterEntities[ Key ] ) then
+	if ( _UTFOptions.CharacterEntities[ Key ] ) then
 		return Key;
 	end
 end
---[[****************************************************************************
-  * Function: _UTF.Customize.Entities.CanAdd                                   *
-  * Description: Returns the input's key if it can be added.                   *
-  ****************************************************************************]]
-function me.CanAdd ( Key, ValueEditBox )
-	if ( Key:match( "^%w+$" ) and ValueEditBox:GetText() ~= "" ) then
-		local Value = ValueEditBox:GetNumber();
-		if ( _UTFOptions.CharacterEntities[ Key ] ~= Value and Value <= _UTF.Max and Value >= _UTF.Min ) then
-			return Key;
-		end
+--- Validates that a key/value pair can be added.
+-- @return True if the values can be added successfully.
+function me.CanAdd ( Key, Value )
+	Value = tonumber( Value );
+	if ( Value and Key:match( "^%w+$" )
+		and _UTFOptions.CharacterEntities[ Key ] ~= Value
+		and _UTF.Min <= Value and Value <= _UTF.Max
+	) then
+		return true;
 	end
 end
 
 
---[[****************************************************************************
-  * Function: _UTF.Customize.Entities:OnShow                                   *
-  * Description: Sets the value editbox to numeric mode.                       *
-  ****************************************************************************]]
+--- Initializes the value editbox to numeric mode when opening this pane.
 function me:OnShow ()
-	_UTF.Customize.EditBox2:SetNumeric( true );
+	_UTF.Customize.Value:SetNumeric( true );
 end
---[[****************************************************************************
-  * Function: _UTF.Customize.Entities:OnHide                                   *
-  * Description: Sets the value editbox back to text mode.                     *
-  ****************************************************************************]]
+--- Restores the value editbox back to text mode when this pane is closed.
 function me:OnHide ()
-	_UTF.Customize.EditBox2:SetNumeric( false );
+	_UTF.Customize.Value:SetNumeric( false );
 end
 
 

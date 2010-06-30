@@ -5,145 +5,114 @@
   ****************************************************************************]]
 
 
-local _UTF = _UTF;
-local L = _UTFLocalization;
+local _UTF = select( 2, ... );
+local L = _UTF.L;
 local me = CreateFrame( "Frame", "_UTFBrowse", UIParent );
 _UTF.Browse = me;
 
-me.Title = me:CreateFontString( nil, "ARTWORK", "GameFontHighlight" );
+local Glyph = CreateFrame( "Button", nil, me );
+me.Glyph = Glyph;
+Glyph.Font = CreateFont( "_UTFBrowseGlyphFont" );
+Glyph.FontDisable = CreateFont( "_UTFBrowseGlyphFontDisable" );
+Glyph.FontHighlight = CreateFont( "_UTFBrowseGlyphFontHighlight" );
+
+me.EntityName = CreateFrame( "EditBox", "_UTFBrowseEntityName", me, "InputBoxTemplate" );
+me.CodePoint = CreateFrame( "EditBox", "_UTFBrowseCodePoint", me, "InputBoxTemplate" );
 
 
 
 
---[[****************************************************************************
-  * Function: _UTF.Browse:IsGlyphVisible                                       *
-  * Description: Determines whether the current character is visible.          *
-  ****************************************************************************]]
-function me:IsGlyphVisible ()
-	return self.Glyph.Text:GetStringWidth() ~= 0;
+--- Determines whether the current character is visible.
+-- @return True if current codepoint's glyph is visible.
+function me.IsGlyphVisible ()
+	return Glyph.Text:GetStringWidth() ~= 0;
 end
---[[****************************************************************************
-  * Function: _UTF.Browse:GetCodePoint                                         *
-  * Description: Gets the current code point.                                  *
-  ****************************************************************************]]
+
+
 do
-	local min = min;
-	local max = max;
-	function me:GetCodePoint ()
-		return max( _UTF.Min, min( _UTF.Max, self.EditBox:GetNumber() ) );
+	--- Gets the entity name that corresponds to a codepoint.
+	local function FindCodePointName ( Search )
+		for Name, CodePoint in pairs( _UTFOptions.CharacterEntities ) do
+			if ( CodePoint == Search ) then
+				return Name;
+			end
+		end
+		for Name, CodePoint in pairs( _UTF.CharacterEntities ) do
+			if ( CodePoint == Search ) then
+				return Name;
+			end
+		end
+	end
+	local CodePoint;
+	--- Sets the current glyph to a code point.
+	-- @param NewCodePoint  Codepoint between _UTF.Min and _UTF.Max.
+	-- @return True if codepoint changed.
+	function me.SetCodePoint ( NewCodePoint )
+		NewCodePoint = tonumber( NewCodePoint );
+		if ( NewCodePoint and CodePoint ~= NewCodePoint
+			and _UTF.Min <= NewCodePoint and NewCodePoint <= _UTF.Max
+		) then
+			CodePoint = NewCodePoint;
+
+			me.EntityName:SetText( FindCodePointName( CodePoint ) or "" );
+			me.CodePoint:SetNumber( CodePoint );
+
+			Glyph:SetText( _UTF.IntToUTF( CodePoint ) );
+			Glyph.Text:SetAlpha( 1.0 );
+			if ( me.IsGlyphVisible() ) then
+				Glyph:Enable();
+				Glyph.Background:Show();
+			else
+				Glyph:Disable();
+				Glyph.Background:Hide();
+				Glyph:SetText( L.BROWSE_GLYPH_NOTAVAILABLE );
+			end
+			return true;
+		end
+	end
+	--- Gets the current code point.
+	function me.GetCodePoint ()
+		return CodePoint;
 	end
 end
---[[****************************************************************************
-  * Function: _UTF.Browse:NextChar                                             *
-  * Description: Increments the current code point in the scan's direction.    *
-  ****************************************************************************]]
-function me:NextChar ()
-	if ( not self.Direction ) then
-		return;
+
+
+--- Blocking scan to the next available character.
+-- @param Direction  Step size for loop, ex. 1 for forward and -1 for reverse.
+-- @param MaxJump  Optional limit to number of empty characters to skip.  If omitted, scan will end at _UTF.Min or _UTF.Max based on Direction.
+-- @return True if a visible glyph was found.
+function me.Seek ( Direction, MaxJump )
+	local Text = Glyph.Text;
+	local SetText, GetStringWidth = Text.SetText, Text.GetStringWidth;
+
+	local CodePoint = me.GetCodePoint();
+	if ( not MaxJump ) then
+		MaxJump = math.huge;
 	end
-
-	self.EditBox:SetNumber( self:GetCodePoint() + self.Direction );
-end
---[[****************************************************************************
-  * Function: _UTF.Browse:EndSeek                                              *
-  * Description: Ends any scan in progress.                                    *
-  ****************************************************************************]]
-function me:EndSeek ()
-	local Glyph = self.Glyph;
-	Glyph.Text:SetAlpha( 1.0 );
-	Glyph:Enable();
-	Glyph.Background:Show();
-
-	self:SetScript( "OnUpdate", self.OnUpdateCheck );
-	self.Started = nil;
-	self.Direction = nil;
-end
---[[****************************************************************************
-  * Function: _UTF.Browse:BeginSeek                                            *
-  * Description: Starts a scan to the next available character.                *
-  ****************************************************************************]]
-function me:BeginSeek ( Direction )
-	local CodePoint = self:GetCodePoint();
-	if ( ( Direction < 0 and CodePoint == _UTF.Min )
-		or ( Direction > 0 and CodePoint == _UTF.Max )
-	) then
-		return;
+	local Limit = Direction > 0 and min( CodePoint + MaxJump, _UTF.Max ) or max( CodePoint - MaxJump, _UTF.Min );
+	for CodePoint = CodePoint + Direction, Limit, Direction do
+		SetText( Text, _UTF.IntToUTF( CodePoint ) );
+		if ( GetStringWidth( Text ) > 0 ) then
+			me.SetCodePoint( CodePoint );
+			return true;
+		end
 	end
-
-	local Glyph = self.Glyph;
-	Glyph:Disable();
-	Glyph.Background:Hide();
-
-	self:SetScript( "OnUpdate", self.OnUpdateSeek );
-	self.Direction = Direction;
-	self:NextChar();
-	Glyph.Text:SetAlpha( 0.0 ); -- Hide '?' when character missing
+	-- Reached end with no match
+	me.SetCodePoint( Limit );
 end
 
 
 
 
---[[****************************************************************************
-  * Function: _UTF.Browse:OnMouseWheel                                         *
-  * Description: Initiates a character scan in the given direction.            *
-  ****************************************************************************]]
+--- Initiates a character scan in the given direction.
 function me:OnMouseWheel ( Delta )
-	self:BeginSeek( Delta );
+	me.Seek( Delta, 16384 ); -- 2^14
 end
---[[****************************************************************************
-  * Function: _UTF.Browse:OnUpdateCheck                                        *
-  * Description: Checks the previously set glyph's display state.              *
-  ****************************************************************************]]
-function me:OnUpdateCheck ()
-	-- Skip the first frame
-	if ( not self.Checking ) then
-		self.Checking = true;
-		return;
-	end
-
-	local Glyph = self.Glyph;
-	if ( not self:IsGlyphVisible() ) then
-		Glyph:SetText( L.BROWSE_GLYPH_NOTAVAILABLE );
-		Glyph:Disable();
-		Glyph.Background:Hide();
-	else
-		Glyph:Enable();
-		Glyph.Background:Show();
-	end
-
-	self:SetScript( "OnUpdate", nil );
-	self.Checking = nil;
-end
---[[****************************************************************************
-  * Function: _UTF.Browse:OnUpdateSeek                                         *
-  * Description: Increments or stops the current seek each frame.              *
-  ****************************************************************************]]
-function me:OnUpdateSeek ()
-	-- Skip the first frame
-	if ( not self.Started ) then
-		self.Started = true;
-		return;
-	end
-
-	local CodePoint = self:GetCodePoint();
-	if ( CodePoint == _UTF.Min or CodePoint == _UTF.Max or self:IsGlyphVisible() ) then
-		-- Found the next available character or finished with no results; end search
-		self:EndSeek();
-	else
-		self:NextChar();
-	end
-end
---[[****************************************************************************
-  * Function: _UTF.Browse:OnHide                                               *
-  * Description: Plays a closing sound when the _UTF window is closed.         *
-  ****************************************************************************]]
+--- Plays a sound when closed.
 function me:OnHide ()
 	PlaySound( "igCharacterInfoClose" );
 end
---[[****************************************************************************
-  * Function: _UTF.Browse:OnShow                                               *
-  * Description: Plays an opening sound when the _UTF window is opened.        *
-  ****************************************************************************]]
+--- Plays a sound when opened.
 function me:OnShow ()
 	PlaySound( "igCharacterInfoOpen" );
 end
@@ -151,13 +120,11 @@ end
 
 
 
---[[****************************************************************************
-  * Function: _UTF.Browse.Toggle                                               *
-  * Description: Toggles the _UTF browse window.                               *
-  ****************************************************************************]]
+--- Toggles the _UTF browse window.
+-- @param Show  Optional boolean to force the frame shown.
 function me.Toggle ( Show )
 	if ( Show == nil ) then
-		Show = not me:IsVisible();
+		Show = not me:IsShown();
 	end
 	if ( Show ) then
 		me:Show();
@@ -165,10 +132,7 @@ function me.Toggle ( Show )
 		me:Hide();
 	end
 end
---[[****************************************************************************
-  * Function: _UTF.Browse.ToggleSlashCommand                                   *
-  * Description: Slash command that toggles the _UTF browse window.            *
-  ****************************************************************************]]
+--- Slash command that toggles the _UTF browse window.
 function me.ToggleSlashCommand ()
 	me.Toggle();
 end
@@ -176,54 +140,48 @@ end
 
 
 
---[[****************************************************************************
-  * Function: _UTF.Browse:GlyphOnUpdate                                        *
-  * Description: Readjusts the glyph text's size.                              *
-  ****************************************************************************]]
-function me:GlyphOnUpdate ()
+--- Readjusts the glyph text's size to nearly fill the glyph.
+function Glyph:OnUpdate ()
+	-- Must be called every frame or updates will cap its height at 50 pixels
 	self.Text:SetTextHeight( self:GetHeight() - 30 );
 end
---[[****************************************************************************
-  * Function: _UTF.Browse:GlyphOnClick                                         *
-  * Description: Adds the current character to the chat edit box if visible.   *
-  ****************************************************************************]]
-function me:GlyphOnClick ()
-	if ( MacroFrameText and MacroFrameText:IsVisible() and MacroFrameText:HasFocus() ) then
-		MacroFrameText:Insert( self:GetText() );
-	else
-		local EditBox = DEFAULT_CHAT_FRAME.editBox;
-		if ( EditBox:IsVisible() ) then
-			EditBox:Insert( self:GetText() );
+--- Adds the current character to any edit box with focus.
+do
+	local EnumerateFrames = EnumerateFrames;
+	function Glyph:OnClick ()
+		local Frame = EnumerateFrames();
+		while ( Frame ) do
+			if ( Frame:IsObjectType( "EditBox" ) and Frame:HasFocus() ) then
+				if ( Frame ~= me.EntityName and Frame ~= me.CodePoint ) then
+					Frame:Insert( self:GetText() );
+				end
+				return true;
+			end
+			Frame = EnumerateFrames( Frame );
 		end
 	end
 end
 
 
---[[****************************************************************************
-  * Function: _UTF.Browse:EditBoxOnEscapePressed                               *
-  * Description: Clears keyboard focus and stops scans.                        *
-  ****************************************************************************]]
-function me:EditBoxOnEscapePressed ()
-	local Pane = self:GetParent();
-	if ( Pane.Direction ) then
-		Pane:EndSeek();
-	else
-		self:ClearFocus();
+--- Validates the entity name typed into the name edit box.
+function me.EntityName:OnTextChanged ( IsUserInput )
+	local Name = self:GetText();
+	local CodePoint = _UTFOptions.CharacterEntities[ Name ] or _UTF.CharacterEntities[ Name ];
+
+	local Color = CodePoint and HIGHLIGHT_FONT_COLOR or RED_FONT_COLOR;
+	self:SetTextColor( Color.r, Color.g, Color.b );
+	if ( IsUserInput and CodePoint ) then
+		me.SetCodePoint( CodePoint );
 	end
 end
---[[****************************************************************************
-  * Function: _UTF.Browse:EditBoxOnTextChanged                                 *
-  * Description: Updates the glyph graphic when the value changes.             *
-  ****************************************************************************]]
-function me:EditBoxOnTextChanged ()
-	local Pane = self:GetParent();
-	local CodePoint = Pane:GetCodePoint();
-	self:SetNumber( CodePoint );
-
-	Pane.Glyph:SetText( _UTF.DecToUTF( CodePoint ) );
-
-	if ( not Pane.Direction ) then
-		Pane:SetScript( "OnUpdate", me.OnUpdateCheck );
+--- Updates the glyph when the user types a new codepoint in.
+function me.CodePoint:OnTextChanged ( IsUserInput )
+	if ( IsUserInput ) then
+		local NewCodePoint = max( _UTF.Min, min( _UTF.Max, self:GetNumber() ) );
+		if ( not me.SetCodePoint( NewCodePoint ) ) then -- Already at this codepoint
+			-- Set number anyway
+			self:SetNumber( NewCodePoint );
+		end
 	end
 end
 
@@ -231,17 +189,24 @@ end
 
 
 me:Hide();
-me:SetSize( 200, 192 );
+me:SetSize( 150, 192 );
 me:SetPoint( "CENTER" );
 me:SetFrameStrata( "DIALOG" );
 me:EnableMouse( true );
 me:SetToplevel( true );
+me:EnableMouseWheel( true );
 me:SetBackdrop( {
-	bgFile = "Interface\\TutorialFrame\\TutorialFrameBackground";
-	edgeFile = "Interface\\TutorialFrame\\TutorialFrameBorder";
+	bgFile = [[Interface\TutorialFrame\TutorialFrameBackground]];
+	edgeFile = [[Interface\TutorialFrame\TutorialFrameBorder]];
 	tile = true; tileSize = 32; edgeSize = 32;
 	insets = { left = 7; right = 5; top = 3; bottom = 6; };
 } );
+tinsert( UISpecialFrames, me:GetName() ); -- Allow escape to close
+
+me:SetScript( "OnMouseWheel", me.OnMouseWheel );
+me:SetScript( "OnHide", me.OnHide );
+me:SetScript( "OnShow", me.OnShow );
+
 -- Make dragable
 me:SetMovable( true );
 me:SetUserPlaced( true );
@@ -250,80 +215,82 @@ me:CreateTitleRegion():SetAllPoints();
 -- Close button
 CreateFrame( "Button", nil, me, "UIPanelCloseButton" ):SetPoint( "TOPRIGHT", 4, 4 );
 -- Title
-me.Title:SetText( L.BROWSE_TITLE );
-me.Title:SetPoint( "TOPLEFT", me, 11, -6 );
-me:EnableMouseWheel( true );
+local Title = me:CreateFontString( nil, "ARTWORK", "GameFontHighlight" );
+Title:SetText( L.BROWSE_TITLE );
+Title:SetPoint( "TOPLEFT", me, 11, -6 );
 
 
-me:SetScript( "OnMouseWheel", me.OnMouseWheel );
-me:SetScript( "OnHide", me.OnHide );
-me:SetScript( "OnShow", me.OnShow );
+-- Edit boxes
+local CodePointLabel = me:CreateFontString( nil, "ARTWORK", "GameFontDisableSmall" );
+CodePointLabel:SetText( L.BROWSE_CODEPOINT );
+CodePointLabel:SetHeight( 16 );
+CodePointLabel:SetPoint( "BOTTOMLEFT", 8, 12 );
 
+local EntityNameLabel = me:CreateFontString( nil, "ARTWORK", "GameFontDisableSmall" );
+EntityNameLabel:SetText( L.BROWSE_ENTITYNAME );
+EntityNameLabel:SetHeight( 16 );
+EntityNameLabel:SetPoint( "BOTTOMLEFT", CodePointLabel, "TOPLEFT", 0, 8 );
 
--- Create edit box
-local Label = me:CreateFontString( nil, "ARTWORK", "GameFontDisableSmall" );
-Label:SetText( L.BROWSE_CODEPOINT );
-Label:SetHeight( 16 );
-Label:SetPoint( "BOTTOMLEFT", 12, 12 );
-local EditBox = CreateFrame( "EditBox", "_UTFBrowseEditBox", me, "InputBoxTemplate" );
-me.EditBox = EditBox;
-EditBox:SetPoint( "TOPLEFT", Label, "TOPRIGHT", 8, 0 );
-EditBox:SetPoint( "BOTTOMRIGHT", -12, 12 );
-EditBox:SetAutoFocus( false );
-EditBox:SetMaxLetters( floor( log10( _UTF.Max ) ) + 1 );
-EditBox:SetNumeric( true );
-EditBox:SetScript( "OnEditFocusGained", nil );
-EditBox:SetScript( "OnEscapePressed", me.EditBoxOnEscapePressed );
-EditBox:SetScript( "OnTextChanged", me.EditBoxOnTextChanged );
+local CodePoint = me.CodePoint;
+CodePoint:SetPoint( "TOP", CodePointLabel );
+CodePoint:SetPoint( "BOTTOMRIGHT", -8, 12 );
+CodePoint:SetPoint( "LEFT",
+	CodePointLabel:GetStringWidth() > EntityNameLabel:GetStringWidth() and CodePointLabel or EntityNameLabel,
+	"RIGHT", 8, 0 );
+CodePoint:SetAutoFocus( false );
+CodePoint:SetMaxLetters( floor( log10( _UTF.Max ) ) + 1 );
+CodePoint:SetNumeric( true );
+CodePoint:SetScript( "OnEditFocusGained", nil );
+CodePoint:SetScript( "OnTextChanged", CodePoint.OnTextChanged );
+
+local EntityName = me.EntityName;
+EntityName:SetPoint( "TOP", EntityNameLabel );
+EntityName:SetPoint( "BOTTOM", EntityNameLabel );
+EntityName:SetPoint( "LEFT", CodePoint );
+EntityName:SetPoint( "RIGHT", CodePoint );
+EntityName:SetAutoFocus( false );
+EntityName:SetScript( "OnEditFocusGained", nil );
+EntityName:SetScript( "OnTextChanged", EntityName.OnTextChanged );
 
 
 -- Create glyph button
-local Glyph = CreateFrame( "Button", nil, me );
-me.Glyph = Glyph;
-Glyph:SetPoint( "TOPLEFT", 12, -34 );
-Glyph:SetPoint( "BOTTOMRIGHT", EditBox, "TOPRIGHT", 2, 12 );
 Glyph:SetBackdrop( {
-	bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background";
+	bgFile = [[Interface\DialogFrame\UI-DialogBox-Background]];
 	tile = true; tileSize = 32;
 } );
-Glyph:SetScript( "OnUpdate", me.GlyphOnUpdate );
-Glyph:SetScript( "OnClick", me.GlyphOnClick );
+Glyph:SetScript( "OnUpdate", Glyph.OnUpdate );
+Glyph:SetScript( "OnClick", Glyph.OnClick );
 
--- Set up glyph font
-local GlyphFont = CreateFont( "_UTFBrowseGlyphFont" );
-Glyph.Font = GlyphFont;
-GlyphFont:SetFont( "Fonts\\ARIALN.TTF", 50 );
-GlyphFont:SetTextColor( 1.0, 0.82, 0.0 );
+Glyph:SetPoint( "TOPLEFT", 10, -28 );
+Glyph:SetPoint( "RIGHT", -10, 0 );
+Glyph:SetPoint( "BOTTOM", EntityName, "TOP", 0, 6 );
 
-local GlyphFontDisable = CreateFont( "_UTFBrowseGlyphFontDisable" );
-Glyph.FontDisable = GlyphFontDisable;
-GlyphFontDisable:SetFontObject( GlyphFont );
-GlyphFontDisable:SetTextColor( 0.5, 0.5, 0.5 );
+-- Set up glyph fonts
+Glyph.Font:SetFont( [[Fonts\ARIALN.TTF]], 50 );
+Glyph.Font:SetTextColor( 1.0, 0.82, 0.0 );
 
-local GlyphFontHighlight = CreateFont( "_UTFBrowseGlyphFontHighlight" );
-Glyph.FontHighlight = GlyphFontHighlight;
-GlyphFontHighlight:SetFontObject( GlyphFont );
-GlyphFontHighlight:SetTextColor( 1.0, 1.0, 1.0 );
+Glyph.FontDisable:SetFontObject( Glyph.Font );
+Glyph.FontDisable:SetTextColor( 0.5, 0.5, 0.5 );
 
-Glyph:SetNormalFontObject( GlyphFont );
-Glyph:SetDisabledFontObject( GlyphFontDisable );
-Glyph:SetHighlightFontObject( GlyphFontHighlight );
+Glyph.FontHighlight:SetFontObject( Glyph.Font );
+Glyph.FontHighlight:SetTextColor( 1.0, 1.0, 1.0 );
+
+Glyph:SetNormalFontObject( Glyph.Font );
+Glyph:SetDisabledFontObject( Glyph.FontDisable );
+Glyph:SetHighlightFontObject( Glyph.FontHighlight );
 
 -- Initialize button text
-local GlyphText = Glyph:CreateFontString();
-Glyph.Text = GlyphText;
-GlyphText:SetSize( 0, 0 );
-GlyphText:SetPoint( "CENTER" );
-Glyph:SetFontString( GlyphText );
+Glyph.Text = Glyph:CreateFontString();
+Glyph.Text:SetPoint( "CENTER" );
+Glyph:SetFontString( Glyph.Text );
 
 -- Add background to text
-local GlyphBackground = Glyph:CreateTexture( nil, "BACKGROUND" );
-Glyph.Background = GlyphBackground;
-GlyphBackground:SetAllPoints( GlyphText );
-GlyphBackground:SetTexture( 0.1, 0.1, 0.1 );
+Glyph.Background = Glyph:CreateTexture( nil, "BACKGROUND" );
+Glyph.Background:SetAllPoints( Glyph.Text );
+Glyph.Background:SetTexture( 0.1, 0.1, 0.1 );
 
 
--- Initialize to character 0
-EditBox:SetNumber( _UTF.Min );
+-- Initialize to minimum character
+me.SetCodePoint( _UTF.Min );
 
 SlashCmdList[ "_UTFTOGGLE" ] = me.ToggleSlashCommand;

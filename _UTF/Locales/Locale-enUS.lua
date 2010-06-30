@@ -4,9 +4,10 @@
   ****************************************************************************]]
 
 
-_UTFLocalization = setmetatable( {
-	BROWSE_TITLE = "Browse";
+select( 2, ... ).L = setmetatable( {
+	BROWSE_TITLE = "_|cffCCCC88UTF|r.Browse";
 	BROWSE_CODEPOINT = "Codepoint:";
+	BROWSE_ENTITYNAME = "Name:";
 	BROWSE_GLYPH_NOTAVAILABLE = "N/A";
 
 	CUSTOMIZE_TITLE = "Custom Replacements";
