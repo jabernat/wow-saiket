@@ -68,7 +68,8 @@ end
 
 --- Replaces the golden "?" model used for unknown units with a gray "?".
 function me:PortraitPostUpdate ()
-	if ( self:GetModel():lower() == [[interface\buttons\talktomequestionmark.m2]] ) then
+	local Model = self:GetModel();
+	if ( type( Model ) == "string" and Model:lower() == [[interface\buttons\talktomequestionmark.m2]] ) then
 		self:SetModel( [[Interface\Buttons\TalkToMeQuestion_Grey.mdx]] );
 	end
 end
