@@ -1,3 +1,14 @@
+--[[****************************************************************************
+  * _UTF by Saiket                                                             *
+  * _UTF.CharacterEntities.lua - Entity name to codepoint mappings.            *
+  ****************************************************************************]]
+
+
+--- Character entity references.
+-- Maps case-sensitive entity names to Unicode codepoints.
+-- @see <a href="http://www.w3.org/TR/xhtml1/DTD/xhtml-lat1.ent">-//W3C//ENTITIES Latin 1 for XHTML//EN</a>
+-- @see <a href="http://www.w3.org/TR/xhtml1/DTD/xhtml-symbol.ent">-//W3C//ENTITIES Symbols for XHTML//EN</a>
+-- @see <a href="http://www.w3.org/TR/xhtml1/DTD/xhtml-special.ent">-//W3C//ENTITIES Special for XHTML//EN</a>
 _UTF.CharacterEntities = {
 	quot = 34;
 	amp = 38;
@@ -256,6 +267,8 @@ _UTF.CharacterEntities = {
 };
 
 
+--- Default custom character entity references.
+-- @see _UTF.CharacterEntities
 _UTFOptions.CharacterEntities = {
 	note = 9834;
 	notes = 9835;

@@ -18,13 +18,13 @@ me.Max = 0x10FFFF;
 
 
 
---- Converts a Unicode codepoint to a UTF-8 string.
--- @param Int  Integer codepoint.
--- @return 1-4 byte string representing the character, or nil if out of range.
 do
 	local strchar = string.char;
 	local band = bit.band;
 	local rshift = bit.rshift;
+	--- Converts a Unicode codepoint to a UTF-8 string.
+	-- @param Int  Integer codepoint.
+	-- @return 1-4 byte string representing the character, or nil if out of range.
 	function me.IntToUTF ( Int )
 		if ( Int >= 0 and Int < 0x110000
 			and not ( Int >= 0xD800 and Int <= 0xDFFF ) -- Invalid range

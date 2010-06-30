@@ -38,13 +38,14 @@ function me:ReplaceEditBoxText ()
 end
 
 
---- Replaces references when tab is pressed in an edit box.
--- @return True if the tab keypress was handled.
 do
+	--- Replaces the "Handled" return without affecting other returns.
 	local function HandleReturn ( self, Handled, ... )
 		return me.ReplaceEditBoxText( self ) or Handled, ...;
 	end
 	local Backup = ChatEdit_CustomTabPressed;
+	--- Replaces references when tab is pressed in an edit box.
+	-- @return True if the tab keypress was handled.
 	function me:ChatEditCustomTabPressed ( ... )
 		if ( not self ) then
 			self = this;
@@ -52,9 +53,9 @@ do
 		return HandleReturn( self, Backup( self, ... ) );
 	end
 end
---- Replaces custom text strings in outbound chat.
 do
 	local Backup = SendChatMessage;
+	--- Replaces custom text strings in outbound chat.
 	function me.SendChatMessage ( Message, ... )
 		if ( _UTFOptions.Chat.TextReplace and Message ) then
 			for _, Replacement in ipairs( _UTFOptions.Chat.TextReplacements ) do
