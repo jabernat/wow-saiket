@@ -4,21 +4,20 @@
   ****************************************************************************]]
 
 
-local _UTF = _UTF;
-local L = _UTFLocalization;
+local _UTF = select( 2, ... );
+local L = _UTF.L;
 local me = CreateFrame( "Frame" );
 _UTF.Customize.TextReplace = me;
 
-me.Label1 = L.CUSTOMIZE_TEXTREPLACE_FIND;
-me.Label2 = L.CUSTOMIZE_TEXTREPLACE_REPLACE;
+me.Key = L.CUSTOMIZE_TEXTREPLACE_FIND;
+me.Value = L.CUSTOMIZE_TEXTREPLACE_REPLACE;
 
 
 
 
---[[****************************************************************************
-  * Function: local KeyToIndex                                                 *
-  * Description: Gets the table index of a key if present.                     *
-  ****************************************************************************]]
+--- Returns the index of a search pattern if already being used.
+-- @param Key  Search pattern to look for.
+-- @return Index that the pattern was found at in the options table, or nil if unused.
 local function KeyToIndex ( Key )
 	for Index, Replacement in ipairs( _UTFOptions.Chat.TextReplacements ) do
 		if ( Replacement[ 1 ] == Key ) then
@@ -28,73 +27,60 @@ local function KeyToIndex ( Key )
 end
 
 
---[[****************************************************************************
-  * Function: _UTF.Customize.TextReplace.Update                                *
-  * Description: Updates the data display.                                     *
-  ****************************************************************************]]
+--- Rebuilds the table of entities.
 function me.Update ()
 	local Table = _UTF.Customize.Table;
 	Table:SetHeader( L.CUSTOMIZE_TEXTREPLACE_INDEX, L.CUSTOMIZE_TEXTREPLACE_FIND, L.CUSTOMIZE_TEXTREPLACE_REPLACE );
 	for Index, Data in ipairs( _UTFOptions.Chat.TextReplacements ) do
-		Table:AddRow( Index, Index, Data[ 1 ]:gsub( "|", "||" ), Data[ 2 ]:gsub( "|", "||" ) );
+		Table:AddRow( Index, Index, Data[ 1 ], Data[ 2 ] );
 	end
 end
---[[****************************************************************************
-  * Function: _UTF.Customize.TextReplace.OnSelect                              *
-  * Description: Updates the edit boxes to match the table selection.          *
-  ****************************************************************************]]
+--- Callback that specifies new edit box text when a table entry is selected.
 function me.OnSelect ( Index )
-	return _UTFOptions.Chat.TextReplacements[ Index ][ 1 ], _UTFOptions.Chat.TextReplacements[ Index ][ 2 ];
+	return unpack( _UTFOptions.Chat.TextReplacements[ Index ], 1, 2 );
 end
 
---[[****************************************************************************
-  * Function: _UTF.Customize.TextReplace.Add                                   *
-  * Description: Adds a pair of values to the data set.                        *
-  ****************************************************************************]]
-function me.Add ( Key, ValueEditBox )
-	if ( me.CanAdd( Key, ValueEditBox ) ) then
-		local Table = _UTFOptions.Chat.TextReplacements;
+
+--- Adds a search pattern and replacement to the data set.
+-- @return True if added successfully.
+function me.Add ( Key, Value )
+	if ( me.CanAdd( Key, Value ) ) then
+		local TextReplacements = _UTFOptions.Chat.TextReplacements;
 		local Index = KeyToIndex( Key );
-		local Value = _UTF.ReplaceCharacterReferences( ValueEditBox:GetText() );
+		local Value = _UTF.ReplaceCharacterReferences( Value );
 		if ( Index ) then -- Replace old value
-			Table[ Index ][ 2 ] = Value;
+			TextReplacements[ Index ][ 2 ] = Value;
 		else
-			tinsert( Table, { Key, Value } );
+			tinsert( TextReplacements, { Key, Value } );
 		end
-
 		return true;
 	end
 end
---[[****************************************************************************
-  * Function: _UTF.Customize.TextReplace.Remove                                *
-  * Description: Adds a pair of values to the data set.                        *
-  ****************************************************************************]]
+--- Removes a text replacement by key from the data set.
+-- @return True if removed successfully.
 function me.Remove ( Key )
-	if ( me.CanRemove( Key ) ) then
-		tremove( _UTFOptions.Chat.TextReplacements, KeyToIndex( Key ) );
-
+	local Index = me.CanRemove( Key );
+	if ( Index ) then
+		tremove( _UTFOptions.Chat.TextReplacements, Index );
 		return true;
 	end
 end
 
---[[****************************************************************************
-  * Function: _UTF.Customize.TextReplace.CanRemove                             *
-  * Description: Returns the input's key if it is present and can be removed.  *
-  ****************************************************************************]]
+
+--- Validates that a key is present and can be removed.
+-- @return The unique identifier that can be used to select this removable value in the table.
 function me.CanRemove ( Key )
 	if ( Key ~= "" ) then
 		return KeyToIndex( Key );
 	end
 end
---[[****************************************************************************
-  * Function: _UTF.Customize.TextReplace.CanAdd                                *
-  * Description: Returns the input's key if it can be added.                   *
-  ****************************************************************************]]
-function me.CanAdd ( Key, ValueEditBox )
+--- Validates that a key/value pair can be added.
+-- @return True if the values can be added successfully.
+function me.CanAdd ( Key, Value )
 	if ( Key ~= "" ) then
-		Key = KeyToIndex( Key );
-		if ( not Key or _UTFOptions.Chat.TextReplacements[ Key ][ 2 ] ~= ValueEditBox:GetText() ) then
-			return Key or true;
+		local Index = KeyToIndex( Key );
+		if ( not Index or _UTFOptions.Chat.TextReplacements[ Index ][ 2 ] ~= Value ) then
+			return true;
 		end
 	end
 end
