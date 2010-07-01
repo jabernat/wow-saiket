@@ -4,15 +4,17 @@
   ****************************************************************************]]
 
 
-local AddOnName = ...;
 _LatencyOptions = {
 	IsLocked = false;
 };
 
 
-local L = _LatencyLocalization;
+local AddOnName, me = ...;
+local L = me.L;
 local LibGraph = LibStub( "LibGraph-2.0" );
-local me = CreateFrame( "Frame", "_Latency", UIParent );
+
+me.Frame = CreateFrame( "Frame", nil, UIParent );
+me.Resize = CreateFrame( "Button", nil, me.Frame );
 
 -- Configuration
 me.PingRate = 0.1; -- Minimum time between pings
@@ -23,39 +25,32 @@ me.MaxSimultaneousPings = 1; -- Max number of pings that can be sent at once
 
 me.Prefix = "_L";
 
-local PingData = {};
-me.PingData = PingData;
+me.PingData = {};
 me.PingCutoff = 0;
 me.NumPings = 0; -- Number of pings en-route
 
-local TopColor = { r = 0.8, g = 0.8, b = 17 / 32 }; -- Gold
-me.TopColor = TopColor;
-local BottomColor = { r = 0.4; g = 0.4; b = 0.0; a = 0.4; }; -- Modified based on ping
-me.BottomColor = BottomColor;
+me.TopColor = { r = 0.8, g = 0.8, b = 17 / 32 }; -- Gold
+me.BottomColor = { r = 0.4; g = 0.4; b = 0.0; a = 0.4; }; -- Modified based on ping
 me.Padding = 6;
 
 
 
 
---[[****************************************************************************
-  * Function: _Latency.Toggle                                                  *
-  * Description: Toggles the mod enabled or disabled.                          *
-  ****************************************************************************]]
+--- Toggles the mod window.
+-- @param Enable  True or false to show/hide the window, or nil to toggle.
 function me.Toggle ( Enable )
 	if ( Enable == nil ) then
-		Enable = not me:IsShown();
+		Enable = not me.Frame:IsShown();
 	end
 
 	if ( Enable ) then
-		me:Show();
+		me.Frame:Show();
 	else
-		me:Hide();
+		me.Frame:Hide();
 	end
 end
---[[****************************************************************************
-  * Function: _Latency.ToggleLocked                                            *
-  * Description: Toggles whether the frame is locked or not.                   *
-  ****************************************************************************]]
+--- Toggles whether the frame is locked or not.
+-- @param Enable  True or false to lock/unlock controls, or nil to toggle.
 function me.ToggleLocked ( Locked )
 	if ( Locked == nil ) then
 		Locked = not _LatencyOptions.IsLocked;
@@ -63,7 +58,7 @@ function me.ToggleLocked ( Locked )
 	_LatencyOptions.IsLocked = Locked;
 	local Enable = not Locked;
 
-	me:EnableMouse( Enable );
+	me.Frame:EnableMouse( Enable );
 	me.Close:EnableMouse( Enable );
 	SetDesaturation( me.Close:GetNormalTexture(), Locked );
 	me.Resize:EnableMouse( Enable );
@@ -73,20 +68,21 @@ function me.ToggleLocked ( Locked )
 	else
 		me.Close:Disable();
 		me.Resize:Disable();
-		me:StopMovingOrSizing();
+		me.Frame:StopMovingOrSizing();
 	end
 end
 
 
---[[****************************************************************************
-  * Function: _Latency.TimeDecode                                              *
-  * Description: Decodes an encoded time string to a floating-point number.    *
-  ****************************************************************************]]
 do
 	local lshift = bit.lshift;
+	local MaxFloatPart = 2 ^ 14 - 1;
+	--- Decodes an encoded time string to a floating-point number.
+	-- @param String  Encoded time string from _Latency.TimeEncode.
+	-- @return Floating point time relative to GetTime().
+	-- @see _Latency.TimeEncode
 	function me.TimeDecode ( String )
 		local FP1, FP2 = String:byte( 1, 2 );
-		local FloatPart = ( lshift( FP1 - 0x80, 7 ) + ( FP2 - 0x80 ) ) / ( 2 ^ 14 - 1 );
+		local FloatPart = ( lshift( FP1 - 0x80, 7 ) + ( FP2 - 0x80 ) ) / MaxFloatPart;
 
 		local IntPart = 0;
 		for Index = 3, #String do
@@ -95,21 +91,18 @@ do
 
 		return IntPart + FloatPart;
 	end
-end
---[[****************************************************************************
-  * Function: _Latency.TimeEncode                                              *
-  * Description: Encodes the current time to a string.                         *
-  *   "[fH][fL][iL][i2][i3]...[iH]" with (f)loat, (i)nt, (H)igh, (L)ow.        *
-  ****************************************************************************]]
-do
+
 	local floor = floor;
 	local band = bit.band;
 	local rshift = bit.rshift;
 	local Bytes = {};
+	--- Encodes the current time to a string.
+	-- Format is "[fH][fL][iL][i2][i3]...[iH]" with (f)loat, (i)nt, (H)igh, (L)ow.
+	-- @return Binary data string with no embedded nulls.
 	function me.TimeEncode ()
 		local Time = GetTime();
 		local IntPart = floor( Time );
-		local FloatPart = floor( ( Time - IntPart ) * ( 2 ^ 14 - 1 ) + 0.5 );
+		local FloatPart = floor( ( Time - IntPart ) * MaxFloatPart + 0.5 );
 
 		-- Bit 8 of every byte always on to prevent embedded nulls in the string
 		Bytes[ 1 ] = rshift( FloatPart, 7 ) + 0x80;
@@ -126,19 +119,16 @@ do
 end
 
 
---[[****************************************************************************
-  * Function: _Latency.GetAveragePing                                          *
-  * Description: Returns a running average of the player's ping.               *
-  ****************************************************************************]]
+--- Returns a running average of the player's ping.
 function me.GetAveragePing ()
 	local MinSendTime = GetTime() - me.PingDataAge;
 	local Count, Total = 0, 0;
-	for SendTime, Latency in pairs( PingData ) do
+	for SendTime, Latency in pairs( me.PingData ) do
 		if ( SendTime + Latency > MinSendTime ) then
 			Count = Count + 1;
 			Total = Total + Latency;
 		else
-			PingData[ SendTime ] = nil;
+			me.PingData[ SendTime ] = nil;
 		end
 	end
 	if ( Count ~= 0 and Total ~= 0 ) then
@@ -147,15 +137,67 @@ function me.GetAveragePing ()
 end
 
 
---[[****************************************************************************
-  * Function: _Latency:OnUpdate                                                *
-  * Description: Periodically sends ping messages.                             *
-  ****************************************************************************]]
+--- Starts resizing the frame.
+function me.Resize:OnMouseDown ()
+	self:GetParent():StartSizing( "BOTTOMRIGHT" );
+end
+--- Stops resizing the frame.
+function me.Resize:OnMouseUp ()
+	self:GetParent():StopMovingOrSizing();
+end
+
+
+--- Saves position and size information before logging out.
+function me.Frame:PLAYER_LOGOUT ()
+	local Options, _ = _LatencyOptions;
+	Options.Width, Options.Height = me.Frame:GetSize();
+	Options.Point, _, _, Options.X, Options.Y = me.Frame:GetPoint();
+end
+--- Prevent pings from before zoning from being read after loading.
+function me.Frame:PLAYER_ENTERING_WORLD ()
+	me.PingCutoff = GetTime();
+	me.NumPings = 0; -- Prevent issue with losing messages when entering/leaving BGs.
+end
+--- Reads round trip ping messages and times them.
+function me.Frame:CHAT_MSG_ADDON ( _, Prefix, Message, Type, Author )
+	if ( Prefix == me.Prefix and Type == "WHISPER" and Author == UnitName( "player" ) ) then
+		if ( me.NumPings > 0 ) then
+			me.NumPings = me.NumPings - 1;
+		end
+
+		local SendTime = me.TimeDecode( Message );
+		if ( SendTime >= me.PingCutoff ) then
+			me.PingData[ SendTime ] = GetTime() - SendTime;
+		end
+	end
+end
+--- Applies settings when loaded.
+function me.Frame:ADDON_LOADED ( Event, AddOn )
+	if ( AddOn == AddOnName ) then
+		self:UnregisterEvent( Event );
+		self[ Event ] = nil;
+
+		local Options = _LatencyOptions;
+		self:ClearAllPoints();
+		self:SetPoint( Options.Point or "CENTER", nil, Options.Point or "CENTER", Options.X or 0, Options.Y or 0 );
+		self:SetSize( Options.Width or 300, Options.Height or 80 );
+		me.ToggleLocked( Options.IsLocked );
+	end
+end
+--- Global event handler.
+function me.Frame:OnEvent ( Event, ... )
+	if ( self[ Event ] ) then
+		self[ Event ]( self, Event, ... );
+	end
+end
+
+
 do
 	local LastPing = me.PingRate;
 	local LastUpdate = me.UpdateRate;
 	local min, max = min, max;
-	function me:OnUpdate ( Elapsed )
+	--- Periodically sends ping messages and updates the graph display.
+	function me.Frame:OnUpdate ( Elapsed )
 		LastPing = LastPing + Elapsed;
 		if ( LastPing >= me.PingRate ) then
 			LastPing = 0;
@@ -171,100 +213,35 @@ do
 			local Ping = me.GetAveragePing();
 			if ( Ping ) then
 				me.Graph:AddTimeData( Ping * me.UpdateRate );
-				me.SubTitle:SetFormattedText( L.SUBTITLE_FORMAT, Ping );
+				me.Label:SetFormattedText( L.LABEL_FORMAT, Ping );
 			end
-		end
 
-		local Value = me.Graph:GetValue( me.Graph.XMax );
-		BottomColor.r = min( Value / 400, 1.0 );
-		BottomColor.g = min( max( 1 - Value / 150 * 0.4, 0 ), 0.4 );
-		me.Graph:SetBarColors( BottomColor, TopColor );
-	end
-end
---[[****************************************************************************
-  * Function: _Latency:PLAYER_LOGOUT                                           *
-  ****************************************************************************]]
-function me:PLAYER_LOGOUT ()
-	me:SetUserPlaced( false );
-
-	local Options, _ = _LatencyOptions;
-	Options.Width, Options.Height = me:GetSize();
-	Options.Point, _, _, Options.X, Options.Y = me:GetPoint();
-end
---[[****************************************************************************
-  * Function: _Latency:PLAYER_ENTERING_WORLD                                   *
-  ****************************************************************************]]
-function me:PLAYER_ENTERING_WORLD ()
-	-- Prevent pings from before zoning from being read after loading
-	me.PingCutoff = GetTime();
-	me.NumPings = 0; -- Prevent issue with losing messages when entering/leaving BGs.
-end
---[[****************************************************************************
-  * Function: _Latency:CHAT_MSG_ADDON                                          *
-  ****************************************************************************]]
-function me:CHAT_MSG_ADDON ( _, Prefix, Message, Type, Author )
-	if ( Prefix == me.Prefix and Type == "WHISPER" and Author == UnitName( "player" ) ) then
-		if ( me.NumPings > 0 ) then
-			me.NumPings = me.NumPings - 1;
-		end
-
-		local SendTime = me.TimeDecode( Message );
-		if ( SendTime >= me.PingCutoff ) then
-			PingData[ SendTime ] = GetTime() - SendTime;
+			local Value = me.Graph:GetValue( me.Graph.XMax );
+			me.BottomColor.r = min( Value / 400, 1 );
+			me.BottomColor.g = min( max( 1 - Value / 150 * 0.4, 0 ), 0.4 );
+			me.Graph:SetBarColors( me.BottomColor, me.TopColor );
 		end
 	end
 end
---[[****************************************************************************
-  * Function: _Latency:ADDON_LOADED                                            *
-  ****************************************************************************]]
-function me:ADDON_LOADED ( Event, AddOn )
-	if ( AddOn:lower() == AddOnName:lower() ) then
-		me:UnregisterEvent( Event );
-		me[ Event ] = nil;
 
-		local Options = _LatencyOptions;
-		me:ClearAllPoints();
-		me:SetPoint( Options.Point or "CENTER", nil, Options.Point or "CENTER", Options.X or 0, Options.Y or 0 );
-		me:SetSize( Options.Width or 300, Options.Height or 80 );
-		me.ToggleLocked( Options.IsLocked );
-	end
+
+--- Resizes the graph to match the window size.
+function me.Frame:OnSizeChanged ()
+	-- Note: LibGraph-2.0 doesn't hook SetSize, so use SetWidth/Height.
+	me.Graph:SetWidth( self:GetWidth() - me.Padding * 2 );
+	me.Graph:SetHeight( self:GetHeight() - me.Padding * 2 - 18 );
 end
---[[****************************************************************************
-  * Function: _Latency:OnEvent                                                 *
-  * Description: Global event handler.                                         *
-  ****************************************************************************]]
-do
-	local type = type;
-	function me:OnEvent ( Event, ... )
-		if ( type( self[ Event ] ) == "function" ) then
-			self[ Event ]( self, Event, ... );
-		end
-	end
-end
---[[****************************************************************************
-  * Function: _Latency:OnSizeChanged                                           *
-  * Description: Resizes the graph.                                            *
-  ****************************************************************************]]
-function me:OnSizeChanged ()
-	-- Note: LibGraph-2.0 doesn't hook SetSize
-	self.Graph:SetWidth( self:GetWidth() - me.Padding * 2 );
-	self.Graph:SetHeight( self:GetHeight() - me.Padding * 2 - 18 );
-end
---[[****************************************************************************
-  * Function: _Latency:OnHide                                                  *
-  * Description: Prints a notice for how to reopen the window.                 *
-  ****************************************************************************]]
-function me:OnHide ()
-	-- Only print message when directly hidden (i.e. not hidding the interface)
-	if ( not self:IsShown() ) then
+--- Prints a notice for how to reopen the window.
+function me.Frame:OnHide ()
+	if ( not self:IsShown() ) then -- Was directly hidden (i.e. didn't hide interface)
 		self:SetScript( "OnHide", nil ); -- Only print once
 		self.OnHide = nil;
 		print( L.ONCLOSE_NOTICE );
 	end
 end
---[[****************************************************************************
-  * Function: _Latency.SlashCommand                                            *
-  ****************************************************************************]]
+
+
+--- Slash command handler to toggle the window or lock it.
 function me.SlashCommand ( Input )
 	if ( Input and Input:trim():lower() == L.LOCK ) then
 		me.ToggleLocked();
@@ -277,38 +254,39 @@ end
 
 
 -- Set up window
-me:Hide();
-me:SetScale( 0.8 );
-me:SetFrameStrata( "MEDIUM" );
-me:SetToplevel( true );
-me:SetBackdrop( {
+local Frame = me.Frame;
+Frame:Hide();
+Frame:SetScale( 0.8 );
+Frame:SetFrameStrata( "MEDIUM" );
+Frame:SetToplevel( true );
+Frame:SetBackdrop( {
 	bgFile = [[Interface\TutorialFrame\TutorialFrameBackground]];
 	edgeFile = [[Interface\TutorialFrame\TutorialFrameBorder]];
 	tile = true; tileSize = 32; edgeSize = 32;
 	insets = { left = 7; right = 5; top = 3; bottom = 6; };
 } );
 -- Make dragable
-me:EnableMouse( true );
-me:SetResizable( true );
-me:SetClampedToScreen( true );
-me:SetClampRectInsets( me.Padding + 2, -me.Padding, -me.Padding - 18, me.Padding );
-me:CreateTitleRegion():SetAllPoints();
+Frame:EnableMouse( true );
+Frame:SetResizable( true );
+Frame:SetClampedToScreen( true );
+Frame:SetClampRectInsets( me.Padding + 2, -me.Padding, -me.Padding - 18, me.Padding );
+Frame:CreateTitleRegion():SetAllPoints();
 -- Close button
-me.Close = CreateFrame( "Button", nil, me, "UIPanelCloseButton" );
+me.Close = CreateFrame( "Button", nil, Frame, "UIPanelCloseButton" );
 me.Close:SetPoint( "TOPRIGHT", 4, 4 );
-me.Close:SetScript( "OnClick", function () me.Toggle(); end );
 -- Title
-me.Title = me:CreateFontString( nil, "ARTWORK", "GameFontHighlight" );
-me.Title:SetText( L.TITLE );
-me.Title:SetPoint( "TOPLEFT", me, 11, -6 );
--- SubTitle
-me.SubTitle = me:CreateFontString( nil, "ARTWORK", "GameFontNormal" );
-me.SubTitle:SetPoint( "LEFT", me.Title, "RIGHT", 4, 0 );
-me.SubTitle:SetPoint( "RIGHT", me.Close, "LEFT", -4, 0 );
-me.SubTitle:SetJustifyH( "RIGHT" );
+local Title = Frame:CreateFontString( nil, "ARTWORK", "GameFontHighlight" );
+Title:SetText( L.TITLE );
+Title:SetPoint( "TOPLEFT", Frame, 11, -6 );
+-- Ping label
+me.Label = Frame:CreateFontString( nil, "ARTWORK", "GameFontNormal" );
+me.Label:SetPoint( "LEFT", Title, "RIGHT", 4, 0 );
+me.Label:SetPoint( "RIGHT", me.Close, "LEFT", -4, 0 );
+me.Label:SetJustifyH( "RIGHT" );
 
 -- Graph
-local Graph = LibGraph:CreateGraphRealtime( "_LatencyGraph", me, "BOTTOMLEFT", "BOTTOMLEFT", me.Padding + 2, me.Padding, me:GetWidth() - me.Padding * 2, me:GetHeight() - me.Padding * 2 - 18 );
+local Graph = LibGraph:CreateGraphRealtime( "_LatencyGraph", Frame, "BOTTOMLEFT", "BOTTOMLEFT",
+	me.Padding + 2, me.Padding, Frame:GetWidth() - me.Padding * 2, Frame:GetHeight() - me.Padding * 2 - 18 );
 me.Graph = Graph;
 Graph:SetGridSpacing( 1.0, 100 );
 Graph:SetYMax( 2.0 );
@@ -323,35 +301,30 @@ Graph:SetFilterRadius( 2 );
 
 
 -- Resize grip
-local Resize = CreateFrame( "Button", nil, me );
-me.Resize = Resize;
+local Resize = me.Resize;
 Resize:SetSize( 30, 30 );
 Resize:SetPoint( "BOTTOMRIGHT", 6, -4 );
 Resize:SetFrameLevel( Graph:GetFrameLevel() + 2 );
-Resize:SetNormalTexture( [[Interface\AddOns\]]..( ... )..[[\Skin\ResizeGrip]] );
-Resize:SetHighlightTexture( [[Interface\AddOns\]]..( ... )..[[\Skin\ResizeGrip]] );
-Resize:SetScript( "OnMouseDown", function ()
-	me:StartSizing( "BOTTOMRIGHT" );
-end );
-Resize:SetScript( "OnMouseUp", function ()
-	me:StopMovingOrSizing();
-end );
-me:SetMinResize( 44 + me.Title:GetWidth(), 60 );
+Resize:SetNormalTexture( [[Interface\AddOns\]]..AddOnName..[[\Skin\ResizeGrip]] );
+Resize:SetHighlightTexture( [[Interface\AddOns\]]..AddOnName..[[\Skin\ResizeGrip]] );
+Resize:SetScript( "OnMouseDown", Resize.OnMouseDown );
+Resize:SetScript( "OnMouseUp", Resize.OnMouseUp );
+Frame:SetMinResize( 44 + Title:GetWidth(), 60 );
 
 
-me:SetScript( "OnUpdate", me.OnUpdate );
-me:SetScript( "OnEvent", me.OnEvent );
-me:SetScript( "OnSizeChanged", me.OnSizeChanged );
-me:SetScript( "OnHide", me.OnHide );
-me:RegisterEvent( "CHAT_MSG_ADDON" );
-me:RegisterEvent( "PLAYER_ENTERING_WORLD" );
-me:RegisterEvent( "ADDON_LOADED" );
-me:RegisterEvent( "PLAYER_LOGOUT" );
+Frame:SetScript( "OnEvent", Frame.OnEvent );
+Frame:SetScript( "OnUpdate", Frame.OnUpdate );
+Frame:SetScript( "OnSizeChanged", Frame.OnSizeChanged );
+Frame:SetScript( "OnHide", Frame.OnHide );
+Frame:RegisterEvent( "CHAT_MSG_ADDON" );
+Frame:RegisterEvent( "PLAYER_ENTERING_WORLD" );
+Frame:RegisterEvent( "ADDON_LOADED" );
+Frame:RegisterEvent( "PLAYER_LOGOUT" );
 
 
 SlashCmdList[ "_LATENCY_TOGGLE" ] = me.SlashCommand;
 -- Un-cache stub slash commands created by AddonLoader
-for Command in GetAddOnMetadata( ..., "X-LoadOn-Slash" ):gmatch( "/[^%s,]+" ) do
+for Command in GetAddOnMetadata( AddOnName, "X-LoadOn-Slash" ):gmatch( "/[^%s,]+" ) do
 	Command = Command:upper();
 	hash_SlashCmdList[ Command ] = nil;
 	_G[ "SLASH_"..Command:sub( 2 ).."1" ] = nil;
