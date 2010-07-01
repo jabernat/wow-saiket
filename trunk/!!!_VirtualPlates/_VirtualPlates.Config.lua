@@ -4,8 +4,8 @@
   ****************************************************************************]]
 
 
-local _VirtualPlates = _VirtualPlates;
-local L = _VirtualPlatesLocalization;
+local _VirtualPlates = select( 2, ... );
+local L = _VirtualPlates.L;
 local me = CreateFrame( "Frame", "_VirtualPlatesConfig" );
 _VirtualPlates.Config = me;
 
@@ -23,16 +23,12 @@ me.ScaleFactorMax = 40;
 
 
 
---[[****************************************************************************
-  * Function: _VirtualPlates.Config:SliderSetEnabled                           *
-  ****************************************************************************]]
+--- Enables or disables an OptionsSliderTemplate slider.
 function me:SliderSetEnabled ( Enable )
 	( Enable and BlizzardOptionsPanel_Slider_Enable or BlizzardOptionsPanel_Slider_Disable )( self );
 	self.Value:SetFontObject( Enable and GameFontNormalSmall or GameFontDisableSmall );
 end
---[[****************************************************************************
-  * Function: _VirtualPlates.Config:SliderSetRange                             *
-  ****************************************************************************]]
+--- Simultaneously sets a slider's range with its min and max labels.
 function me:SliderSetRange ( Min, Max )
 	self:SetMinMaxValues( Min, Max );
 
@@ -40,9 +36,7 @@ function me:SliderSetRange ( Min, Max )
 	_G[ Name.."Low" ]:SetFormattedText( self.Format, MinLabel or Min );
 	_G[ Name.."High" ]:SetFormattedText( self.Format, MaxLabel or Max );
 end
---[[****************************************************************************
-  * Function: _VirtualPlates.Config:SliderOnValueChanged                       *
-  ****************************************************************************]]
+--- Updates a slider's value text and synchronizes settings to the new value.
 function me:SliderOnValueChanged ( Value )
 	self.Value:SetFormattedText( self.Format, Value );
 
@@ -53,15 +47,12 @@ function me:SliderOnValueChanged ( Value )
 end
 
 
---[[****************************************************************************
-  * Function: _VirtualPlates.Config.MinScale:OnValueChanged                    *
-  ****************************************************************************]]
+--- Adjusts the MaxScale slider so it can't be less than the minimum scale.
 function me.MinScale:OnValueChanged ( Value )
 	me.SliderSetRange( me.MaxScale, Value, me.MaxScaleMax );
 end
---[[****************************************************************************
-  * Function: _VirtualPlates.Config.MaxScaleEnabled.setFunc                    *
-  ****************************************************************************]]
+--- Enables or disables the MaxScale setting.
+-- @param Enable  "1" when enabled and "0" when disabled.
 function me.MaxScaleEnabled.setFunc ( Enable )
 	Enable = Enable == "1";
 
@@ -72,9 +63,7 @@ end
 
 
 
---[[****************************************************************************
-  * Function: _VirtualPlates.Config:default                                    *
-  ****************************************************************************]]
+--- Applies default settings.
 function me:default ()
 	_VirtualPlates.Synchronize();
 end
@@ -86,12 +75,11 @@ me.name = L.CONFIG_TITLE;
 me:Hide();
 
 -- Pane title
-me.Title = me:CreateFontString( nil, "ARTWORK", "GameFontNormalLarge" );
-me.Title:SetPoint( "TOPLEFT", 16, -16 );
-me.Title:SetText( L.CONFIG_TITLE );
+local Title = me:CreateFontString( nil, "ARTWORK", "GameFontNormalLarge" );
+Title:SetPoint( "TOPLEFT", 16, -16 );
+Title:SetText( L.CONFIG_TITLE );
 local SubText = me:CreateFontString( nil, "ARTWORK", "GameFontHighlightSmall" );
-me.SubText = SubText;
-SubText:SetPoint( "TOPLEFT", me.Title, "BOTTOMLEFT", 0, -8 );
+SubText:SetPoint( "TOPLEFT", Title, "BOTTOMLEFT", 0, -8 );
 SubText:SetPoint( "RIGHT", -32, 0 );
 SubText:SetHeight( 32 );
 SubText:SetJustifyH( "LEFT" );
@@ -99,6 +87,8 @@ SubText:SetJustifyV( "TOP" );
 SubText:SetText( L.CONFIG_DESC );
 
 
+--- Creates a common slider with value text.
+-- @param Format  Number format used for min, max, and current value text.
 local function SetupSlider ( self, Format )
 	self.Format = Format;
 	self:SetPoint( "RIGHT", -20, 0 );
