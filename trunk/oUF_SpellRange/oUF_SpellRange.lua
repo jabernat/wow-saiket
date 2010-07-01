@@ -29,10 +29,6 @@ local HarmID, HarmName, CanHarm;
 
 
 
---- Uses an appropriate range check for the given unit.
--- Actual range depends on reaction, known spells, and status of the unit.
--- @param UnitID  Unit to check range for.
--- @return True if in casting range.
 local IsInRange;
 do
 	local UnitIsConnected = UnitIsConnected;
@@ -45,6 +41,10 @@ do
 	local UnitInRange = UnitInRange;
 	local IsSpellInRange = IsSpellInRange;
 	local CheckInteractDistance = CheckInteractDistance;
+	--- Uses an appropriate range check for the given unit.
+	-- Actual range depends on reaction, known spells, and status of the unit.
+	-- @param UnitID  Unit to check range for.
+	-- @return True if in casting range.
 	function IsInRange ( UnitID )
 		if ( UnitIsConnected( UnitID ) ) then
 			if ( UnitCanAssist( "player", UnitID ) ) then
@@ -66,26 +66,22 @@ do
 	end
 end
 --- Rechecks range for a unit frame, and fires callbacks when the unit passes in or out of range.
-local UpdateRange;
-do
-	local InRange;
-	function UpdateRange ( self )
-		InRange = not not IsInRange( self.unit ); -- Cast to boolean
-		if ( ObjectRanges[ self ] ~= InRange ) then -- Range state changed
-			ObjectRanges[ self ] = InRange;
+local function UpdateRange ( self )
+	local InRange = not not IsInRange( self.unit ); -- Cast to boolean
+	if ( ObjectRanges[ self ] ~= InRange ) then -- Range state changed
+		ObjectRanges[ self ] = InRange;
 
-			if ( self.SpellRangeOverride ) then
-				self:SpellRangeOverride( InRange );
-			else
-				self:SetAlpha( self[ InRange and "inRangeAlpha" or "outsideRangeAlpha" ] );
-			end
+		if ( self.SpellRangeOverride ) then
+			self:SpellRangeOverride( InRange );
+		else
+			self:SetAlpha( self[ InRange and "inRangeAlpha" or "outsideRangeAlpha" ] );
 		end
 	end
 end
---- Checks whether the player knows his or her class-specific range checking spells.
 local UpdateSpells;
 do
 	local IsSpellKnown = IsSpellKnown;
+	--- Checks whether the player knows his or her class-specific range checking spells.
 	function UpdateSpells ()
 		-- Set to true if spell is in spellbook, and cache its name
 		if ( HelpID ) then
@@ -104,10 +100,10 @@ do
 end
 
 
---- Updates the range display for all visible oUF unit frames on an interval.
 local OnUpdate;
 do
 	local NextUpdate = 0;
+	--- Updates the range display for all visible oUF unit frames on an interval.
 	function OnUpdate ( self, Elapsed )
 		NextUpdate = NextUpdate - Elapsed;
 		if ( NextUpdate <= 0 ) then
@@ -155,9 +151,9 @@ local function Disable ( self )
 	end
 end
 --- Called by oUF when the unit frame's unit changes or otherwise needs a complete update.
--- @param Event  Reason for the update, defined by oUF rather than by real events.
+-- @param Event  Reason for the update.  Can be a real event, nil, or a string defined by oUF.
 local function Update ( self, Event, UnitID )
-	if ( Event ~= "OnTargetUpdate" ) then -- Caused by a real event
+	if ( Event ~= "OnTargetUpdate" ) then -- OnTargetUpdate is fired on a timer for *target units that don't have real events
 		UpdateSpells();
 		ObjectRanges[ self ] = nil; -- Force update to fire
 		UpdateRange( self ); -- Update range immediately
@@ -168,7 +164,7 @@ end
 
 
 local _, Class = UnitClass( "player" );
---- Optional low level baseline skills with greater than 28 yard range
+--- Optional low level baseline skills with greater than 28 yard range.
 HelpID = ( {
 	DRUID = 5185; -- Healing Touch
 	MAGE = 1459; -- Arcane Intellect
