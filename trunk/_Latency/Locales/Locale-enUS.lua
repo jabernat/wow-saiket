@@ -4,10 +4,10 @@
   ****************************************************************************]]
 
 
-_LatencyLocalization = setmetatable( {
+select( 2, ... ).L = setmetatable( {
 	LOCK = "lock";
 	ONCLOSE_NOTICE = "_|cffCCCC88Latency|r: To reopen the meter, use |cff808080“/latency”|r or |cff808080“/lag”|r.";
-	SUBTITLE_FORMAT = "|cff808080(|r%.01fms|cff808080)";
+	LABEL_FORMAT = "|cff808080(|r%.01fms|cff808080)";
 	TITLE = "_|cffCCCC88Latency|r";
 }, {
 	__index = function ( self, Key )
