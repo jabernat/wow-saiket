@@ -5,7 +5,7 @@
 
 
 -- See http://wow.curseforge.com/addons/virtualplates/localization/enUS/
-_VirtualPlatesLocalization = setmetatable( {
+select( 2, ... ).L = setmetatable( {
 	CONFIG_DESC = "Configure the way _VirtualPlates scales nameplates.",
 	CONFIG_LIMITS = "Nameplate Scale Limits",
 	CONFIG_MAXSCALE = "Maximum",

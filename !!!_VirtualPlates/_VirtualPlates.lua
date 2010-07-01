@@ -4,8 +4,10 @@
   ****************************************************************************]]
 
 
-local AddOnName = ...;
-local me = CreateFrame( "Frame", "_VirtualPlates", WorldFrame );
+local AddOnName, me = ...;
+_VirtualPlates = me;
+me.Frame = CreateFrame( "Frame", nil, WorldFrame );
+
 me.Version = GetAddOnMetadata( AddOnName, "Version" ):match( "^([%d.]+)" );
 
 local Plates = {};
@@ -38,19 +40,16 @@ local PlateOverrides = {}; -- [ MethodName ] = Function overrides for Visuals
 
 
 
---[[****************************************************************************
-  * Function: _VirtualPlates:PlateOnShow                                       *
-  * Description: WoW re-anchors most regions when it shows a nameplate, so     *
-  *   restore those anchors to the Visual frame.                               *
-  ****************************************************************************]]
 do
-	local select = select;
-	local function ResetPoint ( Plate, Region, ... )
-		if ( select( 2, ... ) == Plate ) then
-			Region:SetPoint( ..., Plates[ Plate ], select( 3, ... ) );
+	--- If an anchor ataches to the original plate (by WoW), re-anchor to the Visual.
+	local function ResetPoint ( Plate, Region, Point, RelFrame, ... )
+		if ( RelFrame == Plate ) then
+			Region:SetPoint( Point, Plates[ Plate ], ... );
 		end
 	end
 
+	--- Re-anchors regions when a plate is shown.
+	-- WoW re-anchors most regions when it shows a nameplate, so restore those anchors to the Visual frame.
 	function me:PlateOnShow ()
 		local Visual = Plates[ self ];
 		PlatesVisible[ self ] = Visual;
@@ -63,9 +62,7 @@ do
 		end
 	end
 end
---[[****************************************************************************
-  * Function: _VirtualPlates:PlateOnHide                                       *
-  ****************************************************************************]]
+--- Removes the plate from the visible list when hidden.
 function me:PlateOnHide ()
 	PlatesVisible[ self ] = nil;
 end
@@ -73,14 +70,13 @@ end
 
 
 
---[[****************************************************************************
-  * Function: local PlateAdd                                                   *
-  * Description: Adds and skins a new nameplate.                               *
-  ****************************************************************************]]
 local PlateAdd;
 do
 	local select = select;
-	local function ReparentChildren ( Plate, ... ) -- Also saves a list of all original regions into the plate frame
+	--- Parents all plate children to the Visual, and saves references to them in the plate.
+	-- @param Plate  Original nameplate children are being removed from.
+	-- @param ...  Children of Plate to be reparented.
+	local function ReparentChildren ( Plate, ... )
 		local Visual = Plates[ Plate ];
 		for Index = 1, select( "#", ... ) do
 			local Child = select( Index, ... );
@@ -92,6 +88,8 @@ do
 			end
 		end
 	end
+	--- Parents all plate regions to the Visual, similar to ReparentChildren.
+	-- @see ReparentChildren
 	local function ReparentRegions ( Plate, ... )
 		local Visual = Plates[ Plate ];
 		for Index = 1, select( "#", ... ) do
@@ -101,6 +99,8 @@ do
 		end
 	end
 
+	--- Adds and skins a new nameplate.
+	-- @param Plate  Newly found default nameplate to be hooked.
 	function PlateAdd ( Plate )
 		local Visual = CreateFrame( "Frame", nil, Plate );
 		Plates[ Plate ] = Visual;
@@ -130,14 +130,12 @@ do
 	end
 end
 
---[[****************************************************************************
-  * Function: local PlatesScan                                                 *
-  * Description: Scans children of WorldFrame and handles new nameplates.      *
-  ****************************************************************************]]
 local PlatesScan;
 do
 	local select = select;
 	local Frame, Region;
+	--- Scans children of WorldFrame and handles new nameplates.
+	-- @param ...  Children of the WorldFrame.
 	function PlatesScan ( ... )
 		for Index = 1, select( "#", ... ) do
 			Frame = select( Index, ... );
@@ -150,22 +148,24 @@ do
 		end
 	end
 end
---[[****************************************************************************
-  * Function: local PlatesUpdate                                               *
-  * Description: Sorts, scales, and fades all nameplates based on depth.       *
-  ****************************************************************************]]
+
 local PlatesUpdate;
 do
 	local SortOrder, Depths = {}, {};
+	--- Subroutine for table.sort to depth-sort plate visuals.
 	local function SortFunc ( PlateA, PlateB )
 		return Depths[ PlateA ] > Depths[ PlateB ];
 	end
 
-	local SetAlpha = me.SetAlpha; -- Backup since plate SetAlpha methods are overridden
+	local SetAlpha = me.Frame.SetAlpha; -- Must backup since plate SetAlpha methods are overridden
+	local SetFrameLevel = me.Frame.SetFrameLevel;
+	local SetScale = me.Frame.SetScale;
 	local sort, wipe = sort, wipe;
 	local select, ipairs = select, ipairs;
+
 	local Depth, Visual, Scale;
 	local MinScale, MaxScale, ScaleFactor;
+	--- Sorts, scales, and fades all nameplates based on depth.
 	function PlatesUpdate ()
 		for Plate, Visual in pairs( PlatesVisible ) do
 			Depth = Visual:GetEffectiveDepth(); -- Note: Depth of the actual plate is blacklisted, so use child Visual instead
@@ -192,7 +192,7 @@ do
 					SetAlpha( Visual, 1 );
 				end
 
-				Visual:SetFrameLevel( Index * me.PlateLevels );
+				SetFrameLevel( Visual, Index * me.PlateLevels );
 
 				Scale = ScaleFactor / Depth;
 				if ( Scale < MinScale ) then
@@ -200,9 +200,10 @@ do
 				elseif ( MaxScale and Scale > MaxScale ) then
 					Scale = MaxScale;
 				end
-				Visual:SetScale( Scale );
+				SetScale( Visual, Scale );
 				if ( not InCombat ) then
-					Plate:SetSize( Visual:GetWidth() * Scale, Visual:GetHeight() * Scale );
+					local Width, Height = Visual:GetSize();
+					Plate:SetSize( Width * Scale, Height * Scale );
 				end
 			end
 			wipe( SortOrder );
@@ -213,13 +214,11 @@ end
 
 
 
---[[****************************************************************************
-  * Function: _VirtualPlates:ADDON_LOADED                                      *
-  ****************************************************************************]]
-function me:ADDON_LOADED ( Event, AddOn )
+--- Initializes settings once loaded.
+function me.Frame:ADDON_LOADED ( Event, AddOn )
 	if ( AddOn == AddOnName ) then
-		me:UnregisterEvent( Event );
-		me[ Event ] = nil;
+		self:UnregisterEvent( Event );
+		self[ Event ] = nil;
 
 		local OptionsCharacter = _VirtualPlatesOptionsCharacter;
 		_VirtualPlatesOptionsCharacter = me.OptionsCharacter;
@@ -241,36 +240,31 @@ function me:ADDON_LOADED ( Event, AddOn )
 		me.Synchronize( OptionsCharacter ); -- Loads defaults if either are nil
 	end
 end
---[[****************************************************************************
-  * Function: _VirtualPlates:PLAYER_REGEN_ENABLED                              *
-  ****************************************************************************]]
-function me:PLAYER_REGEN_ENABLED ()
+--- Caches in-combat status when leaving combat.
+function me.Frame:PLAYER_REGEN_ENABLED ()
 	InCombat = false;
 end
---[[****************************************************************************
-  * Function: _VirtualPlates:PLAYER_REGEN_DISABLED                             *
-  * Description: Restores plates to their real size before entering combat.    *
-  ****************************************************************************]]
-function me:PLAYER_REGEN_DISABLED ()
+--- Restores plates to their real size before entering combat.
+function me.Frame:PLAYER_REGEN_DISABLED ()
 	InCombat = true;
 
 	for Plate, Visual in pairs( Plates ) do
 		Plate:SetSize( Visual:GetSize() );
 	end
 end
---[[****************************************************************************
-  * Function: _VirtualPlates:OnEvent                                           *
-  ****************************************************************************]]
-function me:OnEvent ( Event, ... )
-	if ( type( self[ Event ] ) == "function" ) then
+--- Global event handler.
+function me.Frame:OnEvent ( Event, ... )
+	if ( self[ Event ] ) then
 		self[ Event ]( self, Event, ... );
 	end
 end
---[[****************************************************************************
-  * Function: _VirtualPlates:OnUpdate                                          *
-  ****************************************************************************]]
+
+
+
+
 do
 	local ChildCount, NewChildCount = 0;
+	--- Adds new nameplates and updates the depth of found ones every frame.
 	function me:OnUpdate ()
 		-- Check for new nameplates
 		NewChildCount = WorldFrame:GetNumChildren();
@@ -284,13 +278,10 @@ do
 		PlatesUpdate();
 	end
 end
---[[****************************************************************************
-  * Function: WorldFrame:GetChildren                                           *
-  * Description: Returns Visual frames in place of real nameplates.            *
-  ****************************************************************************]]
 do
 	local select, unpack = select, unpack;
 	local Children = {};
+	--- Filters the results of WorldFrame:GetChildren to replace plates with their visuals.
 	local function ReplaceChildren ( ... )
 		local Count = select( "#", ... );
 		for Index = 1, Count do
@@ -302,18 +293,19 @@ do
 		end
 		return unpack( Children );
 	end
+	--- Returns Visual frames in place of real nameplates.
+	-- @return The results of WorldFrame:GetChildren with any reference to a plate replaced with its visual.
 	function WorldFrame:GetChildren ( ... )
-		return ReplaceChildren( WorldFrameGetChildren( WorldFrame, ... ) );
+		return ReplaceChildren( WorldFrameGetChildren( self, ... ) );
 	end
 end
 
 
 
 
---[[****************************************************************************
-  * Function: _VirtualPlates.SetMinScale                                       *
-  * Description: Sets the minimum scale plates will be shrunk to.              *
-  ****************************************************************************]]
+--- Sets the minimum scale plates will be shrunk to.
+-- @param Value  New mimimum scale to use.
+-- @return True if setting changed.
 function me.SetMinScale ( Value )
 	if ( Value ~= me.OptionsCharacter.MinScale ) then
 		me.OptionsCharacter.MinScale = Value;
@@ -322,10 +314,9 @@ function me.SetMinScale ( Value )
 		return true;
 	end
 end
---[[****************************************************************************
-  * Function: _VirtualPlates.SetMaxScale                                       *
-  * Description: Sets the maximum scale plates will grow to.                   *
-  ****************************************************************************]]
+--- Sets the maximum scale plates will grow to.
+-- @param Value  New maximum scale to use.
+-- @return True if setting changed.
 function me.SetMaxScale ( Value )
 	if ( Value ~= me.OptionsCharacter.MaxScale ) then
 		me.OptionsCharacter.MaxScale = Value;
@@ -334,10 +325,9 @@ function me.SetMaxScale ( Value )
 		return true;
 	end
 end
---[[****************************************************************************
-  * Function: _VirtualPlates.SetMaxScaleEnabled                                *
-  * Description: Enables clamping nameplates to a maximum scale.               *
-  ****************************************************************************]]
+--- Enables clamping nameplates to a maximum scale.
+-- @param Enable  Boolean to allow using the MaxScale setting.
+-- @return True if setting changed.
 function me.SetMaxScaleEnabled ( Enable )
 	if ( Enable ~= me.OptionsCharacter.MaxScaleEnabled ) then
 		me.OptionsCharacter.MaxScaleEnabled = Enable;
@@ -347,10 +337,9 @@ function me.SetMaxScaleEnabled ( Enable )
 		return true;
 	end
 end
---[[****************************************************************************
-  * Function: _VirtualPlates.SetScaleFactor                                    *
-  * Description: Sets the normal scale factor.                                 *
-  ****************************************************************************]]
+--- Sets the scale factor apply to plates.
+-- @param Value  When nameplates are this many yards from the screen, they'll be normal sized.
+-- @return True if setting changed.
 function me.SetScaleFactor ( Value )
 	if ( Value ~= me.OptionsCharacter.ScaleFactor ) then
 		me.OptionsCharacter.ScaleFactor = Value;
@@ -361,10 +350,8 @@ function me.SetScaleFactor ( Value )
 end
 
 
---[[****************************************************************************
-  * Function: _VirtualPlates.Synchronize                                       *
-  * Description: Synchronizes addon settings with an options table.            *
-  ****************************************************************************]]
+--- Synchronizes addon settings with an options table.
+-- @param OptionsCharacter  An options table to synchronize with, or nil to use defaults.
 function me.Synchronize ( OptionsCharacter )
 	-- Load defaults if settings omitted
 	if ( not OptionsCharacter ) then
@@ -380,17 +367,17 @@ end
 
 
 
-me:SetScript( "OnEvent", me.OnEvent );
 WorldFrame:HookScript( "OnUpdate", me.OnUpdate ); -- First OnUpdate handler to run
-me:RegisterEvent( "ADDON_LOADED" );
-me:RegisterEvent( "PLAYER_REGEN_DISABLED" );
-me:RegisterEvent( "PLAYER_REGEN_ENABLED" );
+me.Frame:SetScript( "OnEvent", me.Frame.OnEvent );
+me.Frame:RegisterEvent( "ADDON_LOADED" );
+me.Frame:RegisterEvent( "PLAYER_REGEN_DISABLED" );
+me.Frame:RegisterEvent( "PLAYER_REGEN_ENABLED" );
 
 
--- Add method overrides to be applied to plates' Visuals
-local GetParent = me.GetParent;
+local GetParent = me.Frame.GetParent;
 do
-	local function AddPlateOverride( MethodName )
+	--- Add method overrides to be applied to plates' Visuals.
+	local function AddPlateOverride ( MethodName )
 		PlateOverrides[ MethodName ] = function ( self, ... )
 			self = GetParent( self );
 			return self[ MethodName ]( self, ... );
@@ -405,22 +392,25 @@ end
 do
 	local type = type;
 	do
-		local function OnUpdateOverride ( self, ... ) -- Wrapper to replace self parameter with plate's Visual
+		--- Wrapper for plate OnUpdate scripts to replace their self parameter with the plate's Visual.
+		local function OnUpdateOverride ( self, ... )
 			self.OnUpdate( Plates[ self ], ... );
 		end
-		local SetScript = me.SetScript;
+		local SetScript = me.Frame.SetScript;
+		--- Redirects all SetScript calls for the OnUpdate handler to the original plate.
 		function PlateOverrides:SetScript ( Script, Handler, ... )
 			if ( type( Script ) == "string" and Script:lower() == "onupdate" ) then
-				self = GetParent( self );
-				self.OnUpdate = Handler;
-				return self:SetScript( Script, Handler and OnUpdateOverride or nil, ... );
+				local Parent = GetParent( self );
+				Parent.OnUpdate = Handler;
+				return Parent:SetScript( Script, Handler and OnUpdateOverride or nil, ... );
 			else
 				return SetScript( self, Script, Handler, ... );
 			end
 		end
 	end
 	do
-		local GetScript = me.GetScript;
+		local GetScript = me.Frame.GetScript;
+		--- Redirects calls to GetScript for the OnUpdate handler to the original plate's script.
 		function PlateOverrides:GetScript ( Script, ... )
 			if ( type( Script ) == "string" and Script:lower() == "onupdate" ) then
 				return GetParent( self ).OnUpdate;
@@ -430,15 +420,18 @@ do
 		end
 	end
 	do
-		local function VarArg ( self, ... ) -- Saves a reference to the hooked script
+		--- Saves a reference to the hooked script.
+		local function VarArg ( self, ... )
 			self.OnUpdate = self:GetScript( "OnUpdate" );
 			return ...;
 		end
-		local HookScript = me.HookScript;
+		local HookScript = me.Frame.HookScript;
+		--- Redirects all HookScript calls for the OnUpdate handler to the original plate.
+		-- Also passes the visual to the hook script instead of the plate.
 		function PlateOverrides:HookScript ( Script, Handler, ... )
 			if ( type( Script ) == "string" and Script:lower() == "onupdate" ) then
-				self = GetParent( self );
-				return VarArg( self, self:HookScript( Script, function ( self, ... ) -- Wrapper to replace self parameter with plate's Visual
+				local Plate = GetParent( self );
+				return VarArg( Plate, Plate:HookScript( Script, function ( self, ... ) -- Wrapper to replace self parameter with plate's Visual
 					Handler( Plates[ self ], ... );
 				end, ... ) );
 			else
