@@ -5,13 +5,12 @@
   ****************************************************************************]]
 
 
-local L = GridStatusHealthFadeLocalization;
+local L = AceLibrary( "AceLocale-2.2" ):new( "GridStatusHealthFade" );
 local me = Grid:GetModule( "GridStatus" ):NewModule( "GridStatusHealthFade" );
 
 local STATUS_ID = "alert_healthFade";
 
-local ColorTables = {};
-me.ColorTables = ColorTables;
+me.ColorTables = {};
 
 me.menuName = L.TITLE;
 me.options = false;
@@ -31,15 +30,12 @@ me.defaultDB = {
 
 
 
---[[****************************************************************************
-  * Function: GridStatusHealthFade:OnInitialize                                *
-  * Description: Registers the HealthFade status and its options with Grid.    *
-  ****************************************************************************]]
 do
 	local Options = {
 		color = false; -- Don't use original color picker
 	};
 	local Count = 0;
+	--- Shortcut to add a color picker to the options table.
 	local function AddColorPicker ( Property, Name, Description )
 		Count = Count + 1;
 		Options[ Property ] = {
@@ -59,6 +55,7 @@ do
 			end;
 		};
 	end
+	--- Registers the HealthFade status and its options with Grid OnLoad.
 	function me:OnInitialize ()
 		self.super.OnInitialize( self );
 		AddColorPicker( "ColorHigh", L.COLOR_HIGH, L.COLOR_HIGH_DESC );
@@ -66,10 +63,7 @@ do
 		self:RegisterStatus( STATUS_ID, L.TITLE, Options, true );
 	end
 end
---[[****************************************************************************
-  * Function: GridStatusHealthFade:OnStatusEnable                              *
-  * Description: Called when this status is enabled and used.                  *
-  ****************************************************************************]]
+--- Called when this status is enabled and used.
 function me:OnStatusEnable ( Status )
 	if ( Status == STATUS_ID ) then
 		self:RegisterEvent( "Grid_UnitJoined", "UpdateUnit" );
@@ -80,21 +74,15 @@ function me:OnStatusEnable ( Status )
 		self:UpdateAllUnits();
 	end
 end
---[[****************************************************************************
-  * Function: GridStatusHealthFade:OnStatusDisable                             *
-  * Description: Called when this status gets disabled or becomes unused.      *
-  ****************************************************************************]]
+--- Called when this status gets disabled or becomes unused.
 function me:OnStatusDisable ( Status )
 	if ( Status == STATUS_ID ) then
 		self:UnregisterAllEvents();
 		self.core:SendStatusLostAllUnits( STATUS_ID );
-		wipe( ColorTables );
+		wipe( me.ColorTables );
 	end
 end
---[[****************************************************************************
-  * Function: GridStatusHealthFade:Reset                                       *
-  * Description: Completely reinitializes the status.                          *
-  ****************************************************************************]]
+--- Completely reinitializes the status.
 function me:Reset ()
 	self.super.Reset( self );
 	self:OnDisable();
@@ -104,69 +92,56 @@ end
 
 
 
---[[****************************************************************************
-  * Function: GridStatusHealthFade:UNIT_HEALTH                                 *
-  ****************************************************************************]]
 do
 	local UnitGUID = UnitGUID;
+	--- Update status when health changes.
 	function me:UNIT_HEALTH( UnitID )
 		self:UpdateUnit( UnitGUID( UnitID ), UnitID );
 	end
-end
---[[****************************************************************************
-  * Function: GridStatusHealthFade:UNIT_MAXHEALTH                              *
-  ****************************************************************************]]
-do
-	local UnitGUID = UnitGUID;
+
+	--- Update status when max health changes.
 	function me:UNIT_MAXHEALTH( UnitID )
 		self:UpdateUnit( UnitGUID( UnitID ), UnitID );
 	end
 end
 
 
---[[****************************************************************************
-  * Function: GridStatusHealthFade:RemoveUnit                                  *
-  * Description: Removes the unit's color table from the cache.                *
-  ****************************************************************************]]
+--- When a unit leaves the raid, removes its color table from the cache.
 function me:RemoveUnit ( GUID, UnitID )
-	ColorTables[ GUID ] = nil;
+	me.ColorTables[ GUID ] = nil;
 end
---[[****************************************************************************
-  * Function: GridStatusHealthFade:UpdateAllUnits                              *
-  * Description: Runs UpdateUnit for all active units.                         *
-  ****************************************************************************]]
 do
 	local GridRoster = Grid:GetModule( "GridRoster" );
+	--- Fully updates all active units.
 	function me:UpdateAllUnits ()
 		for GUID, UnitID in GridRoster:IterateRoster() do
 			self:UpdateUnit( GUID, UnitID );
 		end
 	end
 end
---[[****************************************************************************
-  * Function: GridStatusHealthFade:UpdateUnit                                  *
-  * Description: Updates or removes the health fade status.                    *
-  ****************************************************************************]]
 do
 	local UnitHealth = UnitHealth;
 	local UnitHealthMax = UnitHealthMax;
 	local UnitIsDeadOrGhost = UnitIsDeadOrGhost;
 	local ceil = ceil;
+	--- Updates or removes the health fade status for a given unit.
 	function me:UpdateUnit( GUID, UnitID )
 		local HealthMax = UnitHealthMax( UnitID );
-		if ( HealthMax == 0 ) then -- Unit info is bogus
-			return;
-		end
 
-		if ( UnitIsDeadOrGhost( UnitID ) ) then
+		if ( HealthMax == 0 -- Unit info is bogus
+			or UnitIsDeadOrGhost( UnitID )
+		) then
 			self.core:SendStatusLost( GUID, STATUS_ID );
 		else
 			local Percentage = UnitHealth( UnitID ) / HealthMax;
 			local Settings = self.db.profile[ STATUS_ID ];
 			local High, Low = Settings.ColorHigh, Settings.ColorLow;
 
-			local Color = ColorTables[ GUID ] or {};
-			ColorTables[ GUID ] = Color;
+			local Color = me.ColorTables[ GUID ];
+			if ( not Color ) then
+				Color = {};
+				me.ColorTables[ GUID ] = Color;
+			end
 			Color.r = High.r * Percentage + Low.r * ( 1 - Percentage );
 			Color.g = High.g * Percentage + Low.g * ( 1 - Percentage );
 			Color.b = High.b * Percentage + Low.b * ( 1 - Percentage );
