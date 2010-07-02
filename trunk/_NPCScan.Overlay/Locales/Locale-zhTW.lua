@@ -1,7 +1,6 @@
 ﻿--[[****************************************************************************
   * _NPCScan.Overlay by Saiket                                                 *
-  * Locales/Locale-zhTW.lua - Localized string constants (zh-TW) by s8095324.  *
-  *   中文翻譯：楓之語@米奈希爾                                                 *
+  * Locales/Locale-zhTW.lua - Localized string constants (zh-TW).              *
   ****************************************************************************]]
 
 
@@ -13,15 +12,15 @@ end
 -- See http://wow.curseforge.com/addons/npcscan-overlay/localization/zhTW/
 _NPCScanOverlayLocalization = setmetatable( {
 	NPCS = setmetatable( {
-	[ 1140 ] = "刺喉龍族母",
-	[ 5842 ] = "『跳躍者』塔克",
-	[ 6581 ] = "暴掠龍族母",
-	[ 14232 ] = "達爾特",
-	[ 18684 ] = "無氏族的伯卡茲",
-	[ 32491 ] = "時光流逝元龍",
-	[ 33776 ] = "剛卓亞",
-	[ 35189 ] = "史科爾",
-	[ 38453 ] = "大角",
+		[ 1140 ] = "刺喉龍族母",
+		[ 5842 ] = "『跳躍者』塔克",
+		[ 6581 ] = "暴掠龍族母",
+		[ 14232 ] = "達爾特",
+		[ 18684 ] = "無氏族的伯卡茲",
+		[ 32491 ] = "時光流逝元龍",
+		[ 33776 ] = "剛卓亞",
+		[ 35189 ] = "史科爾",
+		[ 38453 ] = "大角",
 	}, { __index = _NPCScanOverlayLocalization.NPCS; } );
 
 	CONFIG_ALPHA = "透明度",
