@@ -1,6 +1,6 @@
 --[[****************************************************************************
   * GuildBankSearch by Saiket, originally by Harros                            *
-  * Locales/Locale-frFR.lua - Localized string constants (fr-FR) by Nodd.      *
+  * Locales/Locale-frFR.lua - Localized string constants (fr-FR).              *
   ****************************************************************************]]
 
 
