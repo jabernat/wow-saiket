@@ -23,16 +23,15 @@ end
 --- Scans the scoreboard for a given player.
 -- @return Arguments for BuildCorpseTooltip, similar to GetFriendInfo.
 -- @see _Corpse.BuildCorpseTooltip
-function me.GetBattlefieldInfo ( Name, Server )
-	local NameServerBG, NameBG, ServerBG, Faction, Race, Class, _;
+function me.GetBattlefieldInfo ( Name )
 	for Index = 1, GetNumBattlefieldScores() do
-		NameServerBG, _, _, _, _, Faction, _, Race, Class = GetBattlefieldScore( Index );
-		NameBG, ServerBG = ( "-" ):split( NameServerBG );
+		local NameBG, _, _, _, _, Faction, _, Race, Class = GetBattlefieldScore( Index );
+		NameBG = NameBG:match( "^[^-]+" ); -- Discard server name
 
-		if ( Name == NameBG and ( not Server or Server == ServerBG ) ) then
+		if ( Name == NameBG ) then
 			-- Score can be 0 = Horde, 1 = Alliance
 			local FactionPlayer = UnitFactionGroup( "player" ) == "Alliance" and 1 or 0;
-			return Faction ~= FactionPlayer, NameServerBG, nil, Class, nil, 1;
+			return Faction ~= FactionPlayer, Name, nil, Class, nil, 1;
 		end
 	end
 end
@@ -40,19 +39,19 @@ end
 
 --- Called when cached score data is updated.
 function me:UPDATE_BATTLEFIELD_SCORE ()
-	local Name, Server = _Corpse.GetCorpseName();
+	local Name = _Corpse.GetCorpseName();
 	if ( Name and Name ~= UnitName( "player" ) ) then -- Found corpse tooltip
-		_Corpse.BuildCorpseTooltip( self.GetBattlefieldInfo( Name, Server ) );
+		_Corpse.BuildCorpseTooltip( self.GetBattlefieldInfo( Name ) );
 	end
 end
 
 
 --- Populates the corpse tooltip for the given player using BG scoreboard data.
-function me:Update ( Name, Server )
+function me:Update ( Name )
 	if ( GetTime() - self.RequestBattlefieldScoreDataLast > self.UpdateInterval ) then
 		RequestBattlefieldScoreData();
 	end
-	_Corpse.BuildCorpseTooltip( self.GetBattlefieldInfo( Name, Server ) );
+	_Corpse.BuildCorpseTooltip( self.GetBattlefieldInfo( Name ) );
 end
 --- Initialize the module when activated.
 function me:Enable ()
