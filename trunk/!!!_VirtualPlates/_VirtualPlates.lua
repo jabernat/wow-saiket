@@ -53,6 +53,7 @@ do
 	function me:PlateOnShow ()
 		local Visual = Plates[ self ];
 		PlatesVisible[ self ] = Visual;
+		Visual:Show();
 
 		-- Reposition all regions
 		for Index, Region in ipairs( self ) do
@@ -65,6 +66,7 @@ end
 --- Removes the plate from the visible list when hidden.
 function me:PlateOnHide ()
 	PlatesVisible[ self ] = nil;
+	Plates[ self ]:Hide(); -- Explicitly hide so IsShown returns false.
 end
 
 
@@ -105,6 +107,7 @@ do
 		local Visual = CreateFrame( "Frame", nil, Plate );
 		Plates[ Plate ] = Visual;
 
+		Visual:Hide(); -- Gets explicitly shown on plate show
 		Visual:SetPoint( "TOP" );
 		Visual:SetSize( Plate:GetSize() );
 
@@ -390,53 +393,53 @@ do
 end
 -- Method overrides to use plates' OnUpdate script handlers instead of their Visuals' to preserve handler execution order
 do
+	--- Wrapper for plate OnUpdate scripts to replace their self parameter with the plate's Visual.
+	local function OnUpdateOverride ( self, ... )
+		self.OnUpdate( Plates[ self ], ... );
+	end
 	local type = type;
-	do
-		--- Wrapper for plate OnUpdate scripts to replace their self parameter with the plate's Visual.
-		local function OnUpdateOverride ( self, ... )
-			self.OnUpdate( Plates[ self ], ... );
-		end
-		local SetScript = me.Frame.SetScript;
-		--- Redirects all SetScript calls for the OnUpdate handler to the original plate.
-		function PlateOverrides:SetScript ( Script, Handler, ... )
-			if ( type( Script ) == "string" and Script:lower() == "onupdate" ) then
-				local Parent = GetParent( self );
-				Parent.OnUpdate = Handler;
-				return Parent:SetScript( Script, Handler and OnUpdateOverride or nil, ... );
-			else
-				return SetScript( self, Script, Handler, ... );
-			end
+
+	local SetScript = me.Frame.SetScript;
+	--- Redirects all SetScript calls for the OnUpdate handler to the original plate.
+	function PlateOverrides:SetScript ( Script, Handler, ... )
+		if ( type( Script ) == "string" and Script:lower() == "onupdate" ) then
+			local Plate = GetParent( self );
+			Plate.OnUpdate = Handler;
+			return Plate:SetScript( Script, Handler and OnUpdateOverride or nil, ... );
+		else
+			return SetScript( self, Script, Handler, ... );
 		end
 	end
-	do
-		local GetScript = me.Frame.GetScript;
-		--- Redirects calls to GetScript for the OnUpdate handler to the original plate's script.
-		function PlateOverrides:GetScript ( Script, ... )
-			if ( type( Script ) == "string" and Script:lower() == "onupdate" ) then
-				return GetParent( self ).OnUpdate;
-			else
-				return GetScript( self, Script, ... );
-			end
+
+	local GetScript = me.Frame.GetScript;
+	--- Redirects calls to GetScript for the OnUpdate handler to the original plate's script.
+	function PlateOverrides:GetScript ( Script, ... )
+		if ( type( Script ) == "string" and Script:lower() == "onupdate" ) then
+			return GetParent( self ).OnUpdate;
+		else
+			return GetScript( self, Script, ... );
 		end
 	end
-	do
-		--- Saves a reference to the hooked script.
-		local function VarArg ( self, ... )
-			self.OnUpdate = self:GetScript( "OnUpdate" );
-			return ...;
-		end
-		local HookScript = me.Frame.HookScript;
-		--- Redirects all HookScript calls for the OnUpdate handler to the original plate.
-		-- Also passes the visual to the hook script instead of the plate.
-		function PlateOverrides:HookScript ( Script, Handler, ... )
-			if ( type( Script ) == "string" and Script:lower() == "onupdate" ) then
-				local Plate = GetParent( self );
-				return VarArg( Plate, Plate:HookScript( Script, function ( self, ... ) -- Wrapper to replace self parameter with plate's Visual
-					Handler( Plates[ self ], ... );
-				end, ... ) );
+
+	local HookScript = me.Frame.HookScript;
+	--- Redirects all HookScript calls for the OnUpdate handler to the original plate.
+	-- Also passes the visual to the hook script instead of the plate.
+	function PlateOverrides:HookScript ( Script, Handler, ... )
+		if ( type( Script ) == "string" and Script:lower() == "onupdate" ) then
+			local Plate = GetParent( self );
+			if ( Plate.OnUpdate ) then
+				-- Hook old OnUpdate handler
+				local Backup = Plate.OnUpdate;
+				function Plate:OnUpdate ( ... )
+					Backup( self, ... ); -- Technically we should return Backup's results to match HookScript's hook behavior,
+					return Handler( self, ... ); -- but the overhead isn't worth it when these results get discarded.
+				end
 			else
-				return HookScript( self, Script, Handler, ... );
+				Plate.OnUpdate = Handler;
 			end
+			return Plate:SetScript( Script, OnUpdateOverride, ... );
+		else
+			return HookScript( self, Script, Handler, ... );
 		end
 	end
 end
