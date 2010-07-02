@@ -5,7 +5,9 @@
 ## Notes-zhCH: 通过添加目标为好友的方式来判断尸体是否在线
 ## Notes-zhTW: 通過添加目標為好友的方式來判斷屍體是否在線
 ## Author: Saiket
-## X-Credits: freshworks (koKR), Sparanoid (zhCN/zhTW)
+## X-Credits-koKR: Localization: freshworks
+## X-Credits-zhCN: Localization: Sparanoid
+## X-Credits-zhTW: Localization: Sparanoid
 ## Version: 3.3.5.2
 ## X-Date: 2010-07-01
 ## X-Category: Tooltips, Interface Enhancements
