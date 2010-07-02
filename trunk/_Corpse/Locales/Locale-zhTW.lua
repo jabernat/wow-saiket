@@ -1,6 +1,6 @@
 --[[****************************************************************************
   * _Corpse by Saiket                                                          *
-  * Locales/Locale-zhTW.lua - Localized string constants (zhTW) by Sparanoid.  *
+  * Locales/Locale-zhTW.lua - Localized string constants (zhTW).               *
   ****************************************************************************]]
 
 

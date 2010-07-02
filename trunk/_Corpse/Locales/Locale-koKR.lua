@@ -1,7 +1,6 @@
 --[[****************************************************************************
   * _Corpse by Saiket                                                          *
-  * Locales/Locale-koKR.lua - Localized string constants (ko-KR) by            *
-  *   freshworks.                                                              *
+  * Locales/Locale-koKR.lua - Localized string constants (ko-KR).              *
   ****************************************************************************]]
 
 

@@ -1,6 +1,6 @@
 --[[****************************************************************************
   * _Corpse by Saiket                                                          *
-  * Locales/Locale-zhCN.lua - Localized string constants (zhCN) by Sparanoid.  *
+  * Locales/Locale-zhCN.lua - Localized string constants (zhCN).               *
   ****************************************************************************]]
 
 
