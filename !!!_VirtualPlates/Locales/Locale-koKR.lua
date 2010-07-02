@@ -9,7 +9,7 @@ if ( GetLocale() ~= "koKR" ) then
 end
 
 
--- See http://wow.curseforge.com/addons/npcscan/localization/koKR/
+-- See http://wow.curseforge.com/addons/virtualplates/localization/koKR/
 local _VirtualPlates = select( 2, ... );
 _VirtualPlates.L = setmetatable( {
 	CONFIG_DESC = "_VirtualPlates의 크기 변경이 가능한 이름표를 설정합니다.",
