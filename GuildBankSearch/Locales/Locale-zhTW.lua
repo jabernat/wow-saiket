@@ -1,6 +1,6 @@
 --[[****************************************************************************
   * GuildBankSearch by Saiket, originally by Harros                            *
-  * Locales/Locale-zhTW.lua - Localized string constants (zhTW) by jyuny1.     *
+  * Locales/Locale-zhTW.lua - Localized string constants (zhTW)                *
   ****************************************************************************]]
 
 

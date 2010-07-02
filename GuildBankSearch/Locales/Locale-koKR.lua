@@ -1,7 +1,6 @@
 --[[****************************************************************************
   * GuildBankSearch by Saiket, originally by Harros                            *
-  * Locales/Locale-koKR.lua - Localized string constants (ko-KR) by            *
-  *   freshworks.                                                              *
+  * Locales/Locale-koKR.lua - Localized string constants (ko-KR)               *
   ****************************************************************************]]
 
 
