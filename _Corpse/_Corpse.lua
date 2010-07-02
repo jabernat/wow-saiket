@@ -9,8 +9,6 @@ _Corpse = me;
 local L = me.L;
 me.Frame = CreateFrame( "Frame" );
 
-local GameTooltip = GetClickFrame( "GameTooltip" ); -- Gets the original frame named "GameTooltip", in case the global is overriden
-
 
 
 
@@ -18,15 +16,21 @@ do
 	local UnitExists = UnitExists;
 	local GetMouseFocus = GetMouseFocus;
 	--- Gets the name from a visible corpse tooltip.
-	-- @return Corpse name and optionally also its realm name, or nil if the tooltip isn't for a corpse.
+	-- @return Corpse owner's name, or nil if the tooltip isn't for a corpse.
 	function me.GetCorpseName ()
-		if ( not UnitExists( "mouseover" ) and GetMouseFocus() == WorldFrame and GameTooltip:IsVisible() and GameTooltip:NumLines() <= 2 ) then
+		if ( not UnitExists( "mouseover" ) and GetMouseFocus() == WorldFrame and GameTooltip:IsVisible()
+			and GameTooltip:NumLines() <= 2 -- Must recognize tooltips already partially filled in by BuildCorpseTooltip
+		) then
 			local Text = GameTooltipTextLeft1:GetText();
 			if ( Text ) then
-				Text = Text:match( L.CORPSE_PATTERN );
-				if ( Text ) then
-					return ( "-" ):split( Text );
+				local Pattern, Name = L.CORPSE_PATTERN;
+				if ( type( Pattern ) == "function" ) then -- Function to handle multiple cases, such as in French
+					Name = Pattern( Text );
+				else
+					Name = Text:match( Pattern );
 				end
+
+				return Name;
 			end
 		end
 	end
@@ -47,12 +51,11 @@ function me.BuildCorpseTooltip ( Hostile, Name, Level, Class, Location, Connecte
 	end
 
 	-- Build first line
-	local Text = L.CORPSE_FORMAT:format( Name );
 	local Color = FACTION_BAR_COLORS[ Hostile and 2 or 6 ];
 	GameTooltipTextLeft1:SetTextColor( Color.r, Color.g, Color.b );
 	local Right = GameTooltipTextRight1;
 	if ( Status and #Status > 0 ) then -- AFK or DND
-		Color = NORMAL_FONT_COLOR;
+		local Color = NORMAL_FONT_COLOR;
 		Right:SetText( Status );
 		Right:SetTextColor( Color.r, Color.g, Color.b );
 		Right:Show()
@@ -62,6 +65,7 @@ function me.BuildCorpseTooltip ( Hostile, Name, Level, Class, Location, Connecte
 
 	-- Add second status line
 	if ( ConnectedStatus ) then -- Connected status is known
+		local Text, Color;
 		if ( ConnectedStatus == 0 ) then
 			Text = L.OFFLINE;
 			Color = GRAY_FONT_COLOR;
@@ -131,15 +135,15 @@ do
 	function me:GameTooltipOnShow ()
 		-- Tooltip contents updated
 		if ( ActiveModule ) then
-			local Name, Server = me.GetCorpseName();
+			local Name = me.GetCorpseName();
 			if ( Name ) then -- Found corpse tooltip
-				if ( Name == PlayerName and not Server ) then
+				if ( Name == PlayerName ) then
 					-- Create a common tooltip for the player's corpse
 					me.BuildCorpseTooltip( false, Name,
 						UnitLevel( "player" ), UnitClass( "player" ), GetRealZoneText(), 1,
 						( UnitIsAFK( "player" ) and CHAT_FLAG_AFK ) or ( UnitIsDND( "player" ) and CHAT_FLAG_DND ) );
 				else -- Add data to tooltip using module's info
-					ActiveModule:Update( Name, Server );
+					ActiveModule:Update( Name );
 				end
 			end
 		end

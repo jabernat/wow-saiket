@@ -6,8 +6,8 @@
 ## Notes-zhTW: 通過添加目標為好友的方式來判斷屍體是否在線
 ## Author: Saiket
 ## X-Credits: freshworks (koKR), Sparanoid (zhCN/zhTW)
-## Version: 3.3.5.1
-## X-Date: 2010-06-30
+## Version: 3.3.5.2
+## X-Date: 2010-07-01
 ## X-Category: Tooltips, Interface Enhancements
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
