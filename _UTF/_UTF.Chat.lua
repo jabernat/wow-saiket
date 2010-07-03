@@ -66,6 +66,19 @@ do
 		return Backup( Message, ... );
 	end
 end
+do
+	local Backup = BNSendWhisper;
+	--- Replaces custom text strings in outbound Battle.net RealID whispers.
+	function me.BNSendWhisper ( ID, Message, ... )
+		if ( _UTFOptions.Chat.TextReplace and Message ) then
+			for _, Replacement in ipairs( _UTFOptions.Chat.TextReplacements ) do
+				Message = Message:gsub( Replacement[ 1 ], Replacement[ 2 ] );
+			end
+		end
+
+		return Backup( ID, Message, ... );
+	end
+end
 
 
 
@@ -75,3 +88,4 @@ hooksecurefunc( MacroEditBox, "SetText", me.ReplaceEditBoxText );
 
 ChatEdit_CustomTabPressed = me.ChatEditCustomTabPressed;
 SendChatMessage = me.SendChatMessage;
+BNSendWhisper = me.BNSendWhisper;
