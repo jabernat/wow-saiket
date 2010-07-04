@@ -5,8 +5,7 @@
 
 
 local LibSharedMedia = LibStub( "LibSharedMedia-3.0" );
-local L = _UnderscoreLocalization.CastingBar;
-local me = {};
+local me = select( 2, ... );
 _Underscore.CastingBar = me;
 
 me.LagUpdateRate = 1; -- Seconds
@@ -17,21 +16,15 @@ local BarTexture = LibSharedMedia:Fetch( LibSharedMedia.MediaType.STATUSBAR, _Un
 
 
 
---[[****************************************************************************
-  * Function: _Underscore.CastingBar:SetIcon                                   *
-  * Description: Sets the spell icon for a cast bar.                           *
-  ****************************************************************************]]
+--- Sets the spell icon for a cast bar.
 function me:SetIcon ( Path )
 	self.Icon:SetTexture( ( Path ~= [[Interface\Icons\Temp]] ) and Path or nil );
 end
 
 
---[[****************************************************************************
-  * Function: _Underscore.CastingBar:SetStatusBarColor                         *
-  * Description: Replaces the standard status colors.                          *
-  ****************************************************************************]]
 do
-	local Colors = _Underscore.Colors;
+	local Colors = _Underscore.Colors;	
+	--- Replaces the standard status colors.
 	function me:SetStatusBarColor ( R, G, B, A )
 		local Color;
 		if ( R == 0.0 and G == 1.0 and B == 0.0 ) then -- Finished / Channeling
@@ -47,21 +40,16 @@ do
 		end
 	end
 end
---[[****************************************************************************
-  * Function: _Underscore.CastingBar:OnShow                                    *
-  * Description: Reset lag update timer for player's cast bar only.            *
-  ****************************************************************************]]
-function me:OnShow ()
+--- Reset lag update timer for player's cast bar only.
+function me:PlayerOnShow ()
 	self.Lag.UpdateNext = 0;
 end
---[[****************************************************************************
-  * Function: _Underscore.CastingBar:OnUpdate                                  *
-  * Description: Hides casting bar artwork and updates time text.              *
-  ****************************************************************************]]
 do
 	local select = select;
 	local GetTime = GetTime;
 	local max = max;
+	local GetNetStats = GetNetStats;
+	--- Hides casting bar artwork and updates time text.
 	function me:OnUpdate ( Elapsed )
 		-- Hide artwork
 		self.Border:Hide();
@@ -70,7 +58,7 @@ do
 
 		-- Update cast time
 		local Time = select( 6, ( self.channeling and UnitChannelInfo or UnitCastingInfo )( self.UnitID ) );
-		self.Time:SetFormattedText( L.TIME_FORMAT,
+		self.Time:SetFormattedText( me.L.TIME_FORMAT,
 			Time and max( 0, Time / 1000 - GetTime() ) or 0 );
 
 		-- Update latency
@@ -87,9 +75,7 @@ do
 end
 
 
---[[****************************************************************************
-  * Function: _Underscore.CastingBar:PLAYER_ENTERING_WORLD                     *
-  ****************************************************************************]]
+--- Updates castbars immediately after zoning.
 function me:PLAYER_ENTERING_WORLD ()
 	if ( UnitChannelInfo( self.UnitID ) ) then
 		me.UNIT_SPELLCAST_CHANNEL_START( self, nil, self.UnitID );
@@ -97,38 +83,31 @@ function me:PLAYER_ENTERING_WORLD ()
 		me.UNIT_SPELLCAST_START( self, nil, self.UnitID );
 	end
 end
---[[****************************************************************************
-  * Function: _Underscore.CastingBar:UNIT_SPELLCAST_START                      *
-  ****************************************************************************]]
+--- Updates castbars when beginning a cast.
 function me:UNIT_SPELLCAST_START ( _, UnitID )
 	if ( UnitID == self.UnitID ) then
 		me.SetIcon( self, select( 4, UnitCastingInfo( UnitID ) ) );
 	end
 end
---[[****************************************************************************
-  * Function: _Underscore.CastingBar:UNIT_SPELLCAST_CHANNEL_START              *
-  ****************************************************************************]]
+--- Updates castbars when beginning a channeled spell.
 function me:UNIT_SPELLCAST_CHANNEL_START ( _, UnitID )
 	if ( UnitID == self.UnitID ) then
 		me.SetIcon( self, select( 4, UnitChannelInfo( UnitID ) ) );
 	end
 end
---[[****************************************************************************
-  * Function: _Underscore.CastingBar:OnEvent                                   *
-  ****************************************************************************]]
-do
-	local type = type;
-	function me:OnEvent ( Event, ... )
-		if ( type( me[ Event ] ) == "function" ) then
-			me[ Event ]( self, Event, ... );
-		end
+--- Generic event handler that checks the module for event handlers rather than the castbars.
+function me:OnEvent ( Event, ... )
+	if ( me[ Event ] ) then
+		return me[ Event ]( self, Event, ... );
 	end
 end
 
 
 
 
-local function AddCastingBar ( self, UnitID, ... ) -- Skins a casting bar frame and positions it
+--- Skins a casting bar frame and positions it.
+-- @param ...  Castbar regions.
+local function AddCastingBar ( self, UnitID, ... )
 	self.UnitID = UnitID;
 
 	-- Position the bar between the left and right action bars
@@ -174,7 +153,7 @@ local function AddCastingBar ( self, UnitID, ... ) -- Skins a casting bar frame 
 		self.Lag:SetBlendMode( "ADD" );
 		local R, G, B = unpack( _Underscore.Colors.disconnected );
 		self.Lag:SetVertexColor( R, G, B, 0.5 );
-		self:HookScript( "OnShow", me.OnShow );
+		self:HookScript( "OnShow", me.PlayerOnShow );
 	end
 	self:HookScript( "OnEvent", me.OnEvent );
 	self:HookScript( "OnUpdate", me.OnUpdate );
