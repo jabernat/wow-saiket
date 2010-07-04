@@ -4,8 +4,10 @@
   ****************************************************************************]]
 
 
-local me = CreateFrame( "Frame", nil, UIParent );
+local me = select( 2, ... );
 _Underscore.Bags = me;
+
+me.Frame = CreateFrame( "Frame", nil, UIParent );
 
 me.ContainerEnv = setmetatable( { -- Global variable overrides without taint
 	CONTAINER_OFFSET_X = 0;
@@ -18,24 +20,18 @@ local BagPadding = 10 / BagScale; -- Distance between action bars and bags
 
 
 
---[[****************************************************************************
-  * Function: _Underscore.Bags.ContainerEnv.GetScreenHeight                    *
-  * Description: Allows scaled bags to fill the entire _Underscore.Bags frame. *
-  ****************************************************************************]]
+--- Allows scaled bags to fill the entire _Underscore.Bags frame.
 function me.ContainerEnv.GetScreenHeight ()
-	return me:GetHeight();
+	return me.Frame:GetHeight();
 end
 
 
---[[****************************************************************************
-  * Function: _Underscore.Bags.Update                                          *
-  * Description: Reparents bags before positioning them for scaling.           *
-  ****************************************************************************]]
 do
 	local Backup = updateContainerFrameAnchors;
+	--- Reparents bags before positioning them for scaling.
 	function me.Update ( ... )
 		for Index, Name in ipairs( ContainerFrame1.bags ) do
-			_G[ Name ]:SetParent( me );
+			_G[ Name ]:SetParent( me.Frame );
 		end
 		return Backup( ... );
 	end
@@ -44,10 +40,7 @@ end
 
 
 
---[[****************************************************************************
-  * Function: _Underscore.Bags.StackOnMouseWheel                               *
-  * Description: Scrolls the stack amount using the scrollwheel.               *
-  ****************************************************************************]]
+--- Scrolls the stack amount using the scrollwheel.
 function me:StackOnMouseWheel ( Delta )
 	if ( IsModifiedClick( "_UNDERSCORE_BAGS_SCROLLALL" ) ) then
 		self.split = Delta > 0 and self.maxStack or 1;
@@ -61,9 +54,9 @@ end
 
 
 
-me:SetPoint( "TOPLEFT", _Underscore.TopMargin, "BOTTOMLEFT", BagPadding, -BagPadding );
-me:SetPoint( "BOTTOMRIGHT", _Underscore.ActionBars.BackdropRight, "BOTTOMLEFT", -BagPadding, BagPadding );
-me:SetScale( BagScale );
+me.Frame:SetPoint( "TOPLEFT", _Underscore.TopMargin, "BOTTOMLEFT", BagPadding, -BagPadding );
+me.Frame:SetPoint( "BOTTOMRIGHT", _Underscore.ActionBars.BackdropRight, "BOTTOMLEFT", -BagPadding, BagPadding );
+me.Frame:SetScale( BagScale );
 
 setfenv( updateContainerFrameAnchors, me.ContainerEnv );
 updateContainerFrameAnchors = me.Update;
