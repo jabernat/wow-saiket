@@ -4,9 +4,10 @@
   ****************************************************************************]]
 
 
-local L = _UnderscoreLocalization.CombatText;
-local me = {};
+local me = select( 2, ... );
 _Underscore.CombatText = me;
+
+me.Frame = CreateFrame( "Frame" );
 
 me.IgnoredHealSpells = {
 	[ 20267 ] = true; -- Judgement of Light
@@ -28,69 +29,71 @@ me.IgnoredHealSpells = {
 
 local NumLines = 40; -- Max number of visible messages
 
-local OnEventBackup = CombatText:GetScript( "OnEvent" );
+local ShowCasterNames;
 
 
 
 
---[[****************************************************************************
-  * Function: _Underscore.CombatText.AddHealMessage                            *
-  * Description: Adds a scrolling message for heal events.                     *
-  ****************************************************************************]]
-function me.AddHealMessage ( Target, Caster, Amount, Overhealing, Critical )
-	Caster = COMBAT_TEXT_SHOW_FRIENDLY_NAMES == "1" and Caster or "";
-
-	local Message;
-	if ( Overhealing == 0 ) then
-		Message = L.HEAL_FORMAT:format( Caster, Amount, Target or "", Overhealing );
+--- Turns heal messages on when default UI settings allow them.
+function me.Synchronize ()
+	if ( GetCVarBool( "enableCombatText" ) and GetCVarBool( "CombatHealing" ) ) then
+		ShowCasterNames = GetCVarBool( "fctFriendlyHealers" );
+		me.Frame:RegisterEvent( "COMBAT_LOG_EVENT_UNFILTERED" );
 	else
-		Message = L.OVERHEAL_FORMAT:format( Caster, Amount - Overhealing, Target or "", Overhealing );
+		me.Frame:UnregisterEvent( "COMBAT_LOG_EVENT_UNFILTERED" );
 	end
-
-	local Info = COMBAT_TEXT_TYPE_INFO[ Critical and "HEAL_CRIT" or "HEAL" ];
-	CombatText_AddMessage( Message, COMBAT_TEXT_SCROLL_FUNCTION,
-		Info.r, Info.g, Info.b,
-		Critical and "crit" or nil, Info.isStaggered );
 end
 
 
---[[****************************************************************************
-  * Function: _Underscore.CombatText:COMBAT_LOG_EVENT_UNFILTERED               *
-  ****************************************************************************]]
 do
-	local MeFlag = COMBATLOG_OBJECT_AFFILIATION_MINE;
+	--- Adds a scrolling message for heal events.
+	-- @param Target  Optional target name.
+	-- @param Caster  Optional caster name.
+	-- @param ...  Extra args for *_HEAL combat events.
+	local function AddHealMessage ( Target, Caster, SpellID, _, _, Amount, Overhealing, _, Critical )
+		if ( not me.IgnoredHealSpells[ SpellID ] ) then
+			local Format = me.L[ Overhealing == 0 and "HEAL_FORMAT" or "OVERHEAL_FORMAT" ];
+			local Info = COMBAT_TEXT_TYPE_INFO[ Critical and "HEAL_CRIT" or "HEAL" ];
+
+			return CombatText_AddMessage( Format:format( Caster or "", Amount - Overhealing, Target or "", Overhealing ),
+				COMBAT_TEXT_SCROLL_FUNCTION,
+				Info.r, Info.g, Info.b,
+				Critical and "crit" or nil, Info.isStaggered );
+		end
+	end
+
+	local Mine = COMBATLOG_OBJECT_AFFILIATION_MINE;
 	local band = bit.band;
-	local ByMe, OnMe;
-	function me:COMBAT_LOG_EVENT_UNFILTERED ( Event, _, Type, _, Caster, CasterFlags, _, Target, TargetFlags, SpellID, _, _, Amount, Overhealing, _, Critical )
-		if ( Type:match( "_HEAL$" ) and not ( Type:match( "^ENVIRONMENTAL" ) or me.IgnoredHealSpells[ SpellID ] ) ) then
-			OnMe = band( TargetFlags, MeFlag ) ~= 0;
-			ByMe = band( CasterFlags, MeFlag ) ~= 0;
+	--- Catches heals by or on the player and adds detailed combat text for them.
+	function me.Frame:COMBAT_LOG_EVENT_UNFILTERED ( _, _, Type, _, Caster, CasterFlags, _, Target, TargetFlags, ... )
+		if ( Type:match( "_HEAL$" ) and not Type:match( "^ENVIRONMENTAL" ) ) then
+			-- Use flags to include pets'/vehicles' heals
+			local OnMe, ByMe = band( TargetFlags, Mine ) ~= 0, band( CasterFlags, Mine ) ~= 0;
 			if ( OnMe or ByMe ) then
-				me.AddHealMessage( not OnMe and Target, not ByMe and Caster, Amount, Overhealing, Critical );
+				return AddHealMessage( not OnMe and Target, ( ShowCasterNames and not ByMe ) and Caster, ... );
 			end
 		end
 	end
 end
---[[****************************************************************************
-  * Function: _Underscore.CombatText:COMBAT_TEXT_UPDATE                        *
-  ****************************************************************************]]
-function me:COMBAT_TEXT_UPDATE ( Event, Type, ... )
-	-- Hide default healing messages
-	if ( not Type:find( "HEAL", 1, true ) ) then
-		OnEventBackup( self, Event, Type, ... );
+--- Synchs settings when default UI combat text settings change.
+function me.Frame:CVAR_UPDATE ( _, Var )
+	if ( Var == "SHOW_COMBAT_TEXT_TEXT"
+		or Var == "SHOW_COMBAT_HEALING"
+		or Var == "COMBAT_TEXT_SHOW_FRIENDLY_NAMES_TEXT"
+	) then
+		return me.Synchronize();
 	end
 end
---[[****************************************************************************
-  * Function: _Underscore.CombatText:OnEvent                                   *
-  * Description: Enables overhealing and watching heals you cast on others.    *
-  ****************************************************************************]]
+--- Synchs settings when CVar data is loaded.
+me.Frame.VARIABLES_LOADED = me.Synchronize;
+
+
 do
-	local type = type;
-	function me:OnEvent ( Event, ... )
-		if ( type( me[ Event ] ) == "function" ) then
-			me[ Event ]( self, Event, ... );
-		else
-			OnEventBackup( self, Event, ... );
+	local OnEventBackup = CombatText:GetScript( "OnEvent" );
+	--- Filters out default healing messages from the combat text frame.
+	function me:CombatTextOnEvent ( Event, Type, ... )
+		if ( Event ~= "COMBAT_TEXT_UPDATE" or not Type:find( "HEAL", 1, true ) ) then
+			return OnEventBackup( self, Event, Type, ... );
 		end
 	end
 end
@@ -98,9 +101,13 @@ end
 
 
 
--- Hook to enable healing messages
-CombatText:SetScript( "OnEvent", me.OnEvent );
-CombatText:RegisterEvent( "COMBAT_LOG_EVENT_UNFILTERED" );
+CombatText:SetScript( "OnEvent", me.CombatTextOnEvent );
+
+me.Frame:SetScript( "OnEvent", _Underscore.OnEvent );
+me.Frame:RegisterEvent( "CVAR_UPDATE" );
+me.Frame:RegisterEvent( "VARIABLES_LOADED" );
+
+me.Synchronize(); -- In case VARIABLES_LOADED already fired
 
 
 -- Modify overall font appearance
