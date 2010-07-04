@@ -4,6 +4,6 @@
   ****************************************************************************]]
 
 
-_UnderscoreLocalization.Clock = setmetatable( {
+select( 2, ... ).L = setmetatable( {
 	TIME_FORMAT = "T%02d:%02d:%02d";
-}, getmetatable( _UnderscoreLocalization ) );
+}, getmetatable( _Underscore.L ) );

@@ -4,12 +4,14 @@
   ****************************************************************************]]
 
 
+local me = select( 2, ... );
 _Underscore.RegisterAddOnInitializer( "Blizzard_TimeManager", function ()
 	-- Move time button on top of time text
-	TimeManagerClockButton:SetAlpha( 0 );
-	TimeManagerClockButton:SetAllPoints( _Underscore.Clock.Text );
-	TimeManagerClockButton:SetScript( "OnEnter", nil );
-	TimeManagerClockButton:SetScript( "OnLeave", nil );
+	local Button = TimeManagerClockButton;
+	Button:SetAlpha( 0 );
+	Button:SetAllPoints( me.Text );
+	Button:SetScript( "OnEnter", nil );
+	Button:SetScript( "OnLeave", nil );
 
-	_Underscore.AddLockedButton( TimeManagerClockButton );
+	_Underscore.AddLockedButton( Button );
 end );
