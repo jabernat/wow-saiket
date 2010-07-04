@@ -258,7 +258,7 @@ end
 --- Global event handler.
 function me.Frame:OnEvent ( Event, ... )
 	if ( self[ Event ] ) then
-		self[ Event ]( self, Event, ... );
+		return self[ Event ]( self, Event, ... );
 	end
 end
 
