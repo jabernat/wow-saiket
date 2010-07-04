@@ -4,9 +4,12 @@
   ****************************************************************************]]
 
 
+print"_Underscore.ActionBars"
 local _Underscore = _Underscore;
-local me = CreateFrame( "Frame" );
+local me = select( 2, ... );
 _Underscore.ActionBars = me;
+
+me.Frame = CreateFrame( "Frame" );
 
 me.BackdropBottomLeft = _Underscore.Backdrop.Create( UIParent, false ); -- Flag prevents anchoring to UIParent
 me.BackdropBottomRight = _Underscore.Backdrop.Create( UIParent, false );
@@ -19,37 +22,39 @@ local NumSideButtonsExcluded = 4; -- Action buttons from the top to leave outsid
 
 
 
---[[****************************************************************************
-  * Function: local ActionButtonModify                                         *
-  * Description: Modifies textures on an action button.                        *
-  ****************************************************************************]]
 local ActionButtonModify;
 do
 	local RotateTexture;
 	do
-		local Root2, Angle45 = 2 ^ 0.5, math.pi / 4;
-		local cos, sin = math.cos, math.sin;
-		local function CalculateCorner ( Angle )
+		local Root2 = 2 ^ 0.5;
+		local cos, sin = cos, sin; -- Note: Must be the angle versions!
+		--- @return X and Y texcoord position for Angle.
+		local function GetCorner ( Angle )
 			return 0.5 + cos( Angle ) / Root2, 0.5 + sin( Angle ) / Root2;
 		end
+		--- Rotates a texture by an angle without zooming it like Texture:SetRotation.
 		RotateTexture = function ( self, Angle )
-			local LRx, LRy = CalculateCorner( Angle + Angle45 );
-			local LLx, LLy = CalculateCorner( Angle + Angle45 * 3 );
-			local ULx, ULy = CalculateCorner( Angle - Angle45 * 3 );
-			local URx, URy = CalculateCorner( Angle - Angle45 );
+			local LRx, LRy = GetCorner( Angle + 45 );
+			local LLx, LLy = GetCorner( Angle + 135 );
+			local ULx, ULy = GetCorner( Angle - 135 );
+			local URx, URy = GetCorner( Angle - 45 );
 
 			self:SetTexCoord( ULx, ULy, LLx, LLy, URx, URy, LRx, LRy );
 		end
 	end
+	local SetNormalTextureBackup = getmetatable( ActionButton1 ).__index.SetNormalTexture;
+	--- Hook to keep the normal texture skinned unless the button is empty.
 	local function SetNormalTexture ( self, Texture )
-		if ( Texture == [[Interface\Buttons\UI-Quickslot]] ) then
-			-- Empty button texture
+		if ( Texture == [[Interface\Buttons\UI-Quickslot]] ) then -- Showing grid to drop cursor's action on
 			self:GetNormalTexture():SetTexCoord( 0.2, 0.8, 0.2, 0.8 );
 		else -- Restore skinned texture
-			getmetatable( self ).__index.SetNormalTexture( self, _Underscore.ButtonNormalTexture );
+			SetNormalTextureBackup( self, _Underscore.ButtonNormalTexture );
 			RotateTexture( self:GetNormalTexture(), self.Angle );
 		end
 	end
+	--- Modifies textures on an action button.
+	-- @param Angle  Degrees to rotate child regions.
+	-- @return True if modified.
 	function ActionButtonModify ( self, Angle )
 		if ( not self.Angle ) then
 			self.Angle = Angle;
@@ -65,12 +70,13 @@ end
 
 
 
---[[****************************************************************************
-  * Function: _Underscore.ActionBar:PLAYER_LOGIN                               *
-  * Description: Positions parts of the UI around bars once they are created.  *
-  ****************************************************************************]]
-function me:PLAYER_LOGIN ()
-	me.PLAYER_LOGIN = nil;
+--- Hook to skin new class buttons as Dominos creates them.
+function me:ClassBarAddButton ( ID )
+	ActionButtonModify( _G[ "DominosClassButton"..ID ], 180 );
+end
+--- Positions parts of the UI around bars once they are created.
+function me.Frame:PLAYER_LOGIN ()
+	self.PLAYER_LOGIN = nil;
 
 	local OldProfile = Dominos.db:GetCurrentProfile();
 	if ( OldProfile ~= me.DominosProfile ) then
@@ -83,6 +89,7 @@ function me:PLAYER_LOGIN ()
 			Dominos:SetShowMinimap( false );
 			Dominos:SetSticky( true );
 
+			--- General setup for each of Dominos' bars.
 			local function InitializeBar ( Bar, AnchorString, Point, Scale, VariableButtons, Spacing, Padding )
 				Bar = type( Bar ) == "table" and Bar or Dominos.Frame:Get( Bar );
 				Bar.sets.anchor = AnchorString;
@@ -133,12 +140,10 @@ function me:PLAYER_LOGIN ()
 	local ClassBar = Dominos.Frame:Get( "class" );
 	if ( ClassBar ) then
 		for _, Button in ipairs( ClassBar.buttons ) do
-			ActionButtonModify( Button, math.pi );
+			ActionButtonModify( Button, 180 );
 		end
 	end
-	hooksecurefunc( Dominos.ClassBar, "AddButton", function ( self, ID )
-		ActionButtonModify( _G[ "DominosClassButton"..ID ], math.pi );
-	end );
+	hooksecurefunc( Dominos.ClassBar, "AddButton", me.ClassBarAddButton );
 
 
 	-- Add backdrops
@@ -164,7 +169,7 @@ function me:PLAYER_LOGIN ()
 	Backdrop[ 5 ]:Hide();
 	Backdrop[ 6 ]:Hide();
 
-	-- Outline excluded buttons
+	--- Outlines one of the "excluded" side buttons that are outside of the bar's main backdrop.
 	local function SkinExcludedButton ( Button )
 		Button:GetRegions():SetDrawLayer( "BORDER" ); -- Move icon above backdrop
 		_Underscore.Backdrop.Create( Button, 0 );
@@ -186,7 +191,7 @@ function me:PLAYER_LOGIN ()
 	-- Prevent any profile changes in Dominos
 	Dominos.SaveProfile = _Underscore.NilFunction;
 	Dominos.SetProfile = _Underscore.NilFunction;
-	Dominos.DeleteProfile = _Underscore.NilFunction;
+	--Dominos.DeleteProfile = _Underscore.NilFunction; -- Active profile can't be deleted, so no danger.
 	Dominos.CopyProfile = _Underscore.NilFunction;
 	Dominos.ResetProfile = _Underscore.NilFunction;
 end
@@ -194,29 +199,29 @@ end
 
 
 
-me:SetScript( "OnEvent", _Underscore.OnEvent );
-me:RegisterEvent( "PLAYER_LOGIN" );
+me.Frame:SetScript( "OnEvent", _Underscore.OnEvent );
+me.Frame:RegisterEvent( "PLAYER_LOGIN" );
 
 -- Remove icon borders on buttons
 for Index = 1, NUM_MULTIBAR_BUTTONS do
-	ActionButtonModify( _G[ "ActionButton"..Index ], math.pi );
+	ActionButtonModify( _G[ "ActionButton"..Index ], 180 );
 	ActionButtonModify( _G[ "MultiBarBottomLeftButton"..Index ], 0 );
 	ActionButtonModify( _G[ "MultiBarBottomRightButton"..Index ], 0 );
-	ActionButtonModify( _G[ "MultiBarLeftButton"..Index ], math.pi / 2 );
-	ActionButtonModify( _G[ "MultiBarRightButton"..Index ], -math.pi / 2 );
+	ActionButtonModify( _G[ "MultiBarLeftButton"..Index ], 90 );
+	ActionButtonModify( _G[ "MultiBarRightButton"..Index ], 270 );
 end
 
 -- Shapeshift bar (These get replaced by Dominos later)
 for Index = 1, NUM_SHAPESHIFT_SLOTS do
-	ActionButtonModify( _G[ "ShapeshiftButton"..Index ], math.pi );
+	ActionButtonModify( _G[ "ShapeshiftButton"..Index ], 180 );
 end
 
 -- Bag buttons
 local LastBag = MainMenuBarBackpackButton;
-ActionButtonModify( LastBag, math.pi );
+ActionButtonModify( LastBag, 180 );
 for Index = 0, NUM_BAG_SLOTS - 1 do
 	LastBag = _G[ "CharacterBag"..Index.."Slot" ];
-	ActionButtonModify( LastBag, math.pi );
+	ActionButtonModify( LastBag, 180 );
 end
 
 -- Keyring
