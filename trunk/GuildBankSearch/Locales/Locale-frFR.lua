@@ -10,7 +10,8 @@ end
 
 
 -- See http://wow.curseforge.com/addons/guild-bank-search/localization/frFR/
-GuildBankSearchLocalization = setmetatable( {
+local GuildBankSearch = select( 2, ... );
+GuildBankSearch.L = setmetatable( {
 	ALL = "|cffcccccc(Tout)|r",
 	CLEAR = "RàZ",
 	FILTER = "Filtrer",
@@ -22,4 +23,4 @@ GuildBankSearchLocalization = setmetatable( {
 	SLOT = "Emplacement:",
 	SUB_TYPE = "Sous-type:",
 	TYPE = "Type:",
-}, { __index = GuildBankSearchLocalization; } );
+}, { __index = GuildBankSearch.L; } );

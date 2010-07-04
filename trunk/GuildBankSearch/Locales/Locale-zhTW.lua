@@ -10,7 +10,8 @@ end
 
 
 -- See http://wow.curseforge.com/addons/guild-bank-search/localization/zhTW/
-GuildBankSearchLocalization = setmetatable( {
+local GuildBankSearch = select( 2, ... );
+GuildBankSearch.L = setmetatable( {
 	ALL = "|cffcccccc(所有)|r",
 	CLEAR = "清除",
 	FILTER = "物品搜索",
@@ -22,4 +23,4 @@ GuildBankSearchLocalization = setmetatable( {
 	SLOT = "欄位:",
 	SUB_TYPE = "副類別:",
 	TYPE = "類別:",
-}, { __index = GuildBankSearchLocalization; } );
+}, { __index = GuildBankSearch.L; } );
