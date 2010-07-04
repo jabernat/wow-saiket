@@ -4,30 +4,28 @@
   ****************************************************************************]]
 
 
-local L = _UnderscoreLocalization.Clock;
-local me = CreateFrame( "Frame", nil, UIParent );
+local me = select( 2, ... );
 _Underscore.Clock = me;
 
-me.Text = me:CreateFontString( nil, "BACKGROUND", "NumberFontNormalSmall" )
+me.Frame = CreateFrame( "Frame", nil, UIParent );
+me.Text = me.Frame:CreateFontString( nil, "BACKGROUND", "NumberFontNormalSmall" )
 
 me.UpdateRate = 0.2;
 
 
 
 
---[[****************************************************************************
-  * Function: _Underscore.Clock:OnUpdate                                       *
-  ****************************************************************************]]
 do
 	local date = date;
 	local NextUpdate = 0;
-	function me:OnUpdate ( Elapsed )
+	--- Updates the clock text.
+	function me.Frame:OnUpdate ( Elapsed )
 		NextUpdate = NextUpdate - Elapsed;
 		if ( NextUpdate <= 0 ) then
 			NextUpdate = me.UpdateRate;
 
 			-- Avoid putting a full time string into the Lua string table
-			me.Text:SetFormattedText( L.TIME_FORMAT, date( "%H" ), date( "%M" ), date( "%S" ) );
+			me.Text:SetFormattedText( me.L.TIME_FORMAT, date( "%H" ), date( "%M" ), date( "%S" ) );
 		end
 	end
 end
@@ -35,7 +33,7 @@ end
 
 
 
-me:SetScript( "OnUpdate", me.OnUpdate );
+me.Frame:SetScript( "OnUpdate", me.Frame.OnUpdate );
 
 me.Text:SetPoint( "TOPLEFT", WorldFrame );
 me.Text:SetAlpha( 0.5 );

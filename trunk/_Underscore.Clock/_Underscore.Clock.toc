@@ -3,7 +3,7 @@
 ## Notes: Adds a clock to the top left of the screen.
 ## Author: Saiket
 ## Version: 3.3.0.1
-## X-Date: 2009-11-23
+## X-Date: 2010-07-02
 ## X-Category: Miscellaneous
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
