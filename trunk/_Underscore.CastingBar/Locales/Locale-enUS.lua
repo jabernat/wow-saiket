@@ -4,6 +4,6 @@
   ****************************************************************************]]
 
 
-_UnderscoreLocalization.CastingBar = setmetatable( {
+select( 2, ... ).L = setmetatable( {
 	TIME_FORMAT = "(%.1fs)"; -- Seconds
-}, getmetatable( _UnderscoreLocalization ) );
+}, getmetatable( _Underscore.L ) );
