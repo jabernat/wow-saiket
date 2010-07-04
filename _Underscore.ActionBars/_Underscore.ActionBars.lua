@@ -4,7 +4,6 @@
   ****************************************************************************]]
 
 
-print"_Underscore.ActionBars"
 local _Underscore = _Underscore;
 local me = select( 2, ... );
 _Underscore.ActionBars = me;
