@@ -10,7 +10,8 @@ end
 
 
 -- See http://wow.curseforge.com/addons/guild-bank-search/localization/koKR/
-GuildBankSearchLocalization = setmetatable( {
+local GuildBankSearch = select( 2, ... );
+GuildBankSearch.L = setmetatable( {
 	ALL = "|cffcccccc(모두)|r",
 	CLEAR = "삭제",
 	FILTER = "필터",
@@ -22,4 +23,4 @@ GuildBankSearchLocalization = setmetatable( {
 	SLOT = "슬롯:",
 	SUB_TYPE = "부-종류:",
 	TYPE = "종류:",
-}, { __index = GuildBankSearchLocalization; } );
+}, { __index = GuildBankSearch.L; } );

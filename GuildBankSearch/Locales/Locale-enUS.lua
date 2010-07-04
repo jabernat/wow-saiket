@@ -5,7 +5,7 @@
 
 
 -- See http://wow.curseforge.com/addons/guild-bank-search/localization/enUS/
-GuildBankSearchLocalization = setmetatable( {
+select( 2, ... ).L = setmetatable( {
 	ALL = "|cffcccccc(All)|r",
 	CLEAR = "Clear",
 	FILTER = "Filter",
