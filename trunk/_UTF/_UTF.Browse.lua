@@ -145,20 +145,11 @@ function Glyph:OnUpdate ()
 	-- Must be called every frame or updates will cap its height at 50 pixels
 	self.Text:SetTextHeight( self:GetHeight() - 30 );
 end
-do
-	local EnumerateFrames = EnumerateFrames;
-	--- Adds the current character to any edit box with focus.
-	function Glyph:OnClick ()
-		local Frame = EnumerateFrames();
-		while ( Frame ) do
-			if ( Frame:IsObjectType( "EditBox" ) and Frame:HasFocus() ) then
-				if ( Frame ~= me.EntityName and Frame ~= me.CodePoint ) then
-					Frame:Insert( self:GetText() );
-				end
-				return true;
-			end
-			Frame = EnumerateFrames( Frame );
-		end
+--- Adds the current character to any edit box with focus.
+function Glyph:OnClick ()
+	local EditBox = GetCurrentKeyBoardFocus();
+	if ( EditBox and EditBox ~= me.EntityName and EditBox ~= me.CodePoint ) then
+		EditBox:Insert( self:GetText() );
 	end
 end
 
