@@ -5,7 +5,6 @@
 
 
 local _Corpse = select( 2, ... );
-local L = _Corpse.L;
 local me = {};
 _Corpse.Dungeons = me;
 
