@@ -9,7 +9,7 @@
 -- @see <a href="http://www.w3.org/TR/xhtml1/DTD/xhtml-lat1.ent">-//W3C//ENTITIES Latin 1 for XHTML//EN</a>
 -- @see <a href="http://www.w3.org/TR/xhtml1/DTD/xhtml-symbol.ent">-//W3C//ENTITIES Symbols for XHTML//EN</a>
 -- @see <a href="http://www.w3.org/TR/xhtml1/DTD/xhtml-special.ent">-//W3C//ENTITIES Special for XHTML//EN</a>
-_UTF.CharacterEntities = {
+select( 2, ... ).CharacterEntities = {
 	quot = 34;
 	amp = 38;
 	lt = 60;
