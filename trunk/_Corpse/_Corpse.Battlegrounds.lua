@@ -5,7 +5,6 @@
 
 
 local _Corpse = select( 2, ... );
-local L = _Corpse.L;
 local me = CreateFrame( "Frame" );
 _Corpse.Battlegrounds = me;
 
