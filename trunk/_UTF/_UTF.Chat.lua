@@ -54,29 +54,25 @@ do
 	end
 end
 do
+	--- Applies all text replacements to a message if enabled.
+	local function TextReplace ( Message )
+		if ( Message and _UTFOptions.Chat.TextReplace ) then
+			for _, Replacement in ipairs( _UTFOptions.Chat.TextReplacements ) do
+				Message = Message:gsub( Replacement[ 1 ], Replacement[ 2 ] );
+			end
+		end
+		return Message;
+	end
 	local Backup = SendChatMessage;
 	--- Replaces custom text strings in outbound chat.
 	function me.SendChatMessage ( Message, ... )
-		if ( _UTFOptions.Chat.TextReplace and Message ) then
-			for _, Replacement in ipairs( _UTFOptions.Chat.TextReplacements ) do
-				Message = Message:gsub( Replacement[ 1 ], Replacement[ 2 ] );
-			end
-		end
-
-		return Backup( Message, ... );
+		return Backup( TextReplace( Message ), ... );
 	end
-end
-do
+
 	local Backup = BNSendWhisper;
 	--- Replaces custom text strings in outbound Battle.net RealID whispers.
 	function me.BNSendWhisper ( ID, Message, ... )
-		if ( _UTFOptions.Chat.TextReplace and Message ) then
-			for _, Replacement in ipairs( _UTFOptions.Chat.TextReplacements ) do
-				Message = Message:gsub( Replacement[ 1 ], Replacement[ 2 ] );
-			end
-		end
-
-		return Backup( ID, Message, ... );
+		return Backup( ID, TextReplace( Message ), ... );
 	end
 end
 

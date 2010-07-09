@@ -3,7 +3,7 @@
 ## Notes: Unicode input dialog and text replacement.
 ## Author: Saiket
 ## Version: 3.3.5.3
-## X-Date: 2010-07-07
+## X-Date: 2010-07-08
 ## X-Category: Chat/Communication
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
