@@ -66,7 +66,7 @@ do
 				Input = Input:sub( 1, MaxStrLen );
 			end
 			if ( EscapeMode == 1 ) then
-				Input = Input:gsub( "|", "||" );
+				Input = Input:replace( "|", "||" );
 			elseif ( EscapeMode >= 2 ) then
 				Input = Input:gsub( "[%z\1-\31\"\\|\127-\255]", EscapeSequences );
 			end
@@ -247,7 +247,7 @@ do
 	end
 	function me.SlashCommand ( Input )
 		if ( Input and not Input:find( "^%s*$" ) ) then
-			Input = Input:gsub( "||", "|" );
+			Input = Input:replace( "||", "|" );
 			Explore( Input, _Dev.Exec( Input ) );
 		end
 	end
