@@ -120,7 +120,7 @@ end
   *   in-game text fields.                                                     *
   ****************************************************************************]]
 function me.ScriptSlashCommand ( Input )
-	me.ScriptSlashCommandBackup( Input and Input:gsub( "||", "|" ) or nil );
+	me.ScriptSlashCommandBackup( Input and Input:replace( "||", "|" ) or nil );
 end
 --[[****************************************************************************
   * Function: _Dev.OpenChatScriptBinding                                       *
