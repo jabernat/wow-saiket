@@ -7,388 +7,315 @@
   ****************************************************************************]]
 
 
-local L = _UnderscoreLocalization.HUD;
-local me = CreateFrame( "Frame", nil, UIParent );
+local me = select( 2, ... );
 _Underscore.HUD = me;
+local L = me.L;
+
+me.Frame = CreateFrame( "Frame", nil, UIParent );
 
 me.UpdateRate = 0.1;
-local TableAlpha = 0.5;
 local RowHeight = 14;
 
 
-me.Columns = {};
-me.Units = {};
+me.Columns = {}; -- [ Name ] = ColumnFrame;
+me.Units = {}; -- [ UnitID ] = RowFrame;
 
-local Colors = _Underscore.Colors;
+local ColumnMeta = { __index = setmetatable( {}, getmetatable( me.Frame ) ); };
+local UnitMeta = { __index = setmetatable( {}, getmetatable( me.Frame ) ); };
 
 
 
 
---[[****************************************************************************
-  * Function: _Underscore.HUD.UnitUpdateName                                   *
-  * Description: Updates the given unit's name.                                *
-  ****************************************************************************]]
 do
-	local UnitIsPlayer = UnitIsPlayer;
-	local UnitName, UnitClass = UnitName, UnitClass;
-	local select = select;
-	local unpack = unpack;
+	--- Throttles column resizes to once per frame at most.
+	local function OnUpdate ( self )
+		self:SetScript( "OnUpdate", nil );
 
-	function me.UnitUpdateName ( UnitID )
-		if ( UnitID ~= "player" ) then -- Never display the player's name
-			local Field = me.Units[ UnitID ][ "Name" ];
-			Field:SetText( UnitName( UnitID ) );
+		local Width, Name = 1e-3, self.Name;
+		for _, Unit in pairs( me.Units ) do
+			local Field = Unit[ Name ];
+			if ( Field and Unit:IsShown() and Width < Field.Width ) then
+				Width = Field.Width;
+			end
+		end
+		self:SetWidth( Width );
+	end
+	--- Resizes the column to its contents before the next frame paint.
+	function ColumnMeta.__index:Resize ()
+		self:SetScript( "OnUpdate", OnUpdate );
+	end
+end
 
+
+
+
+do
+	--- Sets a field's text and resizes its column.
+	local function FieldSetText ( self, Value )
+		self:SetText( Value );
+
+		local Width = self:GetStringWidth();
+		if ( self.Width ~= Width ) then
+			self.Width = Width;
+			self.Column:Resize();
+		end
+	end
+
+	--- Resizes the unit row when shown.
+	function UnitMeta.__index:OnShow ()
+		self:SetHeight( RowHeight );
+		self.NextUpdate = 0;
+	end
+	--- Shrinks the unit row when hidden so lower rows shift up.
+	function UnitMeta.__index:OnHide ()
+		self:SetHeight( 1e-3 ); -- Not a noticeable height, but renders properly
+		-- Resize affected columns
+		for Name, Column in pairs( me.Columns ) do
+			local Field = self[ Name ];
+			if ( Field ) then
+				Field.Value = nil;
+				FieldSetText( Field, nil );
+			end
+		end
+	end
+	--- Periodically updates unit health and power.
+	function UnitMeta.__index:OnUpdate ( Elapsed )
+		self.NextUpdate = self.NextUpdate - Elapsed;
+		if ( self.NextUpdate <= 0 ) then
+			self.NextUpdate = me.UpdateRate;
+
+			self:UpdateHealth();
+			self:UpdatePower();
+		end
+	end
+
+	--- Updates every field for the given unit.
+	function UnitMeta.__index:Update ()
+		if ( UnitExists( self.UnitID ) ) then
+			self:UpdateName();
+			self:UpdateHealth( true ); -- Force health and power to recolor
+			self:UpdatePower( true );
+			self:UpdateCondition();
+			self:Show();
+		else
+			self:Hide();
+		end
+	end
+
+	local UnitIsConnected = UnitIsConnected;
+	--- @return True if the given UnitID is online.
+	local function IsOnline ( UnitID )
+		return UnitID == "player" -- Player is never offline
+			or UnitIsConnected( UnitID ); -- Always true for non-players
+	end
+
+	local ceil, unpack = ceil, unpack;
+	local Colors = _Underscore.Colors;
+	--- Updates the given unit's name.
+	function UnitMeta.__index:UpdateName ()
+		local Field = self[ "Name" ];
+		if ( Field ) then -- Name field can be omitted
+			local UnitID = self.UnitID;
+			FieldSetText( Field, UnitName( UnitID ) );
 			Field:SetTextColor( unpack( UnitIsPlayer( UnitID ) and Colors.class[ select( 2, UnitClass( UnitID ) ) ] or Colors.Highlight ) );
 		end
 	end
-end
---[[****************************************************************************
-  * Function: _Underscore.HUD.UnitUpdateHealth                                 *
-  * Description: Updates the given unit's health along with its condition.     *
-  ****************************************************************************]]
-do
-	local UnitIsPlayer = UnitIsPlayer;
-	local UnitIsConnected = UnitIsConnected;
+
 	local UnitIsDeadOrGhost = UnitIsDeadOrGhost;
 	local UnitHealth, UnitHealthMax = UnitHealth, UnitHealthMax;
-	local ceil = ceil;
-
-	local Field, Value, Max;
-	local R, G, B;
-	function me.UnitUpdateHealth ( UnitID, Force )
-		Field = me.Units[ UnitID ][ "Health" ];
-
-		Max = UnitHealthMax( UnitID );
-		if ( Max == 0 ) then
-			Value = false;
-		else
-			if ( ( UnitIsPlayer( UnitID ) and not UnitIsConnected( UnitID ) ) or UnitIsDeadOrGhost( UnitID ) ) then
-				Value = 0;
-			else
-				Value = ceil( 100 * UnitHealth( UnitID ) / Max ); -- Never rounds to 0
-			end
+	--- Updates the given unit's health.
+	-- @param Force  Forces an update even if health value didn't change.
+	function UnitMeta.__index:UpdateHealth ( Force )
+		local Field, UnitID = self[ "Health" ], self.UnitID;
+		local Value, Max = false, UnitHealthMax( UnitID );
+		if ( Max ~= 0 and IsOnline( UnitID ) ) then
+			Value = UnitIsDeadOrGhost( UnitID ) and 0
+				or UnitHealth( UnitID ) / Max;
 		end
-		if ( Force or Field.Value ~= Value ) then
-			Field.Value = Value;
-			Field:SetText( Value or L.VALUE_IGNORED );
-			me.RequestColumnAutosize( "Health" );
 
-			-- Calculate color
-			if ( not Value or Value == 0 ) then
-				R, G, B = 0.5, 0.5, 0.5;
-			elseif ( Value == 100 ) then
+		if ( Force or self.Value ~= Value ) then
+			self.Value = Value;
+			FieldSetText( Field, Value and ceil( 100 * Value ) or L.VALUE_IGNORED ); -- Never rounds to 0
+
+			-- Update color
+			local R, G, B;
+			if ( Value == 1 ) then
 				R, G, B = 1, 1, 1;
+			elseif ( not Value or Value == 0 ) then
+				R, G, B = 0.5, 0.5, 0.5;
 			else -- Blend
-				Value = Value / 100;
-				B = 0;
 				if ( Value > 0.5 ) then
-					R, G = ( 1 - Value ) * 2, 1;
+					R, G, B = ( 1 - Value ) * 2, 1, 0;
 				else
-					R, G = 1, Value * 2;
+					R, G, B = 1, Value * 2, 0;
 				end
 			end
 			Field:SetTextColor( R, G, B );
 		end
 	end
-end
---[[****************************************************************************
-  * Function: _Underscore.HUD.UnitUpdatePower                                  *
-  * Description: Updates the given unit's power (mana/rage/etc).               *
-  ****************************************************************************]]
-do
-	local UnitIsPlayer = UnitIsPlayer;
-	local UnitIsConnected = UnitIsConnected;
-	local UnitIsDeadOrGhost = UnitIsDeadOrGhost;
+
 	local UnitPower, UnitPowerMax = UnitPower, UnitPowerMax;
 	local UnitPowerType = UnitPowerType;
-	local ceil = ceil;
-	local unpack = unpack;
-
 	local IgnoredPowerTypes = {
 		FOCUS = true;
 		HAPPINESS = true;
 	};
-	local Field, Value, Max;
-	local PowerType, _;
-	local R, G, B, Color2;
-	function me.UnitUpdatePower ( UnitID, Force )
-		Field = me.Units[ UnitID ][ "Power" ];
-
-		Max, _, PowerType, R, G, B = UnitPowerMax( UnitID ), UnitPowerType( UnitID );
-		if ( Max == 0 or IgnoredPowerTypes[ PowerType ] ) then
-			Value = false;
-		else
-			if ( ( UnitIsPlayer( UnitID ) and not UnitIsConnected( UnitID ) ) or UnitIsDeadOrGhost( UnitID ) ) then
-				Value = 0;
-			else
-				Value = ceil( 100 * UnitPower( UnitID ) / Max ); -- Never rounds to 0
-			end
+	--- Updates the given unit's power (mana/rage/etc).
+	-- @param Force  Forces an update even if power value/type didn't change.
+	function UnitMeta.__index:UpdatePower ( Force )
+		local Field, UnitID = self[ "Power" ], self.UnitID;
+		local Value, Max = false, UnitPowerMax( UnitID );
+		local _, PowerType, R, G, B = UnitPowerType( UnitID );
+		if ( Max ~= 0 and not IgnoredPowerTypes[ PowerType ] and IsOnline( UnitID ) ) then
+			Value = UnitIsDeadOrGhost( UnitID ) and 0
+				or UnitPower( UnitID ) / Max;
 		end
+
 		if ( Force or Field.Value ~= Value ) then
 			Field.Value = Value;
-			Field:SetText( Value or L.VALUE_IGNORED );
-			me.RequestColumnAutosize( "Power" );
+			FieldSetText( Field, Value and ceil( 100 * Value ) or L.VALUE_IGNORED ); -- Never rounds to 0
 
-			-- Calculate color
-			if ( not Value or Value == 0 ) then
-				R, G, B = 0.5, 0.5, 0.5;
-			elseif ( Value == 100 ) then
+			-- Update color
+			if ( Value == 1 ) then
 				R, G, B = 1, 1, 1;
+			elseif ( not Value or Value == 0 ) then
+				R, G, B = 0.5, 0.5, 0.5;
 			else -- Blend
-				if ( not R ) then -- Power type doesn't have a custom color
-					R, G, B = unpack( Colors.power[ PowerType ] or Colors.power[ "MANA" ] );
+				local Color = Colors.power[ PowerType ]
+					or ( not R and Colors.power[ "MANA" ] ); -- Doesn't have a custom color
+				if ( Color ) then
+					R, G, B = unpack( Color );
 				end
-				Value = Value / 100;
-				Color2 = 0.5 * ( 1 - Value );
+				local Color2 = 0.5 * ( 1 - Value );
 				R, G, B = Color2 + R * Value, Color2 + G * Value, Color2 + B * Value;
 			end
 			Field:SetTextColor( R, G, B );
 		end
 	end
-end
---[[****************************************************************************
-  * Function: _Underscore.HUD.UnitUpdateCondition                              *
-  * Description: Updates the given unit's condition label.                     *
-  ****************************************************************************]]
-do
-	local UnitIsPlayer = UnitIsPlayer;
-	local UnitIsConnected = UnitIsConnected;
+
 	local UnitBuff = UnitBuff;
 	local UnitIsGhost = UnitIsGhost;
 	local UnitIsDead = UnitIsDead;
-
 	local FeignDeath = GetSpellInfo( 28728 );
-	function me.UnitUpdateCondition ( UnitID )
-		me.Units[ UnitID ][ "Condition" ]:SetText( L[
-			( UnitIsPlayer( UnitID ) and not UnitIsConnected( UnitID ) and "OFFLINE" )
+	--- Updates the given unit's condition label.
+	function UnitMeta.__index:UpdateCondition ()
+		local UnitID = self.UnitID;
+		local Condition = ( not IsOnline( UnitID ) and "OFFLINE" )
 			or ( UnitBuff( UnitID, FeignDeath ) and "FEIGN" )
 			or ( UnitIsGhost( UnitID ) and "GHOST" )
-			or ( UnitIsDead( UnitID ) and "DEAD" ) ] );
-	end
-end
---[[****************************************************************************
-  * Function: _Underscore.HUD.UnitUpdate                                       *
-  * Description: Updates every stat for the given unit.                        *
-  ****************************************************************************]]
-do
-	local UnitExists, UnitName = UnitExists, UnitName;
-	function me.UnitUpdate ( UnitID )
-		local Row = me.Units[ UnitID ];
-		if ( UnitExists( UnitID ) and UnitName( UnitID ) ) then
-			Row:Show();
-			me.UnitUpdateName( UnitID );
-			me.UnitUpdateHealth( UnitID, true ); -- Force health and power to recolor
-			me.UnitUpdatePower( UnitID, true );
-			me.UnitUpdateCondition( UnitID );
-		else
-			Row:Hide();
-		end
-	end
-end
-
-
---[[****************************************************************************
-  * Function: _Underscore.HUD:UnitOnShow                                       *
-  ****************************************************************************]]
-function me:UnitOnShow ()
-	self:SetHeight( RowHeight + ( self.Margin or 0 ) );
-	self.NextUpdate = 0;
-end
---[[****************************************************************************
-  * Function: _Underscore.HUD:UnitOnHide                                       *
-  ****************************************************************************]]
-function me:UnitOnHide ()
-	self:SetHeight( 1e-4 ); -- Not a noticeable height, but renders properly
-	for Name in pairs( me.Columns ) do
-		self[ Name ].Value = nil;
-		me.RequestColumnAutosize( Name );
-	end
-end
---[[****************************************************************************
-  * Function: _Underscore.HUD:UnitOnUpdate                                     *
-  ****************************************************************************]]
-do
-	local UnitID;
-	function me:UnitOnUpdate ( Elapsed )
-		self.NextUpdate = self.NextUpdate - Elapsed;
-		if ( self.NextUpdate <= 0 ) then
-			self.NextUpdate = me.UpdateRate;
-
-			UnitID = self.UnitID;
-			me.UnitUpdateHealth( UnitID );
-			me.UnitUpdatePower( UnitID );
-		end
+			or ( UnitIsDead( UnitID ) and "DEAD" );
+		FieldSetText( self[ "Condition" ], Condition and L[ Condition ] or nil );
 	end
 end
 
 
 
 
---[[****************************************************************************
-  * Function: _Underscore.HUD:UNIT_NAME_UPDATE                                 *
-  ****************************************************************************]]
-function me:UNIT_NAME_UPDATE ( _, UnitID )
-	if ( me.Units[ UnitID ] ) then
-		me.UnitUpdateName( UnitID );
+--- Update the name field when a unit's name changes.
+function me.Frame:UNIT_NAME_UPDATE ( _, UnitID )
+	local Unit = me.Units[ UnitID ];
+	if ( Unit ) then
+		Unit:UpdateName();
 	end
 end
---[[****************************************************************************
-  * Function: _Underscore.HUD:UNIT_HEALTH                                      *
-  ****************************************************************************]]
-function me:UNIT_HEALTH ( _, UnitID )
-	if ( me.Units[ UnitID ] ) then
-		me.UnitUpdateCondition( UnitID );
+--- Update the condition field when a unit's "UnitIsCorpse" result changes.
+function me.Frame:UNIT_DYNAMIC_FLAGS ( _, UnitID )
+	local Unit = me.Units[ UnitID ];
+	if ( Unit ) then
+		Unit:UpdateCondition();
 	end
 end
---[[****************************************************************************
-  * Function: _Underscore.HUD:UNIT_MAXHEALTH                                   *
-  ****************************************************************************]]
-me.UNIT_MAXHEALTH = me.UNIT_HEALTH;
---[[****************************************************************************
-  * Function: _Underscore.HUD:UNIT_AURA                                        *
-  ****************************************************************************]]
-me.UNIT_AURA = me.UNIT_HEALTH;
+--- Update the condition field when a unit feigns or becomes a ghost.
+me.Frame.UNIT_AURA = me.Frame.UNIT_DYNAMIC_FLAGS;
 
 
---[[****************************************************************************
-  * Function: _Underscore.HUD:UNIT_PET                                         *
-  * Description: Fired when a unit's pet changes.                              *
-  ****************************************************************************]]
-function me:UNIT_PET ( _, UnitID )
-	UnitID = UnitID == "player" and "pet" or UnitID.."pet";
-	if ( me.Units[ UnitID ] ) then
-		me.UnitUpdate( UnitID );
+--- Updates pet units when they change.
+function me.Frame:UNIT_PET ( _, OwnerUnitID )
+	local Unit = me.Units[ OwnerUnitID == "player" and "pet" or OwnerUnitID.."pet" ];
+	if ( Unit ) then
+		Unit:Update();
 	end
 end
---[[****************************************************************************
-  * Function: _Underscore.HUD:PLAYER_TARGET_CHANGED                            *
-  ****************************************************************************]]
-function me:PLAYER_TARGET_CHANGED ()
-	me.UnitUpdate( "target" );
+--- Updates the target unit when it changes.
+function me.Frame:PLAYER_TARGET_CHANGED ()
+	me.Units[ "target" ]:Update();
 end
---[[****************************************************************************
-  * Function: _Underscore.HUD:PLAYER_FOCUS_CHANGED                             *
-  ****************************************************************************]]
-function me:PLAYER_FOCUS_CHANGED ()
-	me.UnitUpdate( "focus" );
+--- Updates the focus unit when it changes.
+function me.Frame:PLAYER_FOCUS_CHANGED ()
+	me.Units[ "focus" ]:Update();
 end
 
---[[****************************************************************************
-  * Function: _Underscore.HUD:PLAYER_ENTERING_WORLD                            *
-  * Description: Refresh everything.                                           *
-  ****************************************************************************]]
-function me:PLAYER_ENTERING_WORLD ()
-	for UnitID in pairs( me.Units ) do
-		me.UnitUpdate( UnitID );
+--- Refresh all units after zoning.
+function me.Frame:PLAYER_ENTERING_WORLD ()
+	for _, Unit in pairs( me.Units ) do
+		Unit:Update();
 	end
 end
 
 
 
 
---[[****************************************************************************
-  * Function: _Underscore.HUD.RequestColumnAutosize                            *
-  * Description: Queues a column to be autosized next frame.                   *
-  ****************************************************************************]]
-function me.RequestColumnAutosize ( Column )
-	me.Columns[ Column ].Autosize = true;
-	me:SetScript( "OnUpdate", me.OnUpdate );
-end
---[[****************************************************************************
-  * Function: _Underscore.HUD:OnUpdate                                         *
-  * Description: Autosizes all columns that need it on frame draw and then     *
-  *   unhooks itself.                                                          *
-  ****************************************************************************]]
-do
-	local pairs = pairs;
-	local max = max;
-	local MaxWidth;
-	function me:OnUpdate ()
-		for Name, Column in pairs( me.Columns ) do
-			if ( Column.Autosize ) then
-				MaxWidth, Column.Autosize = 1;
-				for _, Row in pairs( me.Units ) do
-					if ( Row:IsShown() ) then
-						MaxWidth = max( MaxWidth, Row[ Name ]:GetStringWidth() );
-					end
-				end
+local Frame = me.Frame;
+Frame:SetSize( 1, 1 );
+Frame:SetPoint( "CENTER" );
+Frame:SetFrameStrata( "BACKGROUND" );
+Frame:SetAlpha( 0.5 );
 
-				Column:SetWidth( MaxWidth );
-			end
-		end
-		self:SetScript( "OnUpdate", nil );
-	end
-end
-
-
-
-
-me:SetWidth( 1 );
-me:SetHeight( 1 );
-me:SetPoint( "CENTER" );
-me:SetFrameStrata( "BACKGROUND" );
-me:SetAlpha( TableAlpha );
-
-me:SetScript( "OnEvent", _Underscore.OnEvent );
-me:SetScript( "OnUpdate", me.OnUpdate );
-me:RegisterEvent( "UNIT_NAME_UPDATE" );
-me:RegisterEvent( "UNIT_HEALTH" );
-me:RegisterEvent( "UNIT_MAXHEALTH" );
-me:RegisterEvent( "UNIT_AURA" );
-me:RegisterEvent( "PLAYER_TARGET_CHANGED" );
-me:RegisterEvent( "PLAYER_FOCUS_CHANGED" );
-me:RegisterEvent( "UNIT_PET" );
-me:RegisterEvent( "PLAYER_ENTERING_WORLD" );
+Frame:SetScript( "OnEvent", _Underscore.OnEvent );
+Frame:RegisterEvent( "UNIT_NAME_UPDATE" );
+Frame:RegisterEvent( "UNIT_DYNAMIC_FLAGS" );
+Frame:RegisterEvent( "UNIT_AURA" );
+Frame:RegisterEvent( "UNIT_PET" );
+Frame:RegisterEvent( "PLAYER_TARGET_CHANGED" );
+Frame:RegisterEvent( "PLAYER_FOCUS_CHANGED" );
+Frame:RegisterEvent( "PLAYER_ENTERING_WORLD" );
 
 
 -- Setup all columns
 local function CreateColumn ( Name, Align )
-	local Frame = CreateFrame( "Frame", nil, me );
-	me.Columns[ Name ] = Frame;
-	Frame.Align = Align;
+	local Column = setmetatable( CreateFrame( "Frame", nil, Frame ), ColumnMeta );
+	me.Columns[ Name ] = Column;
+	Column.Name, Column.Align = Name, Align;
 
-	Frame:SetWidth( 1 );
-	Frame:SetHeight( 1 );
-
-	return Frame;
+	Column:SetSize( 1e-3, 1e-3 );
+	return Column;
 end
+CreateColumn( "Name", "RIGHT" ):SetPoint( "RIGHT", Frame, "LEFT", -16, 0 );
+local Health = CreateColumn( "Health", "RIGHT" );
+Health:SetPoint( "LEFT", Frame, "RIGHT", 4, 0 );
+local Power = CreateColumn( "Power", "RIGHT" );
+Power:SetPoint( "LEFT", Health, "RIGHT", 4, 0 );
+CreateColumn( "Condition", "LEFT" ):SetPoint( "LEFT", Power, "RIGHT", 16, 0 );
 
-CreateColumn( "Name", "RIGHT" ):SetPoint( "RIGHT", me, "LEFT", -16, 0 );
-CreateColumn( "Health", "RIGHT" ):SetPoint( "LEFT", me, "RIGHT", 4, 0 );
-CreateColumn( "Power", "RIGHT" ):SetPoint( "LEFT", me.Columns[ "Health" ], "RIGHT", 4, 0 );
-CreateColumn( "Condition", "LEFT" ):SetPoint( "LEFT", me.Columns[ "Power" ], "RIGHT", 16, 0 );
 
+-- Setup all unit rows
+local function CreateUnit ( UnitID )
+	local Unit = setmetatable( CreateFrame( "Frame", nil, Frame ), UnitMeta );
+	me.Units[ UnitID ], Unit.UnitID = Unit, UnitID;
 
--- Setup all rows
-local function CreateRow ( UnitID, Margin )
-	local Frame = CreateFrame( "Frame", nil, me );
-	me.Units[ UnitID ] = Frame;
-	Frame.UnitID = UnitID;
-	Frame.Margin = Margin;
-
-	Frame:SetScript( "OnShow", me.UnitOnShow );
-	Frame:SetScript( "OnHide", me.UnitOnHide );
-	Frame:SetScript( "OnUpdate", me.UnitOnUpdate );
-
-	Frame:SetWidth( 1 );
+	Unit:Hide();
+	Unit:SetSize( 1e-3, 1e-3 );
+	Unit:SetScript( "OnShow", Unit.OnShow );
+	Unit:SetScript( "OnHide", Unit.OnHide );
+	Unit:SetScript( "OnUpdate", Unit.OnUpdate );
 
 	-- Create all fields
 	for Name, Column in pairs( me.Columns ) do
-		local Field = Frame:CreateFontString( nil, "ARTWORK", "NumberFontNormalLarge" );
-		Frame[ Name ] = Field;
-		Field:SetPoint( "BOTTOM" );
+		local Field = Unit:CreateFontString( nil, "ARTWORK", "NumberFontNormalLarge" );
+		Unit[ Name ] = Field;
+		Field.Column, Field.Width = Column, 0;
+		Field:SetPoint( "TOP" );
 		Field:SetPoint( Column.Align, Column );
 	end
 	local Color = GRAY_FONT_COLOR;
-	Frame[ "Condition" ]:SetTextColor( Color.r, Color.g, Color.b );
-	Frame:Hide();
-
-	return Frame;
+	Unit[ "Condition" ]:SetTextColor( Color.r, Color.g, Color.b );
+	return Unit;
 end
-
-CreateRow( "target" ):SetPoint( "BOTTOM", me, "TOP", 0, 16 );
-CreateRow( "player" ):SetPoint( "TOP", me, "BOTTOM" );
-CreateRow( "pet", -4 ):SetPoint( "TOP", me.Units[ "player" ], "BOTTOM" );
-me.Units[ "pet" ]:SetScale( 0.8 );
-CreateRow( "focus", 8 ):SetPoint( "TOP", me.Units[ "pet" ], "BOTTOM", 0, -8 );
+CreateUnit( "target" ):SetPoint( "BOTTOM", Frame, "TOP", 0, 16 );
+local Player = CreateUnit( "player" );
+Player:SetPoint( "TOP", Frame, "BOTTOM" );
+Player[ "Name" ] = false; -- Don't show player's name
+local Pet = CreateUnit( "pet" );
+Pet:SetPoint( "TOP", Player, "BOTTOM" );
+Pet:SetScale( 0.8 );
+CreateUnit( "focus" ):SetPoint( "TOP", Pet, "BOTTOM", 0, -16 );

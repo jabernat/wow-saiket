@@ -5,17 +5,15 @@
 
 
 local me = {};
-_Underscore.HUD.Indicators = me;
+select( 2, ... ).Indicators = me;
 
 
 
 
---[[****************************************************************************
-  * Function: _Underscore.HUD.Indicators.ManageWorldState                      *
-  * Description: Disables mouse input for objectives and positions them.       *
-  ****************************************************************************]]
 do
 	local LastFrame;
+	--- Positions a world state frame just after the last one.
+	-- @return True if the frame exists and is in use.
 	local function AddFrame ( self, Scale )
 		if ( self and self:IsShown() ) then
 			self:ClearAllPoints();
@@ -26,6 +24,7 @@ do
 			return true;
 		end
 	end
+	--- Disables mouse input for objectives and repositions them.
 	function me.ManageWorldState ()
 		LastFrame = WorldStateAlwaysUpFrame;
 		for Index = 1, NUM_EXTENDED_UI_FRAMES do
@@ -42,22 +41,16 @@ do
 end
 
 
---[[****************************************************************************
-  * Function: _Underscore.HUD.Indicators.ManageDurability                      *
-  * Description: Moves the durability frame to the center of the bottom pane.  *
-  ****************************************************************************]]
+--- Moves the durability frame to the center of the bottom pane.
 function me.ManageDurability ()
 	DurabilityFrame:ClearAllPoints();
 	DurabilityFrame:SetPoint( "CENTER" );
 end
 
 
---[[****************************************************************************
-  * Function: _Underscore.HUD.Indicators.ManageVehicleSeats                    *
-  * Description: Disables unusable seat buttons.                               *
-  ****************************************************************************]]
 do
 	local Buttons = {};
+	--- Hook to disable unusable seat buttons.
 	function me.ManageVehicleSeats ()
 		if ( VehicleSeatIndicator.currSkin ) then -- In vehicle
 			-- Cache any new buttons
@@ -77,12 +70,9 @@ do
 		end
 	end
 end
---[[****************************************************************************
-  * Function: _Underscore.HUD.Indicators.ManageVehicle                         *
-  * Description: Moves the vehicle seating to the center of the bottom pane.   *
-  ****************************************************************************]]
 do
 	local SetPoint = VehicleSeatIndicator.SetPoint;
+	--- Hook to move the vehicle seating to the center of the bottom pane.
 	function me.ManageVehicle ()
 		VehicleSeatIndicator:ClearAllPoints();
 		SetPoint( VehicleSeatIndicator, "CENTER" );
