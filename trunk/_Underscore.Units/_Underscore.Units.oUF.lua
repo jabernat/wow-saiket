@@ -20,6 +20,12 @@ setmetatable( Colors, { __index = oUF.colors; } );
 setmetatable( Colors.power, { __index = oUF.colors.power; } );
 Colors.class = oUF.colors.class;
 
+--- Common range alpha properties shared by Range/SpellRange elements.
+me.Range = {
+	insideAlpha = 1.0;
+	outsideAlpha = 0.4;
+};
+
 
 
 
@@ -589,9 +595,7 @@ function me.StyleMeta.__call ( Style, Frame, UnitID )
 	end
 
 	-- Range fading
-	Frame[ IsAddOnLoaded( "oUF_SpellRange" ) and "SpellRange" or "Range" ] = true;
-	Frame.inRangeAlpha = 1.0;
-	Frame.outsideRangeAlpha = 0.4;
+	Frame[ IsAddOnLoaded( "oUF_SpellRange" ) and "SpellRange" or "Range" ] = me.Range;
 
 
 	-- Icons
