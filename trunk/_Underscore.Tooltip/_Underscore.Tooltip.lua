@@ -5,10 +5,10 @@
 
 
 local LibSharedMedia = LibStub( "LibSharedMedia-3.0" );
-local L = _UnderscoreLocalization.Tooltip;
 local _Underscore = _Underscore;
-local me = {};
+local me = select( 2, ... );
 _Underscore.Tooltip = me;
+local L = me.L;
 
 local TooltipPadding = -4; -- Distance between actual border of tooltip frame and its rendered outline
 local IconSize = 32;
@@ -17,25 +17,22 @@ local BarTexture = LibSharedMedia:Fetch( LibSharedMedia.MediaType.STATUSBAR, _Un
 
 
 
---[[****************************************************************************
-  * Function: _Underscore.Tooltip:SetDefaultAnchor                             *
-  * Description: Moves the default tooltip position to the top center.         *
-  ****************************************************************************]]
+--- Moves the default tooltip position to the top center.
 function me:SetDefaultAnchor ()
 	self:ClearAllPoints();
 	self:SetPoint( "TOP", _Underscore.TopMargin, "BOTTOM", 0, -TooltipPadding );
 end
---[[****************************************************************************
-  * Function: _Underscore.Tooltip:Skin                                         *
-  * Description: Skins a tooltip frame.                                        *
-  ****************************************************************************]]
+
 do
+	--- Sets the tooltip's health bar to a green color.
 	local function StatusBarOnValueChanged ( self )
 		self:SetStatusBarColor( unpack( _Underscore.Colors.reaction[ 8 ] ) );
 	end
+	--- Undoes attempts to put a normal backdrop on the tooltip.
 	local function SetBackdrop ( self )
 		getmetatable( self ).__index.SetBackdrop( self, nil );
 	end
+	-- Skins and hooks a tooltip frame.
 	function me:Skin ()
 		self:SetBackdrop( nil );
 		hooksecurefunc( self, "SetBackdrop", SetBackdrop );
@@ -57,15 +54,13 @@ end
 
 
 
---[[****************************************************************************
-  * Function: _Underscore.Tooltip:IconCreate                                   *
-  * Description: Creates an icon on the tooltip frame.                         *
-  ****************************************************************************]]
 do
+	--- Hides old icons when the tooltip is reset.
 	local function OnTooltipCleared ( self )
 		self.Icon:Hide();
 		self.Normal:Hide();
 	end
+	--- Creates an icon on the tooltip frame.
 	function me:IconCreate ()
 		if ( not self.Icon ) then
 			local Icon, Normal = self:CreateTexture( nil, "ARTWORK" ), self:CreateTexture( nil, "OVERLAY" );
@@ -79,10 +74,9 @@ do
 		end
 	end
 end
---[[****************************************************************************
-  * Function: _Underscore.Tooltip:IconSet                                      *
-  * Description: Sets or hides the tooltip's icon.                             *
-  ****************************************************************************]]
+--- Sets or hides the tooltip's icon.
+-- @param Texture  Path to set the icon to, or nil to hide it.
+-- @param ...  Custom texcoords to use for the icon.
 function me:IconSet ( Texture, ... )
 	local Icon, Normal = self.Icon, self.Normal;
 	Icon:SetTexture( Texture );
@@ -101,14 +95,9 @@ function me:IconSet ( Texture, ... )
 end
 
 
---[[****************************************************************************
-  * Function: _Underscore.Tooltip:UnitRegister                                 *
-  * Description: Add a class icon and guild name brackets to unit tooltips.    *
-  ****************************************************************************]]
 do
-	local UnitIsPlayer = UnitIsPlayer;
-	local GetGuildInfo = GetGuildInfo;
 	local select = select;
+	--- Updates a given UnitID's tooltip.
 	local function Update ( self, UnitID )
 		if ( UnitIsPlayer( UnitID ) ) then
 			local GuildName = GetGuildInfo( UnitID );
@@ -119,65 +108,66 @@ do
 				self:AppendText( "" ); -- Automatically resize
 			end
 
-			me.IconSet( self,
-				[[Interface\Glues\CharacterCreate\UI-CharacterCreate-Classes]],
+			me.IconSet( self, [[Interface\Glues\CharacterCreate\UI-CharacterCreate-Classes]],
 				unpack( CLASS_ICON_TCOORDS[ select( 2, UnitClass( UnitID ) ) ] ) );
 		else
 			me.IconSet( self );
 		end
 	end
+	--- Hook to update unit tooltips if a UnitID is available.
 	local function OnTooltipSetUnit ( self )
 		local UnitID = select( 2, self:GetUnit() );
 		if ( UnitID ) then
 			Update( self, UnitID );
 		end
 	end
+	--- Hook to update unit tooltips for units without UnitIDs.
 	local function SetUnit ( self, ActualUnitID )
 		local UnitID = select( 2, self:GetUnit() );
 		if ( not UnitID and self:IsShown() ) then -- OnTooltipSetUnit can't handle this case
 			Update( self, ActualUnitID );
 		end
 	end
-	function me:UnitRegister ()
+	--- Register a tooltip to add class icons and guild name brackets for units.
+	function me:RegisterUnit ()
 		me.IconCreate( self );
 
 		hooksecurefunc( self, "SetUnit", SetUnit );
 		self:HookScript( "OnTooltipSetUnit", OnTooltipSetUnit );
 	end
 end
---[[****************************************************************************
-  * Function: _Underscore.Tooltip:ItemRegister                                 *
-  * Description: Add item icons to tooltips.                                   *
-  ****************************************************************************]]
+
+
 do
+	--- Hook to add item icons when shown.
 	local function OnTooltipSetItem ( self )
 		me.IconSet( self, GetItemIcon( select( 2, self:GetItem() ) ) );
 	end
-	function me:ItemRegister ()
+	--- Register a tooltip to add item icons.
+	function me:RegisterItem ()
 		me.IconCreate( self );
 
 		self:HookScript( "OnTooltipSetItem", OnTooltipSetItem );
 	end
 end
---[[****************************************************************************
-  * Function: _Underscore.Tooltip:SpellRegister                                *
-  * Description: Add spell icons to tooltips.                                  *
-  ****************************************************************************]]
+
+
 do
+	--- Hook to add spell icons when shown.
 	local function OnTooltipSetSpell ( self )
 		me.IconSet( self, ( select( 3, GetSpellInfo( ( select( 3, self:GetSpell() ) ) ) ) ) );
 	end
-	function me:SpellRegister ()
+	--- Register a tooltip to add spell icons.
+	function me:RegisterSpell ()
 		me.IconCreate( self );
 
 		self:HookScript( "OnTooltipSetSpell", OnTooltipSetSpell );
 	end
 end
---[[****************************************************************************
-  * Function: _Underscore.Tooltip:AchievementRegister                          *
-  * Description: Add achievement icons to tooltips.                            *
-  ****************************************************************************]]
+
+
 do
+	--- Hook to add achievement icons when shown.
 	local function SetHyperlink ( self, Link )
 		if ( self:IsShown() ) then
 			local ID = Link:match( "^achievement:(%d+)" ) or Link:match( "|Hachievement:(%d+)" );
@@ -186,7 +176,8 @@ do
 			end
 		end
 	end
-	function me:AchievementRegister ()
+	--- Register a tooltip to add achievement icons.
+	function me:RegisterAchievement ()
 		me.IconCreate( self );
 
 		hooksecurefunc( self, "SetHyperlink", SetHyperlink );
@@ -196,22 +187,23 @@ end
 
 
 
-local function SkinAll ( self ) -- Skins a tooltip and its child shopping tooltips
+--- Skins a tooltip and its child shopping tooltips.
+local function SkinAll ( self )
 	me.Skin( self );
 	for _, ShoppingTooltip in ipairs( self.shoppingTooltips ) do
 		me.Skin( ShoppingTooltip );
 	end
 end
 
-me.UnitRegister( GameTooltip );
+me.RegisterUnit( GameTooltip );
 SkinAll( GameTooltip );
 hooksecurefunc( "GameTooltip_SetDefaultAnchor", me.SetDefaultAnchor );
 GameTooltip:SetScale( 0.75 );
 
-me.UnitRegister( ItemRefTooltip );
-me.ItemRegister( ItemRefTooltip );
-me.SpellRegister( ItemRefTooltip );
-me.AchievementRegister( ItemRefTooltip );
+me.RegisterUnit( ItemRefTooltip );
+me.RegisterItem( ItemRefTooltip );
+me.RegisterSpell( ItemRefTooltip );
+me.RegisterAchievement( ItemRefTooltip );
 SkinAll( ItemRefTooltip );
 ItemRefTooltip:SetPadding( 0 ); -- Remove padding on right side that close button occupies
 

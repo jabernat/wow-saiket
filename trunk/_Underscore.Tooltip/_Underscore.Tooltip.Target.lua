@@ -5,16 +5,14 @@
 
 
 local me = CreateFrame( "GameTooltip", "_UnderscoreTooltipTarget", GameTooltip, "GameTooltipTemplate" );
-_Underscore.Tooltip.Target = me;
+select( 2, ... ).Target = me;
 
 me.UpdateRate = 0.5;
 
 
 
 
---[[****************************************************************************
-  * Function: _Underscore.Tooltip.Target:OnTooltipSetUnit                      *
-  ****************************************************************************]]
+--- Updates the unit name color like the default GameTooltip.
 function me:OnTooltipSetUnit ()
 	me.Text:SetTextColor( GameTooltip_UnitColor( "mouseovertarget" ) );
 end
@@ -22,17 +20,13 @@ end
 
 do
 	local NextUpdate = 0;
---[[****************************************************************************
-  * Function: _Underscore.Tooltip.Target:OnTooltipCleared                      *
-  ****************************************************************************]]
+	--- Resets the update timer when the tooltip gets cleared.
 	function me:OnTooltipCleared ()
 		NextUpdate = 0;
 	end
---[[****************************************************************************
-  * Function: _Underscore.Tooltip.Target:OnUpdate                              *
-  * Description: Shows and hides the mouseover target.                         *
-  ****************************************************************************]]
+
 	local UnitExists = UnitExists;
+	--- Shows and hides the mouseover target, updating it on a timer.
 	function me:OnUpdate ( Elapsed )
 		NextUpdate = NextUpdate - Elapsed;
 		if ( NextUpdate <= 0 ) then
@@ -59,7 +53,8 @@ me:SetPoint( "TOPLEFT", GameTooltip, "TOPRIGHT" );
 me:SetScale( 0.8 );
 me.Text = _G[ me:GetName().."TextLeft1" ];
 
-_Underscore.Tooltip.UnitRegister( me );
-_Underscore.Tooltip.Skin( me );
+local Tooltip = select( 2, ... );
+Tooltip.RegisterUnit( me );
+Tooltip.Skin( me );
 me.Icon:ClearAllPoints();
 me.Icon:SetPoint( "TOPLEFT", me, "TOPRIGHT", -2, -2 );
