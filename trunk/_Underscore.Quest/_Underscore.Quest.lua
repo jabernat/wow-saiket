@@ -7,20 +7,16 @@
 if ( IsAddOnLoaded( "Carbonite" ) ) then
 	return;
 end
-local L = _UnderscoreLocalization.Quest;
-local me = {};
+local me = select( 2, ... );
 _Underscore.Quest = me;
+local L = me.L;
 
 
 
 
---[[****************************************************************************
-  * Function: _Underscore.Quest.QuestLogUpdate                                 *
-  * Description: Add level information and quest type data to the titles of    *
-  *   quests for when they're linked, and remove the default quest type text.  *
-  ****************************************************************************]]
 do
 	local GetQuestLogTitle = GetQuestLogTitle;
+	--- Adds levels to quest log entries, and abbreviated tags for quest types.
 	function me.QuestLogUpdate ()
 		if ( not QuestLogFrame:IsShown() ) then
 			return;
