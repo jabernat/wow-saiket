@@ -5,28 +5,22 @@
 
 
 local me = CreateFrame( "Frame", nil, WorldFrame );
-_Underscore.HUD.Crosshairs = me;
+select( 2, ... ).Crosshairs = me;
 
 
 
 
---[[****************************************************************************
-  * Function: _Underscore.HUD.Crosshairs.Screenshot                            *
-  * Description: Hide the crosshairs just before screenshots are taken.        *
-  ****************************************************************************]]
 do
 	local Backup = Screenshot;
+	--- Hide the crosshairs just before screenshots are taken.
 	function me.Screenshot ( ... )
 		me:Hide();
 		return Backup( ... );
 	end
 end
 
---[[****************************************************************************
-  * Function: _Underscore.HUD.Crosshairs:OnEvent                               *
-  * Description: Reshows the crosshairs after a screenshot is taken.           *
-  ****************************************************************************]]
-function me:OnEvent ( Event )
+--- Reshows the crosshairs after a screenshot is taken.
+function me:OnEvent ()
 	-- SCREENSHOT_SUCCEEDED / SCREENSHOT_FAILED
 	self:Show();
 end
@@ -40,10 +34,9 @@ me:RegisterEvent( "SCREENSHOT_FAILED" );
 me:RegisterEvent( "SCREENSHOT_SUCCEEDED" );
 
 me:SetFrameStrata( "BACKGROUND" );
-me:SetWidth( 32 );
-me:SetHeight( 32 );
-me:SetAlpha( 0.75 );
 me:SetPoint( "CENTER" );
+me:SetSize( 32, 32 );
+me:SetAlpha( 0.75 );
 
 local Texture = me:CreateTexture( nil, "ARTWORK" );
 Texture:SetAllPoints();

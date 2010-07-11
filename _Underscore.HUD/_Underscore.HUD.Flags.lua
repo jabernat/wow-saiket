@@ -4,49 +4,36 @@
   ****************************************************************************]]
 
 
-local L = _UnderscoreLocalization.HUD;
 local me = CreateFrame( "Frame", nil, UIParent );
-_Underscore.HUD.Flags = me;
+select( 2, ... ).Flags = me;
 
 me.Text = me:CreateFontString( nil, "ARTWORK", "GameFontNormalHuge" );
 
+me.UpdateRate = 0.25;
 
 
 
---[[****************************************************************************
-  * Function: _Underscore.HUD.Flags:PLAYER_FLAGS_CHANGED                       *
-  ****************************************************************************]]
-function me:PLAYER_FLAGS_CHANGED ( _, UnitID )
-	if ( UnitID == "player" ) then
-		local Status;
-		if ( UnitIsAFK( "player" ) ) then
-			Status = L.FLAG_AFK;
-		elseif ( UnitIsDND( "player" ) ) then
-			Status = L.FLAG_DND;
-		end
-		if ( Status ) then
-			self.Text:SetText( Status );
-			self:Show();
-		else
-			self:Hide();
+
+do
+	local UnitIsAFK = UnitIsAFK;
+	local UnitIsDND = UnitIsDND;
+	--- Updates AFK/DND state on a timer.
+	-- Used instead of PLAYER_FLAGS_CHANGED since it's unreliable in cases such as
+	-- zoning or logging in for the first time, and PLAYER_ENTERING_WORLD doesn't
+	-- catch those cases either.
+	function me:OnUpdate ( Elapsed )
+		self.NextUpdate = self.NextUpdate - Elapsed;
+		if ( self.NextUpdate <= 0 ) then
+			self.NextUpdate = self.UpdateRate;
+
+			self.Text:SetText( ( UnitIsAFK( "player" ) and CHAT_FLAG_AFK )
+				or ( UnitIsDND( "player" ) and CHAT_FLAG_DND ) or nil );
 		end
 	end
 end
---[[****************************************************************************
-  * Function: _Underscore.HUD.Flags:PLAYER_ENTERING_WORLD                      *
-  ****************************************************************************]]
-function me:PLAYER_ENTERING_WORLD ()
-	self:Hide();
-end
---[[****************************************************************************
-  * Function: _Underscore.HUD.Flags:OnUpdate                                   *
-  ****************************************************************************]]
-function me:OnUpdate ()
-	me:SetScript( "OnUpdate", nil );
-	me.OnUpdate = nil;
-
-	self:PLAYER_FLAGS_CHANGED( nil, "player" );
-	self:RegisterEvent( "PLAYER_ENTERING_WORLD" );
+--- Catches when AFK status gets reset after zoning.
+function me:PLAYER_ENTERING_WORLD ( Event )
+	self.NextUpdate = 0;
 end
 
 
@@ -54,7 +41,7 @@ end
 
 me:SetScript( "OnUpdate", me.OnUpdate );
 me:SetScript( "OnEvent", _Underscore.OnEvent );
-me:RegisterEvent( "PLAYER_FLAGS_CHANGED" );
+me:RegisterEvent( "PLAYER_ENTERING_WORLD" );
 
 me:SetFrameStrata( "BACKGROUND" );
 me.Text:SetPoint( "BOTTOM", AutoFollowStatusText, "TOP" );
