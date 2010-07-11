@@ -4,22 +4,18 @@
   ****************************************************************************]]
 
 
-if ( IsAddOnLoaded( "Carbonite" ) ) then
+if ( not _Underscore.Quest ) then -- Wasn't loaded because Carbonite is enabled
 	return;
 end
-local _Underscore = _Underscore;
 local me = {};
-_Underscore.Quest.Watch = me;
+select( 2, ... ).Watch = me;
 
 
 
 
---[[****************************************************************************
-  * Function: _Underscore.Quest.Watch:OnLeftClick                              *
-  * Description: Stops tracking if shift is held.                              *
-  ****************************************************************************]]
 do
 	local Backup = WatchFrameLinkButtonTemplate_OnLeftClick;
+	--- Stops tracking quests/achievements if shift is held when clicked.
 	function me:OnLeftClick ( ... )
 		if ( IsShiftKeyDown() ) then -- Stop tracking
 			CloseDropDownMenus();
@@ -38,12 +34,9 @@ do
 		end
 	end
 end
---[[****************************************************************************
-  * Function: _Underscore.Quest.Watch:GetFrame                                 *
-  * Description: Hooks newly made buttons.                                     *
-  ****************************************************************************]]
 do
 	local Backup = WatchFrame.buttonCache.GetFrame;
+	--- Hook to lock newly made buttons.
 	function me:GetFrame ( ... )
 		local NumFrames = self.numFrames;
 		local Frame = Backup( self, ... );
@@ -57,12 +50,9 @@ do
 end
 
 
---[[****************************************************************************
-  * Function: _Underscore.Quest.Watch.UpdateQuests                             *
-  * Description: Repositions quest item buttons.                               *
-  ****************************************************************************]]
 do
 	local NumButtons = 0;
+	--- Skins and repositions quest item buttons along the right of the list.
 	function me.UpdateQuests ()
 		-- Skin new buttons
 		if ( NumButtons ~= WATCHFRAME_NUM_ITEMS ) then -- New button created
@@ -85,9 +75,7 @@ do
 		end
 	end
 end
---[[****************************************************************************
-  * Function: _Underscore.Quest.Watch.Manage                                   *
-  ****************************************************************************]]
+--- Repositions the list under the minimap.
 function me.Manage ()
 	WatchFrame:ClearAllPoints();
 	WatchFrame:SetPoint( "TOPRIGHT", MinimapCluster, "BOTTOMRIGHT", 0, -8 );
@@ -100,18 +88,12 @@ end
 if ( IsAddOnLoaded( "_Underscore.ActionBars" ) ) then
 	-- Reposition list
 	WatchFrameLines:SetPoint( "BOTTOMRIGHT" );
-	_Underscore.RegisterPositionManager( function ()
-		WatchFrame:ClearAllPoints();
-		WatchFrame:SetPoint( "TOPRIGHT", MinimapCluster, "BOTTOMRIGHT", 0, -8 );
-		WatchFrame:SetPoint( "BOTTOM", Dominos.Frame:Get( 3 ), "TOP" );
-	end );
+	_Underscore.RegisterPositionManager( me.Manage );
 
 	-- Reposition quest item buttons
-	local Backup = WatchFrame_DisplayTrackedQuests;
+	WatchFrame_RemoveObjectiveHandler( WatchFrame_DisplayTrackedQuests );
 	hooksecurefunc( "WatchFrame_DisplayTrackedQuests", me.UpdateQuests );
-	if ( WatchFrame_RemoveObjectiveHandler( Backup ) ) then
-		WatchFrame_AddObjectiveHandler( WatchFrame_DisplayTrackedQuests );
-	end
+	WatchFrame_AddObjectiveHandler( WatchFrame_DisplayTrackedQuests );
 end
 
 

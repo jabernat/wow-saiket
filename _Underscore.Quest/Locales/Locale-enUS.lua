@@ -4,8 +4,8 @@
   ****************************************************************************]]
 
 
-local Meta = getmetatable( _UnderscoreLocalization );
-_UnderscoreLocalization.Quest = setmetatable( {
+local Meta = getmetatable( _Underscore.L );
+select( 2, ... ).L = setmetatable( {
 	TITLE_FORMAT = "[%d%s] %s"; -- Level, QuestTag, Title
 
 	DAILY_PATTERN = "^Daily (.*)$"; -- DAILY_QUEST_TAG_TEMPLATE
