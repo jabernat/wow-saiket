@@ -4,6 +4,6 @@
   ****************************************************************************]]
 
 
-_UnderscoreLocalization.Tooltip = setmetatable( {
+select( 2, ... ).L = setmetatable( {
 	GUILD_FORMAT = "<%s>"; -- GuildName
-}, getmetatable( _UnderscoreLocalization ) );
+}, getmetatable( _Underscore.L ) );
