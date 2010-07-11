@@ -7,14 +7,15 @@
 if ( IsAddOnLoaded( "Carbonite" ) ) then
 	return;
 end
-local L = _UnderscoreLocalization.WorldMap;
-local me = CreateFrame( "Frame", nil, WorldMapButton );
+local me = select( 2, ... );
 _Underscore.WorldMap = me;
+local L = me.L;
 
+me.Frame = CreateFrame( "Frame", nil, WorldMapButton );
 -- Note: Parent ScrollHandler to WorldMapFrame so it gets disabled when Carbonite takes over
 me.ScrollHandler = CreateFrame( "Frame", nil, WorldMapFrame ); -- Can insecurely toggle mousewheel input
 
-local Tooltip = CreateFrame( "Frame", nil, me );
+local Tooltip = CreateFrame( "Frame", nil, me.Frame );
 me.Tooltip = Tooltip;
 Tooltip.Text = Tooltip:CreateFontString( nil, "ARTWORK", "NumberFontNormalSmall" );
 
@@ -25,14 +26,11 @@ Tooltip.OffsetX, Tooltip.OffsetY = -8, -16;
 
 
 
---[[****************************************************************************
-  * Function: _Underscore.WorldMap.UpdateUnit                                  *
-  * Description: Adds class color to player blips on the map.                  *
-  ****************************************************************************]]
 do
 	local Colors = _Underscore.Colors.class;
 	local InactiveColor = { 0.5, 0.2, 0.8 };
 	local Top, Bottom, Left, Right = 0.25, 0.5, 7 / 8, 1; -- Row 2, column 8: White template blip
+	--- Adds class color to player blips on the map.
 	function me:UpdateUnit ()
 		local UnitID = self.unit or self.name;
 		local Icon = self.icon;
@@ -64,10 +62,7 @@ do
 end
 
 
---[[****************************************************************************
-  * Function: _Underscore.WorldMap.DisableBlackout                             *
-  * Description: Keeps the black background behind the map hidden.             *
-  ****************************************************************************]]
+--- Keeps the black background behind the map hidden.
 function me.DisableBlackout ()
 	WorldMapFrame:EnableMouse( false );
 	--WorldMapFrame:EnableKeyboard( false ); -- Breaks escape keybind
@@ -75,13 +70,10 @@ function me.DisableBlackout ()
 end
 
 
---[[****************************************************************************
-  * Function: _Underscore.WorldMap:OnUpdate                                    *
-  * Description: Updates the coordinate tooltip.                               *
-  ****************************************************************************]]
 do
 	local GetCursorPosition = GetCursorPosition;
-	function me:OnUpdate ()
+	--- Updates the coordinate tooltip.
+	function me.Frame:OnUpdate ()
 		if ( self:IsMouseOver() ) then
 			local CursorX, CursorY = GetCursorPosition();
 			local MapScale = self:GetEffectiveScale();
@@ -109,10 +101,7 @@ end
 
 
 
---[[****************************************************************************
-  * Function: _Underscore.WorldMap.ScrollHandler:OnMouseWheel                  *
-  * Description: Scrolls through dungeon map levels when available.            *
-  ****************************************************************************]]
+--- Scrolls through dungeon map levels with the mousewheel when available.
 function me.ScrollHandler:OnMouseWheel ( Delta )
 	local Level, LevelsMax = GetCurrentMapDungeonLevel(), GetNumDungeonMapLevels();
 
@@ -126,22 +115,16 @@ function me.ScrollHandler:OnMouseWheel ( Delta )
 		end
 	end
 end
---[[****************************************************************************
-  * Function: _Underscore.WorldMap.ScrollHandler:WORLD_MAP_UPDATE              *
-  ****************************************************************************]]
+--- Enables and disables the mousewheel when dungeon levels are available.
 function me.ScrollHandler:WORLD_MAP_UPDATE ()
 	self:EnableMouseWheel( GetNumDungeonMapLevels() > 0 );
 end
---[[****************************************************************************
-  * Function: _Underscore.WorldMap.ScrollHandler:OnShow                        *
-  ****************************************************************************]]
+--- Starts monitoring the map when shown.
 function me.ScrollHandler:OnShow ()
 	self:RegisterEvent( "WORLD_MAP_UPDATE" );
 	self:WORLD_MAP_UPDATE();
 end
---[[****************************************************************************
-  * Function: _Underscore.WorldMap.ScrollHandler:OnHide                        *
-  ****************************************************************************]]
+--- Stops monitoring the map when hidden.
 function me.ScrollHandler:OnHide ()
 	self:UnregisterEvent( "WORLD_MAP_UPDATE" );
 end
@@ -149,8 +132,8 @@ end
 
 
 
-me:SetAllPoints();
-me:SetScript( "OnUpdate", me.OnUpdate );
+me.Frame:SetAllPoints();
+me.Frame:SetScript( "OnUpdate", me.Frame.OnUpdate );
 
 Tooltip:Hide();
 Tooltip:SetFrameStrata( "TOOLTIP" );
