@@ -151,8 +151,8 @@ do
 	local Plus = { worldboss = true; elite = true; rareelite = true; };
 	--- Tag that displays level/classification or group # in raid.
 	function me.TagClassification ( UnitID )
-		local RaidID = UnitInRaid( UnitID );
-		if ( UnitID == "player" and RaidID ) then
+		local RaidID = GetNumRaidMembers();
+		if ( UnitID == "player" and RaidID > 0 ) then
 			return L.OUF_GROUP_FORMAT:format( ( select( 3, GetRaidRosterInfo( RaidID ) ) ) );
 		else
 			local Level = UnitLevel( UnitID );
