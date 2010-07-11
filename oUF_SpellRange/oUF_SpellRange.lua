@@ -3,12 +3,12 @@
   * oUF_SpellRange.lua - Improved range element for oUF.                       *
   *                                                                            *
   * Elements handled: .SpellRange                                              *
-  * Settings: (Either override method or both alpha properties are required)   *
-  *   - :SpellRangeOverride( InRange ) - Callback fired when a unit either     *
-  *       enters or leaves range. Overrides default alpha changing.            *
+  * Settings: (Either Update method or both alpha properties are required)     *
+  *   - .SpellRange.Update( Frame, InRange ) - Callback fired when a unit      *
+  *       either enters or leaves range. Overrides default alpha changing.     *
   *   OR                                                                       *
-  *   - .inRangeAlpha - Frame alpha value for units in range.                  *
-  *   - .outsideRangeAlpha - Frame alpha for units out of range.               *
+  *   - .SpellRange.insideAlpha - Frame alpha value for units in range.        *
+  *   - .SpellRange.outsideAlpha - Frame alpha for units out of range.         *
   * Note that SpellRange will automatically disable Range elements of frames.  *
   ****************************************************************************]]
 
@@ -23,8 +23,8 @@ local Objects = {};
 local ObjectRanges = {};
 
 -- Class-specific spell info
-local HelpID, HelpName, CanHelp; -- ID of spell, and whether it is known by the player
-local HarmID, HarmName, CanHarm;
+local HelpIDs, HelpName; -- Array of possible spell IDs in order of priority, and the name of the highest known priority spell
+local HarmIDs, HarmName;
 
 
 
@@ -48,7 +48,7 @@ do
 	function IsInRange ( UnitID )
 		if ( UnitIsConnected( UnitID ) ) then
 			if ( UnitCanAssist( "player", UnitID ) ) then
-				if ( CanHelp and not UnitIsDead( UnitID ) ) then
+				if ( HelpName and not UnitIsDead( UnitID ) ) then
 					return IsSpellInRange( HelpName, UnitID ) == 1;
 				elseif ( not UnitOnTaxi( "player" ) -- UnitInRange always returns nil while on flightpaths
 					and ( UnitIsUnit( UnitID, "player" ) or UnitIsUnit( UnitID, "pet" )
@@ -56,7 +56,7 @@ do
 				) then
 					return UnitInRange( UnitID ); -- Fast checking for self and party members (38 yd range)
 				end
-			elseif ( CanHarm and not UnitIsDead( UnitID ) and UnitCanAttack( "player", UnitID ) ) then
+			elseif ( HarmName and not UnitIsDead( UnitID ) and UnitCanAttack( "player", UnitID ) ) then
 				return IsSpellInRange( HarmName, UnitID ) == 1;
 			end
 
@@ -71,30 +71,11 @@ local function UpdateRange ( self )
 	if ( ObjectRanges[ self ] ~= InRange ) then -- Range state changed
 		ObjectRanges[ self ] = InRange;
 
-		if ( self.SpellRangeOverride ) then
-			self:SpellRangeOverride( InRange );
+		local SpellRange = self.SpellRange;
+		if ( SpellRange.Update ) then
+			SpellRange.Update( self, InRange );
 		else
-			self:SetAlpha( self[ InRange and "inRangeAlpha" or "outsideRangeAlpha" ] );
-		end
-	end
-end
-local UpdateSpells;
-do
-	local IsSpellKnown = IsSpellKnown;
-	--- Checks whether the player knows his or her class-specific range checking spells.
-	function UpdateSpells ()
-		-- Set to true if spell is in spellbook, and cache its name
-		if ( HelpID ) then
-			CanHelp = IsSpellKnown( HelpID );
-			if ( CanHelp and not HelpName ) then
-				HelpName = GetSpellInfo( HelpID );
-			end
-		end
-		if ( HarmID ) then
-			CanHarm = IsSpellKnown( HarmID );
-			if ( CanHarm and not HarmName ) then
-				HarmName = GetSpellInfo( HarmID );
-			end
+			self:SetAlpha( SpellRange[ InRange and "insideAlpha" or "outsideAlpha" ] );
 		end
 	end
 end
@@ -109,7 +90,6 @@ do
 		if ( NextUpdate <= 0 ) then
 			NextUpdate = UpdateRate;
 
-			UpdateSpells();
 			for Object in pairs( Objects ) do
 				if ( Object:IsVisible() ) then
 					UpdateRange( Object );
@@ -118,25 +98,50 @@ do
 		end
 	end
 end
+local OnSpellsChanged;
+do
+	local IsSpellKnown = IsSpellKnown;
+	local GetSpellInfo = GetSpellInfo;
+	--- @return Highest priority spell name available, or nil if none.
+	local function GetSpellName ( IDs )
+		if ( IDs ) then
+			for _, ID in ipairs( IDs ) do
+				if ( IsSpellKnown( ID ) ) then
+					return GetSpellInfo( ID );
+				end
+			end
+		end
+	end
+	--- Checks known spells for the highest priority spell name to use.
+	function OnSpellsChanged ()
+		HelpName, HarmName = GetSpellName( HelpIDs ), GetSpellName( HarmIDs );
+	end
+end
 
 
 --- Called by oUF for new unit frames to setup range checking.
 -- @return True if the range element was actually enabled.
 local function Enable ( self, UnitID )
-	if ( self.SpellRange ) then
-		assert( type( self.SpellRangeOverride ) == "function"
-			or ( type( self.inRangeAlpha ) == "number" and type( self.outsideRangeAlpha ) == "number" ),
+	local SpellRange = self.SpellRange;
+	if ( SpellRange ) then
+		assert( type( SpellRange ) == "table", "oUF layout addon using invalid SpellRange element." );
+		assert( type( SpellRange.Update ) == "function"
+			or ( tonumber( SpellRange.insideAlpha ) and tonumber( SpellRange.outsideAlpha ) ),
 			"oUF layout addon omitted required SpellRange properties." );
 		if ( self.Range ) then -- Disable default range checking
 			self:DisableElement( "Range" );
-			self.Range = nil;
+			self.Range = nil; -- Prevent range element from enabling, since enable order isn't stable
 		end
 
 		if ( not UpdateFrame ) then
 			UpdateFrame = CreateFrame( "Frame" );
 			UpdateFrame:SetScript( "OnUpdate", OnUpdate );
-		else
+			UpdateFrame:SetScript( "OnEvent", OnSpellsChanged );
+		end
+		if ( not next( Objects ) ) then -- First object
 			UpdateFrame:Show();
+			UpdateFrame:RegisterEvent( "SPELLS_CHANGED" );
+			OnSpellsChanged(); -- Recheck spells immediately
 		end
 		Objects[ self ] = true;
 		return true;
@@ -146,15 +151,15 @@ end
 local function Disable ( self )
 	Objects[ self ] = nil;
 	ObjectRanges[ self ] = nil;
-	if ( not next( Objects ) ) then
+	if ( not next( Objects ) ) then -- Last object
 		UpdateFrame:Hide();
+		UpdateFrame:UnregisterEvent( "SPELLS_CHANGED" );
 	end
 end
 --- Called by oUF when the unit frame's unit changes or otherwise needs a complete update.
 -- @param Event  Reason for the update.  Can be a real event, nil, or a string defined by oUF.
 local function Update ( self, Event, UnitID )
 	if ( Event ~= "OnTargetUpdate" ) then -- OnTargetUpdate is fired on a timer for *target units that don't have real events
-		UpdateSpells();
 		ObjectRanges[ self ] = nil; -- Force update to fire
 		UpdateRange( self ); -- Update range immediately
 	end
@@ -164,25 +169,46 @@ end
 
 
 local _, Class = UnitClass( "player" );
---- Optional low level baseline skills with greater than 28 yard range.
-HelpID = ( {
-	DRUID = 5185; -- Healing Touch
-	MAGE = 1459; -- Arcane Intellect
-	PALADIN = 635; -- Holy Light
-	PRIEST = 2050; -- Lesser Heal
-	SHAMAN = 331; -- Healing Wave
-	WARLOCK = 5697; -- Unending Breath
+--- Optional lists of low level baseline skills with greater than 28 yard range.
+-- First known spell in the appropriate class list gets used.
+-- Note: Spells probably shouldn't have minimum ranges!
+HelpIDs = ( {
+	-- DEATHKNIGHT = {};
+	DRUID = { 5185 }; -- Healing Touch (40yd) - Starter
+	-- HUNTER = {};
+	MAGE = {
+		475, -- Remove Curse (40yd) - Lvl 18
+		1459, -- Arcane Intellect (30yd) - Lvl 1
+	};
+	PALADIN = { 635 }; -- Holy Light (40yd) - Starter
+	PRIEST = { 2050 }; -- Lesser Heal (40yd) - Starter
+	SHAMAN = { 331 }; -- Healing Wave (40yd) - Starter
+	WARLOCK = { 5697 }; -- Unending Breath (30yd) - Lvl 16
+	-- WARRIOR = {};
 } )[ Class ];
-HarmID = ( {
-	DEATHKNIGHT = 52375; -- Death Coil
-	DRUID = 5176; -- Wrath
-	HUNTER = 75; -- Auto Shot
-	MAGE = 133; -- Fireball
-	PALADIN = 62124; -- Hand of Reckoning
-	PRIEST = 585; -- Smite
-	SHAMAN = 403; -- Lightning Bolt
-	WARLOCK = 686; -- Shadow Bolt
-	WARRIOR = 355; -- Taunt
+
+HarmIDs = ( {
+	DEATHKNIGHT = { 52375 }; -- Death Coil (30yd) - Lvl 55
+	DRUID = { 5176 }; -- Wrath (30yd, 36yd talent) - Starter
+	HUNTER = { 75 }; -- Auto Shot (5-35yd) - Starter
+	MAGE = {
+		44614, -- Frostfire Bolt (40yd) - Lvl 75
+		133, -- Fireball (35yd) - Starter
+	};
+	PALADIN = {
+		62124, -- Hand of Reckoning (30yd) - Lvl 16
+		879, -- Exorcism (30yd) - Lvl 20
+	};
+	PRIEST = {
+		589, -- Shadow Word: Pain (30yd, 36yd talent) - Lvl 4
+		585, -- Smite (30yd) - Starter
+	};
+	SHAMAN = { 403 }; -- Lightning Bolt (30yd, 36yd talent) - Starter
+	WARLOCK = {
+		172, -- Corruption (30yd, 36yd talent) -- Lvl 4
+		686, -- Shadow Bolt (30yd) - Starter
+	};
+	WARRIOR = { 355 }; -- Taunt (30yd) - Lvl 10
 } )[ Class ];
 
 oUF:AddElement( "SpellRange", Update, Enable, Disable );
