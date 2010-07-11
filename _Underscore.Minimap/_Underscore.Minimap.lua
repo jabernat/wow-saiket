@@ -7,9 +7,10 @@
 if ( IsAddOnLoaded( "Carbonite" ) ) then
 	return;
 end
-local me = CreateFrame( "Frame" );
+local me = select( 2, ... );
 _Underscore.Minimap = me;
 
+me.Frame = CreateFrame( "Frame" );
 me.PingText = MinimapPing:CreateFontString( nil, "ARTWORK", "NumberFontNormalSmallGray" );
 
 local IconSize = 14;
@@ -18,11 +19,7 @@ local MinimapScale = 0.9;
 
 
 
---[[****************************************************************************
-  * Function: _Underscore.Minimap.SetPing                                      *
-  * Description: This is the OnUpdate function to move the minimap ping on a   *
-  *   square minimap.                                                          *
-  ****************************************************************************]]
+--- Hook to position the minimap ping on a square minimap.
 function me.SetPing ( X, Y, Sound )
 	if ( abs( X ) <= 0.5 and abs( Y ) <= 0.5 ) then
 		MinimapPing:SetPoint( "CENTER", Minimap, "CENTER",
@@ -36,12 +33,8 @@ function me.SetPing ( X, Y, Sound )
 		MinimapPing:Hide();
 	end
 end
---[[****************************************************************************
-  * Function: _Underscore.Minimap:OnClick                                      *
-  * Description: Broadcasts a ping at the cursor's location for a square       *
-  *   minimap.                                                                 *
-  ****************************************************************************]]
-function me:OnClick ()
+--- Hook to broadcast a ping on a square minimap.
+function me:OnMouseUp ()
 	local CursorX, CursorY = GetCursorPosition();
 	local CenterX, CenterY = self:GetCenter();
 	local Scale = self:GetEffectiveScale();
@@ -52,10 +45,7 @@ function me:OnClick ()
 end
 
 
---[[****************************************************************************
-  * Function: _Underscore.Minimap:DifficultyOnEvent                            *
-  * Description: Updates the instance difficulty flag.                         *
-  ****************************************************************************]]
+--- Updates the instance difficulty flag and moves zone text to fit.
 function me:DifficultyOnEvent ()
 	if ( self:IsShown() ) then
 		local Texture = _G[ self:GetName().."Texture" ];
@@ -69,34 +59,22 @@ function me:DifficultyOnEvent ()
 end
 
 
---[[****************************************************************************
-  * Function: _Underscore.Minimap:OnMouseWheel                                 *
-  * Description: Zooms the minimap when mousewheeled over.                     *
-  ****************************************************************************]]
+--- Zooms the minimap using the mousewheel.
 function me:OnMouseWheel ( Delta )
 	self:SetZoom( min( max( self:GetZoom() + Delta, 0 ), self:GetZoomLevels() - 1 ) );
 end
---[[****************************************************************************
-  * Function: _Underscore.Minimap:MINIMAP_PING                                 *
-  * Description: Displays the name of the player who pinged.                   *
-  ****************************************************************************]]
-function me:MINIMAP_PING ( _, UnitID )
+--- Displays the name of the player who pinged.
+function me.Frame:MINIMAP_PING ( _, UnitID )
 	me.PingText:SetText( UnitName( UnitID ) );
 end
---[[****************************************************************************
-  * Function: _Underscore.Minimap:PLAYER_LOGOUT                                *
-  * Description: Restore the original minimap shape in case _Underscore was    *
-  *   disabled right before a reload UI.                                       *
-  ****************************************************************************]]
-function me:PLAYER_LOGOUT ()
+--- Restore the original minimap shape in case _Underscore was disabled right before a reload UI.
+-- This corrects a bug where the minimap mask stays square in the default UI.
+function me.Frame:PLAYER_LOGOUT ()
 	Minimap:SetMaskTexture( [[Textures\MinimapMask]] );
 end
 
 
---[[****************************************************************************
-  * Function: _Underscore.Minimap.GetMinimapShape                              *
-  * Description: Lets other addons know that the minimap is square.            *
-  ****************************************************************************]]
+--- Lets other addons know that the minimap is square.
 function me.GetMinimapShape ()
 	return "SQUARE";
 end
@@ -104,9 +82,9 @@ end
 
 
 
-me:SetScript( "OnEvent", _Underscore.OnEvent );
-me:RegisterEvent( "MINIMAP_PING" );
-me:RegisterEvent( "PLAYER_LOGOUT" );
+me.Frame:SetScript( "OnEvent", _Underscore.OnEvent );
+me.Frame:RegisterEvent( "MINIMAP_PING" );
+me.Frame:RegisterEvent( "PLAYER_LOGOUT" );
 
 MinimapCluster:ClearAllPoints();
 MinimapCluster:SetPoint( "TOPRIGHT", _Underscore.TopMargin, "BOTTOMRIGHT" );
@@ -121,7 +99,7 @@ Minimap:SetMaskTexture( [[Interface\Buttons\WHITE8X8]] );
 GetMinimapShape = me.GetMinimapShape;
 
 -- Hooks to allow pings on a square minimap
-Minimap:SetScript( "OnMouseUp", me.OnClick );
+Minimap:SetScript( "OnMouseUp", me.OnMouseUp );
 Minimap_SetPing = me.SetPing;
 -- Show name of pinger
 me.PingText:SetPoint( "TOPRIGHT", MinimapPing, "CENTER", -8, -8 );
