@@ -5,11 +5,12 @@
 
 
 local LibSharedMedia = LibStub( "LibSharedMedia-3.0" );
-local L = _UnderscoreLocalization.Nameplates;
 local _Underscore = _Underscore;
-local me = CreateFrame( "Frame", nil, WorldFrame );
+local AddOnName, me = ...;
 _Underscore.Nameplates = me;
-me.Version = GetAddOnMetadata( ..., "Version" ):match( "^([%d.]+)" );
+
+me.Frame = CreateFrame( "Frame", nil, WorldFrame );
+me.Version = GetAddOnMetadata( AddOnName, "Version" ):match( "^([%d.]+)" );
 
 me.OptionsCharacter = {
 	Version = me.Version;
@@ -50,10 +51,8 @@ local HasTarget = false;
 
 
 
---[[****************************************************************************
-  * Function: _Underscore.Nameplates:PlateOnShow                               *
-  * Description: Reposition elements when a nameplate gets reused.             *
-  ****************************************************************************]]
+-- Individual plate methods
+--- Reposition elements when a nameplate gets reused.
 function me:PlateOnShow ()
 	local Visual = Plates[ self ];
 	me.PlatesVisible[ self ] = Visual;
@@ -77,9 +76,7 @@ function me:PlateOnShow ()
 		self:SetSize( PlateWidth, PlateHeight );
 	end
 end
---[[****************************************************************************
-  * Function: _Underscore.Nameplates:PlateOnHide                               *
-  ****************************************************************************]]
+--- Remove plate from visible list when hidden.
 function me:PlateOnHide ()
 	me.PlatesVisible[ self ] = nil;
 
@@ -90,13 +87,10 @@ function me:PlateOnHide ()
 	end
 end
 
---[[****************************************************************************
-  * Function: _Underscore.Nameplates:VisualThreatUpdate                        *
-  * Description: Updates threat textures.                                      *
-  ****************************************************************************]]
 do
 	local Threat, ThreatBorder;
 	local R, G, B;
+	--- Updates threat textures to reflect original plates' textures.
 	function me:VisualThreatUpdate ()
 		Threat, ThreatBorder = 0, self.ThreatBorder;
 		if ( self.Reaction <= 4 ) then -- Not friendly
@@ -130,21 +124,37 @@ do
 		end
 	end
 end
---[[****************************************************************************
-  * Function: _Underscore.Nameplates:VisualClassificationUpdate                *
-  * Description: Periodically interprets the status bar color for info.        *
-  ****************************************************************************]]
 do
 	local GetCVarBool = GetCVarBool;
 	local floor = floor;
-	local R, G, B;
-	local function GetClassification ()
+	-- Tree of colors to speed up class lookups
+	local ClassColors = {};
+	for Class, Color in pairs( RAID_CLASS_COLORS ) do
+		-- Round values to account for precision loss in GetVertexColor
+		local R, G, B = floor( Color.r * 100 + 0.5 ) / 100, floor( Color.g * 100 + 0.5 ) / 100, floor( Color.b * 100 + 0.5 ) / 100;
+		local T = ClassColors;
+		if ( not T[ R ] ) then
+			T[ R ] = {};
+		end
+		T = T[ R ];
+		if ( not T[ G ] ) then
+			T[ G ] = {};
+		end
+		T = T[ G ];
+		assert( not T[ B ], "Duplicate class color." );
+		T[ B ] = Class;
+	end
+	--- @return Reaction ID, Is player, Class token if known.
+	local function GetClassification ( R, G, B )
 		if ( GetCVarBool( "ShowClassColorInNameplate" ) ) then
-			-- Round values to match precision in colors tables
-			R, G, B = floor( R * 100 + 0.5 ) / 100, floor( G * 100 + 0.5 ) / 100, floor( B * 100 + 0.5 ) / 100;
-			for Class, Color in pairs( RAID_CLASS_COLORS ) do
-				if ( Color.r == R and Color.g == G and Color.b == B ) then
-					return 1, true, Class; -- Hostile player
+			local T = ClassColors[ floor( R * 100 + 0.5 ) / 100 ];
+			if ( T ) then
+				T = T[ floor( G * 100 + 0.5 ) / 100 ];
+				if ( T ) then
+					local Class = T[ floor( B * 100 + 0.5 ) / 100 ];
+					if ( Class ) then
+						return 1, true, Class; -- Hostile player
+					end
 				end
 			end
 		end
@@ -162,19 +172,20 @@ do
 	local unpack = unpack;
 	local UnitLevel = UnitLevel;
 	local MAX_PLAYER_LEVEL = MAX_PLAYER_LEVEL;
-	local Health, Left, Right;
-	local LevelText, BossIcon, Level, LevelPlayer, StatusBackground;
+	--- Periodically interprets the status bar color for info.
+	-- @param Force  Updates status even if health bar color didn't change.
+	-- @return True if status updated.
 	function me:VisualClassificationUpdate ( Force )
-		Health = self.Health;
-		R, G, B = Health:GetStatusBarColor();
+		local Health = self.Health;
+		local R, G, B = Health:GetStatusBarColor();
 		if ( Force or Health[ 1 ] ~= R or Health[ 2 ] ~= G or Health[ 3 ] ~= B ) then -- Reaction/classification changed
 			Health[ 1 ], Health[ 2 ], Health[ 3 ] = R, G, B; -- Save for future comparison
 
-			self.Reaction, self.IsPlayer, self.Class = GetClassification();
+			self.Reaction, self.IsPlayer, self.Class = GetClassification( R, G, B );
 			Health.IsHealerMode = self.Reaction > 4 and self.IsPlayer; -- Friendly player
 
 			-- Health bar color
-			Left, Right = Health.Left, Health.Right;
+			local Left, Right = Health.Left, Health.Right;
 			if ( Health.IsHealerMode ) then
 				-- Color fades based on health
 				Left:SetBlendMode( "MOD" );
@@ -190,8 +201,8 @@ do
 			end
 
 			-- Level text/boss icon
-			LevelText, BossIcon = self.Level, self.BossIcon;
-			Level, LevelPlayer = ( LevelText:GetText() or math.huge ) + 0, UnitLevel( "player" );
+			local LevelText, BossIcon = self.Level, self.BossIcon;
+			local Level, LevelPlayer = ( LevelText:GetText() or math.huge ) + 0, UnitLevel( "player" );
 			if ( LevelPlayer == MAX_PLAYER_LEVEL
 				and Level == MAX_PLAYER_LEVEL
 				and not self.StatusBorder:IsShown()
@@ -215,7 +226,7 @@ do
 			end
 
 			-- Status background
-			StatusBackground = self.StatusBackground;
+			local StatusBackground = self.StatusBackground;
 			if ( self.Class ) then -- Use class icon
 				self.ClassIcon:Show();
 				self.ClassIcon:SetTexCoord( unpack( CLASS_ICON_TCOORDS[ self.Class ] ) );
@@ -242,12 +253,10 @@ do
 	end
 end
 
---[[****************************************************************************
-  * Function: _Underscore.Nameplates:HealthOnValueChanged                      *
-  ****************************************************************************]]
 do
 	local modf = math.modf;
-	local function GetHealthColor ( Percent ) -- Shade bar based on health
+	-- @return Shaded bar color based on health percent.
+	local function GetHealthColor ( Percent )
 		local C = Colors.HealthSmooth;
 		if ( Percent == 1 ) then
 			return C[ #C - 2 ], C[ #C - 1 ], C[ #C ], 1;
@@ -262,6 +271,7 @@ do
 			C[ Index + 4 ] * Percent + C[ Index + 1 ] * Inverse,
 			C[ Index + 5 ] * Percent + C[ Index + 2 ] * Inverse, 1;
 	end
+	--- Updates the healer-mode health bar when health changes.
 	function me:HealthOnValueChanged ( Health )
 		local _, HealthMax = self:GetMinMaxValues();
 		local Percent = Health / HealthMax;
@@ -277,64 +287,16 @@ do
 	end
 end
 
---[[****************************************************************************
-  * Function: _Underscore.Nameplates:CastOnShow                                *
-  * Description: Reposition elements when a castbar is shown.                  *
-  ****************************************************************************]]
-function me:CastOnShow ()
-	self:RegisterEvent( "UNIT_SPELLCAST_INTERRUPTIBLE" );
-	self:RegisterEvent( "UNIT_SPELLCAST_NOT_INTERRUPTIBLE" );
-
-	local Name, _, _, _, _, _, _, _, Uninterruptible = UnitCastingInfo( "target" );
-	if ( not Name ) then
-		Name, _, _, _, _, _, _, Uninterruptible = UnitChannelInfo( "target" );
-	end
-	self.Name:SetText( Name );
-
-	self:ClearAllPoints();
-	self:SetPoint( "TOPLEFT", self.Icon, "TOPRIGHT" );
-	self:SetPoint( "BOTTOM", self.Icon, "BOTTOM" );
-	self:SetPoint( "RIGHT", self:GetParent(), CastHeight - PlateHeight, 0 );
-	self:SetStatusBarColor( unpack( Colors.Cast ) );
-
-	self.NoInterrupt:ClearAllPoints();
-	self.NoInterrupt:SetPoint( "CENTER", self.Icon, -1, -2 );
-	self.NoInterrupt:SetSize( CastHeight * 3, CastHeight * 3 );
-	me.CastOnInterruptibleChanged( self, nil, Uninterruptible );
-end
---[[****************************************************************************
-  * Function: _Underscore.Nameplates:CastOnHide                                *
-  ****************************************************************************]]
-function me:CastOnHide ()
-	self:UnregisterEvent( "UNIT_SPELLCAST_INTERRUPTIBLE" );
-	self:UnregisterEvent( "UNIT_SPELLCAST_NOT_INTERRUPTIBLE" );
-	self.Uninterruptible = nil;
-end
---[[****************************************************************************
-  * Function: _Underscore.Nameplates:CastOnInterruptibleChanged                *
-  ****************************************************************************]]
 do
+	--- Plays the flash animation after the rendering engine has moved the texture in place for certain.
+	-- Otherwise, the animation would play at the texture's previous location.
 	local function UpdateAnimation ( self )
-		-- Note: Plays the flash animation after the rendering engine has moved the
-		--   texture in place for certain.  Otherwise, the animation would play at
-		--   the texture's previous location.
 		self:SetScript( "OnUpdate", nil );
 		me.Flash.Animation:Play();
 	end
-	local UninterruptibleEvents = {
-		UNIT_SPELLCAST_INTERRUPTIBLE = false;
-		UNIT_SPELLCAST_NOT_INTERRUPTIBLE = true;
-	};
-	function me:CastOnInterruptibleChanged ( Event, Value )
-		local Uninterruptible;
-		if ( Event ) then
-			if ( Value == "target" ) then
-				Uninterruptible = UninterruptibleEvents[ Event ];
-			end
-		else -- Called directly
-			Uninterruptible = Value;
-		end
-		if ( Uninterruptible ~= nil and self.Uninterruptible ~= Uninterruptible ) then
+	--- Shows or hides the interrupt immunity shield.
+	local function CastOnInterruptibleChanged ( self, Uninterruptible )
+		if ( self.Uninterruptible ~= Uninterruptible ) then
 			self.Uninterruptible = Uninterruptible;
 
 			-- Gray out bar if uninterruptable
@@ -361,29 +323,38 @@ do
 			end
 		end
 	end
-end
+	--- Reposition elements and adds spell details when a castbar is shown.
+	function me:CastOnShow ()
+		self:RegisterEvent( "UNIT_SPELLCAST_INTERRUPTIBLE" );
+		self:RegisterEvent( "UNIT_SPELLCAST_NOT_INTERRUPTIBLE" );
 
+		local Name, _, _, _, _, _, _, _, Uninterruptible = UnitCastingInfo( "target" );
+		if ( not Name ) then
+			Name, _, _, _, _, _, _, Uninterruptible = UnitChannelInfo( "target" );
+		end
+		self.Name:SetText( Name );
 
---[[****************************************************************************
-  * Function: _Underscore.Nameplates.TargetUpdater:OnUpdate                    *
-  * Description: Keeps the nameplate's alpha set properly, and updates target. *
-  ****************************************************************************]]
-do
-	local pairs = pairs;
-	function me.TargetUpdater:OnUpdate ()
-		for Plate in pairs( me.PlatesVisible ) do
-			if ( Plate:GetAlpha() == 1 ) then -- Current target
-				local TargetOutline = me.TargetOutline;
-				if ( TargetOutline:GetParent() ~= Plate ) then -- Not already positioned
-					-- Position outline
-					TargetOutline:SetParent( Plate );
-					TargetOutline:SetFrameLevel( Plate:GetFrameLevel() );
-					TargetOutline:SetPoint( "TOP" );
-					TargetOutline:Show();
-				end
-			else -- Not target
-				Plate:SetAlpha( 1 );
-			end
+		self:ClearAllPoints();
+		self:SetPoint( "TOPLEFT", self.Icon, "TOPRIGHT" );
+		self:SetPoint( "BOTTOM", self.Icon, "BOTTOM" );
+		self:SetPoint( "RIGHT", self:GetParent(), CastHeight - PlateHeight, 0 );
+		self:SetStatusBarColor( unpack( Colors.Cast ) );
+
+		self.NoInterrupt:ClearAllPoints();
+		self.NoInterrupt:SetPoint( "CENTER", self.Icon, -1, -2 );
+		self.NoInterrupt:SetSize( CastHeight * 3, CastHeight * 3 );
+		CastOnInterruptibleChanged( self, Uninterruptible );
+	end
+	--- Unregisters events when a castbar hides.
+	function me:CastOnHide ()
+		self:UnregisterEvent( "UNIT_SPELLCAST_INTERRUPTIBLE" );
+		self:UnregisterEvent( "UNIT_SPELLCAST_NOT_INTERRUPTIBLE" );
+		self.Uninterruptible = nil;
+	end
+	--- Updates the interrupt immunity shield if it changes mid-cast.
+	function me:CastOnEvent ( Event, UnitID )
+		if ( UnitID == "target" ) then
+			CastOnInterruptibleChanged( self, Event == "UNIT_SPELLCAST_NOT_INTERRUPTIBLE" );
 		end
 	end
 end
@@ -391,16 +362,17 @@ end
 
 
 
---[[****************************************************************************
-  * Function: local PlateAdd                                                   *
-  * Description: Adds and skins a new nameplate.                               *
-  ****************************************************************************]]
-local PlateAdd;
+-- Main plate handling and updating
 do
-	local ThreatBorders = [[Interface\AddOns\]]..( ... )..[[\Skin\ThreatBorders]];
-	function PlateAdd ( Plate )
+	local ThreatBorders = [[Interface\AddOns\]]..AddOnName..[[\Skin\ThreatBorders]];
+	local GetAlpha, SetAlpha;
+	--- Adds and skins a new nameplate.
+	local function PlateAdd ( Plate )
 		local Visual = CreateFrame( "Frame", nil, Plate );
 		Plates[ Plate ] = Visual;
+		if ( not GetAlpha ) then -- Cache methods to speed up target OnUpdate
+			GetAlpha, SetAlpha = Plate.GetAlpha, Plate.SetAlpha; -- Catches _VirtualPlates hooks.
+		end
 
 		local Health, Cast = Plate:GetChildren();
 		Visual.Health, Visual.Cast = Health, Cast;
@@ -485,7 +457,7 @@ do
 		Cast:SetParent( Visual );
 		Cast:SetScript( "OnShow", me.CastOnShow );
 		Cast:SetScript( "OnHide", me.CastOnHide );
-		Cast:SetScript( "OnEvent", me.CastOnInterruptibleChanged );
+		Cast:SetScript( "OnEvent", me.CastOnEvent );
 		Cast:SetStatusBarTexture( BarTexture );
 		local BarTexture = Cast:GetStatusBarTexture();
 		BarTexture:SetDrawLayer( "BORDER" );
@@ -548,88 +520,26 @@ do
 			me.PlateOnShow( Plate );
 		end
 	end
-end
---[[****************************************************************************
-  * Function: local PlatesScan                                                 *
-  * Description: Scans children of WorldFrame and handles new nameplates.      *
-  ****************************************************************************]]
-local PlatesScan;
-do
+
 	local select = select;
-	local Frame, Region;
-	function PlatesScan ( ... )
+	--- Scans children of WorldFrame and handles new nameplates.
+	local function PlatesScan ( ... )
 		for Index = 1, select( "#", ... ) do
-			Frame = select( Index, ... );
+			local Frame = select( Index, ... );
 			if ( not ( Plates[ Frame ] or Frame:GetName() ) ) then
-				Region = Frame:GetRegions();
+				local Region = Frame:GetRegions();
 				if ( Region and Region:GetObjectType() == "Texture" and Region:GetTexture() == [[Interface\TargetingFrame\UI-TargetingFrame-Flash]] ) then
 					PlateAdd( Frame );
 				end
 			end
 		end
 	end
-end
 
-
-
-
---[[****************************************************************************
-  * Function: _Underscore.Nameplates:VARIABLES_LOADED                          *
-  ****************************************************************************]]
-function me:VARIABLES_LOADED ()
-	me.VARIABLES_LOADED = nil;
-
-	SetCVar( "ThreatWarning", 3 );
-	SetCVar( "ShowClassColorInNameplate", 1 );
-	SetCVar( "NameplateAllowOverlap", 1 );
-end
---[[****************************************************************************
-  * Function: _Underscore.Nameplates:PLAYER_REGEN_ENABLED                      *
-  * Description: Resize any new nameplates that couldn't be resized in combat. *
-  ****************************************************************************]]
-function me:PLAYER_REGEN_ENABLED ()
-	InCombat = false;
-
-	for Plate, Visual in pairs( Plates ) do
-		Plate:SetSize( PlateWidth, PlateHeight );
-	end
-
-	for Plate, Visual in pairs( me.PlatesVisible ) do
-		Visual.ThreatBorder:Hide();
-		Visual.ThreatBorder.Threat = nil; -- Reset threat level cache
-	end
-end
---[[****************************************************************************
-  * Function: _Underscore.Nameplates:PLAYER_REGEN_DISABLED                     *
-  ****************************************************************************]]
-function me:PLAYER_REGEN_DISABLED ()
-	InCombat = true;
-end
---[[****************************************************************************
-  * Function: _Underscore.Nameplates:PLAYER_TARGET_CHANGED                     *
-  ****************************************************************************]]
-function me:PLAYER_TARGET_CHANGED ()
-	if ( HasTarget ) then -- Clear previous target indicator
-		me.TargetOutline:Hide();
-		me.TargetOutline:SetParent( nil );
-	end
-	HasTarget = UnitExists( "target" );
-
-	if ( HasTarget ) then
-		me.TargetUpdater:Show();
-	else
-		me.TargetUpdater:Hide();
-	end
-end
-
---[[****************************************************************************
-  * Function: _Underscore.Nameplates:OnUpdate                                  *
-  ****************************************************************************]]
-do
 	local ChildCount, NewChildCount = 0;
 	local NextUpdate = 0;
 	local pairs = pairs;
-	function me:OnUpdate ( Elapsed )
+	--- Periodically scans for new nameplate frames to skin.
+	function me.Frame:OnUpdate ( Elapsed )
 		-- Check for new nameplates
 		NewChildCount = WorldFrame:GetNumChildren();
 		if ( ChildCount ~= NewChildCount ) then
@@ -653,25 +563,81 @@ do
 			end
 		end
 	end
+
+	--- Keeps the nameplate's alpha set properly, and updates target.
+	function me.TargetUpdater:OnUpdate ()
+		for Plate in pairs( me.PlatesVisible ) do
+			if ( GetAlpha( Plate ) == 1 ) then -- Current target
+				local TargetOutline = me.TargetOutline;
+				if ( TargetOutline:GetParent() ~= Plate ) then -- Not already positioned
+					-- Position outline
+					TargetOutline:SetParent( Plate );
+					TargetOutline:SetFrameLevel( Plate:GetFrameLevel() );
+					TargetOutline:SetPoint( "TOP" );
+					TargetOutline:Show();
+				end
+			else -- Not target
+				SetAlpha( Plate, 1 );
+			end
+		end
+	end
 end
 
 
 
 
---[[****************************************************************************
-  * Function: _Underscore.Nameplates.SetTankMode                               *
-  * Description: Inverts threat display mode for tanks.                        *
-  ****************************************************************************]]
+--- Sets CVars to allow threat and class info.
+function me.Frame:VARIABLES_LOADED ( Event )
+	self[ Event ] = nil;
+
+	SetCVar( "ThreatWarning", 3 );
+	SetCVar( "ShowClassColorInNameplate", 1 );
+	SetCVar( "NameplateAllowOverlap", 1 );
+end
+--- Resize any new nameplates that couldn't be resized in combat.
+function me.Frame:PLAYER_REGEN_ENABLED ()
+	InCombat = false;
+
+	for Plate, Visual in pairs( Plates ) do
+		Plate:SetSize( PlateWidth, PlateHeight );
+	end
+
+	for Plate, Visual in pairs( me.PlatesVisible ) do
+		Visual.ThreatBorder:Hide();
+		Visual.ThreatBorder.Threat = nil; -- Reset threat level cache
+	end
+end
+--- Caches combat status when entering a fight.
+function me.Frame:PLAYER_REGEN_DISABLED ()
+	InCombat = true;
+end
+--- Manages the target outline frame when changing targets.
+function me.Frame:PLAYER_TARGET_CHANGED ()
+	if ( HasTarget ) then -- Clear previous target indicator
+		me.TargetOutline:Hide();
+		me.TargetOutline:SetParent( nil );
+	end
+	HasTarget = UnitExists( "target" );
+
+	if ( HasTarget ) then
+		me.TargetUpdater:Show();
+	else
+		me.TargetUpdater:Hide();
+	end
+end
+
+
+
+
+--- Inverts threat display mode for tanks.
+-- @return True if setting changed.
 function me.SetTankMode ( Enable )
 	if ( me.OptionsCharacter.TankMode ~= Enable ) then
 		me.OptionsCharacter.TankMode = Enable;
 		return true;
 	end
 end
---[[****************************************************************************
-  * Function: _Underscore.Nameplates.SlashCommand                              *
-  * Description: Slash command to set tank threat mode.                        *
-  ****************************************************************************]]
+--- Slash command to set tank threat mode.
 function me.SlashCommand ( Input )
 	local Enable = tonumber( SecureCmdOptionParse( Input ) ); -- 1 to enable, 0 to disable
 	if ( Enable ) then
@@ -680,19 +646,17 @@ function me.SlashCommand ( Input )
 		Enable = not me.OptionsCharacter.TankMode;
 	end
 
-	local Color = Enable and GREEN_FONT_COLOR or NORMAL_FONT_COLOR;
-	DEFAULT_CHAT_FRAME:AddMessage( L.TANKMODE_FORMAT:format( L[ Enable and "ENABLED" or "DISABLED" ] ),
-		Color.r, Color.g, Color.b );
-	me.SetTankMode( Enable )
+	if ( me.SetTankMode( Enable ) ) then
+		local Color = Enable and GREEN_FONT_COLOR or NORMAL_FONT_COLOR;
+		DEFAULT_CHAT_FRAME:AddMessage( me.L.TANKMODE_FORMAT:format( L[ Enable and "ENABLED" or "DISABLED" ] ),
+			Color.r, Color.g, Color.b );
+	end
 end
 
 
 
 
---[[****************************************************************************
-  * Function: _Underscore.Nameplates.Synchronize                               *
-  * Description: Loads an options table, or the defaults.                      *
-  ****************************************************************************]]
+--- Loads an options table, or the defaults.
 function me.Synchronize ( OptionsCharacter )
 	-- Load defaults if settings omitted
 	if ( not OptionsCharacter ) then
@@ -701,10 +665,7 @@ function me.Synchronize ( OptionsCharacter )
 
 	me.SetTankMode( OptionsCharacter.TankMode );
 end
---[[****************************************************************************
-  * Function: _Underscore.Nameplates.OnLoad                                    *
-  * Description: Loads defaults and validates settings.                        *
-  ****************************************************************************]]
+--- Loads defaults and validates settings.
 function me.OnLoad ()
 	me.OnLoad = nil;
 
@@ -721,13 +682,17 @@ end
 
 
 
-me:SetScript( "OnEvent", _Underscore.OnEvent );
-me:SetScript( "OnUpdate", me.OnUpdate );
-me:RegisterEvent( "VARIABLES_LOADED" );
-me:RegisterEvent( "PLAYER_REGEN_DISABLED" );
-me:RegisterEvent( "PLAYER_REGEN_ENABLED" );
-me:RegisterEvent( "PLAYER_TARGET_CHANGED" );
-_Underscore.RegisterAddOnInitializer( ..., me.OnLoad );
+local Frame = me.Frame;
+Frame:SetScript( "OnEvent", _Underscore.Frame.OnEvent );
+Frame:SetScript( "OnUpdate", Frame.OnUpdate );
+Frame:RegisterEvent( "VARIABLES_LOADED" );
+if ( IsLoggedIn() ) then
+	Frame:VARIABLES_LOADED( "VARIABLES_LOADED" );
+end
+Frame:RegisterEvent( "PLAYER_REGEN_DISABLED" );
+Frame:RegisterEvent( "PLAYER_REGEN_ENABLED" );
+Frame:RegisterEvent( "PLAYER_TARGET_CHANGED" );
+_Underscore.RegisterAddOnInitializer( AddOnName, me.OnLoad );
 
 
 -- Fonts
@@ -763,14 +728,14 @@ me.TargetUpdater:SetFrameStrata( "TOOLTIP" );
 
 
 -- Interrupt flash
-local Flash = me:CreateTexture( nil, "OVERLAY" );
+local Flash = me.Frame:CreateTexture( nil, "OVERLAY" );
+me.Flash = Flash;
 Flash:SetSize( 400 / 300 * ( PlateWidth + 2 * ( CastHeight - PlateHeight ) ), 171 / 70 * CastHeight );
 Flash:SetTexture( [[Interface\AchievementFrame\UI-Achievement-Alert-Glow]] );
 Flash:SetBlendMode( "ADD" );
 Flash:SetTexCoord( 0, 0.78125, 0, 0.66796875 );
 Flash:SetAlpha( 0 );
 Flash:Hide();
-me.Flash = Flash;
 Flash.Animation = Flash:CreateAnimationGroup();
 local FadeIn = Flash.Animation:CreateAnimation( "Alpha" );
 FadeIn:SetChange( 1.0 );

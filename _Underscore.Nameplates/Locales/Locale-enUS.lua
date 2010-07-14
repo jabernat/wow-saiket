@@ -4,11 +4,11 @@
   ****************************************************************************]]
 
 
-_UnderscoreLocalization.Nameplates = setmetatable( {
+select( 2, ... ).L = setmetatable( {
 	TANKMODE_FORMAT = "_|cffCCCC88Underscore|r.Nameplates: Tank mode %s.";
 	ENABLED = "enabled";
 	DISABLED = "disabled";
-}, getmetatable( _UnderscoreLocalization ) );
+}, getmetatable( _Underscore.L ) );
 
 
 SLASH__UNDERSCORE_NAMEPLATES1 = "/underscoreplates";
