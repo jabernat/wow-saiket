@@ -30,16 +30,17 @@ me.OptionsCharacterDefault = {
 
 me.CameraClip = 4; -- Yards from camera when nameplates begin fading out
 me.PlateLevels = 3; -- Frame level difference between plates so one plate's children don't overlap the next closest plate
+me.UpdateRate = 0; -- Minimum time between plates are rescaled.
 
 
 local InCombat = false;
-
-local WorldFrameGetChildren = WorldFrame.GetChildren;
+local NextUpdate = 0;
 local PlateOverrides = {}; -- [ MethodName ] = Function overrides for Visuals
 
 
 
 
+-- Individual plate methods
 do
 	--- If an anchor ataches to the original plate (by WoW), re-anchor to the Visual.
 	local function ResetPoint ( Plate, Region, Point, RelFrame, ... )
@@ -51,6 +52,7 @@ do
 	--- Re-anchors regions when a plate is shown.
 	-- WoW re-anchors most regions when it shows a nameplate, so restore those anchors to the Visual frame.
 	function me:PlateOnShow ()
+		NextUpdate = 0; -- Resize instantly
 		local Visual = Plates[ self ];
 		PlatesVisible[ self ] = Visual;
 		Visual:Show();
@@ -72,145 +74,181 @@ end
 
 
 
-local PlateAdd;
+-- Main plate handling and updating
 do
+	local WorldFrameGetChildren = WorldFrame.GetChildren;
 	local select = select;
-	--- Parents all plate children to the Visual, and saves references to them in the plate.
-	-- @param Plate  Original nameplate children are being removed from.
-	-- @param ...  Children of Plate to be reparented.
-	local function ReparentChildren ( Plate, ... )
-		local Visual = Plates[ Plate ];
-		for Index = 1, select( "#", ... ) do
-			local Child = select( Index, ... );
-			if ( Child ~= Visual ) then
-				local LevelOffset = Child:GetFrameLevel() - Plate:GetFrameLevel();
-				Child:SetParent( Visual );
-				Child:SetFrameLevel( Visual:GetFrameLevel() + LevelOffset ); -- Maintain relative frame levels
-				Plate[ #Plate + 1 ] = Child;
+	do
+		local PlatesUpdate;
+		do
+			local SortOrder, Depths = {}, {};
+			--- Subroutine for table.sort to depth-sort plate visuals.
+			local function SortFunc ( PlateA, PlateB )
+				return Depths[ PlateA ] > Depths[ PlateB ];
 			end
-		end
-	end
-	--- Parents all plate regions to the Visual, similar to ReparentChildren.
-	-- @see ReparentChildren
-	local function ReparentRegions ( Plate, ... )
-		local Visual = Plates[ Plate ];
-		for Index = 1, select( "#", ... ) do
-			local Region = select( Index, ... );
-			Region:SetParent( Visual );
-			Plate[ #Plate + 1 ] = Region;
-		end
-	end
 
-	--- Adds and skins a new nameplate.
-	-- @param Plate  Newly found default nameplate to be hooked.
-	function PlateAdd ( Plate )
-		local Visual = CreateFrame( "Frame", nil, Plate );
-		Plates[ Plate ] = Visual;
+			local SetAlpha = me.Frame.SetAlpha; -- Must backup since plate SetAlpha methods are overridden
+			local SetFrameLevel = me.Frame.SetFrameLevel;
+			local SetScale = me.Frame.SetScale;
+			local sort, wipe = sort, wipe;
+			local ipairs = ipairs;
 
-		Visual:Hide(); -- Gets explicitly shown on plate show
-		Visual:SetPoint( "TOP" );
-		Visual:SetSize( Plate:GetSize() );
+			local Depth, Visual, Scale;
+			local MinScale, MaxScale, ScaleFactor;
+			--- Sorts, scales, and fades all nameplates based on depth.
+			function PlatesUpdate ()
+				for Plate, Visual in pairs( PlatesVisible ) do
+					Depth = Visual:GetEffectiveDepth(); -- Note: Depth of the actual plate is blacklisted, so use child Visual instead
+					if ( Depth <= 0 ) then -- Too close to camera; Completely hidden
+						SetAlpha( Visual, 0 );
+					else
+						SortOrder[ #SortOrder + 1 ] = Plate;
+						Depths[ Plate ] = Depth;
+					end
+				end
 
-		ReparentChildren( Plate, Plate:GetChildren() );
-		ReparentRegions( Plate, Plate:GetRegions() );
-		Visual:EnableDrawLayer( "HIGHLIGHT" ); -- Allows the highlight to show without enabling mouse events
+				if ( #SortOrder > 0 ) then
+					MinScale, MaxScale = me.OptionsCharacter.MinScale, me.OptionsCharacter.MaxScaleEnabled and me.OptionsCharacter.MaxScale;
+					ScaleFactor = me.OptionsCharacter.ScaleFactor;
 
-		Plate:SetScript( "OnShow", me.PlateOnShow );
-		Plate:SetScript( "OnHide", me.PlateOnHide );
-		if ( Plate:IsVisible() ) then
-			me.PlateOnShow( Plate );
-		end
+					sort( SortOrder, SortFunc );
+					for Index, Plate in ipairs( SortOrder ) do
+						Depth, Visual = Depths[ Plate ], Plates[ Plate ];
 
-		-- Hook methods
-		for Key, Value in pairs( PlateOverrides ) do
-			Visual[ Key ] = Value;
-		end
+						if ( Depth < me.CameraClip ) then -- Begin fading as nameplate passes behind screen
+							SetAlpha( Visual, Depth / me.CameraClip );
+						else
+							SetAlpha( Visual, 1 );
+						end
 
-		-- Force recalculation of effective depth for all child frames
-		local Depth = WorldFrame:GetDepth();
-		WorldFrame:SetDepth( Depth + 1 );
-		WorldFrame:SetDepth( Depth );
-	end
-end
+						SetFrameLevel( Visual, Index * me.PlateLevels );
 
-local PlatesScan;
-do
-	local select = select;
-	local Frame, Region;
-	--- Scans children of WorldFrame and handles new nameplates.
-	-- @param ...  Children of the WorldFrame.
-	function PlatesScan ( ... )
-		for Index = 1, select( "#", ... ) do
-			Frame = select( Index, ... );
-			if ( not Plates[ Frame ] ) then
-				Region = Frame:GetRegions();
-				if ( Region and Region:GetObjectType() == "Texture" and Region:GetTexture() == [[Interface\TargetingFrame\UI-TargetingFrame-Flash]] ) then
-					PlateAdd( Frame );
+						Scale = ScaleFactor / Depth;
+						if ( Scale < MinScale ) then
+							Scale = MinScale;
+						elseif ( MaxScale and Scale > MaxScale ) then
+							Scale = MaxScale;
+						end
+						SetScale( Visual, Scale );
+						if ( not InCombat ) then
+							local Width, Height = Visual:GetSize();
+							Plate:SetSize( Width * Scale, Height * Scale );
+						end
+					end
+					wipe( SortOrder );
 				end
 			end
 		end
-	end
-end
 
-local PlatesUpdate;
-do
-	local SortOrder, Depths = {}, {};
-	--- Subroutine for table.sort to depth-sort plate visuals.
-	local function SortFunc ( PlateA, PlateB )
-		return Depths[ PlateA ] > Depths[ PlateB ];
-	end
-
-	local SetAlpha = me.Frame.SetAlpha; -- Must backup since plate SetAlpha methods are overridden
-	local SetFrameLevel = me.Frame.SetFrameLevel;
-	local SetScale = me.Frame.SetScale;
-	local sort, wipe = sort, wipe;
-	local select, ipairs = select, ipairs;
-
-	local Depth, Visual, Scale;
-	local MinScale, MaxScale, ScaleFactor;
-	--- Sorts, scales, and fades all nameplates based on depth.
-	function PlatesUpdate ()
-		for Plate, Visual in pairs( PlatesVisible ) do
-			Depth = Visual:GetEffectiveDepth(); -- Note: Depth of the actual plate is blacklisted, so use child Visual instead
-			if ( Depth <= 0 ) then -- Too close to camera; Completely hidden
-				SetAlpha( Visual, 0 );
-			else
-				SortOrder[ #SortOrder + 1 ] = Plate;
-				Depths[ Plate ] = Depth;
+		--- Parents all plate children to the Visual, and saves references to them in the plate.
+		-- @param Plate  Original nameplate children are being removed from.
+		-- @param ...  Children of Plate to be reparented.
+		local function ReparentChildren ( Plate, ... )
+			local Visual = Plates[ Plate ];
+			for Index = 1, select( "#", ... ) do
+				local Child = select( Index, ... );
+				if ( Child ~= Visual ) then
+					local LevelOffset = Child:GetFrameLevel() - Plate:GetFrameLevel();
+					Child:SetParent( Visual );
+					Child:SetFrameLevel( Visual:GetFrameLevel() + LevelOffset ); -- Maintain relative frame levels
+					Plate[ #Plate + 1 ] = Child;
+				end
+			end
+		end
+		--- Parents all plate regions to the Visual, similar to ReparentChildren.
+		-- @see ReparentChildren
+		local function ReparentRegions ( Plate, ... )
+			local Visual = Plates[ Plate ];
+			for Index = 1, select( "#", ... ) do
+				local Region = select( Index, ... );
+				Region:SetParent( Visual );
+				Plate[ #Plate + 1 ] = Region;
 			end
 		end
 
+		--- Adds and skins a new nameplate.
+		-- @param Plate  Newly found default nameplate to be hooked.
+		local function PlateAdd ( Plate )
+			local Visual = CreateFrame( "Frame", nil, Plate );
+			Plates[ Plate ] = Visual;
 
-		if ( #SortOrder > 0 ) then
-			MinScale, MaxScale = me.OptionsCharacter.MinScale, me.OptionsCharacter.MaxScaleEnabled and me.OptionsCharacter.MaxScale;
-			ScaleFactor = me.OptionsCharacter.ScaleFactor;
+			Visual:Hide(); -- Gets explicitly shown on plate show
+			Visual:SetPoint( "TOP" );
+			Visual:SetSize( Plate:GetSize() );
 
-			sort( SortOrder, SortFunc );
-			for Index, Plate in ipairs( SortOrder ) do
-				Depth, Visual = Depths[ Plate ], Plates[ Plate ];
+			ReparentChildren( Plate, Plate:GetChildren() );
+			ReparentRegions( Plate, Plate:GetRegions() );
+			Visual:EnableDrawLayer( "HIGHLIGHT" ); -- Allows the highlight to show without enabling mouse events
 
-				if ( Depth < me.CameraClip ) then -- Begin fading as nameplate passes behind screen
-					SetAlpha( Visual, Depth / me.CameraClip );
-				else
-					SetAlpha( Visual, 1 );
-				end
+			Plate:SetScript( "OnShow", me.PlateOnShow );
+			Plate:SetScript( "OnHide", me.PlateOnHide );
+			if ( Plate:IsVisible() ) then
+				me.PlateOnShow( Plate );
+			end
 
-				SetFrameLevel( Visual, Index * me.PlateLevels );
+			-- Hook methods
+			for Key, Value in pairs( PlateOverrides ) do
+				Visual[ Key ] = Value;
+			end
 
-				Scale = ScaleFactor / Depth;
-				if ( Scale < MinScale ) then
-					Scale = MinScale;
-				elseif ( MaxScale and Scale > MaxScale ) then
-					Scale = MaxScale;
-				end
-				SetScale( Visual, Scale );
-				if ( not InCombat ) then
-					local Width, Height = Visual:GetSize();
-					Plate:SetSize( Width * Scale, Height * Scale );
+			-- Force recalculation of effective depth for all child frames
+			local Depth = WorldFrame:GetDepth();
+			WorldFrame:SetDepth( Depth + 1 );
+			WorldFrame:SetDepth( Depth );
+		end
+
+		--- Scans children of WorldFrame and handles new nameplates.
+		-- @param ...  Children of the WorldFrame.
+		local function PlatesScan ( ... )
+			for Index = 1, select( "#", ... ) do
+				local Frame = select( Index, ... );
+				if ( not Plates[ Frame ] ) then
+					local Region = Frame:GetRegions();
+					if ( Region and Region:GetObjectType() == "Texture" and Region:GetTexture() == [[Interface\TargetingFrame\UI-TargetingFrame-Flash]] ) then
+						PlateAdd( Frame );
+					end
 				end
 			end
-			wipe( SortOrder );
 		end
+
+		local ChildCount, NewChildCount = 0;
+		--- Adds new nameplates and updates the depth of found ones every frame.
+		function me:WorldFrameOnUpdate ( Elapsed )
+			-- Check for new nameplates
+			NewChildCount = self:GetNumChildren();
+			if ( ChildCount ~= NewChildCount ) then
+				ChildCount = NewChildCount;
+
+				PlatesScan( WorldFrameGetChildren( self ) );
+			end
+
+			-- Apply depth to found plates
+			NextUpdate = NextUpdate - Elapsed;
+			if ( NextUpdate <= 0 ) then
+				NextUpdate = me.UpdateRate;
+				return PlatesUpdate();
+			end
+		end
+	end
+
+	local unpack = unpack;
+	local Children = {};
+	--- Filters the results of WorldFrame:GetChildren to replace plates with their visuals.
+	local function ReplaceChildren ( ... )
+		local Count = select( "#", ... );
+		for Index = 1, Count do
+			local Frame = select( Index, ... );
+			Children[ Index ] = Plates[ Frame ] or Frame;
+		end
+		for Index = Count + 1, #Children do -- Remove any extras from the last call
+			Children[ Index ] = nil;
+		end
+		return unpack( Children );
+	end
+	--- Returns Visual frames in place of real nameplates.
+	-- @return The results of WorldFrame:GetChildren with any reference to a plate replaced with its visual.
+	function WorldFrame:GetChildren ( ... )
+		return ReplaceChildren( WorldFrameGetChildren( self, ... ) );
 	end
 end
 
@@ -259,47 +297,6 @@ end
 function me.Frame:OnEvent ( Event, ... )
 	if ( self[ Event ] ) then
 		return self[ Event ]( self, Event, ... );
-	end
-end
-
-
-
-
-do
-	local ChildCount, NewChildCount = 0;
-	--- Adds new nameplates and updates the depth of found ones every frame.
-	function me:OnUpdate ()
-		-- Check for new nameplates
-		NewChildCount = WorldFrame:GetNumChildren();
-		if ( ChildCount ~= NewChildCount ) then
-			ChildCount = NewChildCount;
-
-			PlatesScan( WorldFrameGetChildren( WorldFrame ) );
-		end
-
-		-- Apply depth to found plates
-		PlatesUpdate();
-	end
-end
-do
-	local select, unpack = select, unpack;
-	local Children = {};
-	--- Filters the results of WorldFrame:GetChildren to replace plates with their visuals.
-	local function ReplaceChildren ( ... )
-		local Count = select( "#", ... );
-		for Index = 1, Count do
-			local Frame = select( Index, ... );
-			Children[ Index ] = Plates[ Frame ] or Frame;
-		end
-		for Index = Count + 1, #Children do -- Remove any extras from the last call
-			Children[ Index ] = nil;
-		end
-		return unpack( Children );
-	end
-	--- Returns Visual frames in place of real nameplates.
-	-- @return The results of WorldFrame:GetChildren with any reference to a plate replaced with its visual.
-	function WorldFrame:GetChildren ( ... )
-		return ReplaceChildren( WorldFrameGetChildren( self, ... ) );
 	end
 end
 
@@ -370,7 +367,7 @@ end
 
 
 
-WorldFrame:HookScript( "OnUpdate", me.OnUpdate ); -- First OnUpdate handler to run
+WorldFrame:HookScript( "OnUpdate", me.WorldFrameOnUpdate ); -- First OnUpdate handler to run
 me.Frame:SetScript( "OnEvent", me.Frame.OnEvent );
 me.Frame:RegisterEvent( "ADDON_LOADED" );
 me.Frame:RegisterEvent( "PLAYER_REGEN_DISABLED" );
@@ -382,8 +379,8 @@ do
 	--- Add method overrides to be applied to plates' Visuals.
 	local function AddPlateOverride ( MethodName )
 		PlateOverrides[ MethodName ] = function ( self, ... )
-			self = GetParent( self );
-			return self[ MethodName ]( self, ... );
+			local Plate = GetParent( self );
+			return Plate[ MethodName ]( Plate, ... );
 		end
 	end
 	AddPlateOverride( "GetParent" );
