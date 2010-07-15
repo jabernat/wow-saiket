@@ -82,7 +82,7 @@ end
 
 
 
-me.Frame:SetScript( "OnEvent", _Underscore.OnEvent );
+me.Frame:SetScript( "OnEvent", _Underscore.Frame.OnEvent );
 me.Frame:RegisterEvent( "MINIMAP_PING" );
 me.Frame:RegisterEvent( "PLAYER_LOGOUT" );
 

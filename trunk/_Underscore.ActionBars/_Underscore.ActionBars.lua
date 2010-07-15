@@ -147,20 +147,20 @@ function me.Frame:PLAYER_LOGIN ()
 
 	-- Add backdrops
 	local Padding = _Underscore.Backdrop.Padding;
-	local Backdrop = _Underscore.ActionBars.BackdropBottomLeft;
+	local Backdrop = me.BackdropBottomLeft;
 	Backdrop:SetPoint( "BOTTOMLEFT", Dominos.Frame:Get( 1 ), -Padding, -Padding );
 	Backdrop:SetPoint( "TOPRIGHT", Dominos.Frame:Get( 6 ), Padding, Padding );
 
-	Backdrop = _Underscore.ActionBars.BackdropBottomRight;
+	local Backdrop = me.BackdropBottomRight;
 	Backdrop:SetPoint( "BOTTOMRIGHT", Dominos.Frame:Get( "bags" ), Padding, -Padding );
 	Backdrop:SetPoint( "TOPLEFT", Dominos.Frame:Get( 5 ), -Padding, Padding );
 
 	-- Hide borders where the right bar connects to the bottom-right one
-	Backdrop[ 1 ]:SetPoint( "RIGHT", _Underscore.ActionBars.BackdropRight, "LEFT" );
+	Backdrop[ 1 ]:SetPoint( "RIGHT", me.BackdropRight, "LEFT" );
 	Backdrop[ 2 ]:Hide();
 
-	Backdrop = _Underscore.ActionBars.BackdropRight;
-	Backdrop:SetPoint( "BOTTOMRIGHT", _Underscore.ActionBars.BackdropBottomRight, "TOPRIGHT" );
+	local Backdrop = me.BackdropRight;
+	Backdrop:SetPoint( "BOTTOMRIGHT", me.BackdropBottomRight, "TOPRIGHT" );
 	Backdrop:SetPoint( "TOPLEFT", _G[ "MultiBarLeftButton"..( NumSideButtonsExcluded + 1 ) ], -Padding, Padding );
 
 	-- Hide borders on the bottom of the right bar
@@ -198,7 +198,7 @@ end
 
 
 
-me.Frame:SetScript( "OnEvent", _Underscore.OnEvent );
+me.Frame:SetScript( "OnEvent", _Underscore.Frame.OnEvent );
 me.Frame:RegisterEvent( "PLAYER_LOGIN" );
 
 -- Remove icon borders on buttons

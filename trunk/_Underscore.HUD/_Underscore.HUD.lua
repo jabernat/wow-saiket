@@ -261,7 +261,7 @@ Frame:SetPoint( "CENTER" );
 Frame:SetFrameStrata( "BACKGROUND" );
 Frame:SetAlpha( 0.5 );
 
-Frame:SetScript( "OnEvent", _Underscore.OnEvent );
+Frame:SetScript( "OnEvent", _Underscore.Frame.OnEvent );
 Frame:RegisterEvent( "UNIT_NAME_UPDATE" );
 Frame:RegisterEvent( "UNIT_DYNAMIC_FLAGS" );
 Frame:RegisterEvent( "UNIT_AURA" );

@@ -4,7 +4,7 @@
   ****************************************************************************]]
 
 
-_UnderscoreLocalization = setmetatable( {
+select( 2, ... ).L = setmetatable( {
 }, {
 	__index = function ( self, Key )
 		if ( Key ~= nil ) then

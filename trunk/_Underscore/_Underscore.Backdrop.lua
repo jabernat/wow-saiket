@@ -4,6 +4,7 @@
   ****************************************************************************]]
 
 
+local AddOnName, _Underscore = ...;
 local me = {};
 _Underscore.Backdrop = me;
 
@@ -13,16 +14,11 @@ local BackgroundColor, BackgroundAlpha = _Underscore.Colors.Background, 0.75;
 
 local BorderColor, BorderAlpha = _Underscore.Colors.Foreground, 0.15;
 local BorderSize = 4;
-local BorderTexture = [[Interface\AddOns\]]..( ... )..[[\Skin\BackdropBorder]];
+local BorderTexture = [[Interface\AddOns\]]..AddOnName..[[\Skin\BackdropBorder]];
 
 
 
 
---[[****************************************************************************
-  * Function: _Underscore.Backdrop:Create                                      *
-  * Description: Returns a new backdrop frame.  Optional Padding argument      *
-  *   specifies a non-default padding size.  If false, no anchors are set.     *
-  ****************************************************************************]]
 do
 	local CreateSide;
 	do
@@ -34,7 +30,8 @@ do
 		end
 		local ULx, ULy, LLx, LLy, URx, URy, LRx, LRy;
 		local R, G, B = unpack( BorderColor );
-		function CreateSide ( self, Center, Index ) -- Creates and initializes a corner and side texture
+		--- Creates and initializes a corner and side texture.
+		function CreateSide ( self, Center, Index )
 			Index = Index * 2 - 1;
 			local Side, Corner = self:CreateTexture( nil, "BACKGROUND" ), self:CreateTexture( nil, "BACKGROUND" );
 
@@ -66,6 +63,9 @@ do
 		end
 	end
 	local R, G, B = unpack( BackgroundColor );
+	--- Creates a uniform backdrop for a given frame.
+	-- @param Padding  Overrides default padding, or nil to use default.  If false, no anchors are set.
+	-- @return New backdrop frame.
 	function me:Create ( Padding )
 		local Center = self:CreateTexture( nil, "BACKGROUND" );
 		Center:SetTexture( R, G, B, BackgroundAlpha );

@@ -5,23 +5,20 @@
 
 
 local me = CreateFrame( "EditBox", "_UnderscoreColorPickerEditBox", ColorPickerFrame, "InputBoxTemplate" );
-_Underscore.ColorPicker = me;
+select( 2, ... ).ColorPicker = me;
 
 
 
 
---[[****************************************************************************
-  * Function: _Underscore.ColorPicker:OnTextChanged                            *
-  * Description: Validates hex triplet.                                        *
-  ****************************************************************************]]
 do
 	local rshift = bit.rshift;
 	local band = bit.band;
+	--- Validates hex triplet.
 	function me:OnTextChanged ()
 		local Text = self:GetText();
 		local Value = tonumber( Text, 16 );
-		local Color;
 
+		local Color;
 		if ( Value and #Text == 6 ) then -- Valid
 			Color = HIGHLIGHT_FONT_COLOR;
 			ColorPickerFrame:SetColorRGB(
@@ -35,13 +32,10 @@ do
 		self:SetTextColor( Color.r, Color.g, Color.b );
 	end
 end
---[[****************************************************************************
-  * Function: _Underscore.ColorPicker:OnColorSelect                            *
-  * Description: Sets the hex triplet to match the shown color.                *
-  ****************************************************************************]]
 do
 	local lshift = bit.lshift;
 	local floor = floor;
+	--- Sets the hex triplet to match the shown color.
 	function me:OnColorSelect ( R, G, B )
 		me:SetText( ( "%06X" ):format( -- No SetFormattedText for editboxes
 			lshift( floor( R * 255 + 0.5 ), 16 )

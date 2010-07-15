@@ -150,7 +150,7 @@ ScrollHandler:SetAllPoints( WorldMapButton );
 ScrollHandler:SetScript( "OnMouseWheel", ScrollHandler.OnMouseWheel );
 ScrollHandler:SetScript( "OnShow", ScrollHandler.OnShow );
 ScrollHandler:SetScript( "OnHide", ScrollHandler.OnHide );
-ScrollHandler:SetScript( "OnEvent", _Underscore.OnEvent );
+ScrollHandler:SetScript( "OnEvent", _Underscore.Frame.OnEvent );
 
 
 WorldMapUnit_Update = me.UpdateUnit;

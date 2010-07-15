@@ -198,7 +198,7 @@ end
 
 
 
-me:SetScript( "OnEvent", _Underscore.OnEvent );
+me:SetScript( "OnEvent", _Underscore.Frame.OnEvent );
 me:SetScript( "OnUpdate", me.OnUpdate );
 me:RegisterEvent( "MODIFIER_STATE_CHANGED" );
 me:RegisterEvent( "PLAYER_LOGIN" );

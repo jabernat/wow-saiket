@@ -32,7 +32,7 @@ do
 	end
 end
 --- Catches when AFK status gets reset after zoning.
-function me:PLAYER_ENTERING_WORLD ( Event )
+function me:PLAYER_ENTERING_WORLD ()
 	self.NextUpdate = 0;
 end
 
@@ -40,7 +40,7 @@ end
 
 
 me:SetScript( "OnUpdate", me.OnUpdate );
-me:SetScript( "OnEvent", _Underscore.OnEvent );
+me:SetScript( "OnEvent", _Underscore.Frame.OnEvent );
 me:RegisterEvent( "PLAYER_ENTERING_WORLD" );
 
 me:SetFrameStrata( "BACKGROUND" );
