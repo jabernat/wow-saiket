@@ -68,4 +68,4 @@ select( 2, ... ).L = setmetatable( {
 			return Format, Value, ValueMax;
 		end;
 	};
-}, getmetatable( _UnderscoreLocalization ) );
+}, getmetatable( _Underscore.L ) );
