@@ -29,6 +29,17 @@ me.Range = {
 
 
 
+--- Raises and shows all auras when moused over.
+function me:OnEnter ()
+	if ( self.AuraMouseover ) then
+		self.AuraMouseover:Show(); -- Show unfiltered auras
+	end
+	UnitFrame_OnEnter( self );
+end
+
+
+
+
 do
 	--- Colors and sets text for a bar representing a dead player.
 	-- @param Label  New bar text.
@@ -81,21 +92,95 @@ function me:PortraitPostUpdate ()
 end
 
 
+do
+	--- Starts or stops showing all auras for an Aura icon frame.
+	local function AuraShowAll ( Icons, ShowAll )
+		if ( Icons ) then
+			Icons.ShowAll = ShowAll;
+			Icons:SetFrameStrata( ShowAll and Icons:GetParent():GetFrameStrata() or "LOW" );
+		end
+	end
+	--- Keeps all auras visible while mousing over the unit and its auras.
+	function me:AuraMouseoverOnUpdate ()
+		if ( not self:IsMouseOver() ) then
+			self:Hide();
+		end
+	end
+	--- Shows all auras when mousing over buff area.
+	function me:AuraMouseoverOnShow ()
+		local Frame = self:GetParent();
+		AuraShowAll( Frame.Buffs, true );
+		AuraShowAll( Frame.Debuffs, true );
+		Frame:UpdateElement( "Aura" ); -- Refilter
+	end
+	--- Refilters auras once mouse leaves buff area.
+	function me:AuraMouseoverOnHide ()
+		local Frame = self:GetParent();
+		AuraShowAll( Frame.Buffs, nil );
+		AuraShowAll( Frame.Debuffs, nil );
+		Frame:UpdateElement( "Aura" );
+	end
+end
+
 --- Adjusts buff/debuff icons when they're created.
 function me:AuraPostCreateIcon ( Frame )
-	Frame:SetFrameLevel( self:GetFrameLevel() );
 	_Underscore.SkinButtonIcon( Frame.icon );
 	Frame.cd:SetReverse( true );
+	Frame.cd:SetDrawEdge( true ); -- Adds a line along the cooldown's edge
 
 	-- Keep count from going off left side of screen for units on the edge
 	Frame.count:ClearAllPoints();
 	Frame.count:SetPoint( "BOTTOMLEFT" );
 end
---- Resizes the buffs frame so debuffs anchor correctly.
-function me:BuffsPostUpdate ( UnitID )
-	local BuffsPerRow = max( 1, floor( self:GetWidth() / self.size + 0.5 ) );
-	local Height = self.size * ceil( self.visibleBuffs / BuffsPerRow );
+--- Resizes the buffs frame to fit all icons.
+function me:AuraPreSetPosition ()
+	local Visible = self.visibleBuffs or self.visibleDebuffs;
+	local IconsPerRow = max( 1, floor( self:GetWidth() / self.size + 0.5 ) );
+	local Height = self.size * ceil( Visible / IconsPerRow );
 	self:SetHeight( Height < 1e-3 and 1e-3 or Height );
+end
+do
+	local GetCVarBool = GetCVarBool;
+	local UnitCanAttack = UnitCanAttack;
+	--- Switches aura filter based on unit hostility.
+	function me:BuffPreUpdate ( UnitID )
+		self.BuffConsolidate = GetCVarBool( "consolidateBuffs" );
+		self.Hostile = UnitCanAttack( "player", UnitID );
+
+		if ( self.ShowAll
+			or self.Hostile -- Show all hostile buffs
+			or not GetCVarBool( "showCastableBuffs" ) -- Not limited to player's buffs
+		) then
+			self.filter = "HELPFUL";
+		else
+			self.filter = "HELPFUL|PLAYER"; -- Show player's buffs cast on friendlies
+		end
+	end
+	--- Hides consolidated buffs unless moused-over.
+	function me:DebuffPreUpdate ( UnitID )
+		if ( self.ShowAll ) then
+			self.filter = "HARMFUL";
+		elseif ( GetCVarBool( "showCastableDebuffs" ) and ( UnitCanAttack( "player", UnitID ) or UnitCanAttack( "pet", UnitID ) ) ) then
+			self.filter = "HARMFUL|PLAYER"; -- Show only your debuffs on hostiles
+		elseif ( GetCVarBool( "showDispelDebuffs" ) ) then
+			self.filter = "HARMFUL|RAID"; -- Show cleansable debuffs
+		else
+			self.filter = "HARMFUL"; -- Show all debuffs on friendlies
+		end
+	end
+end
+do
+	local select = select;
+	--- Hides consolidated buffs unless moused-over.
+	function me:BuffCustomFilter ( UnitID, _, ... )
+		if ( not self.Hostile and self.BuffConsolidate and not self.ShowAll ) then
+			local Caster, _, ShouldConsolidate = select( 8, ... );
+			local IsMine = Caster == "player" or Caster == "pet" or Caster == "vehicle";
+			return not ShouldConsolidate or IsMine; -- Hide consolidated auras cast by others
+		else
+			return true;
+		end
+	end
 end
 
 
@@ -263,6 +348,20 @@ do
 end
 
 
+--- Creates a common aura frame shared by buffs and debuffs.
+local function CreateAuras ( Frame, Style )
+	local Auras = CreateFrame( "Frame", nil, Frame );
+	Auras:SetHeight( 1 );
+	Auras:SetFrameStrata( "LOW" ); -- Don't allow auras to overlap other units
+	Auras.initialAnchor = "TOPLEFT";
+	Auras[ "growth-y" ] = "DOWN";
+	Auras.size = Style.AuraSize;
+	Auras.PostCreateIcon = me.AuraPostCreateIcon;
+	Auras.PreSetPosition = me.AuraPreSetPosition;
+	return Auras;
+end
+
+
 local CreateIcon;
 do
 	--- Updates icon anchors when one is shown or hidden at most once per frame.
@@ -365,16 +464,17 @@ end
 -- @param Frame  Unit frame to add to.
 -- @param UnitID  Unit this frame represents.
 function me.StyleMeta.__call ( Style, Frame, UnitID )
-	-- Enable the right-click menu
-	SecureUnitButton_OnLoad( Frame, UnitID, _Underscore.Units.ShowGenericMenu );
-	Frame:RegisterForClicks( "LeftButtonUp", "RightButtonUp" );
-	Frame:SetSize( Style.Width, Style.Height );
-
 	Frame.colors = Colors;
 	Frame.disallowVehicleSwap = true;
 
-	Frame:SetScript( "OnEnter", UnitFrame_OnEnter );
+	Frame:SetAttribute( "initial-width", Style.Width );
+	Frame:SetAttribute( "initial-height", Style.Height );
+	Frame:SetScript( "OnEnter", me.OnEnter );
 	Frame:SetScript( "OnLeave", UnitFrame_OnLeave );
+
+	-- Enable the right-click menu
+	SecureUnitButton_OnLoad( Frame, UnitID, _Underscore.Units.ShowGenericMenu );
+	Frame:RegisterForClicks( "LeftButtonUp", "RightButtonUp" );
 
 	local Backdrop = _Underscore.Backdrop.Create( Frame );
 	Frame:SetHighlightTexture( [[Interface\QuestFrame\UI-QuestTitleHighlight]] );
@@ -560,31 +660,30 @@ function me.StyleMeta.__call ( Style, Frame, UnitID )
 
 
 	if ( Style.Auras ) then
+		local Buffs, Debuffs = CreateAuras( Frame, Style ), CreateAuras( Frame, Style );
+		Frame.Buffs, Frame.Debuffs = Buffs, Debuffs;
+	
 		-- Buffs
-		local Buffs = CreateFrame( "Frame", nil, Frame );
-		Frame.Buffs = Buffs;
 		Buffs:SetPoint( "TOPLEFT", Backdrop, "BOTTOMLEFT" );
 		Buffs:SetPoint( "RIGHT", Backdrop );
-		Buffs:SetHeight( 1 );
-		Buffs:SetFrameLevel( Frame:GetFrameLevel() - 1 ); -- Don't allow auras to overlap other units
-		Buffs.initialAnchor = "TOPLEFT";
-		Buffs[ "growth-y" ] = "DOWN";
-		Buffs.size = Style.AuraSize;
-		Buffs.PostCreateIcon = me.AuraPostCreateIcon;
-		Buffs.PostUpdate = me.BuffsPostUpdate;
+		Buffs.PreUpdate = me.BuffPreUpdate;
+		Buffs.CustomFilter = me.BuffCustomFilter;
 
 		-- Debuffs
-		local Debuffs = CreateFrame( "Frame", nil, Frame );
-		Frame.Debuffs = Debuffs;
 		Debuffs:SetPoint( "TOPLEFT", Buffs, "BOTTOMLEFT" );
 		Debuffs:SetPoint( "RIGHT", Backdrop );
-		Debuffs:SetHeight( 1 );
-		Debuffs:SetFrameLevel( Frame:GetFrameLevel() - 1 );
-		Debuffs.initialAnchor = "TOPLEFT";
-		Debuffs[ "growth-y" ] = "DOWN";
 		Debuffs.showDebuffType = true;
-		Debuffs.size = Style.AuraSize;
-		Debuffs.PostCreateIcon = me.AuraPostCreateIcon;
+		Debuffs.PreUpdate = me.DebuffPreUpdate;
+
+		-- Mouseover handler
+		local AuraMouseover = CreateFrame( "Frame", nil, Frame );
+		Frame.AuraMouseover = AuraMouseover;
+		AuraMouseover:Hide();
+		AuraMouseover:SetPoint( "TOPLEFT", -8, 0 ); -- Allow some leeway on the sides and bottom
+		AuraMouseover:SetPoint( "BOTTOMRIGHT", Debuffs, "BOTTOMRIGHT", 8, -8 );
+		AuraMouseover:SetScript( "OnUpdate", me.AuraMouseoverOnUpdate );
+		AuraMouseover:SetScript( "OnShow", me.AuraMouseoverOnShow );
+		AuraMouseover:SetScript( "OnHide", me.AuraMouseoverOnHide );
 	end
 
 	-- Debuff highlight
@@ -630,9 +729,9 @@ me.StyleMeta.__index = {
 	NameFont = me.FontNormal;
 	BarTextFont = me.FontTiny;
 	CastTime = true;
-	Auras = true;
 	AuraSize = 15;
-	DebuffHighlight = true;
+	Auras = true;
+	DebuffHighlight = true; -- "ALL" for all, true for cleansable debuffs only, or false for none
 
 	PowerHeight = 0.25;
 	ProgressHeight = 0.1;
@@ -691,9 +790,3 @@ if ( not _Underscore.IsAddOnLoadable( "_Underscore.Units.Arena" ) ) then
 	-- Garbage collect initialization code
 	me.StyleMeta.__call = nil;
 end
-
-
--- Hide default buff frame
-BuffFrame:Hide();
-TemporaryEnchantFrame:Hide();
-BuffFrame:UnregisterAllEvents();
