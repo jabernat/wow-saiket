@@ -143,7 +143,7 @@ end
 
 
 me.name = L.CONFIG_TITLE;
-me.parent = _NPCScanLocalization.CONFIG_TITLE;
+me.parent = _NPCScan.Config.name;
 me:Hide();
 me:SetScript( "OnShow", me.OnShow );
 
