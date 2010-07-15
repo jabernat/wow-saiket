@@ -4,8 +4,10 @@
   ****************************************************************************]]
 
 
-local LibSharedMedia = LibStub( "LibSharedMedia-3.0" );
-local me = CreateFrame( "Frame", "_Underscore", nil, "SecureHandlerAttributeTemplate" );
+local AddOnName, me = ...;
+_Underscore = me;
+
+me.Frame = CreateFrame( "Frame" );
 
 me.Colors = {
 	HealthSmooth = {
@@ -55,27 +57,19 @@ me.TopMargin = CreateFrame( "Frame", nil, UIParent );
 me.BottomPane = CreateFrame( "Frame", nil, UIParent );
 
 me.MediaBar = "_Underscore"; -- Name of LibSharedMedia entry
-me.ButtonNormalTexture = [[Interface\AddOns\]]..( ... )..[[\Skin\ButtonNormalTexture]];
+me.ButtonNormalTexture = [[Interface\AddOns\]]..AddOnName..[[\Skin\ButtonNormalTexture]];
 
 
 
 
---[[****************************************************************************
-  * Function: _Underscore.NilFunction                                          *
-  * Description: Recycled generic function placeholder.                        *
-  ****************************************************************************]]
+--- Recycled generic function placeholder.
 function me.NilFunction () end
 
---[[****************************************************************************
-  * Function: _Underscore:SkinButtonIcon                                       *
-  * Description: Hides the border graphic from an action button-like icon.     *
-  ****************************************************************************]]
+--- Hides the border graphic from an action button-like icon.
 function me:SkinButtonIcon ()
 	self:SetTexCoord( 0.08, 0.92, 0.08, 0.92 );
 end
---[[****************************************************************************
-  * Function: _Underscore:SkinButton                                           *
-  ****************************************************************************]]
+--- Skins a standard action button and its textures.
 function me:SkinButton ( IconTexture, NormalTexture )
 	me.SkinButtonIcon( IconTexture );
 	-- Add gloss normal texture
@@ -96,18 +90,13 @@ end
 
 do
 	local AddOnInitializers = {};
---[[****************************************************************************
-  * Function: _Underscore.IsAddOnLoadable                                      *
-  * Description: Returns true if an addon can possibly load this session.      *
-  ****************************************************************************]]
+	--- @return True if an addon can possibly load this session.
 	function me.IsAddOnLoadable ( Name )
 		local Loadable, Reason = select( 5, GetAddOnInfo( Name ) );
 		return Loadable or ( Reason == "DISABLED" and IsAddOnLoadOnDemand( Name ) ); -- Loadable or can become loadable
 	end
---[[****************************************************************************
-  * Function: _Underscore.InitializeAddOn                                      *
-  * Description: Runs the given addon's initializer if it loaded.              *
-  ****************************************************************************]]
+	--- Runs the given addon's initializer if it loaded.
+	-- @return True if initializer was run.
 	function me.InitializeAddOn ( Name )
 		Name = Name:upper(); -- For case insensitive file systems (Windows')
 		local Initializer = AddOnInitializers[ Name ];
@@ -123,10 +112,8 @@ do
 			return true;
 		end
 	end
---[[****************************************************************************
-  * Function: _Underscore.RegisterAddOnInitializer                             *
-  * Description: Register a function to run when an addon loads.               *
-  ****************************************************************************]]
+	--- Register a function to run when an addon loads.
+	-- @return True if loaded immediately.
 	function me.RegisterAddOnInitializer ( Name, Initializer )
 		if ( me.IsAddOnLoadable( Name ) ) then
 			Name = Name:upper();
@@ -143,10 +130,8 @@ do
 			return me.InitializeAddOn( Name );
 		end
 	end
---[[****************************************************************************
-  * Function: _Underscore:ADDON_LOADED                                         *
-  ****************************************************************************]]
-	function me:ADDON_LOADED ( _, AddOn )
+	--- Attempts to run initializers for any loaded addon.
+	function me.Frame:ADDON_LOADED ( _, AddOn )
 		me.InitializeAddOn( AddOn );
 	end
 end
@@ -154,34 +139,30 @@ end
 
 do
 	local LockedButtons = {};
---[[****************************************************************************
-  * Function: _Underscore.AddLockedButton                                      *
-  * Description: Registers a button to only accept mouse clicks when the       *
-  *   control modifier is held.                                                *
-  ****************************************************************************]]
+	local Locked;
+	--- Registers a button to only accept mouse clicks when the lock modifier is held.
 	function me.AddLockedButton ( Button )
 		LockedButtons[ Button ] = true;
-		local Enable = IsControlKeyDown() == 1;
+		local Enable = Locked;
 		me.RunProtectedFunction( function ()
 			Button:EnableMouse( Enable );
 		end, Button:IsProtected() );
 	end
---[[****************************************************************************
-  * Function: _Underscore.RemoveLockedButton                                   *
-  * Description: Unlocks a button.                                             *
-  ****************************************************************************]]
+	--- Unlocks a button locked by me.AddLockedButton.
 	function me.RemoveLockedButton ( Button )
-		LockedButtons[ Button ] = nil;
-		me.RunProtectedFunction( function ()
-			Button:EnableMouse( true );
-		end, Button:IsProtected() );
+		if ( LockedButtons[ Button ] ) then
+			LockedButtons[ Button ] = nil;
+			me.RunProtectedFunction( function ()
+				Button:EnableMouse( true );
+			end, Button:IsProtected() );
+		end
 	end
---[[****************************************************************************
-  * Function: _Underscore:MODIFIER_STATE_CHANGED                               *
-  ****************************************************************************]]
-	function me:MODIFIER_STATE_CHANGED ( _, Modifier, State )
-		if ( Modifier:sub( 2 ) == "CTRL" ) then
-			local Enable = State == 1;
+	--- Locks and unlocks buttons when the lock modifier is pressed.
+	function me.Frame:MODIFIER_STATE_CHANGED ()
+		local Enable = IsModifiedClick( "_UNDERSCORE_LOCK_BUTTONS" );
+		if ( Locked ~= Enable ) then
+			Locked = Enable;
+
 			local Protected = false;
 			for Button in pairs( LockedButtons ) do
 				if ( Button:IsProtected() ) then
@@ -200,37 +181,30 @@ do
 			end, Protected );
 		end
 	end
+	--- Rechecks the lock modifier when bindings change or load.
+	me.Frame.UPDATE_BINDINGS = me.Frame.MODIFIER_STATE_CHANGED;
 end
 
 
 do
 	local InCombat = false;
 	local ProtectedFunctionQueue = {};
---[[****************************************************************************
-  * Function: _Underscore.RunProtectedFunction                                 *
-  * Description: Runs an function, or stores it until after combat ends if it  *
-  *   calls protected functions.                                               *
-  ****************************************************************************]]
+	--- Runs an function, or stores it until after combat ends if it calls protected functions.
 	function me.RunProtectedFunction ( Function, Protected )
 		if ( InCombat and Protected ) then -- Store for later
 			ProtectedFunctionQueue[ #ProtectedFunctionQueue + 1 ] = Function;
 		else
-			Function();
+			return Function();
 		end
 	end
---[[****************************************************************************
-  * Function: _Underscore:PLAYER_REGEN_DISABLED                                *
-  ****************************************************************************]]
-	function me:PLAYER_REGEN_DISABLED ()
+	--- Stops protected functions from running after entering combat.
+	function me.Frame:PLAYER_REGEN_DISABLED ()
 		InCombat = true;
 	end
---[[****************************************************************************
-  * Function: _Underscore:PLAYER_REGEN_ENABLED                                 *
-  ****************************************************************************]]
-	function me:PLAYER_REGEN_ENABLED ()
+	--- Runs all queued protected functions after leaving combat.
+	function me.Frame:PLAYER_REGEN_ENABLED ()
 		InCombat = false;
 
-		-- Combat lockdown over; run all stored functions
 		for Index = 1, #ProtectedFunctionQueue do
 			ProtectedFunctionQueue[ Index ]();
 			ProtectedFunctionQueue[ Index ] = nil;
@@ -241,44 +215,36 @@ end
 
 do
 	local PositionManagers = {};
---[[****************************************************************************
-  * Function: _Underscore.PositionManagerUpdate                                *
-  ****************************************************************************]]
+	--- Hook to run all position managers.
 	function me.PositionManagerUpdate ()
 		for _, Function in ipairs( PositionManagers ) do
 			Function();
 		end
 	end
---[[****************************************************************************
-  * Function: _Underscore.RegisterPositionManager                              *
-  * Description: Hooks the secure UIParent_ManageFramePositions delegate.      *
-  ****************************************************************************]]
+	--- Hooks the secure UIParent_ManageFramePositions delegate.
 	function me.RegisterPositionManager ( Function )
 		PositionManagers[ #PositionManagers + 1 ] = Function;
 	end
 end
 
 
---[[****************************************************************************
-  * Function: _Underscore:OnEvent                                              *
-  ****************************************************************************]]
-do
-	local type = type;
-	function me:OnEvent ( Event, ... )
-		if ( type( self[ Event ] ) == "function" ) then
-			self[ Event ]( self, Event, ... );
-		end
+--- Global event handler.
+function me.Frame:OnEvent ( Event, ... )
+	if ( self[ Event ] ) then
+		return self[ Event ]( self, Event, ... );
 	end
 end
 
 
 
 
-me:SetScript( "OnEvent", me.OnEvent );
-me:RegisterEvent( "ADDON_LOADED" );
-me:RegisterEvent( "PLAYER_REGEN_ENABLED" );
-me:RegisterEvent( "PLAYER_REGEN_DISABLED" );
-me:RegisterEvent( "MODIFIER_STATE_CHANGED" );
+local Frame = me.Frame;
+Frame:SetScript( "OnEvent", Frame.OnEvent );
+Frame:RegisterEvent( "ADDON_LOADED" );
+Frame:RegisterEvent( "PLAYER_REGEN_ENABLED" );
+Frame:RegisterEvent( "PLAYER_REGEN_DISABLED" );
+Frame:RegisterEvent( "MODIFIER_STATE_CHANGED" );
+Frame:RegisterEvent( "UPDATE_BINDINGS" );
 
 -- Place the layout panes
 me.TopMargin:SetPoint( "TOPLEFT" );
@@ -302,17 +268,18 @@ RemoveClassIconBorders( CLASS_ICON_TCOORDS );
 RemoveClassIconBorders( CLASS_BUTTONS );
 
 
+local LSM = LibStub( "LibSharedMedia-3.0" );
 -- Add media to LibSharedMedia
-LibSharedMedia:Register( LibSharedMedia.MediaType.STATUSBAR, me.MediaBar, [[Interface\AddOns\]]..( ... )..[[\Skin\Glaze]] );
+LSM:Register( LSM.MediaType.STATUSBAR, me.MediaBar, [[Interface\AddOns\]]..AddOnName..[[\Skin\Glaze]] );
 
 -- Alert sounds
-local Sound = LibSharedMedia.MediaType.SOUND;
-LibSharedMedia:Register( Sound, "Blizzard: Space Impact", [[Sound\Effects\DeathImpacts\SpaceDeathUni.wav]] );
-LibSharedMedia:Register( Sound, "Blizzard: Whisp", [[Sound\Event Sounds\Wisp\WispReady1.wav]] );
-LibSharedMedia:Register( Sound, "Blizzard: Alarm Clock", [[Sound\Interface\AlarmClockWarning2.wav]] );
-LibSharedMedia:Register( Sound, "Blizzard: Glyph Creation", [[Sound\Interface\Glyph_MajorCreate.wav]] );
-LibSharedMedia:Register( Sound, "Blizzard: Fanfare", [[Sound\Interface\ReadyCheck.wav]] );
-LibSharedMedia:Register( Sound, "Blizzard: Boss Emote", [[Sound\Interface\RaidBossWarning.wav]] );
+local Sound = LSM.MediaType.SOUND;
+LSM:Register( Sound, "Blizzard: Space Impact", [[Sound\Effects\DeathImpacts\SpaceDeathUni.wav]] );
+LSM:Register( Sound, "Blizzard: Whisp", [[Sound\Event Sounds\Wisp\WispReady1.wav]] );
+LSM:Register( Sound, "Blizzard: Alarm Clock", [[Sound\Interface\AlarmClockWarning2.wav]] );
+LSM:Register( Sound, "Blizzard: Glyph Creation", [[Sound\Interface\Glyph_MajorCreate.wav]] );
+LSM:Register( Sound, "Blizzard: Fanfare", [[Sound\Interface\ReadyCheck.wav]] );
+LSM:Register( Sound, "Blizzard: Boss Emote", [[Sound\Interface\RaidBossWarning.wav]] );
 
 
 -- Hook the secure frame position delegate since parts of the DefaultUI use local copies of the global wrapper function

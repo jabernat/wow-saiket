@@ -103,7 +103,7 @@ end
 
 CombatText:SetScript( "OnEvent", me.CombatTextOnEvent );
 
-me.Frame:SetScript( "OnEvent", _Underscore.OnEvent );
+me.Frame:SetScript( "OnEvent", _Underscore.Frame.OnEvent );
 me.Frame:RegisterEvent( "CVAR_UPDATE" );
 me.Frame:RegisterEvent( "VARIABLES_LOADED" );
 

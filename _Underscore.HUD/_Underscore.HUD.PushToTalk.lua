@@ -112,7 +112,7 @@ end
 
 
 me:Hide();
-me:SetScript( "OnEvent", _Underscore.OnEvent );
+me:SetScript( "OnEvent", _Underscore.Frame.OnEvent );
 me:RegisterEvent( "VOICE_PUSH_TO_TALK_START" );
 me:RegisterEvent( "VOICE_PUSH_TO_TALK_STOP" );
 me:RegisterEvent( "UPDATE_BINDINGS" );
