@@ -648,7 +648,7 @@ function me.SlashCommand ( Input )
 
 	if ( me.SetTankMode( Enable ) ) then
 		local Color = Enable and GREEN_FONT_COLOR or NORMAL_FONT_COLOR;
-		DEFAULT_CHAT_FRAME:AddMessage( me.L.TANKMODE_FORMAT:format( L[ Enable and "ENABLED" or "DISABLED" ] ),
+		DEFAULT_CHAT_FRAME:AddMessage( me.L.TANKMODE_FORMAT:format( me.L[ Enable and "ENABLED" or "DISABLED" ] ),
 			Color.r, Color.g, Color.b );
 	end
 end
