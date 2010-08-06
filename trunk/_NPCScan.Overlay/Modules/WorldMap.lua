@@ -75,19 +75,22 @@ do
 			end
 			self:SetSize( Width + 32, Height + 32 );
 			self:Show();
+			if ( not self.Container:IsShown() ) then -- Previously too large; OnSizeChanged won't fire
+				me.KeyOnSizeChanged( self ); -- Force size validation
+			end
 		else
 			self:Hide();
 		end
 	end
 end
 --[[****************************************************************************
-  * Function: _NPCScan.Overlay.Modules.List.WorldMap:KeyParentValidateSize     *
+  * Function: _NPCScan.Overlay.Modules.List.WorldMap:KeyValidateSize           *
   ****************************************************************************]]
-function me:KeyParentValidateSize ()
-	local Width, Height = self:GetSize();
-	local KeyScale, KeyWidth, KeyHeight = self.Key:GetScale(), self.Key:GetSize();
+function me:KeyValidateSize ()
+	local WindowWidth, WindowHeight = self.KeyParent:GetSize();
+	local Scale, Width, Height = self:GetScale(), self:GetSize();
 	-- Hide if it covers too much of the canvas
-	if ( KeyWidth * KeyScale > Width * me.KeyMaxSize or KeyHeight * KeyScale > Height * me.KeyMaxSize ) then
+	if ( Width * Scale > WindowWidth * me.KeyMaxSize or Height * Scale > WindowHeight * me.KeyMaxSize ) then
 		self.Container:Hide(); -- KeyParent must remain visible so OnSizeChanged still fires
 	else
 		self.Container:Show();
@@ -98,13 +101,13 @@ end
   ****************************************************************************]]
 function me:KeyParentOnSizeChanged ()
 	self.Key:SetScale( max( 1, me.KeyMinScale / self:GetEffectiveScale() ) );
-	me.KeyParentValidateSize( self );
+	me.KeyValidateSize( self.Key );
 end
 --[[****************************************************************************
   * Function: _NPCScan.Overlay.Modules.List.WorldMap:KeyOnSizeChanged          *
   ****************************************************************************]]
 function me:KeyOnSizeChanged ()
-	me.KeyParentValidateSize( self.KeyParent );
+	me.KeyValidateSize( self );
 end
 
 
@@ -169,11 +172,12 @@ function me:OnLoad ( ... )
 	KeyParent:SetAllPoints();
 	KeyParent:SetScript( "OnSizeChanged", me.KeyParentOnSizeChanged );
 
-	KeyParent.Container = CreateFrame( "Frame", nil, KeyParent );
-	KeyParent.Container:SetAllPoints();
+	local Container = CreateFrame( "Frame", nil, KeyParent );
+	Container:SetAllPoints();
 
-	local Key = CreateFrame( "Frame", nil, KeyParent.Container );
-	KeyParent.Key, Key.KeyParent = Key, KeyParent;
+	local Key = CreateFrame( "Frame", nil, Container );
+	KeyParent.Key = Key;
+	Key.KeyParent, Key.Container = KeyParent, Container;
 	Key:SetScript( "OnEnter", self.KeyOnEnter );
 	Key:SetScript( "OnSizeChanged", me.KeyOnSizeChanged );
 	self.KeyOnEnter( Key ); -- Initialize starting point
