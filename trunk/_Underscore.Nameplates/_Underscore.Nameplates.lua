@@ -115,7 +115,7 @@ do
 					Color = Colors.reaction[ 4 ]; -- Neutral
 					ThreatBorder:SetTexCoord( 0, 1, 0, 0.5 );
 				else -- High
-					Color = Colors.reaction[ 4 ]; -- Hostile
+					Color = Colors.reaction[ 3 ]; -- Unfriendly
 					ThreatBorder:SetTexCoord( 0, 1, 0.5, 1 );
 				end
 				ThreatBorder:SetVertexColor( Color[ 1 ], Color[ 2 ], Color[ 3 ] );
