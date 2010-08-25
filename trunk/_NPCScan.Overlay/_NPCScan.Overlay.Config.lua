@@ -6,7 +6,7 @@
 
 
 local Overlay = select( 2, ... );
-local L = _NPCScanOverlayLocalization;
+local L = Overlay.L;
 local me = CreateFrame( "Frame" );
 Overlay.Config = me;
 
@@ -20,85 +20,67 @@ local IsChildAddOn = IsAddOnLoaded( "_NPCScan" );
 
 
 
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.Config.ModuleMeta.__index:AddControl            *
-  ****************************************************************************]]
+--- Adds a control to the module to automatically be enabled and disabled.
 function ModuleMethods:AddControl ( Control )
 	self[ #self + 1 ] = Control;
 	Control:SetEnabled( self.Module.Registered and self.Enabled:GetChecked() );
 end
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.Config.ModuleMeta.__index:SetEnabled            *
-  ****************************************************************************]]
 do
-	local function SetControlsEnabled ( Config, Enabled ) -- Enables/disables all registered controls
+	--- Enables/disables all registered controls.
+	local function SetControlsEnabled ( Config, Enabled )
 		for _, Control in ipairs( Config ) do
 			Control:SetEnabled( Enabled );
 		end
 	end
+	--- Sets the module's enabled checkbox and enables/disables all child controls.
 	function ModuleMethods:SetEnabled ( Enabled )
 		self.Enabled:SetChecked( Enabled );
 		if ( self.Module.Registered ) then
 			SetControlsEnabled( self, Enabled );
 		end
 	end
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.Config.ModuleMeta.__index:Unregister            *
-  ****************************************************************************]]
+	--- Disables the module's configuration when it gets unregistered.
 	function ModuleMethods:Unregister ()
 		self.Enabled:SetEnabled( false );
-		SetControlsEnabled( self, false );
-
 		local Color = GRAY_FONT_COLOR;
 		_G[ self:GetName().."Title" ]:SetTextColor( Color.r, Color.g, Color.b );
+
+		SetControlsEnabled( self, false );
 	end
 end
 
 
 
 
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.Config:ControlOnEnter                           *
-  * Description: Shows the control's tooltip.                                  *
-  ****************************************************************************]]
+--- Shows the control's tooltip.
 function me:ControlOnEnter ()
 	if ( self.tooltipText ) then
 		GameTooltip:SetOwner( self, "ANCHOR_TOPLEFT" );
 		GameTooltip:SetText( self.tooltipText, nil, nil, nil, nil, 1 );
 	end
 end
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.Config:ModuleCheckboxSetEnabled                 *
-  ****************************************************************************]]
+--- Standard checkbox control SetEnabled method.
 function me:ModuleCheckboxSetEnabled ( Enable )
 	( Enable and BlizzardOptionsPanel_CheckButton_Enable or BlizzardOptionsPanel_CheckButton_Disable )( self );
 end
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.Config:ModuleSliderSetEnabled                   *
-  ****************************************************************************]]
+--- Standard slider control SetEnabled method.
 function me:ModuleSliderSetEnabled ( Enable )
 	( Enable and BlizzardOptionsPanel_Slider_Enable or BlizzardOptionsPanel_Slider_Disable )( self );
 end
 
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.Config.ShowAll.setFunc                          *
-  ****************************************************************************]]
+--- Sets the ShowAll option when its checkbox is clicked.
 function me.ShowAll.setFunc ( Enable )
 	Overlay.SetShowAll( Enable == "1" );
 end
 
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.Config:ModuleEnabledOnClick                     *
-  ****************************************************************************]]
+--- Toggles the module when its checkbox is clicked.
 function me:ModuleEnabledOnClick ()
 	local Enable = self:GetChecked() == 1;
 
 	PlaySound( Enable and "igMainMenuOptionCheckBoxOn" or "igMainMenuOptionCheckBoxOff" );
 	Overlay.Modules[ Enable and "Enable" or "Disable" ]( self:GetParent().Module.Name );
 end
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.Config:ModuleAlphaOnValueChanged                *
-  ****************************************************************************]]
+--- Sets a module's alpha setting when its slider gets adjusted.
 function me:ModuleAlphaOnValueChanged ( Value )
 	Overlay.Modules.SetAlpha( self:GetParent().Module.Name, Value );
 end
@@ -106,11 +88,10 @@ end
 
 
 
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.Config.ModuleRegister                           *
-  ****************************************************************************]]
 do
 	local LastFrame;
+	--- Creates a config entry for a module with basic controls.
+	-- @return Settings frame for module.
 	function me.ModuleRegister ( Module, Label )
 		local Frame = CreateFrame( "Frame", "_NPCScanOverlayModule"..Module.Name, me.ScrollChild, "OptionsBoxTemplate" );
 		Frame.Module = Module;
@@ -155,9 +136,7 @@ do
 end
 
 
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.Config:default                                  *
-  ****************************************************************************]]
+--- Reverts to default options.
 function me:default ()
 	Overlay.Synchronize();
 end
@@ -167,12 +146,10 @@ end
 
 local TableCreateBackup;
 if ( IsChildAddOn ) then
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.Config:TableSetHeader                           *
-  ****************************************************************************]]
 	local Args = {};
 	local select = select;
-	local function Append ( NewValue, ... ) -- Appends a value to a vararg list
+	--- Appends a value to a vararg list.
+	local function Append ( NewValue, ... )
 		local Count = select( "#", ... );
 		for Index = 1, Count do
 			Args[ Index ] = select( Index, ... );
@@ -185,20 +162,17 @@ if ( IsChildAddOn ) then
 	end
 
 	local SetHeaderBackup;
+	--- Hook to add a zone name column to the NPC table header.
 	function me:TableSetHeader ( ... )
 		return SetHeaderBackup( self, Append( L.CONFIG_ZONE, ... ) );
 	end
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.Config:TableSetSortHandlers                     *
-  ****************************************************************************]]
 	local SetSortHandlersBackup;
+	--- Hook to set the added zone name column as sortable.
 	function me:TableSetSortHandlers ( ... )
 		return SetSortHandlersBackup( self, Append( true, ... ) ); -- Make map row sortable
 	end
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.Config:TableAddRow                              *
-  ****************************************************************************]]
 	local AddRowBackup;
+	--- Hook to add zone names to the last column of NPC table rows.
 	function me:TableAddRow ( ... )
 		local Map = Overlay.NPCMaps[ select( 4, ... ) ]; -- Arg 4 is NpcID
 		if ( Map ) then
@@ -207,21 +181,16 @@ if ( IsChildAddOn ) then
 			return AddRowBackup( self, ... );
 		end
 	end
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.Config:TableCreate                              *
-  * Description: Hooks _NPCScan's "Search" table to add a zone column.         *
-  ****************************************************************************]]
+	--- Adds table hooks if CreateTable returns a new table.
 	local function HookTable ( Table, ... )
 		if ( Table ) then -- Just created
-			SetHeaderBackup = Table.SetHeader;
-			SetSortHandlersBackup = Table.SetSortHandlers;
-			AddRowBackup = Table.AddRow;
-			Table.SetHeader = me.TableSetHeader;
-			Table.SetSortHandlers = me.TableSetSortHandlers;
-			Table.AddRow = me.TableAddRow;
+			SetHeaderBackup, Table.SetHeader = Table.SetHeader, me.TableSetHeader;
+			SetSortHandlersBackup, Table.SetSortHandlers = Table.SetSortHandlers, me.TableSetSortHandlers;
+			AddRowBackup, Table.AddRow = Table.AddRow, me.TableAddRow;
 		end
 		return Table, ...;
 	end
+	--- Hooks _NPCScan's NPC table to add a zone column when created.
 	function me:TableCreate ( ... )
 		return HookTable( TableCreateBackup( self, ... ) );
 	end
@@ -230,10 +199,7 @@ end
 
 
 
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.Config.SlashCommand                             *
-  * Description: Slash command chat handler to open the options pane.          *
-  ****************************************************************************]]
+--- Slash command chat handler to open the options pane.
 function me.SlashCommand ()
 	InterfaceOptionsFrame_OpenToCategory( me );
 end

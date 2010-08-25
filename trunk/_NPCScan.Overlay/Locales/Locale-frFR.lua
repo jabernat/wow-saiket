@@ -10,8 +10,9 @@ end
 
 
 -- See http://wow.curseforge.com/addons/npcscan-overlay/localization/frFR/
-_NPCScanOverlayLocalization = setmetatable( {
-	NPCS = setmetatable( {
+local Overlay = select( 2, ... );
+Overlay.L = setmetatable( {
+	NPCs = setmetatable( {
 		[ 1140 ] = "Matriarche tranchegueules",
 		[ 5842 ] = "Takk le Bondisseur",
 		[ 6581 ] = "Matriarche ravasaure",
@@ -21,7 +22,7 @@ _NPCScanOverlayLocalization = setmetatable( {
 		[ 33776 ] = "Gondria",
 		[ 35189 ] = "Skoll",
 		[ 38453 ] = "Arcturis",
-	}, { __index = _NPCScanOverlayLocalization.NPCS; } );
+	}, { __index = Overlay.L.NPCs; } );
 
 	CONFIG_ALPHA = "Transparence",
 	CONFIG_DESC = "Détermine sur quelles cartes les trajets des monstres seront ajoutés. La plupart des addons modifiant la carte se contrôlent avec les options de la carte du monde.",
@@ -40,4 +41,4 @@ _NPCScanOverlayLocalization = setmetatable( {
 	MODULE_WORLDMAP_KEY_FORMAT = "• %s",
 	MODULE_WORLDMAP_TOGGLE = "_|cffCCCC88NPCScan|r.Overlay",
 	MODULE_WORLDMAP_TOGGLE_DESC = "Si activé, affiche les trajets de _|cffCCCC88NPCScan|r.Overlay des PNJs recherchés.",
-}, { __index = _NPCScanOverlayLocalization; } );
+}, { __index = Overlay.L; } );

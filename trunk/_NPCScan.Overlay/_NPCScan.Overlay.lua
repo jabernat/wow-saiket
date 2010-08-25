@@ -51,6 +51,7 @@ me.DetectionRadius = 100; -- yards
 
 local TexturesUnused = CreateFrame( "Frame" );
 
+me.Events = LibStub( "AceEvent-3.0" ):Embed( {} );
 local MESSAGE_REGISTER = "NpcOverlay_RegisterScanner";
 local MESSAGE_ADD = "NpcOverlay_Add";
 local MESSAGE_REMOVE = "NpcOverlay_Remove";
@@ -59,11 +60,8 @@ local MESSAGE_FOUND = "NpcOverlay_Found";
 
 
 
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.SafeCall                                        *
-  * Description: Catches errors and throws them without ending execution.      *
-  ****************************************************************************]]
 do
+	--- Checks the Success return of pcall.
 	local function Catch ( Success, ... )
 		if ( not Success ) then
 			geterrorhandler()( ... );
@@ -71,16 +69,16 @@ do
 		return Success, ...;
 	end
 	local pcall = pcall;
+	--- Similar to pcall, but throws errors without ending execution.
 	function me.SafeCall ( Function, ... )
 		return Catch( pcall( Function, ... ) );
 	end
 end
 
 
---[[****************************************************************************
-  * Function: _NPCScan.Overlay:TextureCreate                                   *
-  * Description: Prepares an unused texture on the given frame.                *
-  ****************************************************************************]]
+--- Prepares an unused texture on the given frame.
+-- @param Layer  Draw layer for texture.
+-- @param ...  Color and optional alpha to set texture to.
 function me:TextureCreate ( Layer, R, G, B, A )
 	local Texture = #TexturesUnused > 0 and TexturesUnused[ #TexturesUnused ];
 	if ( Texture ) then
@@ -98,17 +96,15 @@ function me:TextureCreate ( Layer, R, G, B, A )
 	self[ #self + 1 ] = Texture;
 	return Texture;
 end
---[[****************************************************************************
-  * Function: _NPCScan.Overlay:TextureAdd                                      *
-  * Description: Draw a triangle texture with vertices at relative coords.     *
-  ****************************************************************************]]
 do
 	local ApplyTransform;
-	local Texture;
 	do
 		local Det, AF, BF, CD, CE;
 		local ULx, ULy, LLx, LLy, URx, URy, LRx, LRy;
-		function ApplyTransform( A, B, C, D, E, F )
+		--- Applies an affine transformation to Texture.
+		-- @param Texture  Texture to set TexCoords for.
+		-- @param ...  First 6 elements of transformation matrix.
+		function ApplyTransform( Texture, A, B, C, D, E, F )
 			Det = A * E - B * D;
 			AF, BF, CD, CE = A * F, B * F, C * D, C * E;
 
@@ -127,15 +123,18 @@ do
 			if ( LRx < -1e4 ) then LRx = -1e4; elseif ( LRx > 1e4 ) then LRx = 1e4; end
 			if ( LRy < -1e4 ) then LRy = -1e4; elseif ( LRy > 1e4 ) then LRy = 1e4; end
 
-			Texture:SetTexCoord( ULx, ULy, LLx, LLy, URx, URy, LRx, LRy );
+			return Texture:SetTexCoord( ULx, ULy, LLx, LLy, URx, URy, LRx, LRy );
 		end
 	end
+	local min, max = min, max;
 	local MinX, MinY, WindowX, WindowY;
 	local ABx, ABy, BCx, BCy;
 	local ScaleX, ScaleY, ShearFactor, Sin, Cos;
 	local Parent, Width, Height;
 	local SinScaleX, SinScaleY, CosScaleX, CosScaleY;
 	local BorderScale, BorderOffset = 512 / 510, -1 / 512; -- Removes one-pixel transparent border
+	local TrianglePath = [[Interface\AddOns\]]..AddOnName..[[\Skin\Triangle]]
+	--- Draw a triangle texture with vertices at relative coords.  (0,0) is top-left, (1,1) is bottom-right.
 	function me:TextureAdd ( Layer, R, G, B, Ax, Ay, Bx, By, Cx, Cy )
 		ABx, ABy, BCx, BCy = Ax - Bx, Ay - By, Bx - Cx, By - Cy;
 		ScaleX = ( BCx * BCx + BCy * BCy ) ^ 0.5;
@@ -151,15 +150,15 @@ do
 
 
 		-- Get a texture
-		Texture = me.TextureCreate( self, Layer, R, G, B );
-		Texture:SetTexture( [[Interface\AddOns\_NPCScan.Overlay\Skin\Triangle]] );
+		local Texture = me.TextureCreate( self, Layer, R, G, B );
+		Texture:SetTexture( TrianglePath );
 
 
 		-- Note: The texture region is made as small as possible to improve framerates.
 		MinX, MinY = min( Ax, Bx, Cx ), min( Ay, By, Cy );
 		WindowX, WindowY = max( Ax, Bx, Cx ) - MinX, max( Ay, By, Cy ) - MinY;
 
-		Width, Height = self:GetWidth(), self:GetHeight();
+		Width, Height = self:GetSize();
 		Texture:SetPoint( "TOPLEFT", MinX * Width, -MinY * Height );
 		Texture:SetSize( WindowX * Width, WindowY * Height );
 
@@ -185,7 +184,7 @@ do
 		SinScaleX, SinScaleY = -Sin * ScaleX, Sin * ScaleY;
 		CosScaleX, CosScaleY =  Cos * ScaleX, Cos * ScaleY;
 
-		ApplyTransform(
+		return ApplyTransform( Texture,
 			WindowX * CosScaleX,
 			WindowX * ( SinScaleY + CosScaleX * ShearFactor ),
 			WindowX * ( ( SinScaleY + CosScaleX * ( 1 + ShearFactor ) ) * BorderOffset + Bx - MinX ) / BorderScale,
@@ -194,10 +193,7 @@ do
 			WindowY * ( ( CosScaleY + SinScaleX * ( 1 + ShearFactor ) ) * BorderOffset + By - MinY ) / BorderScale );
 	end
 end
---[[****************************************************************************
-  * Function: _NPCScan.Overlay:TextureRemoveAll                                *
-  * Description: Removes all triangle textures from a frame.                   *
-  ****************************************************************************]]
+--- Recycles all textures added to a frame using TextureCreate.
 function me:TextureRemoveAll ()
 	for Index = #self, 1, -1 do
 		local Texture = self[ Index ];
@@ -209,13 +205,11 @@ function me:TextureRemoveAll ()
 end
 
 
---[[****************************************************************************
-  * Function: _NPCScan.Overlay:DrawPath                                        *
-  * Description: Draws the given NPC's path onto a frame.                      *
-  ****************************************************************************]]
 do
 	local Max = 2 ^ 16 - 1;
 	local Ax1, Ax2, Ay1, Ay2, Bx1, Bx2, By1, By2, Cx1, Cx2, Cy1, Cy2;
+	--- Draws the given NPC's path onto a frame.
+	-- @param PathData  Binary path data string.
 	function me:DrawPath ( PathData, Layer, R, G, B )
 		for Index = 1, #PathData, 12 do
 			Ax1, Ax2, Ay1, Ay2, Bx1, Bx2, By1, By2, Cx1, Cx2, Cy1, Cy2 = PathData:byte( Index, Index + 11 );
@@ -226,22 +220,19 @@ do
 		end
 	end
 end
---[[****************************************************************************
-  * Function: _NPCScan.Overlay:DrawFound                                       *
-  * Description: Adds a found NPC's range circle onto a frame.                 *
-  ****************************************************************************]]
 do
 	local RingWidth = 1.14; -- Ratio of texture width to ring width
 	local GlowWidth = 1.25;
-	local Width, Height, Size;
-	local Texture;
+	--- Adds a found NPC's range circle onto a frame.
+	-- @param X..Y  Relative coordinate to center circle on.  (0,0) is top-left, (1,1) is bottom-right.
+	-- @param RadiusX  Radius relative to the frame's width.  That is, 0.5 for a circle as wide as the frame.
 	function me:DrawFound ( X, Y, RadiusX, Layer, R, G, B )
-		Width, Height = self:GetWidth(), self:GetHeight();
+		local Width, Height = self:GetSize();
 
 		X, Y = X * Width, -Y * Height;
-		Size = RadiusX * 2 * Width;
+		local Size = RadiusX * 2 * Width;
 
-		Texture = me.TextureCreate( self, Layer, R, G, B );
+		local Texture = me.TextureCreate( self, Layer, R, G, B );
 		Texture:SetTexture( [[Interface\Minimap\Ping\ping2]] );
 		Texture:SetTexCoord( 0, 1, 0, 1 );
 		Texture:SetBlendMode( "ADD" );
@@ -256,11 +247,8 @@ do
 		Texture:SetSize( Size * GlowWidth, Size * GlowWidth );
 	end
 end
---[[****************************************************************************
-  * Function: _NPCScan.Overlay:ApplyZone                                       *
-  * Description: Passes the NpcID, color, PathData, ZoneWidth, and ZoneHeight  *
-  *   of all NPCs in a zone to a callback function.                            *
-  ****************************************************************************]]
+--- Passes info for all enabled NPCs in a zone to a callback function.
+-- @param Callback  Function( self, PathData, [FoundX], [FoundY], R, G, B, NpcID )
 function me:ApplyZone ( Map, Callback )
 	local MapData = me.PathData[ Map ];
 	if ( MapData ) then
@@ -279,10 +267,8 @@ end
 
 
 
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.NPCAdd                                          *
-  ****************************************************************************]]
-function me.NPCAdd ( NpcID )
+--- Enables an NPC map overlay by NpcID.
+local function NPCAdd ( NpcID )
 	local Map = me.NPCMaps[ NpcID ];
 	if ( Map and not me.NPCsEnabled[ NpcID ] ) then
 		me.NPCsEnabled[ NpcID ] = true;
@@ -290,92 +276,81 @@ function me.NPCAdd ( NpcID )
 		if ( not me.Options.ShowAll ) then
 			me.Modules.UpdateMap( Map );
 		end
-		return true;
 	end
 end
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.NPCRemove                                       *
-  ****************************************************************************]]
-function me.NPCRemove ( NpcID )
+--- Disables an NPC map overlay by NpcID.
+local function NPCRemove ( NpcID )
 	if ( me.NPCsEnabled[ NpcID ] ) then
 		me.NPCsEnabled[ NpcID ] = nil;
 
 		if ( not me.Options.ShowAll ) then
 			me.Modules.UpdateMap( me.NPCMaps[ NpcID ] );
 		end
-		return true;
 	end
 end
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.NPCFound                                        *
-  ****************************************************************************]]
-function me.NPCFound ( NpcID )
-	local Map = me.NPCMaps[ NpcID ];
-	if ( Map and not me.NPCsFoundIgnored[ NpcID ] ) then
-		SetMapToCurrentZone();
 
-		if ( Map == GetCurrentMapAreaID() - 1 ) then
-			local X, Y = GetPlayerMapPosition( "player" );
-			if ( X ~= 0 and Y ~= 0 ) then
-				me.NPCsFoundX[ NpcID ], me.NPCsFoundY[ NpcID ] = X, Y;
-				if ( me.NPCsEnabled[ NpcID ] ) then
-					me.Modules.UpdateMap( Map );
-				end
 
-				return true;
-			end
-		end
-	end
-end
 do
+	-- See <http://sites.google.com/site/wowsaiket/Add-Ons/NPCScanOverlay/API> for Overlay message documentation.
 	local ScannerAddOn;
---[[****************************************************************************
-  * Function: _NPCScan.Overlay[ MESSAGE_REGISTER ]                             *
-  ****************************************************************************]]
-	me[ MESSAGE_REGISTER ] = function ( _, Event, AddOn )
-		me:UnregisterMessage( Event );
-		me[ Event ] = nil;
+	--- Grants exclusive control of mob path visibility to the first addon that registers.
+	-- @param AddOn  Logically true identifier for the controller addon.  Must be used in all subsequent messages.
+	me.Events[ MESSAGE_REGISTER ] = function ( self, Event, AddOn )
+		self:UnregisterMessage( Event );
+		self[ Event ] = nil;
 		ScannerAddOn = assert( AddOn, "Registration message must provide an addon identifier." );
 
 		-- Quit showing all by default and let the scanning addon control visibility
 		for NpcID in pairs( me.NPCsEnabled ) do
-			me.NPCRemove( NpcID );
+			NPCRemove( NpcID );
 		end
 
-		me:RegisterMessage( MESSAGE_ADD );
-		me:RegisterMessage( MESSAGE_REMOVE );
+		self:RegisterMessage( MESSAGE_ADD );
+		self:RegisterMessage( MESSAGE_REMOVE );
 	end;
---[[****************************************************************************
-  * Function: _NPCScan.Overlay[ MESSAGE_ADD ]                                  *
-  ****************************************************************************]]
-	me[ MESSAGE_ADD ] = function ( _, _, NpcID, AddOn )
+	--- Shows a mob's path, if available.
+	-- @param NpcID  Numeric creature ID to add.
+	-- @param AddOn  Identifier used in registration message.
+	me.Events[ MESSAGE_ADD ] = function ( self, _, NpcID, AddOn )
 		if ( AddOn == ScannerAddOn ) then
-			me.NPCAdd( assert( tonumber( NpcID ), "Add message Npc ID must be a number." ) );
+			NPCAdd( assert( tonumber( NpcID ), "Add message NpcID must be numeric." ) );
 		end
 	end;
---[[****************************************************************************
-  * Function: _NPCScan.Overlay[ MESSAGE_REMOVE ]                               *
-  ****************************************************************************]]
-	me[ MESSAGE_REMOVE ] = function ( _, _, NpcID, AddOn )
+	--- Removes a mob's path if it has already been shown.
+	-- @param NpcID  Numeric creature ID to remove.
+	-- @param AddOn  Identifier used in registration message.
+	me.Events[ MESSAGE_REMOVE ] = function ( self, _, NpcID, AddOn )
 		if ( AddOn == ScannerAddOn ) then
-			me.NPCRemove( assert( tonumber( NpcID ), "Remove message Npc ID must be a number." ) );
+			NPCRemove( assert( tonumber( NpcID ), "Remove message NpcID must be numeric." ) );
 		end
 	end;
---[[****************************************************************************
-  * Function: _NPCScan.Overlay[ MESSAGE_FOUND ]                                *
-  ****************************************************************************]]
-	me[ MESSAGE_FOUND ] = function ( _, _, NpcID )
-		me.NPCFound( assert( tonumber( NpcID ), "Found message Npc ID must be a number." ) );
+	--- Saves an NPC's last seen position at the player.
+	-- Will fail if the current zone doesn't match saved path data.
+	-- @param NpcID  Numeric creature ID that was found.
+	me.Events[ MESSAGE_FOUND ] = function ( self, _, NpcID )
+		NpcID = assert( tonumber( NpcID ), "Found message Npc ID must be a number." );
+		local Map = me.NPCMaps[ NpcID ];
+		if ( Map and not me.NPCsFoundIgnored[ NpcID ] ) then
+			SetMapToCurrentZone();
+
+			if ( Map == GetCurrentMapAreaID() - 1 ) then
+				local X, Y = GetPlayerMapPosition( "player" );
+				if ( X ~= 0 and Y ~= 0 ) then
+					me.NPCsFoundX[ NpcID ], me.NPCsFoundY[ NpcID ] = X, Y;
+					if ( me.NPCsEnabled[ NpcID ] ) then
+						me.Modules.UpdateMap( Map );
+					end
+				end
+			end
+		end
 	end;
 end
 
 
 
 
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.SetShowAll                                      *
-  * Description: Enables always showing all paths.                             *
-  ****************************************************************************]]
+--- Enables always showing all paths.
+-- @return True if changed.
 function me.SetShowAll ( Enable )
 	Enable = not not Enable;
 	if ( Enable ~= me.Options.ShowAll ) then
@@ -399,10 +374,7 @@ function me.SetShowAll ( Enable )
 end
 
 
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.Synchronize                                     *
-  * Description: Reloads enabled modules from saved settings.                  *
-  ****************************************************************************]]
+--- Reloads enabled modules from saved settings.
 function me.Synchronize ( Options )
 	-- Load defaults if settings omitted
 	if ( not Options ) then
@@ -412,19 +384,17 @@ function me.Synchronize ( Options )
 	me.SetShowAll( Options.ShowAll );
 	me.Modules.OnSynchronize( Options );
 end
---[[****************************************************************************
-  * Function: _NPCScan.Overlay:ADDON_LOADED                                    *
-  ****************************************************************************]]
-function me:ADDON_LOADED ( Event, AddOn )
+--- Loads defaults, validates settings, and begins listening for Overlay API messages.
+function me.Events:ADDON_LOADED ( Event, AddOn )
 	if ( AddOn == AddOnName ) then
-		me[ Event ] = nil;
-		me:UnregisterEvent( Event );
+		self[ Event ] = nil;
+		self:UnregisterEvent( Event );
 
-		-- Build a reverse lookup of NPC IDs to zones, and add them all by default
+		-- Build a reverse lookup of NpcIDs to zones, and add them all by default
 		for Map, MapData in pairs( me.PathData ) do
 			for NpcID in pairs( MapData ) do
 				me.NPCMaps[ NpcID ] = Map;
-				me.NPCAdd( NpcID );
+				NPCAdd( NpcID );
 			end
 		end
 
@@ -435,13 +405,12 @@ function me:ADDON_LOADED ( Event, AddOn )
 		end
 		me.Synchronize( Options ); -- Loads defaults if nil
 
-		me:RegisterMessage( MESSAGE_REGISTER );
-		me:RegisterMessage( MESSAGE_FOUND );
+		self:RegisterMessage( MESSAGE_REGISTER );
+		self:RegisterMessage( MESSAGE_FOUND );
 	end
 end
 
 
 
 
-LibStub( "AceEvent-3.0" ):Embed( me );
-me:RegisterEvent( "ADDON_LOADED" );
+me.Events:RegisterEvent( "ADDON_LOADED" );

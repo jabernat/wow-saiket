@@ -10,8 +10,9 @@ end
 
 
 -- See http://wow.curseforge.com/addons/npcscan-overlay/localization/koKR/
-_NPCScanOverlayLocalization = setmetatable( {
-	NPCS = setmetatable( {
+local Overlay = select( 2, ... );
+Overlay.L = setmetatable( {
+	NPCs = setmetatable( {
 		[ 1140 ] = "무쇠턱 우두머리 랩터",
 		[ 5842 ] = "껑충발 타크",
 		[ 6581 ] = "우두머리 라바사우루스",
@@ -21,7 +22,7 @@ _NPCScanOverlayLocalization = setmetatable( {
 		[ 33776 ] = "곤드리아",
 		[ 35189 ] = "스콜",
 		[ 38453 ] = "아크튜리스",
-	}, { __index = _NPCScanOverlayLocalization.NPCS; } );
+	}, { __index = Overlay.L.NPCs; } );
 
 	CONFIG_ALPHA = "투명도",
 	CONFIG_DESC = "맵에 희귀몹의 이동경로를 어떻게 표시할것인지 설정할 수 있습니다. 여러 월드맵 관련 애드온에서도 사용이 가능합니다.",
@@ -40,4 +41,4 @@ _NPCScanOverlayLocalization = setmetatable( {
 	MODULE_WORLDMAP_KEY_FORMAT = "- %s",
 	MODULE_WORLDMAP_TOGGLE = "_|cffCCCC88NPCScan|r.Overlay",
 	MODULE_WORLDMAP_TOGGLE_DESC = "이 옵션을 활성화하면, 탐색하려는 NPC의 이동경로를 보여줍니다.",
-}, { __index = _NPCScanOverlayLocalization; } );
+}, { __index = Overlay.L; } );

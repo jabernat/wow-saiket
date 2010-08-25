@@ -10,7 +10,8 @@ end
 
 
 -- See http://wow.curseforge.com/addons/npcscan-overlay/localization/esES/
-_NPCScanOverlayLocalization.NPCS = setmetatable( {
+local Overlay = select( 2, ... );
+Overlay.L.NPCs = setmetatable( {
 	[ 1140 ] = "Matriarca Tajobuche",
 	[ 5842 ] = "Takk el Saltarín",
 	[ 6581 ] = "Matriarca ravasaurio",
@@ -20,4 +21,4 @@ _NPCScanOverlayLocalization.NPCS = setmetatable( {
 	[ 33776 ] = "Gondria",
 	[ 35189 ] = "Skoll",
 	[ 38453 ] = "Arcturis",
-}, { __index = _NPCScanOverlayLocalization.NPCS; } );
+}, { __index = Overlay.L.NPCs; } );

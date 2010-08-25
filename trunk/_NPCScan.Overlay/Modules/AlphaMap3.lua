@@ -12,9 +12,7 @@ me.AlphaDefault = 0.8;
 
 
 
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.Modules.List.AlphaMap3:OnLoad                   *
-  ****************************************************************************]]
+--- Attaches the canvas to AlphaMap's custom frame when it loads.
 function me:OnLoad ( ... )
 	self:SetParent( AlphaMapDetailFrame );
 
@@ -25,5 +23,5 @@ end
 
 
 Overlay.Modules.Register( "AlphaMap3", me,
-	_NPCScanOverlayLocalization.MODULE_ALPHAMAP3,
+	Overlay.L.MODULE_ALPHAMAP3,
 	"AlphaMap3" );

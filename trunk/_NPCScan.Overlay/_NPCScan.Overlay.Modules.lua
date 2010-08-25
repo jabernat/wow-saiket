@@ -17,16 +17,19 @@ local LoadQueue = {};
 
 
 
-local function GetEnabled ( Options, Name ) -- Gets enabled state from options table
+--- @return Enabled state from options table.
+local function GetEnabled ( Options, Name )
 	return Options.Modules[ Name ] ~= false; -- Uninitialized (nil) defaults to enabled
 end
-local function GetAlpha ( Options, Name ) -- Gets alpha from options table
+--- @return Alpha from options table.
+local function GetAlpha ( Options, Name )
 	return Options.ModulesAlpha[ Name ] or me.List[ Name ].AlphaDefault or me.AlphaDefault;
 end
 
 
 local SafeCall = Overlay.SafeCall;
-local function SetAlpha ( Module, Alpha ) -- Sets a module's overlay alpha
+--- Sets a module's overlay alpha.
+local function SetAlpha ( Module, Alpha )
 	if ( Module.Enabled and Module.Alpha ~= Alpha ) then
 		Module.Alpha = Alpha;
 		if ( Module.SetAlpha ) then
@@ -34,7 +37,8 @@ local function SetAlpha ( Module, Alpha ) -- Sets a module's overlay alpha
 		end
 	end
 end
-local function Disable ( Module ) -- Disables a module
+--- Disables a module.
+local function Disable ( Module )
 	if ( Module.Enabled ) then
 		if ( Module.OnDisable ) then
 			SafeCall( Module.OnDisable, Module );
@@ -42,7 +46,8 @@ local function Disable ( Module ) -- Disables a module
 		Module.Enabled = nil;
 	end
 end
-local function Enable ( Module ) -- Enables a module
+--- Enables a module.
+local function Enable ( Module )
 	if ( Module.Loaded and not Module.Enabled ) then
 		Module.Enabled = true;
 		if ( Module.OnEnable ) then
@@ -54,7 +59,8 @@ local function Enable ( Module ) -- Enables a module
 		end
 	end
 end
-local function Unload ( Module ) -- Shuts a module down and GCs resources created in OnLoad
+--- Shuts a module down and GCs resources created in OnLoad.
+local function Unload ( Module )
 	if ( Module.Loaded ) then
 		Disable( Module );
 
@@ -67,7 +73,8 @@ local function Unload ( Module ) -- Shuts a module down and GCs resources create
 	Module.OnEnable, Module.OnDisable = nil;
 	Module.OnMapUpdate, Module.SetAlpha = nil;
 end
-local function Load ( Module ) -- Loads module and initializes its settings
+--- Loads module and initializes its settings.
+local function Load ( Module )
 	if ( Module.Registered and not Module.Loaded ) then
 		Module.Loaded = true;
 		if ( Module.OnLoad ) then
@@ -80,7 +87,8 @@ local function Load ( Module ) -- Loads module and initializes its settings
 		end
 	end
 end
-local function Unregister ( Module ) -- Unloads all of the modules resources
+--- Unloads all of the module's resources.
+local function Unregister ( Module )
 	if ( Module.Registered ) then
 		Unload( Module );
 
@@ -93,7 +101,8 @@ local function Unregister ( Module ) -- Unloads all of the modules resources
 		Module.Config:Unregister();
 	end
 end
-local function Register ( Module, Name, Label, ParentAddOn ) -- Prepares a module to load
+--- Prepares a module to load.
+local function Register ( Module, Name, Label, ParentAddOn )
 	if ( not Module.Registered ) then
 		Module.Registered, Module.Name = true, Name;
 		Module.Config = Overlay.Config.ModuleRegister( Module, Label );
@@ -117,36 +126,36 @@ end
 
 
 
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.Modules.UpdateMap                               *
-  * Description: Updates a map for all active modules.                         *
-  ****************************************************************************]]
 do
-	local function UpdateModules ( MapID ) -- Calls OnMapUpdate for all modules
+	--- Calls OnMapUpdate for all enabled modules.
+	local function UpdateModules ( Map )
 		for Name, Module in pairs( me.List ) do
 			if ( Module.Enabled and Module.OnMapUpdate ) then
-				SafeCall( Module.OnMapUpdate, Module, MapID );
+				SafeCall( Module.OnMapUpdate, Module, Map );
 			end
 		end
 	end
 	local UpdateAll, UpdateMaps = false, {};
-	local function OnUpdate () -- Throttled updates to all modules
+	--- Throttles full map updates to once per frame.
+	local function OnUpdate ()
 		me:SetScript( "OnUpdate", nil );
 
 		if ( UpdateAll ) then
 			UpdateAll = false;
 			UpdateModules( nil );
 		else
-			for MapID in pairs( UpdateMaps ) do
-				UpdateModules( MapID );
-				UpdateMaps[ MapID ] = nil;
+			for Map in pairs( UpdateMaps ) do
+				UpdateModules( Map );
+				UpdateMaps[ Map ] = nil;
 			end
 		end
 	end
-	function me.UpdateMap ( MapID )
+	--- Updates a map for all active modules.
+	-- @param Map  MapID to update, or nil to update all maps.
+	function me.UpdateMap ( Map )
 		if ( not UpdateAll ) then
-			if ( MapID ) then
-				UpdateMaps[ MapID ] = true;
+			if ( Map ) then
+				UpdateMaps[ Map ] = true;
 			else
 				UpdateAll = true;
 				wipe( UpdateMaps );
@@ -157,27 +166,23 @@ do
 end
 
 
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.Modules.Register                                *
-  * Description: Registers a canvas module to paint polygons on.               *
-  ****************************************************************************]]
+--- Registers a canvas module to paint polygons on.
+-- @param Name  Name of module used in settings keys, etc.
+-- @param Module  Module table containing methods.
+-- @param Label  Name displayed in configuration screen.
+-- @param ParentAddOn  Optional dependency to wait on to load.
 function me.Register ( Name, Module, Label, ParentAddOn )
 	me.List[ Name ] = Module;
 	Register( Module, Name, Label, ParentAddOn );
 end
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.Modules.Unregister                              *
-  * Description: Disables the module for the session and disables its          *
-  *   configuration controls.                                                  *
-  ****************************************************************************]]
+--- Disables the module for the session and disables its configuration controls.
 function me.Unregister ( Name )
 	Unregister( me.List[ Name ] );
 end
 
 
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.Modules.Enable                                  *
-  ****************************************************************************]]
+--- Enables a module.
+-- @return True if enabled successfully.
 function me.Enable ( Name )
 	if ( not Overlay.Options.Modules[ Name ] ) then
 		Overlay.Options.Modules[ Name ] = true;
@@ -188,9 +193,8 @@ function me.Enable ( Name )
 		return true;
 	end
 end
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.Modules.Disable                                 *
-  ****************************************************************************]]
+--- Disables a module.
+-- @return True if disabled successfully.
 function me.Disable ( Name )
 	if ( GetEnabled( Overlay.Options, Name ) ) then
 		Overlay.Options.Modules[ Name ] = false;
@@ -201,9 +205,8 @@ function me.Disable ( Name )
 		return true;
 	end
 end
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.Modules.SetAlpha                                *
-  ****************************************************************************]]
+--- Sets the module's alpha setting.
+-- @return True if changed.
 function me.SetAlpha ( Name, Alpha )
 	if ( Alpha ~= Overlay.Options.ModulesAlpha[ Name ] ) then
 		Overlay.Options.ModulesAlpha[ Name ] = Alpha;
@@ -218,9 +221,7 @@ end
 
 
 
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.Modules:ADDON_LOADED                            *
-  ****************************************************************************]]
+--- Loads modules that depend on other mods as they load.
 function me:ADDON_LOADED ( _, ParentAddOn )
 	ParentAddOn = ParentAddOn:upper();
 	local Module = LoadQueue[ ParentAddOn ];
@@ -232,22 +233,15 @@ function me:ADDON_LOADED ( _, ParentAddOn )
 		end
 	end
 end
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.Modules:OnEvent                                 *
-  ****************************************************************************]]
-do
-	local type = type;
-	function me:OnEvent ( Event, ... )
-		if ( type( self[ Event ] ) == "function" ) then
-			self[ Event ]( self, Event, ... );
-		end
+--- Common event handler.
+function me:OnEvent ( Event, ... )
+	if ( self[ Event ] ) then
+		return self[ Event ]( self, Event, ... );
 	end
 end
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.Modules.OnSynchronize                           *
-  ****************************************************************************]]
 do
 	local OptionsExtraDefault = {};
+	--- Synchronizes settings of all modules.
 	function me.OnSynchronize ( Options )
 		me.Synchronized = true;
 		-- Preserve options for missing modules

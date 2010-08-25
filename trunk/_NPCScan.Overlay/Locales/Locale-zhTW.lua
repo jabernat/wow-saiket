@@ -10,8 +10,9 @@ end
 
 
 -- See http://wow.curseforge.com/addons/npcscan-overlay/localization/zhTW/
-_NPCScanOverlayLocalization = setmetatable( {
-	NPCS = setmetatable( {
+local Overlay = select( 2, ... );
+Overlay.L = setmetatable( {
+	NPCs = setmetatable( {
 		[ 1140 ] = "刺喉龍族母",
 		[ 5842 ] = "『跳躍者』塔克",
 		[ 6581 ] = "暴掠龍族母",
@@ -21,7 +22,7 @@ _NPCScanOverlayLocalization = setmetatable( {
 		[ 33776 ] = "剛卓亞",
 		[ 35189 ] = "史科爾",
 		[ 38453 ] = "大角",
-	}, { __index = _NPCScanOverlayLocalization.NPCS; } );
+	}, { __index = Overlay.L.NPCs; } );
 
 	CONFIG_ALPHA = "透明度",
 	CONFIG_DESC = "設定在哪張地圖顯示怪物移動路徑。大部分的地圖插件都針對世界地圖做設定。",
@@ -40,4 +41,4 @@ _NPCScanOverlayLocalization = setmetatable( {
 	MODULE_WORLDMAP_KEY_FORMAT = "• %s",
 	MODULE_WORLDMAP_TOGGLE = "_|cffCCCC88NPCScan|r.Overlay",
 	MODULE_WORLDMAP_TOGGLE_DESC = "如果開啟，顯示_|cffCCCC88NPCScan|r.Overlay已知怪物路徑的路徑圖。",
-}, { __index = _NPCScanOverlayLocalization; } );
+}, { __index = Overlay.L; } );

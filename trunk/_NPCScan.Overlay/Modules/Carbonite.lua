@@ -10,18 +10,22 @@ if ( not IsAddOnLoaded( "Carbonite" ) ) then
 end
 
 local Overlay = select( 2, ... );
-local CarboniteMap = NxMap1.NxM1;
+if ( NxData.NXGOpts.MapMMOwn ) then -- Minimap docked into WorldMap
+	Overlay.Modules.Unregister( "Minimap" );
+end
 local WorldMap = Overlay.Modules.List[ "WorldMap" ];
+if ( not ( WorldMap and WorldMap.Registered ) ) then
+	return;
+end
+
+local CarboniteMap = NxMap1.NxM1;
 local me = CreateFrame( "Frame", nil, WorldMap );
 Overlay.Modules.Carbonite = me;
 
 
 
 
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.Carbonite:OnUpdate                              *
-  * Description: Repositions the module as the Carbonite map moves.            *
-  ****************************************************************************]]
+--- Repositions the canvas as the Carbonite map moves.
 function me:OnUpdate ()
 	CarboniteMap:CZF( CarboniteMap.Con, CarboniteMap.Zon, WorldMap, 1 );
 	WorldMap.KeyParent:SetAlpha( NxMap1.NxW.BaF ); -- Obey window's "Fade Out" setting
@@ -30,10 +34,7 @@ end
 
 
 
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.Carbonite:WorldMapFrameOnShow                   *
-  * Description: Set up the module to paint to the WorldMapFrame.              *
-  ****************************************************************************]]
+--- Adjusts the canvas when leaving Carbonite mode to view the default WorldMap.
 function me:WorldMapFrameOnShow ()
 	if ( WorldMap.Loaded ) then
 		me:Hide(); -- Stop updating with Carbonite
@@ -49,10 +50,7 @@ function me:WorldMapFrameOnShow ()
 		WorldMap.KeyParent:SetAllPoints();
 	end
 end
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.Carbonite:WorldMapFrameOnHide                   *
-  * Description: Set up the module to paint to Carbonite's map.                *
-  ****************************************************************************]]
+--- Adjusts the canvas when entering Carbonite mode.
 function me:WorldMapFrameOnHide ()
 	if ( WorldMap.Loaded ) then
 		me:Show(); -- Begin updating with Carbonite
@@ -69,18 +67,6 @@ end
 
 
 
-if ( NxData.NXGOpts.MapMMOwn ) then -- Minimap docked into WorldMap
-	Overlay.Modules.Unregister( "Minimap" );
-end
-
-
-local function HookHandler ( Module, Name, Handler )
-	if ( Module[ Name ] ) then
-		hooksecurefunc( Module, Name, Handler );
-	else
-		Module[ Name ] = Handler;
-	end
-end
 local function OnUnload ()
 	me.OnUpdate = nil;
 	if ( WorldMap.Loaded ) then
@@ -88,7 +74,6 @@ local function OnUnload ()
 	end
 end
 local function OnLoad ()
-	HookHandler( WorldMap, "OnUnload", OnUnload );
 	me:SetScript( "OnUpdate", me.OnUpdate );
 
 	-- Give the canvas an explicit size so it paints correctly in Carbonite mode
@@ -100,12 +85,17 @@ local function OnLoad ()
 	me[ WorldMapFrame:IsVisible() and "WorldMapFrameOnShow" or "WorldMapFrameOnHide" ]( WorldMapFrame );
 end
 
-if ( WorldMap and WorldMap.Registered ) then
-	if ( WorldMap.Loaded ) then
-		OnLoad();
-	else
-		HookHandler( WorldMap, "OnLoad", OnLoad );
-	end
-else
-	OnUnload();
+--- Sets a module's handler, or hooks the old one if it exists.
+local function HookHandler ( Name, Handler )
+	local Backup = WorldMap[ Name ];
+	WorldMap[ Name ] = not Backup and Handler or function ( ... )
+		Backup( ... );
+		Handler( ... );
+	end;
 end
+if ( WorldMap.Loaded ) then
+	OnLoad();
+else
+	HookHandler( "OnLoad", OnLoad );
+end
+HookHandler( "OnUnload", OnUnload );
