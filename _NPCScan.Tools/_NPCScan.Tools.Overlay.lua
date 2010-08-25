@@ -31,7 +31,7 @@ do
 			SelectionDrawn = true;
 			local Data = Tools.NPCLocations.PositionData[ NpcID ];
 			if ( Data ) then
-				Width, Height = self:GetWidth(), self:GetHeight();
+				Width, Height = self:GetSize();
 				for Index = 1, #Data, 5 do
 					X, X2, Y, Y2, Density = Data:byte( Index, Index + 4 );
 					X, Y = ( X * 256 + X2 ) / Max, ( Y * 256 + Y2 ) / Max;

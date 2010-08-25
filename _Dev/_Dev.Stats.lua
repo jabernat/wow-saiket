@@ -81,8 +81,7 @@ end
 
 
 
-me:SetWidth( 1 );
-me:SetHeight( 1 );
+me:SetSize( 1, 1 );
 me:SetPoint( "TOPLEFT" );
 me:SetFrameStrata( "BACKGROUND" );
 me:SetAlpha( 0.5 );
