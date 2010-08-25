@@ -5,8 +5,8 @@
 
 
 -- See http://wow.curseforge.com/addons/npcscan-overlay/localization/enUS/
-_NPCScanOverlayLocalization = setmetatable( {
-	NPCS = { -- Note: Don't use a metatable default; Missing keys must return nil
+select( 2, ... ).L = setmetatable( {
+	NPCs = { -- Note: Don't use a metatable default; Missing keys must return nil
 		[ 1140 ] = "Razormaw Matriarch",
 		[ 5842 ] = "Takk the Leaper",
 		[ 6581 ] = "Ravasaur Matriarch",

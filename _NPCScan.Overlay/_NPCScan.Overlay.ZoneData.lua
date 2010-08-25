@@ -15,18 +15,12 @@ local Names = {};
 
 
 
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.GetZoneSize                                     *
-  * Description: Gets the width and height of a zone in yards.                 *
-  ****************************************************************************]]
+--- @return Width and height of Map in yards.
 function Overlay.GetZoneSize ( Map )
 	Map = Indexes[ Map ];
 	return Widths[ Map ], Heights[ Map ];
 end
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.GetZoneName                                     *
-  * Description: Gets a localized zone name for a map.                         *
-  ****************************************************************************]]
+--- @return Localized zone name for Map.
 function Overlay.GetZoneName ( Map )
 	return Names[ Indexes[ Map ] ];
 end
@@ -34,6 +28,7 @@ end
 
 
 
+--- Adds map dimensions to lookup tables.
 local function Add ( Map, Width, Height )
 	if ( Overlay.PathData[ Map ] ) then
 		local Index = #Widths + 1;
@@ -81,9 +76,10 @@ for Map in pairs( Overlay.PathData ) do
 		geterrorhandler()( "Zone data missing for paths in "..Map.."." );
 	end
 end
-local function HandleZones ( ContinentIndex, ... )
+--- Saves localized map names on a given ContinentID.
+local function HandleZones ( ContinentID, ... )
 	for ZoneIndex = 1, select( "#", ... ) do
-		SetMapZoom( ContinentIndex, ZoneIndex );
+		SetMapZoom( ContinentID, ZoneIndex );
 
 		local Map = GetCurrentMapAreaID() - 1;
 		if ( Indexes[ Map ] ) then
@@ -93,6 +89,6 @@ local function HandleZones ( ContinentIndex, ... )
 		end
 	end
 end
-for ContinentIndex = 1, select( "#", GetMapContinents() ) do
-	HandleZones( ContinentIndex, GetMapZones( ContinentIndex ) );
+for ContinentID = 1, select( "#", GetMapContinents() ) do
+	HandleZones( ContinentID, GetMapZones( ContinentID ) );
 end

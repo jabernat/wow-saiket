@@ -10,7 +10,8 @@ end
 
 
 -- See http://wow.curseforge.com/addons/npcscan-overlay/localization/ruRU/
-_NPCScanOverlayLocalization.NPCS = setmetatable( {
+local Overlay = select( 2, ... );
+Overlay.L.NPCs = setmetatable( {
 	[ 1140 ] = "Острозуб-матриарх",
 	[ 5842 ] = "Такк Прыгун",
 	[ 6581 ] = "Равазавр-матриарх",
@@ -20,4 +21,4 @@ _NPCScanOverlayLocalization.NPCS = setmetatable( {
 	[ 33776 ] = "Гондрия",
 	[ 35189 ] = "Сколл",
 	[ 38453 ] = "Арктур",
-}, { __index = _NPCScanOverlayLocalization.NPCS; } );
+}, { __index = Overlay.L.NPCs; } );

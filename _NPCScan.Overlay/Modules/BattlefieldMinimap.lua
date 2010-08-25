@@ -12,9 +12,7 @@ me.AlphaDefault = 0.8;
 
 
 
---[[****************************************************************************
-  * Function: _NPCScan.Overlay.Modules.List.BattlefieldMinimap:OnLoad          *
-  ****************************************************************************]]
+--- Attaches the canvas to the zone map when it loads.
 function me:OnLoad ( ... )
 	self:SetParent( BattlefieldMinimap );
 
@@ -25,5 +23,5 @@ end
 
 
 Overlay.Modules.Register( "BattlefieldMinimap", me,
-	_NPCScanOverlayLocalization.MODULE_BATTLEFIELDMINIMAP,
+	Overlay.L.MODULE_BATTLEFIELDMINIMAP,
 	"Blizzard_BattlefieldMinimap" );
