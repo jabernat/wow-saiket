@@ -63,7 +63,7 @@ function me.CanAdd ( Key, Value )
 	Value = tonumber( Value );
 	if ( Value and Key:match( "^%w+$" )
 		and _UTFOptions.CharacterEntities[ Key ] ~= Value
-		and _UTF.Min <= Value and Value <= _UTF.Max
+		and _UTF.IsValidCodepoint( Value )
 	) then
 		return true;
 	end

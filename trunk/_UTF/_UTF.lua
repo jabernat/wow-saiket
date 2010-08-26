@@ -18,6 +18,11 @@ me.Max = 0x10FFFF;
 
 
 
+--- @return True if Int is a valid codepoint.
+function me.IsValidCodepoint ( Int )
+	return me.Min <= Int and Int <= me.Max
+		and not ( 0xD800 <= Int and Int <= 0xDFFF ); -- Invalid range
+end
 do
 	local strchar = string.char;
 	local band = bit.band;
@@ -26,9 +31,7 @@ do
 	-- @param Int  Integer codepoint.
 	-- @return 1-4 byte string representing the character, or nil if out of range.
 	function me.IntToUTF ( Int )
-		if ( Int >= 0 and Int < 0x110000
-			and not ( Int >= 0xD800 and Int <= 0xDFFF ) -- Invalid range
-		) then
+		if ( me.IsValidCodepoint( Int ) ) then
 			if ( Int < 128 ) then -- 1-byte
 				return strchar( Int );
 			else
@@ -118,14 +121,19 @@ do
 			CodePoint = _UTFOptions.CharacterEntities[ Name ]
 				or me.CharacterEntities[ Name ];
 		elseif ( Flags == "#" ) then -- Decimal
-			CodePoint = tonumber( Name );
+			-- Prevent tonumber from interpreting implied hex ("0xAA") or exponents ("1e3")
+			if ( Name:match( "^%d+$" ) ) then
+				CodePoint = tonumber( Name, 10 );
+			end
 		elseif ( Flags:lower() == "#x" ) then -- Hexadecimal
-			CodePoint = tonumber( Name, 16 );
+			if ( Name:match( "^%x+$" ) ) then
+				CodePoint = tonumber( Name, 16 );
+			end
 		end
 
 		if ( CodePoint ) then
 			local Char = me.IntToUTF( CodePoint );
-			if ( CursorPosition ) then
+			if ( Char and CursorPosition ) then
 				if ( CursorPosition >= End - 1 ) then
 					CursorDelta = CursorDelta - ( End - Start ) + #Char; -- Shift left to account for removed reference
 				elseif ( CursorPosition >= Start ) then
