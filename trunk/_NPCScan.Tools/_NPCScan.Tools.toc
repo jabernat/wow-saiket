@@ -3,7 +3,7 @@
 ## Notes: Tools to help maintain _|cffCCCC88NPCScan|r and _|cffCCCC88NPCScan|r.Overlay.
 ## Author: Saiket
 ## Version: 3.3.0.2
-## X-Date: 2010-07-14
+## X-Date: 2010-08-26
 ## X-Category: Maps, Development Tools, Data Export
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
