@@ -132,7 +132,7 @@ function me:OnShow ()
 	self:SetScript( "OnShow", nil );
 	me.OnShow = nil;
 
-	me.Table = LibStub( "LibTextTable-1.0" ).New( nil, me.TableContainer, nil, "ChatFontNormal" );
+	me.Table = LibStub( "LibTextTable-1.1" ).New( nil, me.TableContainer, nil, "ChatFontNormal" );
 	me.Table.OnSelect = me.TableOnSelect;
 	me.Table:SetAllPoints( me.TableContainer );
 
