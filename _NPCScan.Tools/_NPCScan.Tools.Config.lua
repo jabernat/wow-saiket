@@ -70,7 +70,7 @@ do
 		self:SetScript( "OnShow", nil );
 		me.OnShow = nil;
 
-		me.Table = LibStub( "LibTextTable-1.0" ).New( nil, me.TableContainer );
+		me.Table = LibStub( "LibTextTable-1.1" ).New( nil, me.TableContainer );
 		me.Table:SetAllPoints();
 		me.Table.OnSelect = OnSelect;
 
@@ -86,10 +86,10 @@ do
 		for NpcID, Name in pairs( Tools.NPCList ) do
 			local MapID = Tools.NPCLocations.MapIDs[ NpcID ];
 			me.Table:AddRow( NpcID,
-				Overlay and Overlay.GetZoneName( MapID ) or MapID,
+				Overlay and Overlay.GetZoneName( MapID ) or MapID or "",
 				NpcID,
 				Name,
-				Tools.NPCModels[ NpcID ] or nil );
+				Tools.NPCModels[ NpcID ] or "" );
 		end
 	end
 end
@@ -131,8 +131,9 @@ function me.Controls:Add ( Control )
 
 	self[ #self + 1 ] = Control;
 	if ( Control.OnSelect ) then
-		if ( me.Table ) then
-			Control:OnSelect( me.Table:GetSelectionData() );
+		local Selection = me.Table and me.Table:GetSelection();
+		if ( Selection ) then
+			Control:OnSelect( Selection:GetData() );
 		else
 			Control:OnSelect();
 		end
