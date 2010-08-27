@@ -176,7 +176,7 @@ if ( IsChildAddOn ) then
 	function me:TableAddRow ( ... )
 		local Map = Overlay.NPCMaps[ select( 4, ... ) ]; -- Arg 4 is NpcID
 		if ( Map ) then
-			return AddRowBackup( self, Append( Overlay.GetZoneName( Map ), ... ) );
+			return AddRowBackup( self, Append( Overlay.GetZoneName( Map ) or Map, ... ) ); -- AreaID if on an instance map
 		else
 			return AddRowBackup( self, ... );
 		end
