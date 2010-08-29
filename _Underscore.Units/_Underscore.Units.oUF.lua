@@ -142,7 +142,7 @@ end
 do
 	local GetCVarBool = GetCVarBool;
 	local UnitCanAttack = UnitCanAttack;
-	--- Switches aura filter based on unit hostility.
+	--- Switches buff filter based on unit hostility.
 	function me:BuffPreUpdate ( UnitID )
 		self.BuffConsolidate = GetCVarBool( "consolidateBuffs" );
 		self.Hostile = UnitCanAttack( "player", UnitID );
@@ -156,7 +156,7 @@ do
 			self.filter = "HELPFUL|PLAYER"; -- Show player's buffs cast on friendlies
 		end
 	end
-	--- Hides consolidated buffs unless moused-over.
+	--- Switches debuff filter based on unit hostility.
 	function me:DebuffPreUpdate ( UnitID )
 		if ( self.ShowAll ) then
 			self.filter = "HARMFUL";
