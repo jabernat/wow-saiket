@@ -83,7 +83,7 @@ function me:SetNPC ( ID, Name )
 	end
 
 	self.PlaySound( _NPCScan.Options.AlertSound );
-	if ( GetCVarBool( "screenEdgeFlash" ) ) then
+	if ( false and GetCVarBool( "screenEdgeFlash" ) ) then
 		self.Flash:Show();
 		self.Flash.Fade:Pause(); -- Forces OnPlay to fire again if it was already playing
 		self.Flash.Fade:Play();
@@ -186,7 +186,7 @@ do
 	local function TargetIsFoundRare ( ID ) -- Returns true if the button targetted its rare
 		if ( type( ID ) == "number" ) then
 			local GUID = UnitGUID( "target" );
-			if ( GUID and ID == tonumber( GUID:sub( 8, 12 ), 16 ) ) then
+			if ( GUID and ID == tonumber( GUID:sub( 6, 10 ), 16 ) ) then
 				return true;
 			end
 		else -- UnitID

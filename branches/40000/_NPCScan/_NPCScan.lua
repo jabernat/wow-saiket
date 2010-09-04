@@ -81,7 +81,7 @@ do
 	-- @return Localized name of the NPC if cached, or nil if not.
 	function me.TestID ( NpcID )
 		Tooltip:SetOwner( WorldFrame, "ANCHOR_NONE" );
-		Tooltip:SetHyperlink( ( "unit:0xF5300%05X000000" ):format( NpcID ) );
+		Tooltip:SetHyperlink( ( "unit:0xF53%05X00000000" ):format( NpcID ) );
 		if ( Tooltip:IsShown() ) then
 			return Text:GetText();
 		end
