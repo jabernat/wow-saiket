@@ -12,7 +12,6 @@
 ## X-Localizations: enUS
 ## SavedVariablesPerCharacter: _UnderscoreNameplatesOptionsCharacter
 ## RequiredDeps: _Underscore
-## OptionalDeps: !!!_VirtualPlates
 Locales.xml
 
 _Underscore.Nameplates.lua

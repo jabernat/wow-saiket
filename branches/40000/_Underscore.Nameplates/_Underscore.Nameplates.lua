@@ -365,14 +365,10 @@ end
 -- Main plate handling and updating
 do
 	local ThreatBorders = [[Interface\AddOns\]]..AddOnName..[[\Skin\ThreatBorders]];
-	local GetAlpha, SetAlpha;
 	--- Adds and skins a new nameplate.
 	local function PlateAdd ( Plate )
 		local Visual = CreateFrame( "Frame", nil, Plate );
 		Plates[ Plate ] = Visual;
-		if ( not GetAlpha ) then -- Cache methods to speed up target OnUpdate
-			GetAlpha, SetAlpha = Plate.GetAlpha, Plate.SetAlpha; -- Catches _VirtualPlates hooks.
-		end
 
 		local Health, Cast = Plate:GetChildren();
 		Visual.Health, Visual.Cast = Health, Cast;
@@ -564,6 +560,7 @@ do
 		end
 	end
 
+	local GetAlpha, SetAlpha = me.Frame.GetAlpha, me.Frame.SetAlpha;
 	--- Keeps the nameplate's alpha set properly, and updates target.
 	function me.TargetUpdater:OnUpdate ()
 		for Plate in pairs( me.PlatesVisible ) do
