@@ -1,0 +1,25 @@
+## Interface: 30300
+## Title: _|cffCCCC88VirtualPlates|r
+## Notes: Gives nameplates depth.
+## Notes-deDE: Gibt Nameplates Tiefe.
+## Notes-koKR: 거리에 따른 이름표의 크기를 조절할 수 있습니다.
+## Author: Saiket
+## X-Credits-deDE: Localization: muhmiauwau
+## X-Credits-koKR: Localization: kdw112
+## Version: 3.3.5.3
+## X-Date: 2010-08-25
+## X-Category: UnitFrame
+## X-License: GPLv3
+## X-Email: saiket.wow@gmail.com
+## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons/VirtualPlates
+## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:VirtualPlates
+## X-WoWI-ID: 14964
+## X-Curse-Project-ID: virtualplates
+## X-Localizations: enUS, deDE, koKR
+## X-CompatibleLocales: deDE, enUS, esES, esMX, frFR, koKR, ruRU, zhCN, zhTW
+## SavedVariablesPerCharacter: _VirtualPlatesOptionsCharacter
+Locales.xml
+
+_VirtualPlates.lua
+
+_VirtualPlates.Config.lua
