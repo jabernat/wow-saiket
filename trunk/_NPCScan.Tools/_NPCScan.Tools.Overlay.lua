@@ -47,6 +47,7 @@ do
 		end
 	end
 	function me:Paint ( Map )
+		Overlay.TextureRemoveAll( self );
 		if ( not self.NpcIDSelected or Tools.NPCLocations.MapIDs[ self.NpcIDSelected ] == Map ) then
 			SelectionDrawn = false;
 			Overlay.ApplyZone( self, Map, PaintPoints );
