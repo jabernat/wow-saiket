@@ -1,4 +1,4 @@
-## Interface: 30300
+## Interface: 40000
 ## Title: _|cffCCCC88NPCScan|r.Overlay
 ## Notes: Adds mob patrol paths to your map.
 ## Notes-frFR: Ajoute les trajets des monstres rares sur votre carte.

@@ -1,4 +1,4 @@
-## Interface: 30300
+## Interface: 40000
 ## Title: GuildBank|cffccccccSearch|r
 ## Notes: Adds a search filter to the guild bank.
 ## Notes-koKR: 길드 금고에 검색 필터를 추가합니다.

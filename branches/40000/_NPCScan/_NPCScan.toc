@@ -1,4 +1,4 @@
-## Interface: 30300
+## Interface: 40000
 ## Title: _|cffCCCC88NPCScan|r
 ## Notes: Scans NPCs around you for rare ones.
 ## Notes-frFR: Analyse les PNJs autour de vous à la recherche de ceux qui sont rares.

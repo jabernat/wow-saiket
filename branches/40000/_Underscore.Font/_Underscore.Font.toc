@@ -1,4 +1,4 @@
-## Interface: 30300
+## Interface: 40000
 ## Title: _|cffCCCC88Underscore|r.Font
 ## Notes: Changes some of the default fonts.
 ## Author: Saiket
