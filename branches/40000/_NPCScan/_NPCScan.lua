@@ -461,12 +461,12 @@ do
 	--- @return True if the tamable mob is in its correct zone, else false with an optional reason string.
 	local function OnFoundTamable ( NpcID, Name )
 		local ExpectedZone = me.TamableIDs[ NpcID ];
-		local ZoneIDBackup = GetCurrentMapAreaID() - 1;
+		local ZoneIDBackup = GetCurrentMapAreaID();
 		SetMapToCurrentZone();
 
 		local InCorrectZone, InvalidReason =
 			ExpectedZone == true -- Expected zone is unknown (instance mob, etc.)
-			or ExpectedZone == GetCurrentMapAreaID() - 1;
+			or ExpectedZone == GetCurrentMapAreaID();
 
 		if ( not InCorrectZone ) then
 			if ( IsResting() ) then -- Assume any tamable mob found in a city/inn is a hunter pet

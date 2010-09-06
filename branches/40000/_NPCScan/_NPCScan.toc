@@ -11,7 +11,7 @@
 ## X-Credits-ruRU: Localization: StingerSoft, Sarymian
 ## X-Credits-zhTW: Localization: s8095324, pepper_ep
 ## Version: 3.3.5.5
-## X-Date: 2010-08-26
+## X-Date: 2010-09-05
 ## X-Category: Miscellaneous
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
