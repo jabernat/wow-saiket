@@ -48,6 +48,8 @@ local DifficultyLevelDifference = 2; -- Hostile mobs this many levels above the 
 local InCombat = false;
 local HasTarget = false;
 
+local LibNameplate;
+
 
 
 
@@ -367,6 +369,10 @@ do
 	local ThreatBorders = [[Interface\AddOns\]]..AddOnName..[[\Skin\ThreatBorders]];
 	--- Adds and skins a new nameplate.
 	local function PlateAdd ( Plate )
+		if ( LibNameplate and LibNameplate.NameplateFirstLoad ) then
+			-- Allow LibNameplate to hook first for compatibility
+			LibNameplate:NameplateFirstLoad( Plate );
+		end
 		local Visual = CreateFrame( "Frame", nil, Plate );
 		Plates[ Plate ] = Visual;
 
@@ -583,6 +589,14 @@ end
 
 
 
+--- Checks for embeded LibNameplate installs after each mod loads.
+function me.Frame:ADDON_LOADED ( Event )
+	local Lib = LibStub( "LibNameplate-1.0", true );
+	if ( Lib ) then
+		LibNameplate = Lib;
+		self:UnregisterEvent( Event );
+	end
+end
 --- Sets CVars to allow threat and class info.
 function me.Frame:VARIABLES_LOADED ( Event )
 	self[ Event ] = nil;
@@ -682,6 +696,7 @@ end
 local Frame = me.Frame;
 Frame:SetScript( "OnEvent", _Underscore.Frame.OnEvent );
 Frame:SetScript( "OnUpdate", Frame.OnUpdate );
+Frame:RegisterEvent( "ADDON_LOADED" );
 Frame:RegisterEvent( "VARIABLES_LOADED" );
 if ( IsLoggedIn() ) then
 	Frame:VARIABLES_LOADED( "VARIABLES_LOADED" );
