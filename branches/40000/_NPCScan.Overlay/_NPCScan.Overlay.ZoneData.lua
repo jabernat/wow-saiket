@@ -81,7 +81,7 @@ local function HandleZones ( ContinentID, ... )
 	for ZoneIndex = 1, select( "#", ... ) do
 		SetMapZoom( ContinentID, ZoneIndex );
 
-		local Map = GetCurrentMapAreaID() - 1;
+		local Map = GetCurrentMapAreaID();
 		if ( Indexes[ Map ] ) then
 			local Name = select( ZoneIndex, ... );
 			Names[ Indexes[ Map ] ] = Name;

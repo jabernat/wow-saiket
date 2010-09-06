@@ -511,7 +511,7 @@ do
 	local MapLast;
 	--- Force a repaint if world map swaps back to the current zone (making player coordinates available).
 	function me:WORLD_MAP_UPDATE ()
-		local Map = GetCurrentMapAreaID() - 1;
+		local Map = GetCurrentMapAreaID();
 		if ( MapLast ~= Map ) then -- Changed zones
 			MapLast = Map;
 
@@ -544,7 +544,7 @@ do
 			X, Y = GetPlayerMapPosition( "player" );
 			if ( not Map or ( X == 0 and Y == 0 )
 				or X < 0 or X > 1 or Y < 0 or Y > 1
-				or Map ~= GetCurrentMapAreaID() - 1 -- Coordinates will be for wrong map
+				or Map ~= GetCurrentMapAreaID() -- Coordinates will be for wrong map
 			) then
 				UpdateForce = nil;
 				self.RangeRing:Hide();
