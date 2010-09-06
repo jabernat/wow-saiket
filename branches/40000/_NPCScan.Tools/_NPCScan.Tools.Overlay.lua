@@ -116,7 +116,7 @@ end
   * Description: Shows the selected NPC's map.                                 *
   ****************************************************************************]]
 function me.Control:OnClick ()
-	ShowUIPanel( WorldMapFrame );
+	ShowUIPanel( WorldMapFrame, true );
 	SetMapByID( self.MapID );
 
 	-- Show Routes for this mob
