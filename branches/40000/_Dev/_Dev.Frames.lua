@@ -60,6 +60,7 @@ end
   ****************************************************************************]]
 function Primary:SetTarget ( Target )
 	if ( Target ) then
+		assert( Target ~= self, 'wat')
 		if ( self.Target ~= Target ) then
 			self.Target = Target;
 			self:SetAllPoints( Target );
@@ -189,6 +190,7 @@ me:Hide();
 me:SetScript( "OnUpdate", me.OnUpdate );
 
 Primary:SetScript( "OnMouseUp", Primary.OnMouseUp );
+Primary:EnableMouse( false ); -- Enabled by SetScript
 Primary:EnableMouseWheel( true );
 Primary:SetScale( 2.0 );
 
