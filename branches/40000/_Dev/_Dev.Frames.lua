@@ -60,7 +60,6 @@ end
   ****************************************************************************]]
 function Primary:SetTarget ( Target )
 	if ( Target ) then
-		assert( Target ~= self, 'wat')
 		if ( self.Target ~= Target ) then
 			self.Target = Target;
 			self:SetAllPoints( Target );
