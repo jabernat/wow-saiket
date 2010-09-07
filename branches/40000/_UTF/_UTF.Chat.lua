@@ -47,9 +47,6 @@ do
 	--- Replaces references when tab is pressed in an edit box.
 	-- @return True if the tab keypress was handled.
 	function me:ChatEditCustomTabPressed ( ... )
-		if ( not self ) then
-			self = this;
-		end
 		return HandleReturn( self, Backup( self, ... ) );
 	end
 end
