@@ -142,7 +142,7 @@ end
   * Description: Keep the up and down buttons hidden.                          *
   ****************************************************************************]]
 function me:ChatFrameOnShow ()
-	local ButtonList = Buttons[ self or this ]; -- Workaround for bug in Blizzard_CombatLog
+	local ButtonList = Buttons[ self ];
 	ButtonList.Up:Hide();
 	ButtonList.Down:Hide();
 end
