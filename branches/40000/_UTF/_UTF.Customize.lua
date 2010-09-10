@@ -14,8 +14,8 @@ me.TableContainer = CreateFrame( "Frame", nil, me );
 me.Key = CreateFrame( "EditBox", "_UTFCustomizeKey", me, "InputBoxTemplate" );
 me.Value = CreateFrame( "EditBox", "_UTFCustomizeValue", me, "InputBoxTemplate" );
 
-me.Add = CreateFrame( "Button", nil, me, "GameMenuButtonTemplate" );
-me.Remove = CreateFrame( "Button", nil, me, "GameMenuButtonTemplate" );
+me.Add = CreateFrame( "Button", nil, me, "UIPanelButtonTemplate" );
+me.Remove = CreateFrame( "Button", nil, me, "UIPanelButtonTemplate" );
 
 me.Panes = {};
 

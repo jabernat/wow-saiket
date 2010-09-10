@@ -20,8 +20,8 @@ me.NPCNpcID = CreateFrame( "EditBox", "_NPCScanSearchNpcID", me.NPCControls, "In
 me.NPCWorld = CreateFrame( "EditBox", "_NPCScanSearchNpcWorld", me.NPCControls, "InputBoxTemplate" );
 me.NPCWorldButton = CreateFrame( "Button", nil, me.NPCWorld );
 me.NPCWorldButton.Dropdown = CreateFrame( "Frame", "_NPCScanSearchNPCWorldDropdown", me.NPCWorldButton );
-me.NPCAdd = CreateFrame( "Button", nil, me.NPCControls, "GameMenuButtonTemplate" );
-me.NPCRemove = CreateFrame( "Button", nil, me.NPCControls, "GameMenuButtonTemplate" );
+me.NPCAdd = CreateFrame( "Button", nil, me.NPCControls, "UIPanelButtonTemplate" );
+me.NPCRemove = CreateFrame( "Button", nil, me.NPCControls, "UIPanelButtonTemplate" );
 
 me.InactiveAlpha = 0.5;
 
