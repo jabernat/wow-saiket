@@ -7,7 +7,7 @@
 ## X-Credits-frFR: Localization: Nodd
 ## X-Credits-koKR: Localization: freshworks
 ## X-Credits-zhTW: Localization: jyuny1
-## Version: 3.3.0.1
+## Version: 4.0.0.1
 ## X-Date: 2010-07-02
 ## X-Category: Inventory, Guild
 ## X-License: GPLv3

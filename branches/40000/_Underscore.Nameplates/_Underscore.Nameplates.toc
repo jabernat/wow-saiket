@@ -2,7 +2,7 @@
 ## Title: _|cffCCCC88Underscore|r.Nameplates
 ## Notes: Nameplates skinned to match _|cffCCCC88Underscore|r.Units.
 ## Author: Saiket
-## Version: 3.3.0.1
+## Version: 4.0.0.1
 ## X-Date: 2010-09-06
 ## X-Category: UnitFrame
 ## X-License: GPLv3

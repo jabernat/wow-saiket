@@ -2,7 +2,7 @@
 ## Title: _|cffCCCC88Underscore|r.CastingBar
 ## Notes: Skins the default UI's player and pet cast bars.
 ## Author: Saiket
-## Version: 3.3.0.1
+## Version: 4.0.0.1
 ## X-Date: 2010-07-02
 ## X-Category: Frame Modification, Caster
 ## X-License: GPLv3
