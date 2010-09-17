@@ -7,8 +7,8 @@
 ## X-Credits-frFR: Localization: Nodd
 ## X-Credits-koKR: Localization: freshworks
 ## X-Credits-zhTW: Localization: jyuny1
-## Version: 3.3.0.1
-## X-Date: 2010-07-02
+## Version: 3.3.0.2
+## X-Date: 2010-09-17
 ## X-Category: Inventory, Guild
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com

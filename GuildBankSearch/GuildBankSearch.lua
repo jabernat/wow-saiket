@@ -17,6 +17,7 @@ me.ToggleButton = CreateFrame( "Button", nil, GuildBankFrame, "UIPanelButtonTemp
 
 me.Clear = CreateFrame( "Button", nil, me.Frame, "UIPanelButtonTemplate" );
 me.Name = CreateFrame( "EditBox", "$parentName", me.Frame, "InputBoxTemplate" );
+me.Text = CreateFrame( "EditBox", "$parentText", me.Frame, "InputBoxTemplate" );
 me.Quality = CreateFrame( "Frame", "$parentQuality", me.Frame, "UIDropDownMenuTemplate" );
 me.ItemLevelMin = CreateFrame( "EditBox", "$parentItemLevelMin", me.Frame, "InputBoxTemplate" );
 me.ItemLevelMax = CreateFrame( "EditBox", "$parentItemLevelMax", me.Frame, "InputBoxTemplate" );
@@ -33,6 +34,7 @@ me.Slot = CreateFrame( "Frame", "$parentSlot", me.CategorySection, "UIDropDownMe
 -- Initially false so FilterClear() will update all fields to nil.
 local Filter = {
 	Name = false;
+	Text = false;
 	Quality = false;
 	Type = false;
 	SubType = false;
@@ -49,25 +51,42 @@ me.Types = { GetAuctionItemClasses() };
 me.SubTypes = {};
 me.Slots = {}; -- Sorted list of inventory types that can be searched for
 me.SlotGroups = { -- Categories paired with the inventory types that can match them (can be multiple)
+	[ "ENCHSLOT_WEAPON" ] = { -- Localized as generic "Weapon"
+		[ "INVTYPE_2HWEAPON" ] = true;
+		[ "INVTYPE_HOLDABLE" ] = true;
+		[ "INVTYPE_SHIELD" ] = true;
+		[ "INVTYPE_WEAPON" ] = true;
+		[ "INVTYPE_WEAPONMAINHAND" ] = true;
+		[ "INVTYPE_WEAPONOFFHAND" ] = true;
+	};
 	[ "INVTYPE_AMMO" ] = { [ "INVTYPE_AMMO" ] = true; };
-	[ "INVTYPE_HEAD" ] = { [ "INVTYPE_HEAD" ] = true; };
-	[ "INVTYPE_NECK" ] = { [ "INVTYPE_NECK" ] = true; };
-	[ "INVTYPE_SHOULDER" ] = { [ "INVTYPE_SHOULDER" ] = true; };
+	[ "INVTYPE_BAG" ] = {
+		[ "INVTYPE_BAG" ] = true;
+		[ "INVTYPE_QUIVER" ] = true;
+	};
 	[ "INVTYPE_BODY" ] = { [ "INVTYPE_BODY" ] = true; };
-	[ "INVTYPE_CHEST" ] = { [ "INVTYPE_CHEST" ] = true; [ "INVTYPE_ROBE" ] = true; };
-	[ "INVTYPE_WAIST" ] = { [ "INVTYPE_WAIST" ] = true; };
-	[ "INVTYPE_LEGS" ] = { [ "INVTYPE_LEGS" ] = true; };
-	[ "INVTYPE_FEET" ] = { [ "INVTYPE_FEET" ] = true; };
-	[ "INVTYPE_WRIST" ] = { [ "INVTYPE_WRIST" ] = true; };
-	[ "INVTYPE_HAND" ] = { [ "INVTYPE_HAND" ] = true; };
-	[ "INVTYPE_FINGER" ] = { [ "INVTYPE_FINGER" ] = true; };
-	[ "INVTYPE_TRINKET" ] = { [ "INVTYPE_TRINKET" ] = true; };
+	[ "INVTYPE_CHEST" ] = {
+		[ "INVTYPE_CHEST" ] = true;
+		[ "INVTYPE_ROBE" ] = true;
+	};
 	[ "INVTYPE_CLOAK" ] = { [ "INVTYPE_CLOAK" ] = true; };
-	[ "ENCHSLOT_WEAPON" ] = { [ "INVTYPE_WEAPON" ] = true; [ "INVTYPE_WEAPONMAINHAND" ] = true; [ "INVTYPE_2HWEAPON" ] = true; [ "INVTYPE_WEAPONOFFHAND" ] = true; [ "INVTYPE_HOLDABLE" ] = true; [ "INVTYPE_SHIELD" ] = true; };
-	[ "INVTYPE_RANGED" ] = { [ "INVTYPE_THROWN" ] = true; [ "INVTYPE_RANGEDRIGHT" ] = true; [ "INVTYPE_RANGED" ] = true; };
+	[ "INVTYPE_FEET" ] = { [ "INVTYPE_FEET" ] = true; };
+	[ "INVTYPE_FINGER" ] = { [ "INVTYPE_FINGER" ] = true; };
+	[ "INVTYPE_HAND" ] = { [ "INVTYPE_HAND" ] = true; };
+	[ "INVTYPE_HEAD" ] = { [ "INVTYPE_HEAD" ] = true; };
+	[ "INVTYPE_LEGS" ] = { [ "INVTYPE_LEGS" ] = true; };
+	[ "INVTYPE_NECK" ] = { [ "INVTYPE_NECK" ] = true; };
+	[ "INVTYPE_RANGED" ] = {
+		[ "INVTYPE_RANGED" ] = true;
+		[ "INVTYPE_RANGEDRIGHT" ] = true;
+		[ "INVTYPE_THROWN" ] = true;
+	};
 	[ "INVTYPE_RELIC" ] = { [ "INVTYPE_RELIC" ] = true; };
+	[ "INVTYPE_SHOULDER" ] = { [ "INVTYPE_SHOULDER" ] = true; };
 	[ "INVTYPE_TABARD" ] = { [ "INVTYPE_TABARD" ] = true; };
-	[ "INVTYPE_BAG" ] = { [ "INVTYPE_BAG" ] = true; [ "INVTYPE_QUIVER" ] = true; };
+	[ "INVTYPE_TRINKET" ] = { [ "INVTYPE_TRINKET" ] = true; };
+	[ "INVTYPE_WAIST" ] = { [ "INVTYPE_WAIST" ] = true; };
+	[ "INVTYPE_WRIST" ] = { [ "INVTYPE_WRIST" ] = true; };
 };
 
 me.ButtonMismatchAlpha = 0.25;
@@ -81,6 +100,12 @@ me.Buttons = {}; -- Cache of all item buttons in bank view
 function me.Name:OnTextChanged ()
 	local Text = self:GetText();
 	Filter.Name = Text ~= "" and Text:lower() or nil;
+	me.FilterUpdate();
+end
+--- Updates filter when text parameter changes.
+function me.Text:OnTextChanged ()
+	local Text = self:GetText();
+	Filter.Text = Text ~= "" and Text:lower() or nil;
 	me.FilterUpdate();
 end
 --- @return An iterator to list all qualities.
@@ -168,6 +193,7 @@ function me.FilterClear ()
 	CloseDropDownMenus(); -- Close dropdown if open
 
 	me.Name:SetText( "" );
+	me.Text:SetText( "" );
 	me.Quality.OnSelect( nil, me.Quality );
 	me.ItemLevelMin:SetText( "" );
 	me.ItemLevelMax:SetText( "" );
@@ -193,14 +219,40 @@ function me.IsFilterDefined ()
 end
 
 do
+	local Tooltip = CreateFrame( "GameTooltip", "$parentTooltip", me.Frame );
+	local LinesLeft, LinesRight = {}, {};
+	-- Add template text lines
+	Tooltip:AddFontStrings( Tooltip:CreateFontString(), Tooltip:CreateFontString() );
+	--- @return True if the item's tooltip contains Text on lines after the first.
+	local function TooltipContainsText ( ItemLink, Text )
+		Tooltip:SetOwner( me.Frame, "ANCHOR_NONE" );
+		Tooltip:SetHyperlink( ItemLink );
+		if ( Tooltip:IsShown() ) then
+			local NumLines = Tooltip:NumLines();
+			-- Cache newly created lines
+			for Line = #LinesLeft + 1, NumLines do
+				LinesLeft[ Line ] = _G[ Tooltip:GetName().."TextLeft"..Line ];
+				LinesRight[ Line ] = _G[ Tooltip:GetName().."TextRight"..Line ];
+			end
+			-- Search text on visible lines
+			for Line = 2, NumLines do -- Skip name (first line)
+				if ( LinesLeft[ Line ]:GetText():lower():find( Text, 1, true )
+					or ( LinesRight[ Line ]:IsShown()
+						and LinesRight[ Line ]:GetText():lower():find( Text, 1, true )
+				) ) then
+					return true;
+				end
+			end
+		end
+	end
 	local GetItemInfo = GetItemInfo;
-	local Name, Link, Rarity, ItemLevel, ReqLevel, Type, SubType, StackCount, Slot;
+	local Name, Rarity, ItemLevel, ReqLevel, Type, SubType, Slot, _;
 	--- Tests an item against the current filter parameters.
 	-- @param ItemLink  Link of item to test.
 	-- @return True if the given ItemLink matches all filter parameters.
 	function me.MatchItem ( ItemLink )
 		if ( ItemLink ) then
-			Name, Link, Rarity, ItemLevel, ReqLevel, Type, SubType, StackCount, Slot = GetItemInfo( ItemLink );
+			Name, _, Rarity, ItemLevel, ReqLevel, Type, SubType, _, Slot = GetItemInfo( ItemLink );
 			if ( ( Filter.Name and not Name:lower():find( Filter.Name, 1, true ) ) -- Plain text
 				or ( Filter.Quality and Filter.Quality ~= Rarity )
 				or ( Filter.Type and Filter.Type ~= Type )
@@ -210,6 +262,7 @@ do
 				or ( Filter.ItemLevelMax and Filter.ItemLevelMax < ItemLevel )
 				or ( Filter.ReqLevelMin and Filter.ReqLevelMin > ReqLevel )
 				or ( Filter.ReqLevelMax and Filter.ReqLevelMax < ReqLevel )
+				or ( Filter.Text and not TooltipContainsText( ItemLink, Filter.Text ) )
 			) then
 			else
 				return true;
@@ -239,7 +292,8 @@ do
 			local Tab = GetCurrentGuildBankTab();
 			if ( Tab <= GetNumGuildBankTabs() ) then
 				for Index, Button in ipairs( me.Buttons ) do
-					Button:SetAlpha( me.MatchItem( GetGuildBankItemLink( Tab, Index ) ) and 1 or me.ButtonMismatchAlpha );
+					Button:SetAlpha( me.MatchItem( GetGuildBankItemLink( Tab, Index ) )
+						and 1 or me.ButtonMismatchAlpha );
 				end
 			end
 		elseif ( GuildBankFrame.mode == "log" ) then
@@ -268,13 +322,15 @@ do
 	local AddMessageBackup = GuildBankMessageFrame.AddMessage;
 	--- Hook that modifies added messages when a filter is active.
 	function me:GuildBankMessageFrameAddMessage ( Message, ... )
-		if ( GuildBankFrame.mode == "log" and me.Frame:IsShown() and me.IsFilterDefined() ) then
-			if ( not me.MatchItem( Message:match( "|H(item:[^|]+)|h" ) ) ) then
-				local Color = me.LogMismatchColor;
-				-- Remove all color codes
-				return AddMessageBackup( self, Message:gsub( "|cff%x%x%x%x%x%x", "" ):gsub( "|r", "" ),
-					Color.r, Color.g, Color.b, select( 4, ... ) );
-			end
+		if ( GuildBankFrame.mode == "log"
+			and me.Frame:IsShown() and me.IsFilterDefined()
+			and not me.MatchItem( Message:match( "|H(item:[^|]+)|h" ) )
+		) then
+			local Color = me.LogMismatchColor;
+			-- Remove all color codes
+			return AddMessageBackup( self,
+				Message:gsub( "|cff%x%x%x%x%x%x", "" ):gsub( "|r", "" ),
+				Color.r, Color.g, Color.b, select( 4, ... ) );
 		end
 		return AddMessageBackup( self, Message, ... );
 	end
@@ -344,7 +400,8 @@ end
 
 -- Fill in quality labels
 for Index = 0, #ITEM_QUALITY_COLORS do
-	me.Qualities[ Index ] = ITEM_QUALITY_COLORS[ Index ].hex.._G[ "ITEM_QUALITY"..Index.."_DESC" ]..FONT_COLOR_CODE_CLOSE;
+	me.Qualities[ Index ] = ITEM_QUALITY_COLORS[ Index ].hex
+		.._G[ "ITEM_QUALITY"..Index.."_DESC" ]..FONT_COLOR_CODE_CLOSE;
 end
 -- Fill in and sort subtypes
 for Index, Type in ipairs( me.Types ) do
@@ -464,7 +521,18 @@ local Label = Name:CreateFontString( nil, "OVERLAY", "GameFontHighlightSmall" );
 Label:SetPoint( "BOTTOMLEFT", Name, "TOPLEFT", 1, 0 );
 Label:SetText( L.NAME );
 
-InitializeDropdown( me.Quality, "Quality", L.QUALITY ):SetPoint( "TOP", Name, "BOTTOM", 0, -12 );
+local Text = me.Text;
+Text:SetHeight( 16 );
+Text:SetAutoFocus( false );
+Text:SetPoint( "TOP", Name, "BOTTOM", 0, -12 );
+Text:SetPoint( "LEFT", Name );
+Text:SetPoint( "RIGHT", Name );
+Text:SetScript( "OnTextChanged", Text.OnTextChanged );
+local Label = Text:CreateFontString( nil, "OVERLAY", "GameFontHighlightSmall" );
+Label:SetPoint( "BOTTOMLEFT", Text, "TOPLEFT", 1, 0 );
+Label:SetText( L.TEXT );
+
+InitializeDropdown( me.Quality, "Quality", L.QUALITY ):SetPoint( "TOP", Text, "BOTTOM", 0, -12 );
 
 -- Item level range
 local ItemLevelMin = InitializeLevelEditBox( me.ItemLevelMin, "ItemLevelMin", L.ITEM_LEVEL );
