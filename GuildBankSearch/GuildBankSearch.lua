@@ -220,53 +220,89 @@ end
 
 do
 	local Tooltip = CreateFrame( "GameTooltip", "$parentTooltip", me.Frame );
-	local LinesLeft, LinesRight = {}, {};
 	-- Add template text lines
 	Tooltip:AddFontStrings( Tooltip:CreateFontString(), Tooltip:CreateFontString() );
-	--- @return True if the item's tooltip contains Text on lines after the first.
-	local function TooltipContainsText ( ItemLink, Text )
-		Tooltip:SetOwner( me.Frame, "ANCHOR_NONE" );
-		Tooltip:SetHyperlink( ItemLink );
-		if ( Tooltip:IsShown() ) then
-			local NumLines = Tooltip:NumLines();
-			-- Cache newly created lines
-			for Line = #LinesLeft + 1, NumLines do
-				LinesLeft[ Line ] = _G[ Tooltip:GetName().."TextLeft"..Line ];
-				LinesRight[ Line ] = _G[ Tooltip:GetName().."TextRight"..Line ];
-			end
-			-- Search text on visible lines
-			for Line = 2, NumLines do -- Skip name (first line)
-				if ( LinesLeft[ Line ]:GetText():lower():find( Text, 1, true )
-					or ( LinesRight[ Line ]:IsShown()
-						and LinesRight[ Line ]:GetText():lower():find( Text, 1, true )
-				) ) then
-					return true;
+	local LinesLeft, LinesRight = {}, {};
+
+	local select = select;
+	local FilterFunctions = {
+		--- Case-insensitive plain text filter by item name.
+		Name = function ( NamePattern, Name )
+			return Name:lower():find( NamePattern, 1, true );
+		end;
+		--- Case-insensitive plain text filter by tooltip contents.
+		Text = function ( TextPattern, _, ItemLink )
+			Tooltip:SetOwner( me.Frame, "ANCHOR_NONE" );
+			Tooltip:SetHyperlink( ItemLink );
+			if ( Tooltip:IsShown() ) then
+				local NumLines = Tooltip:NumLines();
+				-- Cache newly created lines
+				for Line = #LinesLeft + 1, NumLines do
+					LinesLeft[ Line ] = _G[ Tooltip:GetName().."TextLeft"..Line ];
+					LinesRight[ Line ] = _G[ Tooltip:GetName().."TextRight"..Line ];
+				end
+				-- Search text on visible lines
+				for Line = 2, NumLines do -- Skip name (first line)
+					if ( LinesLeft[ Line ]:GetText():lower():find( TextPattern, 1, true )
+						or ( LinesRight[ Line ]:IsShown()
+							and LinesRight[ Line ]:GetText():lower():find( TextPattern, 1, true )
+					) ) then
+						return true;
+					end
 				end
 			end
+		end;
+		--- Filter by item quality.
+		Quality = function ( QualityFilter, _, _, Quality )
+			return QualityFilter == Quality;
+		end;
+		--- Filter by item type.
+		Type = function ( TypeFilter, ... )
+			return TypeFilter == select( 6, ... );
+		end;
+		--- Filter by item sub-type.
+		SubType = function ( SubTypeFilter, ... )
+			return SubTypeFilter == select( 7, ... );
+		end;
+		--- Filter by item gear slot.
+		Slot = function ( SlotGroup, ... )
+			return me.SlotGroups[ SlotGroup ][ select( 9, ... ) ];
+		end;
+		--- Filter by item iLvl lower boundary.
+		ItemLevelMin = function ( Min, _, _, _, ItemLevel )
+			return ItemLevel >= Min;
+		end;
+		--- Filter by item iLvl upper boundary.
+		ItemLevelMax = function ( Max, _, _, _, ItemLevel )
+			return ItemLevel <= Max;
+		end;
+		--- Filter by item required level lower boundary.
+		ReqLevelMin = function ( Min, _, _, _, _, ReqLevel )
+			return ReqLevel >= Min;
+		end;
+		--- Filter by item required level upper boundary.
+		ReqLevelMax = function ( Max, _, _, _, _, ReqLevel )
+			return ReqLevel <= Max;
+		end;
+	};
+
+	local pairs = pairs;
+	--- @return True if item info matches all filter parameters.
+	local function MatchItemInfo ( ... )
+		for Key, Value in pairs( Filter ) do
+			if ( not FilterFunctions[ Key ]( Value, ... ) ) then
+				return;
+			end
 		end
+		return true; -- Matched all filters
 	end
 	local GetItemInfo = GetItemInfo;
-	local Name, Rarity, ItemLevel, ReqLevel, Type, SubType, Slot, _;
 	--- Tests an item against the current filter parameters.
 	-- @param ItemLink  Link of item to test.
 	-- @return True if the given ItemLink matches all filter parameters.
 	function me.MatchItem ( ItemLink )
 		if ( ItemLink ) then
-			Name, _, Rarity, ItemLevel, ReqLevel, Type, SubType, _, Slot = GetItemInfo( ItemLink );
-			if ( ( Filter.Name and not Name:lower():find( Filter.Name, 1, true ) ) -- Plain text
-				or ( Filter.Quality and Filter.Quality ~= Rarity )
-				or ( Filter.Type and Filter.Type ~= Type )
-				or ( Filter.SubType and Filter.SubType ~= SubType )
-				or ( Filter.Slot and not me.SlotGroups[ Filter.Slot ][ Slot ] )
-				or ( Filter.ItemLevelMin and Filter.ItemLevelMin > ItemLevel )
-				or ( Filter.ItemLevelMax and Filter.ItemLevelMax < ItemLevel )
-				or ( Filter.ReqLevelMin and Filter.ReqLevelMin > ReqLevel )
-				or ( Filter.ReqLevelMax and Filter.ReqLevelMax < ReqLevel )
-				or ( Filter.Text and not TooltipContainsText( ItemLink, Filter.Text ) )
-			) then
-			else
-				return true;
-			end
+			return MatchItemInfo( GetItemInfo( ItemLink ) );
 		end
 	end
 end
@@ -573,3 +609,5 @@ GuildBankMessageFrame.AddMessage = me.GuildBankMessageFrameAddMessage;
 ChatEdit_InsertLink = me.ChatEditInsertLink;
 
 me.FilterClear();
+wipe( Filter ); -- FilterClear won't fire edit box OnTextChanged handlers, so clear manually.
+me.FilterUpdate( true );
