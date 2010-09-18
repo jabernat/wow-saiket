@@ -17,6 +17,7 @@ select( 2, ... ).L = setmetatable( {
 	REQUIRED_LEVEL = "Required Level:",
 	SLOT = "Slot:",
 	SUB_TYPE = "Sub-Type:",
+	TEXT = "Tooltip Text:",
 	TITLE = "GuildBank|cffccccccSearch|r",
 	TYPE = "Type:",
 }, {
