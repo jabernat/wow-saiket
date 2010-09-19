@@ -33,8 +33,6 @@ select( 2, ... ).L = setmetatable( {
 	MODULE_WORLDMAP = "Main World Map",
 	MODULE_WORLDMAP_KEY = "_|cffCCCC88NPCScan|r.Overlay",
 	MODULE_WORLDMAP_KEY_FORMAT = "• %s",
-	MODULE_WORLDMAP_TOGGLE = "_|cffCCCC88NPCScan|r.Overlay",
-	MODULE_WORLDMAP_TOGGLE_DESC = "If enabled, displays _|cffCCCC88NPCScan|r.Overlay's paths for tracked NPCs.",
 
 	-- Phrases localized by default UI
 	CONFIG_ENABLE = ENABLE;

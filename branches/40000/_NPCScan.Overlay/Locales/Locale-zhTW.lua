@@ -39,6 +39,4 @@ Overlay.L = setmetatable( {
 	MODULE_WORLDMAP = "主要世界地圖",
 	MODULE_WORLDMAP_KEY = "_|cffCCCC88NPCScan|r.Overlay",
 	MODULE_WORLDMAP_KEY_FORMAT = "• %s",
-	MODULE_WORLDMAP_TOGGLE = "_|cffCCCC88NPCScan|r.Overlay",
-	MODULE_WORLDMAP_TOGGLE_DESC = "如果開啟，顯示_|cffCCCC88NPCScan|r.Overlay已知怪物路徑的路徑圖。",
 }, { __index = Overlay.L; } );

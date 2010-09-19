@@ -39,6 +39,4 @@ Overlay.L = setmetatable( {
 	MODULE_WORLDMAP = "세계 지도",
 	MODULE_WORLDMAP_KEY = "_|cffCCCC88NPCScan|r.Overlay",
 	MODULE_WORLDMAP_KEY_FORMAT = "- %s",
-	MODULE_WORLDMAP_TOGGLE = "_|cffCCCC88NPCScan|r.Overlay",
-	MODULE_WORLDMAP_TOGGLE_DESC = "이 옵션을 활성화하면, 탐색하려는 NPC의 이동경로를 보여줍니다.",
 }, { __index = Overlay.L; } );

@@ -39,6 +39,4 @@ Overlay.L = setmetatable( {
 	MODULE_WORLDMAP = "Carte du monde principale",
 	MODULE_WORLDMAP_KEY = "_|cffCCCC88NPCScan|r.Overlay",
 	MODULE_WORLDMAP_KEY_FORMAT = "• %s",
-	MODULE_WORLDMAP_TOGGLE = "_|cffCCCC88NPCScan|r.Overlay",
-	MODULE_WORLDMAP_TOGGLE_DESC = "Si activé, affiche les trajets de _|cffCCCC88NPCScan|r.Overlay des PNJs recherchés.",
 }, { __index = Overlay.L; } );

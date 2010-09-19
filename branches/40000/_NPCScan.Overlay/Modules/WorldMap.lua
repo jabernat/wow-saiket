@@ -105,23 +105,6 @@ end
 
 
 
---- Toggles the module from the WorldMap frame.
-function me.ToggleSetFunc ( Enable )
-	Overlay.Modules[ Enable == "1" and "Enable" or "Disable" ]( "WorldMap" );
-end
---- Shows a *world map* tooltip similar to the quest objective toggle button.
-function me:ToggleOnEnter ()
-	WorldMapTooltip:SetOwner( self, "ANCHOR_TOPLEFT" );
-	WorldMapTooltip:SetText( L.MODULE_WORLDMAP_TOGGLE_DESC, nil, nil, nil, nil, 1 );
-end
---- Hides the *world map* tooltip.
-function me:ToggleOnLeave ()
-	WorldMapTooltip:Hide();
-end
-
-
-
-
 --- Updates the key when repainting the zone.
 function me:Paint ( ... )
 	self.KeyPaint( self.KeyParent.Key, ... );
@@ -129,12 +112,10 @@ function me:Paint ( ... )
 end
 
 function me:OnEnable ( ... )
-	self.Toggle:SetChecked( true );
 	self.KeyParent:Show();
 	return self.super.OnEnable( self, ... );
 end
 function me:OnDisable ( ... )
-	self.Toggle:SetChecked( false );
 	self.KeyParent:Hide();
 	return self.super.OnDisable( self, ... );
 end
@@ -189,19 +170,6 @@ function me:OnLoad ( ... )
 	Title:SetText( L.MODULE_WORLDMAP_KEY );
 
 
-	-- Create toggle button on the WorldMap
-	local Toggle = CreateFrame( "CheckButton", "_NPCScanOverlayWorldMapToggle", WorldMapFrame, "OptionsCheckButtonTemplate" );
-	self.Toggle = Toggle;
-	local Label = _G[ Toggle:GetName().."Text" ];
-	Label:SetText( L.MODULE_WORLDMAP_TOGGLE );
-	local LabelWidth = Label:GetStringWidth();
-	Toggle:SetHitRectInsets( 4, 4 - LabelWidth, 4, 4 );
-	Toggle:SetPoint( "RIGHT", WorldMapQuestShowObjectives, "LEFT", -LabelWidth - 8, 0 );
-	Toggle:SetScript( "OnEnter", self.ToggleOnEnter );
-	Toggle:SetScript( "OnLeave", self.ToggleOnLeave );
-	Toggle.setFunc = self.ToggleSetFunc;
-
-
 	-- Cache achievement NPC names
 	self.AchievementNPCNames = {};
 	for AchievementID in pairs( Overlay.Achievements ) do
@@ -219,10 +187,6 @@ function me:OnUnload ( ... )
 	self.KeyParent:SetScript( "OnSizeChanged", nil );
 	self.KeyParent.Key:SetScript( "OnEnter", nil );
 	self.KeyParent.Key:SetScript( "OnSizeChanged", nil );
-
-	self.Toggle:Hide();
-	self.Toggle:SetScript( "OnEnter", nil );
-	self.Toggle:SetScript( "OnLeave", nil );
 
 	return self.super.OnUnload( self, ... );
 end
