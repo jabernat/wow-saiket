@@ -603,7 +603,6 @@ function me.Frame:VARIABLES_LOADED ( Event )
 
 	SetCVar( "ThreatWarning", 3 );
 	SetCVar( "ShowClassColorInNameplate", 1 );
-	SetCVar( "NameplateAllowOverlap", 1 );
 end
 --- Resize any new nameplates that couldn't be resized in combat.
 function me.Frame:PLAYER_REGEN_ENABLED ()
