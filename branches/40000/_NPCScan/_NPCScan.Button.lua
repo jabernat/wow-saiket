@@ -85,7 +85,7 @@ function me:SetNPC ( ID, Name )
 	self.PlaySound( _NPCScan.Options.AlertSound );
 	if ( GetCVarBool( "screenEdgeFlash" ) ) then
 		self.Flash:Show();
-		self.Flash.Fade:Stop(); -- Forces OnPlay to fire again if it was already playing
+		self.Flash.Fade:Pause(); -- Forces OnPlay to fire again if it was already playing
 		self.Flash.Fade:Play();
 	end
 
@@ -224,19 +224,19 @@ end
 
 
 --- Stops the animation after a number of loops.
-function me.Flash:OnLoop ()
-	self.LoopCount = self.LoopCount + 1;
-	if ( self.LoopCount >= self:GetParent().LoopCountMax ) then
-		self:Finish(); -- Will play one more loop then finish.
+function me.Flash:OnLoop ( Direction )
+	if ( Direction == "FORWARD" ) then
+		self.LoopCount = self.LoopCount + 1;
+		local Flash = self:GetParent();
+		if ( self.LoopCount >= Flash.LoopCountMax ) then
+			self:Stop();
+			Flash:Hide();
+		end
 	end
 end
 --- Resets the loop count when resumed/restarted.
 function me.Flash:OnPlay ()
-	self.LoopCount = 1;
-end
---- Hides the flash texture when done animating.
-function me.Flash:OnFinished ()
-	self:GetParent():Hide();
+	self.LoopCount = 0;
 end
 
 
@@ -400,20 +400,14 @@ Texture:SetAllPoints();
 Texture:SetTexture( [[Interface\FullScreenTextures\LowHealth]] );
 
 Flash.Fade = Flash:CreateAnimationGroup();
-Flash.Fade:SetLooping( "REPEAT" );
+Flash.Fade:SetLooping( "BOUNCE" );
 Flash.Fade:SetScript( "OnLoop", Flash.OnLoop );
 Flash.Fade:SetScript( "OnPlay", Flash.OnPlay );
-Flash.Fade:SetScript( "OnFinished", Flash.OnFinished );
 
 local FadeIn = Flash.Fade:CreateAnimation( "Alpha" );
 FadeIn:SetChange( 1.0 );
 FadeIn:SetDuration( 0.5 );
 FadeIn:SetEndDelay( 0.25 );
-local FadeOut = Flash.Fade:CreateAnimation( "Alpha" );
-FadeOut:SetOrder( 2 );
-FadeOut:SetChange( -1.0 );
-FadeOut:SetDuration( 0.5 );
-FadeOut:SetEndDelay( 0.25 );
 
 
 me:SetAttribute( "type", "macro" );
