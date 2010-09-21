@@ -204,6 +204,7 @@ function me.NPCWorldButton.Dropdown:initialize ()
 	if ( not _NPCScan.ContinentIDs[ CurrentWorld ] ) then -- Add current instance name
 		-- Spacer
 		Info = UIDropDownMenu_CreateInfo();
+		Info.notCheckable = true;
 		Info.disabled = true;
 		UIDropDownMenu_AddButton( Info );
 		-- Current instance
