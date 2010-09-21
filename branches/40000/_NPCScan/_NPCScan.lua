@@ -55,7 +55,16 @@ me.Achievements = { --- Criteria data for each achievement.
 	[ 1312 ] = { WorldID = 3; }; -- Bloody Rare (Outlands)
 	[ 2257 ] = { WorldID = 4; }; -- Frostbitten (Northrend)
 };
-me.ContinentIDs = {}; --- [ Localized continent name ] = Continent ID (mirrors WorldMapContinent.dbc)
+do
+	local VirtualContinents = { --- Continents without physical maps aren't used.
+		[ 5 ] = true; -- The Maelstrom
+	};
+	me.ContinentNames = { GetMapContinents() };
+	for ContinentID in pairs( VirtualContinents ) do
+		me.ContinentNames[ ContinentID ] = nil;
+	end
+	me.ContinentIDs = {}; --- Reverse lookup of me.ContinentNames.
+end
 
 me.NpcIDMax = 0xFFFFF; --- Largest ID that will fit in a GUID's 20-bit NPC ID field.
 me.Frame.UpdateRate = 0.1;
@@ -745,7 +754,7 @@ end
 
 
 -- Create reverse lookup of continent names
-for Index, Name in ipairs( { GetMapContinents() } ) do
+for Index, Name in pairs( me.ContinentNames ) do
 	me.ContinentIDs[ Name ] = Index;
 end
 -- Save achievement criteria data

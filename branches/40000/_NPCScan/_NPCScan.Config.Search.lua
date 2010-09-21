@@ -51,7 +51,7 @@ local function GetWorldID ( World )
 end
 -- Converts a WorldID into a localized world name.
 local function GetWorldIDName ( WorldID )
-	return type( WorldID ) == "number" and select( WorldID, GetMapContinents() ) or WorldID;
+	return type( WorldID ) == "number" and _NPCScan.ContinentNames[ WorldID ] or WorldID;
 end
 --- Selects the given table tab.
 function me.TabSelect ( NewTab )
@@ -196,9 +196,11 @@ function me.NPCWorldButton.Dropdown:initialize ()
 	Info.notCheckable = true;
 	Info.func = self.OnSelect;
 	for Index = 1, select( "#", GetMapContinents() ) do
-		local World = select( Index, GetMapContinents() );
-		Info.text, Info.arg1 = World, World;
-		UIDropDownMenu_AddButton( Info );
+		local World = _NPCScan.ContinentNames[ Index ];
+		if ( World ) then -- Not an excluded virtual continent
+			Info.text, Info.arg1 = World, World;
+			UIDropDownMenu_AddButton( Info );
+		end
 	end
 	local CurrentWorld = GetInstanceInfo();
 	if ( not _NPCScan.ContinentIDs[ CurrentWorld ] ) then -- Add current instance name
