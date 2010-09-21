@@ -193,6 +193,7 @@ end
 --- Builds a dropdown of continent names.
 function me.NPCWorldButton.Dropdown:initialize ()
 	local Info = UIDropDownMenu_CreateInfo();
+	Info.notCheckable = true;
 	Info.func = self.OnSelect;
 	for Index = 1, select( "#", GetMapContinents() ) do
 		local World = select( Index, GetMapContinents() );
@@ -203,7 +204,7 @@ function me.NPCWorldButton.Dropdown:initialize ()
 	if ( not _NPCScan.ContinentIDs[ CurrentWorld ] ) then -- Add current instance name
 		-- Spacer
 		Info = UIDropDownMenu_CreateInfo();
-		Info.disabled = 1;
+		Info.disabled = true;
 		UIDropDownMenu_AddButton( Info );
 		-- Current instance
 		Info.disabled = nil;

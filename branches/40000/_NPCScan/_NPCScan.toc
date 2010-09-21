@@ -14,7 +14,7 @@
 ## X-Credits-zhCN: Localization: digmouse
 ## X-Credits-zhTW: Localization: s8095324, pepper_ep
 ## Version: 4.0.0.1
-## X-Date: 2010-09-19
+## X-Date: 2010-09-20
 ## X-Category: Miscellaneous
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com

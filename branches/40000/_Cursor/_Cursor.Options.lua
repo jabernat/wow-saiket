@@ -73,6 +73,7 @@ do
 		end
 		table.sort( Sorted );
 		local Info = UIDropDownMenu_CreateInfo();
+		Info.notCheckable = true;
 		for _, Name in ipairs( Sorted ) do
 			Info.text = Name;
 			Info.arg1 = Name;
@@ -504,10 +505,12 @@ do
 
 		-- Spacer
 		Info = UIDropDownMenu_CreateInfo();
-		Info.disabled = 1;
+		Info.disabled = true;
+		Info.notCheckable = true;
 		UIDropDownMenu_AddButton( Info );
 		-- Custom
 		Info.disabled = nil;
+		Info.notCheckable = nil;
 		Info.text = L.TYPE_CUSTOM;
 		Info.arg1 = "";
 		Info.func = self.OnSelect;
