@@ -23,6 +23,7 @@ _NPCScan.L = setmetatable( {
 	BUTTON_FOUND = "PNJ trouvé !",
 	CACHED_FORMAT = "Le(s) unité(s) suivante(s) sont déjà dans le cache : %s.",
 	CACHED_LONG_FORMAT = "Le(s) unité(s) suivante(s) sont déjà dans le cache. Pensez à les enlever en utilisant le menu |cff808080“/npcscan”|r ou réinitialiser-les en effacant votre cache : %s.",
+	CACHED_PET_RESTING_FORMAT = "Le(s) familier(s) domptable(s) ont été ajoutés au cache pendant votre repos : %s.",
 	CACHED_WORLD_FORMAT = "Le(s) unité(s) suivante(s) |2 %2$s sont déjà dans le cache : %1$s.",
 	CACHELIST_ENTRY_FORMAT = "|cff808080“%s”|r",
 	CACHELIST_SEPARATOR = ", ",
