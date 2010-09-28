@@ -27,7 +27,8 @@ me.OptionsDefault = {
 };
 
 
-me.NPCMaps = {}; -- [ NpcID ] = MapName;
+me.NPCMaps = {}; -- [ NpcID ] = MapID;
+me.ZoneMaps = {}; -- [ LocalizedZoneName ] = MapID;
 me.NPCsEnabled = {};
 me.NPCsFoundX = {};
 me.NPCsFoundY = {};
@@ -384,29 +385,70 @@ function me.Synchronize ( Options )
 	me.SetShowAll( Options.ShowAll );
 	me.Modules.OnSynchronize( Options );
 end
---- Loads defaults, validates settings, and begins listening for Overlay API messages.
-function me.Events:ADDON_LOADED ( Event, AddOn )
-	if ( AddOn == AddOnName ) then
-		self[ Event ] = nil;
-		self:UnregisterEvent( Event );
+do
+	local MapNames = {};
+	--- @return Localized zone name for Map if known.
+	-- Note that only true continent sub-zones are supported.
+	function me.GetZoneName ( Map )
+		return MapNames[ Map ];
+	end
+	--- @return Width and height of the current zone in yards.
+	function me.GetCurrentZoneSize ()
+		local _, X1, Y1, X2, Y2 = GetCurrentMapZone();
+		if ( X1 ) then
+			return X1 - X2, Y1 - Y2;
+		end
+	end
 
-		-- Build a reverse lookup of NpcIDs to zones, and add them all by default
-		for Map, MapData in pairs( me.PathData ) do
-			for NpcID in pairs( MapData ) do
-				me.NPCMaps[ NpcID ] = Map;
-				NPCAdd( NpcID );
+	--- Saves localized map names on a given ContinentID.
+	local function HandleZones ( ContinentID, ... )
+		for ZoneIndex = 1, select( "#", ... ) do
+			SetMapZoom( ContinentID, ZoneIndex );
+
+			local Map = GetCurrentMapAreaID();
+			if ( me.PathData[ Map ] ) then
+				local Name = select( ZoneIndex, ... );
+				local Width, Height = me.GetCurrentZoneSize();
+				if ( not Width or Width == 0 or Height == 0 ) then
+					error( "Zone dimensions unavailable for "..Name.." ("..Map..")." );
+				end
+				MapNames[ Map ] = Name;
+				me.ZoneMaps[ Name ] = Map;
 			end
 		end
+	end
+	--- Loads defaults, validates settings, and begins listening for Overlay API messages.
+	function me.Events:ADDON_LOADED ( Event, AddOn )
+		if ( AddOn == AddOnName ) then
+			self[ Event ] = nil;
+			self:UnregisterEvent( Event );
 
-		local Options = _NPCScanOverlayOptions;
-		_NPCScanOverlayOptions = me.Options;
-		if ( Options and not Options.ModulesExtra ) then -- 3.3.5.1: Moved module options to options sub-tables
-			Options.ModulesExtra = {};
+			-- Build a lookup table for localized zone names to map files
+			-- Note: Doesn't support dungeon maps, as their localized names are unavailable in-game
+			for ContinentID = 1, select( "#", GetMapContinents() ) do
+				HandleZones( ContinentID, GetMapZones( ContinentID ) );
+			end
+			-- Build a reverse lookup of NpcIDs to zones, and add them all by default
+			for Map, MapData in pairs( me.PathData ) do
+				if ( not me.GetZoneName( Map ) ) then -- Zone size will be unavailable too
+					error( "Zone dimensions unavailable for map "..Map.."." );
+				end
+				for NpcID in pairs( MapData ) do
+					me.NPCMaps[ NpcID ] = Map;
+					NPCAdd( NpcID );
+				end
+			end
+
+			local Options = _NPCScanOverlayOptions;
+			_NPCScanOverlayOptions = me.Options;
+			if ( Options and not Options.ModulesExtra ) then -- 3.3.5.1: Moved module options to options sub-tables
+				Options.ModulesExtra = {};
+			end
+			me.Synchronize( Options ); -- Loads defaults if nil
+
+			self:RegisterMessage( MESSAGE_REGISTER );
+			self:RegisterMessage( MESSAGE_FOUND );
 		end
-		me.Synchronize( Options ); -- Loads defaults if nil
-
-		self:RegisterMessage( MESSAGE_REGISTER );
-		self:RegisterMessage( MESSAGE_FOUND );
 	end
 end
 
