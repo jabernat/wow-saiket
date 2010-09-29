@@ -236,10 +236,13 @@ end
 function me:NPCUpdate ()
 	me.NPCValidate();
 	local WorldIDs = _NPCScan.OptionsCharacter.NPCWorldIDs;
+	local Overlay = IsAddOnLoaded( "_NPCScan.Overlay" ) and _NPCScan.Overlay;
 	for NpcID, Name in pairs( _NPCScan.OptionsCharacter.NPCs ) do
+		local Map = Overlay and Overlay.GetNPCMapID( NpcID );
 		local Row = me.Table:AddRow( NpcID,
 			_NPCScan.TestID( NpcID ) and [[|TInterface\RaidFrame\ReadyCheck-NotReady:0|t]] or "",
-			Name, NpcID, GetWorldIDName( WorldIDs[ NpcID ] ) or "" );
+			Name, NpcID, GetWorldIDName( WorldIDs[ NpcID ] ) or "",
+			Map and ( Overlay.GetMapName( Map ) or Map ) or "" );
 
 		if ( not _NPCScan.NPCIsActive( NpcID ) ) then
 			Row:SetAlpha( me.InactiveAlpha );
@@ -248,8 +251,12 @@ function me:NPCUpdate ()
 end
 --- Customizes the table when the NPCs tab is selected.
 function me:NPCActivate ()
-	me.Table:SetHeader( L.SEARCH_CACHED, L.SEARCH_NAME, L.SEARCH_ID, L.SEARCH_WORLD );
-	me.Table:SetSortHandlers( true, true, true, true );
+	if ( IsAddOnLoaded( "_NPCScan.Overlay" ) ) then
+		me.Table:SetHeader( L.SEARCH_CACHED, L.SEARCH_NAME, L.SEARCH_ID, L.SEARCH_WORLD, L.SEARCH_MAP );
+	else
+		me.Table:SetHeader( L.SEARCH_CACHED, L.SEARCH_NAME, L.SEARCH_ID, L.SEARCH_WORLD );
+	end
+	me.Table:SetSortHandlers( true, true, true, true, true );
 	me.Table:SetSortColumn( 2 ); -- Default by name
 
 	me.NPCClear();
@@ -289,13 +296,16 @@ end
 --- Fills the search table with achievement NPCs.
 function me:AchievementUpdate ()
 	local Achievement = _NPCScan.Achievements[ self.AchievementID ];
+	local Overlay = IsAddOnLoaded( "_NPCScan.Overlay" ) and _NPCScan.Overlay;
 	for CriteriaID, NpcID in pairs( Achievement.Criteria ) do
 		local Name, _, Completed = GetAchievementCriteriaInfo( CriteriaID );
 
+		local Map = Overlay and Overlay.GetNPCMapID( NpcID );
 		local Row = me.Table:AddRow( NpcID,
 			_NPCScan.TestID( NpcID ) and [[|TInterface\RaidFrame\ReadyCheck-NotReady:0|t]] or "",
 			Name, NpcID,
-			Completed and [[|TInterface\RaidFrame\ReadyCheck-Ready:0|t]] or "" );
+			Completed and [[|TInterface\RaidFrame\ReadyCheck-Ready:0|t]] or "",
+			Map and ( Overlay.GetMapName( Map ) or Map ) or "" );
 
 		if ( not _NPCScan.AchievementNPCIsActive( Achievement, NpcID ) ) then
 			Row:SetAlpha( me.InactiveAlpha );
@@ -304,8 +314,12 @@ function me:AchievementUpdate ()
 end
 --- Customizes the table when an achievement tab is selected.
 function me:AchievementActivate ()
-	me.Table:SetHeader( L.SEARCH_CACHED, L.SEARCH_NAME, L.SEARCH_ID, L.SEARCH_COMPLETED );
-	me.Table:SetSortHandlers( true, true, true, true );
+	if ( IsAddOnLoaded( "_NPCScan.Overlay" ) ) then
+		me.Table:SetHeader( L.SEARCH_CACHED, L.SEARCH_NAME, L.SEARCH_ID, L.SEARCH_COMPLETED, L.SEARCH_MAP );
+	else
+		me.Table:SetHeader( L.SEARCH_CACHED, L.SEARCH_NAME, L.SEARCH_ID, L.SEARCH_COMPLETED );
+	end
+	me.Table:SetSortHandlers( true, true, true, true, true );
 	me.Table:SetSortColumn( 2 ); -- Default by name
 
 	me.Table.Header:SetAlpha( _NPCScan.OptionsCharacter.Achievements[ self.AchievementID ] and 1.0 or me.InactiveAlpha );
@@ -374,33 +388,24 @@ do
 			return AddTooltipHooks( CreateRowBackup( self, ... ) );
 		end
 	end
-	--- Creates the NPC table frame at most once.
-	function me:TableCreate ()
-		-- Note: Keep late bound so _NPCScan.Overlay can hook into the table as it's created
-		if ( not self.Table ) then
-			self.Table = LibStub( "LibTextTable-1.1" ).New( nil, self.TableContainer );
-			self.Table:SetAllPoints();
+	--- Creates the NPC table when first shown, and selects the Custom NPCs tab.
+	function me:OnShow ()
+		if ( not me.Table ) then
+			me.Table = LibStub( "LibTextTable-1.1" ).New( nil, me.TableContainer );
+			me.Table:SetAllPoints();
 
 			if ( LibRareSpawnsData ) then
 				-- Hook row creation to add mouseover tooltips
-				CreateRowBackup = self.Table.CreateRow;
-				self.Table.CreateRow = self.TableCreateRow;
+				CreateRowBackup = me.Table.CreateRow;
+				me.Table.CreateRow = me.TableCreateRow;
 			end
-
-			return self.Table;
 		end
-	end
-end
---- Creates the NPC table when first shown, and selects the Custom NPCs tab.
-function me:OnShow ()
-	if ( not me.Table ) then
-		me:TableCreate();
-	end
 
-	if ( me.TabSelected ) then
-		me.UpdateTab();
-	else
-		me.TabSelect( Tabs[ "NPC" ] );
+		if ( me.TabSelected ) then
+			me.UpdateTab();
+		else
+			me.TabSelect( Tabs[ "NPC" ] );
+		end
 	end
 end
 --- Reverts to default options.

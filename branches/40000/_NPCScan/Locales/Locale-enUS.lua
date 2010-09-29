@@ -56,6 +56,7 @@ select( 2, ... ).L = setmetatable( {
 	SEARCH_DESC = "This table allows you to add or remove NPCs and achievements to scan for.",
 	SEARCH_ID = "NPC ID:",
 	SEARCH_ID_DESC = "The ID of the NPC to search for.  This value can be found on sites like Wowhead.com.",
+	SEARCH_MAP = "Zone:",
 	SEARCH_NAME = "Name:",
 	SEARCH_NAME_DESC = "A label for the NPC.  It doesn't have to match the NPC's actual name.",
 	SEARCH_NPCS = "Custom NPCs",

@@ -62,6 +62,7 @@ _NPCScan.L = setmetatable( {
 	SEARCH_DESC = "Cette table vous permet d'ajouter ou d'enlever des PNJs et de définir les hauts faits à surveiller.",
 	SEARCH_ID = "ID du PNJ :",
 	SEARCH_ID_DESC = "L'identifiant du PNJ à rechercher. Cette valeur peut être trouvée sur des sites comme WoWHead.com.",
+	SEARCH_MAP = "Zone :",
 	SEARCH_NAME = "Nom :",
 	SEARCH_NAME_DESC = "Un libellé pour le PNJ. Il ne doit pas forcément correspondre au nom exact du PNJ.",
 	SEARCH_NPCS = "PNJS perso.",

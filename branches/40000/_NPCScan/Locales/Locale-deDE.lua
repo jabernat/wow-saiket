@@ -62,6 +62,7 @@ _NPCScan.L = setmetatable( {
 	SEARCH_DESC = "Diese Tabelle ermöglicht dir, scanbare NSCs und Erfolge hinzuzufügen oder zu entfernen.",
 	SEARCH_ID = "NSC ID:",
 	SEARCH_ID_DESC = "Die ID des zu suchenden NSCs. Dieser Wert kann auf Internetseiten wie Wowhead.com gefunden werden.",
+	SEARCH_MAP = "Gebiet:",
 	SEARCH_NAME = "Name:",
 	SEARCH_NAME_DESC = "Kennzeichnung für einen NSC. Diese muß nicht dem tatsächlichen Namen des NSCs entsprechen.",
 	SEARCH_NPCS = "Normale NSCs",
