@@ -36,6 +36,6 @@ Overlay.L = setmetatable( {
 	MODULE_RANGERING_DESC = "提示： 在有稀有怪的地圖才顯示距離環(例如主城跟冬握就不會顯示).",
 	MODULE_RANGERING_FORMAT = "顯示大概 %d碼的偵測距離環",
 	MODULE_WORLDMAP = "主要世界地圖",
-	MODULE_WORLDMAP_KEY = "_|cffCCCC88NPCScan|r.Overlay",
 	MODULE_WORLDMAP_KEY_FORMAT = "• %s",
+	MODULE_WORLDMAP_TOGGLE_DESC = "如果開啟，顯示_|cffCCCC88NPCScan|r.Overlay已知怪物路徑的路徑圖。",
 }, { __index = Overlay.L; } );

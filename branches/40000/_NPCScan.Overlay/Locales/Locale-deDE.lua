@@ -36,6 +36,5 @@ Overlay.L = setmetatable( {
 	MODULE_RANGERING_DESC = "Anmerkung: der Entfernungsradius wird nur in Gebieten angezeigt, in denen seltene Mobs gesucht werden.",
 	MODULE_RANGERING_FORMAT = "%dyd Ring für ungefähren Entdeckungsradius (in Yards)",
 	MODULE_WORLDMAP = "Hauptweltkarte",
-	MODULE_WORLDMAP_KEY = "_|cffCCCC88NPCScan|r.Overlay",
 	MODULE_WORLDMAP_KEY_FORMAT = "• %s",
 }, { __index = Overlay.L; } );

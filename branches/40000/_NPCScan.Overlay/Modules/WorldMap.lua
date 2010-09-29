@@ -32,8 +32,12 @@ do
 		local Line = self[ Count ];
 		if ( not Line ) then
 			Line = self.Body:CreateFontString( nil, "OVERLAY", self.Font:GetName() );
-			Line:SetPoint( "TOPLEFT", Count == 1 and self.Title or self[ Count - 1 ], "BOTTOMLEFT" );
-			Line:SetPoint( "RIGHT", self.Title );
+			Line:SetPoint( "RIGHT", -5, 0 );
+			if ( Count == 1 ) then
+				Line:SetPoint( "TOPLEFT", 5, -5 );
+			else
+				Line:SetPoint( "TOPLEFT", self[ Count - 1 ], "BOTTOMLEFT" );
+			end
 			self[ Count ] = Line;
 		else
 			Line:Show();
@@ -48,8 +52,7 @@ do
 	--- Fills the key in when repainting a zone.
 	-- @param Map  AreaID to add names for.
 	function me:KeyPaint ( Map )
-		Width = self.Title:GetStringWidth();
-		Height = self.Title:GetStringHeight();
+		Width, Height = 0, 0;
 		Count = 0;
 
 		Overlay.ApplyZone( self, Map, KeyAddLine );
@@ -94,6 +97,28 @@ function me:RangeRingPaint ( Map )
 	end
 end
 
+--- Toggles the module like a checkbox.
+function me:ToggleOnClick ()
+	local Enable = self:GetChecked();
+	PlaySound( Enable and "igMainMenuOptionCheckBoxOn" or "igMainMenuOptionCheckBoxOff" );
+	Overlay.Modules[ Enable and "Enable" or "Disable" ]( "WorldMap" );
+end
+--- Adjusts the toggle button's display when changing state.
+function me:ToggleSetChecked ()
+	local Enable = self:GetChecked();
+	SetDesaturation( self.Normal, not Enable );
+	SetDesaturation( self.Border, not Enable );
+	local Color;
+	if ( Enable ) then
+		self.Disabled:Hide();
+		Color = NORMAL_FONT_COLOR;
+	else
+		self.Disabled:Show();
+		Color = GRAY_FONT_COLOR;
+	end
+	self.Text:SetTextColor( Color.r, Color.g, Color.b );
+end
+
 
 
 
@@ -124,10 +149,12 @@ function me:Paint ( Map, ... )
 end
 
 function me:OnEnable ( ... )
+	self.Toggle:SetChecked( true );
 	self.KeyParent:Show();
 	return self.super.OnEnable( self, ... );
 end
 function me:OnDisable ( ... )
+	self.Toggle:SetChecked( false );
 	self.KeyParent:Hide();
 	self.RangeRing:Hide();
 	return self.super.OnDisable( self, ... );
@@ -151,9 +178,7 @@ function me:OnLoad ( ... )
 	Key:SetScript( "OnSizeChanged", me.KeyOnSizeChanged );
 	self.KeyOnEnter( Key ); -- Initialize starting point
 	Key:EnableMouse( true );
-	Key:SetBackdrop( {
-		edgeFile = [[Interface\AchievementFrame\UI-Achievement-WoodBorder]]; edgeSize = 48;
-	} );
+	Key:SetBackdrop( { edgeFile = [[Interface\AchievementFrame\UI-Achievement-WoodBorder]]; edgeSize = 48; } );
 
 	Key.Font = CreateFont( "_NPCScanOverlayWorldMapKeyFont" );
 	Key.Font:SetFontObject( ChatFontNormal );
@@ -162,25 +187,14 @@ function me:OnLoad ( ... )
 	Key.Body = CreateFrame( "Frame", nil, Key );
 	Key.Body:SetPoint( "BOTTOMLEFT", 10, 10 );
 	Key.Body:SetPoint( "TOPRIGHT", -10, -10 );
-	Key.Body:SetBackdrop( {
-		bgFile = [[Interface\AchievementFrame\UI-Achievement-AchievementBackground]];
-		edgeFile = [[Interface\Tooltips\UI-Tooltip-Border]]; edgeSize = 16;
-		insets = { left = 3; right = 3; top = 3; bottom = 3; };
-	} );
+	Key.Body:SetBackdrop( { edgeFile = [[Interface\Tooltips\UI-Tooltip-Border]]; edgeSize = 16; } );
 	Key.Body:SetBackdropBorderColor( 0.8, 0.4, 0.2 ); -- Light brown
-
-	local TitleBackground = Key.Body:CreateTexture( nil, "BORDER" );
-	TitleBackground:SetTexture( [[Interface\AchievementFrame\UI-Achievement-Title]] );
-	TitleBackground:SetPoint( "TOPRIGHT", -5, -5 );
-	TitleBackground:SetPoint( "LEFT", 5, 0 );
-	TitleBackground:SetHeight( 18 );
-	TitleBackground:SetTexCoord( 0, 0.9765625, 0, 0.3125 );
-	TitleBackground:SetAlpha( 0.8 );
-
-	local Title = Key.Body:CreateFontString( nil, "OVERLAY", "GameFontHighlightMedium" );
-	Key.Title = Title;
-	Title:SetAllPoints( TitleBackground );
-	Title:SetText( L.MODULE_WORLDMAP_KEY );
+	local Background = Key.Body:CreateTexture( nil, "BACKGROUND" );
+	Background:SetPoint( "TOPLEFT", 3, -3 );
+	Background:SetPoint( "BOTTOMRIGHT", -3, 3 );
+	Background:SetTexture( [[Interface\AchievementFrame\UI-Achievement-AchievementBackground]] );
+	Background:SetTexCoord( 0, 1, 0.5, 1 );
+	Background:SetVertexColor( 0.8, 0.8, 0.8 );
 
 
 	-- Add range ring
@@ -205,6 +219,54 @@ function me:OnLoad ( ... )
 	Texture:SetVertexColor( Color.r, Color.g, Color.b );
 
 
+	-- Add toggle button
+	local Toggle = CreateFrame( "CheckButton", nil, WorldMapButton );
+	self.Toggle = Toggle;
+	Toggle:SetPoint( "TOPLEFT" );
+	hooksecurefunc( Toggle, "SetChecked", me.ToggleSetChecked );
+	Toggle:SetScript( "OnClick", me.ToggleOnClick );
+	Toggle:SetScript( "OnEnter", Overlay.Config.ControlOnEnter );
+	Toggle:SetScript( "OnLeave", GameTooltip_Hide );
+	Toggle.tooltipText = L.MODULE_WORLDMAP_TOGGLE_DESC;
+	local Normal = Toggle:CreateTexture();
+	Toggle.Normal = Normal;
+	Normal:SetTexture( [[Interface\AchievementFrame\UI-Achievement-Category-Background]] );
+	Normal:SetTexCoord( 0, 0.65, 0.12, 0.75 );
+	Normal:SetAllPoints();
+	Toggle:SetNormalTexture( Normal );
+	local Highlight = Toggle:CreateTexture( nil, "HIGHLIGHT" );
+	Highlight:SetTexture( [[Interface\AchievementFrame\UI-Achievement-Category-Highlight]] );
+	Highlight:SetTexCoord( 0, 0.65, 0.12, 0.75 );
+	Highlight:SetAllPoints();
+	Toggle:SetHighlightTexture( Highlight );
+	local Text = Toggle:CreateFontString( nil, "OVERLAY", "GameFontHighlightLarge" );
+	Toggle.Text = Text;
+	Toggle:SetFontString( Text );
+	local DisabledPadding = 8; -- Room to leave left of text for disabled "X"
+	Text:ClearAllPoints()
+	Text:SetPoint( "TOPRIGHT" );
+	Text:SetPoint( "BOTTOMLEFT", DisabledPadding, 0 )
+	Text:SetText( L.MODULE_WORLDMAP_TOGGLE );
+	local Width, Height = Text:GetStringWidth() + 16 + DisabledPadding, Text:GetStringHeight() + 16;
+	Toggle:SetSize( Width, Height );
+	local Border = Toggle:CreateTexture( nil, "BACKGROUND" );
+	Toggle.Border = Border;
+	Border:SetPoint( "TOPLEFT" );
+	Border:SetPoint( "BOTTOMRIGHT", 32, -32 );
+	Border:SetTexture( [[Interface\AchievementFrame\UI-Achievement-Alert-Background]] );
+	-- Keep bottom-right corner of border texture aligned with bottom-right of button
+	Border:SetTexCoord( ( 325 - ( Width + 32 ) ) / 512, 325 / 512,
+		( 97 - ( Height + 32 ) ) / 128, 97 / 128 );
+	local Disabled = Toggle:CreateTexture( nil, "OVERLAY" );
+	Toggle.Disabled = Disabled;
+	Disabled:SetPoint( "LEFT", -2, 0 );
+	local Size = Toggle:GetHeight() * 0.8;
+	Disabled:SetSize( Size, Size );
+	Disabled:SetTexture( [[Interface\RaidFrame\ReadyCheck-NotReady]] );
+	Disabled:SetAlpha( 0.75 );
+	Toggle:SetChecked( false ); -- Initialize button display
+
+
 	-- Cache achievement NPC names
 	self.AchievementNPCNames = {};
 	for AchievementID in pairs( Overlay.Achievements ) do
@@ -219,6 +281,9 @@ function me:OnLoad ( ... )
 	return self.super.OnLoad( self, ... );
 end
 function me:OnUnload ( ... )
+	self.Toggle:Hide();
+	self.Toggle.SetChecked = nil;
+	self.Toggle:SetScript( "OnClick", nil );
 	self.KeyParent:SetScript( "OnSizeChanged", nil );
 	self.KeyParent.Key:SetScript( "OnEnter", nil );
 	self.KeyParent.Key:SetScript( "OnSizeChanged", nil );

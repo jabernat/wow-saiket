@@ -36,6 +36,6 @@ Overlay.L = setmetatable( {
 	MODULE_RANGERING_DESC = "이 링은 희귀몹이 출현하는 지역에서만 사용됩니다.",
 	MODULE_RANGERING_FORMAT = "미니맵에 %dyd의 탐색거리를 나타내는 링 표시",
 	MODULE_WORLDMAP = "세계 지도",
-	MODULE_WORLDMAP_KEY = "_|cffCCCC88NPCScan|r.Overlay",
 	MODULE_WORLDMAP_KEY_FORMAT = "- %s",
+	MODULE_WORLDMAP_TOGGLE_DESC = "이 옵션을 활성화하면, 탐색하려는 NPC의 이동경로를 보여줍니다.",
 }, { __index = Overlay.L; } );

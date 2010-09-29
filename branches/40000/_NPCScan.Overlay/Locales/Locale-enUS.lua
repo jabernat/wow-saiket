@@ -30,8 +30,9 @@ select( 2, ... ).L = setmetatable( {
 	MODULE_RANGERING_DESC = "Note: The range ring only appears in zones with tracked rares.",
 	MODULE_RANGERING_FORMAT = "Show %dyd ring for approximate detection range",
 	MODULE_WORLDMAP = "Main World Map",
-	MODULE_WORLDMAP_KEY = "_|cffCCCC88NPCScan|r.Overlay",
 	MODULE_WORLDMAP_KEY_FORMAT = "• %s",
+	MODULE_WORLDMAP_TOGGLE = "NPCs",
+	MODULE_WORLDMAP_TOGGLE_DESC = "Toggle _|cffCCCC88NPCScan|r.Overlay's paths for tracked NPCs.",
 
 	-- Phrases localized by default UI
 	CONFIG_ENABLE = ENABLE;
