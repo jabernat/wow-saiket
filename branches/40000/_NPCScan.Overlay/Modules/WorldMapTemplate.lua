@@ -17,7 +17,7 @@ do
 		Overlay.DrawPath( self, PathData, "ARTWORK", R, G, B );
 		if ( FoundX ) then
 			Overlay.DrawFound( self, FoundX, FoundY,
-				Overlay.DetectionRadius / Overlay.GetCurrentZoneSize(),
+				Overlay.DetectionRadius / Overlay.GetCurrentMapSize(),
 				"OVERLAY", R, G, B );
 		end
 	end

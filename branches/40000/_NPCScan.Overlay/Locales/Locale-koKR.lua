@@ -30,7 +30,6 @@ Overlay.L = setmetatable( {
 	CONFIG_SHOWALL_DESC = "기본적으로 희귀몹을 탐색하지 않았을때는 경로를 표시하지 않지만, 이 옵션을 사용하면 항상 이동경로를 표시합니다.",
 	CONFIG_TITLE = "이동경로 표시",
 	CONFIG_TITLE_STANDALONE = "_|cffCCCC88NPCScan|r.Overlay",
-	CONFIG_ZONE = "지역:",
 	MODULE_ALPHAMAP3 = "AlphaMap3 애드온",
 	MODULE_BATTLEFIELDMINIMAP = "지역 지도",
 	MODULE_MINIMAP = "미니맵",

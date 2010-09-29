@@ -27,7 +27,21 @@ local function GetAlpha ( Options, Name )
 end
 
 
-local SafeCall = Overlay.SafeCall;
+local SafeCall;
+do
+	--- Checks the Success return of pcall.
+	local function Catch ( Success, ... )
+		if ( not Success ) then
+			geterrorhandler()( ... );
+		end
+		return Success, ...;
+	end
+	local pcall = pcall;
+	--- Similar to pcall, but throws errors without ending execution.
+	function SafeCall ( Function, ... )
+		return Catch( pcall( Function, ... ) );
+	end
+end
 --- Sets a module's overlay alpha.
 local function SetAlpha ( Module, Alpha )
 	if ( Module.Enabled and Module.Alpha ~= Alpha ) then

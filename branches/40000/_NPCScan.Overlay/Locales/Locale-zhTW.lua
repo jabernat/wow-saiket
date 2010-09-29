@@ -30,7 +30,6 @@ Overlay.L = setmetatable( {
 	CONFIG_SHOWALL_DESC = "通常地圖上不會顯示非搜尋中的怪物的路徑圖。開啟這個選項將永遠顯示所有已知的路徑圖。",
 	CONFIG_TITLE = "路徑圖",
 	CONFIG_TITLE_STANDALONE = "_|cffCCCC88NPCScan|r.Overlay",
-	CONFIG_ZONE = "地區:",
 	MODULE_ALPHAMAP3 = "AlphaMap3 插件",
 	MODULE_BATTLEFIELDMINIMAP = "顯示戰場迷你地圖",
 	MODULE_MINIMAP = "小地圖",

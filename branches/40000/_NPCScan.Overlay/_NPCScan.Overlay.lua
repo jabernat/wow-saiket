@@ -27,8 +27,6 @@ me.OptionsDefault = {
 };
 
 
-me.NPCMaps = {}; -- [ NpcID ] = MapID;
-me.ZoneMaps = {}; -- [ LocalizedZoneName ] = MapID;
 me.NPCsEnabled = {};
 me.NPCsFoundX = {};
 me.NPCsFoundY = {};
@@ -59,22 +57,6 @@ local MESSAGE_REMOVE = "NpcOverlay_Remove";
 local MESSAGE_FOUND = "NpcOverlay_Found";
 
 
-
-
-do
-	--- Checks the Success return of pcall.
-	local function Catch ( Success, ... )
-		if ( not Success ) then
-			geterrorhandler()( ... );
-		end
-		return Success, ...;
-	end
-	local pcall = pcall;
-	--- Similar to pcall, but throws errors without ending execution.
-	function me.SafeCall ( Function, ... )
-		return Catch( pcall( Function, ... ) );
-	end
-end
 
 
 --- Prepares an unused texture on the given frame.
@@ -270,7 +252,7 @@ end
 
 --- Enables an NPC map overlay by NpcID.
 local function NPCAdd ( NpcID )
-	local Map = me.NPCMaps[ NpcID ];
+	local Map = me.GetNPCMapID( NpcID );
 	if ( Map and not me.NPCsEnabled[ NpcID ] ) then
 		me.NPCsEnabled[ NpcID ] = true;
 
@@ -285,7 +267,7 @@ local function NPCRemove ( NpcID )
 		me.NPCsEnabled[ NpcID ] = nil;
 
 		if ( not me.Options.ShowAll ) then
-			me.Modules.UpdateMap( me.NPCMaps[ NpcID ] );
+			me.Modules.UpdateMap( me.GetNPCMapID( NpcID ) );
 		end
 	end
 end
@@ -330,7 +312,7 @@ do
 	-- @param NpcID  Numeric creature ID that was found.
 	me.Events[ MESSAGE_FOUND ] = function ( self, _, NpcID )
 		NpcID = assert( tonumber( NpcID ), "Found message Npc ID must be a number." );
-		local Map = me.NPCMaps[ NpcID ];
+		local Map = me.GetNPCMapID( NpcID );
 		if ( Map and not me.NPCsFoundIgnored[ NpcID ] ) then
 			SetMapToCurrentZone();
 
@@ -386,14 +368,25 @@ function me.Synchronize ( Options )
 	me.Modules.OnSynchronize( Options );
 end
 do
+	local NPCMaps = {}; -- [ NpcID ] = MapID;
+	--- @return Map ID that NpcID can be found on or nil if unknown.
+	function me.GetNPCMapID ( NpcID )
+		return NPCMaps[ NpcID ];
+	end
 	local MapNames = {};
-	--- @return Localized zone name for Map if known.
+	--- @return Localized zone name for Map or nil if unknown.
 	-- Note that only true continent sub-zones are supported.
-	function me.GetZoneName ( Map )
+	function me.GetMapName ( Map )
 		return MapNames[ Map ];
 	end
-	--- @return Width and height of the current zone in yards.
-	function me.GetCurrentZoneSize ()
+	local MapIDs = {}; -- [ LocalizedZoneName ] = MapID;
+	--- @return Map ID for localized zone name or nil if unknown.
+	-- Note that only true continent sub-zones are supported.
+	function me.GetMapID ( Name )
+		return MapIDs[ Name ];
+	end
+	--- @return Width and height of the current zone in yards or nil if unavailable.
+	function me.GetCurrentMapSize ()
 		local _, X1, Y1, X2, Y2 = GetCurrentMapZone();
 		if ( X1 ) then
 			return X1 - X2, Y1 - Y2;
@@ -408,12 +401,11 @@ do
 			local Map = GetCurrentMapAreaID();
 			if ( me.PathData[ Map ] ) then
 				local Name = select( ZoneIndex, ... );
-				local Width, Height = me.GetCurrentZoneSize();
+				local Width, Height = me.GetCurrentMapSize();
 				if ( not Width or Width == 0 or Height == 0 ) then
 					error( "Zone dimensions unavailable for "..Name.." ("..Map..")." );
 				end
-				MapNames[ Map ] = Name;
-				me.ZoneMaps[ Name ] = Map;
+				MapNames[ Map ], MapIDs[ Name ] = Name, Map;
 			end
 		end
 	end
@@ -430,11 +422,11 @@ do
 			end
 			-- Build a reverse lookup of NpcIDs to zones, and add them all by default
 			for Map, MapData in pairs( me.PathData ) do
-				if ( not me.GetZoneName( Map ) ) then -- Zone size will be unavailable too
+				if ( not me.GetMapName( Map ) ) then -- Zone size will be unavailable too
 					error( "Zone dimensions unavailable for map "..Map.."." );
 				end
 				for NpcID in pairs( MapData ) do
-					me.NPCMaps[ NpcID ] = Map;
+					NPCMaps[ NpcID ] = Map;
 					NPCAdd( NpcID );
 				end
 			end

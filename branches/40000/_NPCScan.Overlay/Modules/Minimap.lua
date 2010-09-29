@@ -503,7 +503,7 @@ function me:ZONE_CHANGED_NEW_AREA ()
 	local MapBackup = GetCurrentMapAreaID();
 	SetMapToCurrentZone();
 	if ( Overlay.PathData[ GetCurrentMapAreaID() ] ) then -- Need zone dimensions
-		MapWidth, MapHeight = Overlay.GetCurrentZoneSize();
+		MapWidth, MapHeight = Overlay.GetCurrentMapSize();
 	else
 		MapWidth, MapHeight = nil;
 	end
@@ -520,7 +520,7 @@ do
 		if ( MapLast ~= Map ) then -- Changed zones
 			MapLast = Map;
 
-			if ( Map == Overlay.ZoneMaps[ GetRealZoneText() ] ) then -- Now showing current zone
+			if ( Map == Overlay.GetMapID( GetRealZoneText() ) ) then -- Now showing current zone
 				UpdateForce = true;
 			end
 		end
@@ -545,7 +545,7 @@ do
 		if ( UpdateForce or UpdateNext <= 0 ) then
 			UpdateNext = UpdateRate;
 
-			Map = Overlay.ZoneMaps[ GetRealZoneText() ];
+			Map = Overlay.GetMapID( GetRealZoneText() );
 			X, Y = GetPlayerMapPosition( "player" );
 			if ( not Map or not MapWidth or not MapHeight
 				or ( X == 0 and Y == 0 )
@@ -589,7 +589,7 @@ end
 --- Force a repaint if shown paths change.
 -- @param Map  AreaID that changed, or nil if all zones must update.
 function me:OnMapUpdate ( Map )
-	if ( not Map or Map == Overlay.ZoneMaps[ GetRealZoneText() ] ) then
+	if ( not Map or Map == Overlay.GetMapID( GetRealZoneText() ) ) then
 		UpdateForce = true;
 	end
 end

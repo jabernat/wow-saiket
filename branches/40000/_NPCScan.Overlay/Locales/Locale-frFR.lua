@@ -30,7 +30,6 @@ Overlay.L = setmetatable( {
 	CONFIG_SHOWALL_DESC = "Normalement, quand un monstre n'est pas recherché, son trajet n'est pas affiché sur la carte. L'activation de ce paramètre affichera tous les trajets connus.",
 	CONFIG_TITLE = "Superposition",
 	CONFIG_TITLE_STANDALONE = "_|cffCCCC88NPCScan|r.Overlay",
-	CONFIG_ZONE = "Zone :",
 	MODULE_ALPHAMAP3 = "AddOn AlphaMap3",
 	MODULE_BATTLEFIELDMINIMAP = "Carte locale",
 	MODULE_MINIMAP = "Minicarte",

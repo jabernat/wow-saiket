@@ -30,7 +30,6 @@ Overlay.L = setmetatable( {
 	CONFIG_SHOWALL_DESC = "Falls ein Mob nicht gesucht wird, wird normalerweise sein Wegpfad von der Karte entfernt. Diese Einstellung aktivieren, um stattdessen immer alle bekannten Wegpfade anzuzeigen.",
 	CONFIG_TITLE = "Overlay",
 	CONFIG_TITLE_STANDALONE = "_|cffCCCC88NPCScan|r.Overlay",
-	CONFIG_ZONE = "Gebiet:",
 	MODULE_ALPHAMAP3 = "AlphaMap3 AddOn",
 	MODULE_BATTLEFIELDMINIMAP = "Schlachtfeld-Minikarten-Anzeige",
 	MODULE_MINIMAP = "Minikarte",

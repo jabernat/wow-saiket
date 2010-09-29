@@ -24,7 +24,6 @@ select( 2, ... ).L = setmetatable( {
 	CONFIG_SHOWALL_DESC = "Normally when a mob isn't being searched for, its path gets taken off the map.  Enable this setting to always show every known patrol instead.",
 	CONFIG_TITLE = "Overlay",
 	CONFIG_TITLE_STANDALONE = "_|cffCCCC88NPCScan|r.Overlay",
-	CONFIG_ZONE = "Zone:",
 	MODULE_ALPHAMAP3 = "AlphaMap3 AddOn",
 	MODULE_BATTLEFIELDMINIMAP = "Battlefield-Minimap Popout",
 	MODULE_MINIMAP = "Minimap",

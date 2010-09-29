@@ -144,61 +144,6 @@ end
 
 
 
-local TableCreateBackup;
-if ( IsChildAddOn ) then
-	local Args = {};
-	local select = select;
-	--- Appends a value to a vararg list.
-	local function Append ( NewValue, ... )
-		local Count = select( "#", ... );
-		for Index = 1, Count do
-			Args[ Index ] = select( Index, ... );
-		end
-		for Index = Count + 1, #Args do
-			Args[ Index ] = nil;
-		end
-		Args[ Count + 1 ] = NewValue;
-		return unpack( Args, 1, Count + 1 );
-	end
-
-	local SetHeaderBackup;
-	--- Hook to add a zone name column to the NPC table header.
-	function me:TableSetHeader ( ... )
-		return SetHeaderBackup( self, Append( L.CONFIG_ZONE, ... ) );
-	end
-	local SetSortHandlersBackup;
-	--- Hook to set the added zone name column as sortable.
-	function me:TableSetSortHandlers ( ... )
-		return SetSortHandlersBackup( self, Append( true, ... ) ); -- Make map row sortable
-	end
-	local AddRowBackup;
-	--- Hook to add zone names to the last column of NPC table rows.
-	function me:TableAddRow ( ... )
-		local Map = Overlay.NPCMaps[ select( 4, ... ) ]; -- Arg 4 is NpcID
-		if ( Map ) then
-			return AddRowBackup( self, Append( Overlay.GetZoneName( Map ) or Map, ... ) ); -- AreaID if on an instance map
-		else
-			return AddRowBackup( self, ... );
-		end
-	end
-	--- Adds table hooks if CreateTable returns a new table.
-	local function HookTable ( Table, ... )
-		if ( Table ) then -- Just created
-			SetHeaderBackup, Table.SetHeader = Table.SetHeader, me.TableSetHeader;
-			SetSortHandlersBackup, Table.SetSortHandlers = Table.SetSortHandlers, me.TableSetSortHandlers;
-			AddRowBackup, Table.AddRow = Table.AddRow, me.TableAddRow;
-		end
-		return Table, ...;
-	end
-	--- Hooks _NPCScan's NPC table to add a zone column when created.
-	function me:TableCreate ( ... )
-		return HookTable( TableCreateBackup( self, ... ) );
-	end
-end
-
-
-
-
 --- Slash command chat handler to open the options pane.
 function me.SlashCommand ()
 	InterfaceOptionsFrame_OpenToCategory( me );
@@ -249,11 +194,7 @@ me.ScrollChild:SetSize( 1, 1 );
 
 
 if ( IsChildAddOn ) then
-	Overlay.SafeCall( function ()
-		me.parent = assert( _NPCScan.Config.name );
-		TableCreateBackup = assert( _NPCScan.Config.Search.TableCreate );
-		_NPCScan.Config.Search.TableCreate = me.TableCreate;
-	end );
+	me.parent = assert( _NPCScan.Config.name, "Couldn't parent configuration to _NPCScan." );
 end
 InterfaceOptions_AddCategory( me );
 
