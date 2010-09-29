@@ -45,40 +45,22 @@ do
 		Width = max( Width, Line:GetStringWidth() );
 		Height = Height + Line:GetStringHeight();
 	end
-	--- @return True if Map has a visible path on it.
-	local function MapHasNPCs ( Map )
-		local MapData = Overlay.PathData[ Map ];
-		if ( MapData ) then
-			if ( Overlay.Options.ShowAll ) then
-				return true;
-			end
-			for NpcID in pairs( MapData ) do
-				if ( Overlay.NPCsEnabled[ NpcID ] ) then
-					return true;
-				end
-			end
-		end
-	end
 	--- Fills the key in when repainting a zone.
 	-- @param Map  AreaID to add names for.
 	function me:KeyPaint ( Map )
-		if ( MapHasNPCs( Map ) ) then
-			Width = self.Title:GetStringWidth();
-			Height = self.Title:GetStringHeight();
-			Count = 0;
+		Width = self.Title:GetStringWidth();
+		Height = self.Title:GetStringHeight();
+		Count = 0;
 
-			Overlay.ApplyZone( self, Map, KeyAddLine );
+		Overlay.ApplyZone( self, Map, KeyAddLine );
 
-			for Index = Count + 1, #self do
-				self[ Index ]:Hide();
-			end
-			self:SetSize( Width + 32, Height + 32 );
-			self:Show();
-			if ( not self.Container:IsShown() ) then -- Previously too large; OnSizeChanged won't fire
-				me.KeyOnSizeChanged( self ); -- Force size validation
-			end
-		else
-			self:Hide();
+		for Index = Count + 1, #self do
+			self[ Index ]:Hide();
+		end
+		self:SetSize( Width + 32, Height + 32 );
+		self:Show();
+		if ( not self.Container:IsShown() ) then -- Previously too large; OnSizeChanged won't fire
+			me.KeyOnSizeChanged( self ); -- Force size validation
 		end
 	end
 end
@@ -102,13 +84,43 @@ function me:KeyOnSizeChanged ()
 	me.KeyValidateSize( self );
 end
 
+--- Shows and resizes the range ring when repainting a zone.
+-- @param Map  AreaID to resize to.
+function me:RangeRingPaint ( Map )
+	if ( Overlay.Options.ModulesExtra[ "WorldMap" ].RangeRing ) then
+		local Size = ( Overlay.DetectionRadius * 2 ) / Overlay.GetMapSize( Map ) * self:GetWidth();
+		self.Child:SetSize( Size, Size );
+		self:Show();
+	end
+end
 
 
 
+
+--- @return True if Map has a visible path on it.
+local function MapHasNPCs ( Map )
+	local MapData = Overlay.PathData[ Map ];
+	if ( MapData ) then
+		if ( Overlay.Options.ShowAll ) then
+			return true;
+		end
+		for NpcID in pairs( MapData ) do
+			if ( Overlay.NPCsEnabled[ NpcID ] ) then
+				return true;
+			end
+		end
+	end
+end
 --- Updates the key when repainting the zone.
-function me:Paint ( ... )
-	self.KeyPaint( self.KeyParent.Key, ... );
-	return self.super.Paint( self, ... );
+function me:Paint ( Map, ... )
+	if ( MapHasNPCs( Map ) ) then
+		self.KeyPaint( self.KeyParent.Key, Map );
+		self.RangeRingPaint( self.RangeRing, Map );
+	else
+		self.KeyParent.Key:Hide();
+		self.RangeRing:Hide();
+	end
+	return self.super.Paint( self, Map, ... );
 end
 
 function me:OnEnable ( ... )
@@ -117,6 +129,7 @@ function me:OnEnable ( ... )
 end
 function me:OnDisable ( ... )
 	self.KeyParent:Hide();
+	self.RangeRing:Hide();
 	return self.super.OnDisable( self, ... );
 end
 --- Adds a custom key frame to the world map template.
@@ -128,12 +141,12 @@ function me:OnLoad ( ... )
 	KeyParent:SetAllPoints();
 	KeyParent:SetScript( "OnSizeChanged", me.KeyParentOnSizeChanged );
 
-	local Container = CreateFrame( "Frame", nil, KeyParent );
-	Container:SetAllPoints();
+	local KeyContainer = CreateFrame( "Frame", nil, KeyParent );
+	KeyContainer:SetAllPoints();
 
-	local Key = CreateFrame( "Frame", nil, Container );
+	local Key = CreateFrame( "Frame", nil, KeyContainer );
 	KeyParent.Key = Key;
-	Key.KeyParent, Key.Container = KeyParent, Container;
+	Key.KeyParent, Key.Container = KeyParent, KeyContainer;
 	Key:SetScript( "OnEnter", self.KeyOnEnter );
 	Key:SetScript( "OnSizeChanged", me.KeyOnSizeChanged );
 	self.KeyOnEnter( Key ); -- Initialize starting point
@@ -170,6 +183,28 @@ function me:OnLoad ( ... )
 	Title:SetText( L.MODULE_WORLDMAP_KEY );
 
 
+	-- Add range ring
+	local RangeRing = CreateFrame( "ScrollFrame", nil, WorldMapPlayer );
+	self.RangeRing = RangeRing;
+	-- Setup the range ring's textures
+	RangeRing:Hide();
+	RangeRing:SetAllPoints( WorldMapDetailFrame );
+	RangeRing:SetAlpha( 0.8 );
+
+	local RangeRingChild = CreateFrame( "Frame", nil, RangeRing );
+	RangeRing.Child = RangeRingChild;
+	RangeRing:SetScrollChild( RangeRingChild );
+	RangeRingChild:ClearAllPoints();
+	RangeRingChild:SetPoint( "CENTER", WorldMapPlayer );
+
+	local Color = NORMAL_FONT_COLOR;
+	local Texture = RangeRingChild:CreateTexture();
+	Texture:SetAllPoints();
+	Texture:SetTexture( [[Interface\BUTTONS\IconBorder-GlowRing]] );
+	Texture:SetBlendMode( "ADD" );
+	Texture:SetVertexColor( Color.r, Color.g, Color.b );
+
+
 	-- Cache achievement NPC names
 	self.AchievementNPCNames = {};
 	for AchievementID in pairs( Overlay.Achievements ) do
@@ -194,4 +229,50 @@ end
 
 
 
+--- Enables the WorldMap range ring.
+-- @return True if changed.
+function me.RangeRingSetEnabled ( Enable )
+	if ( Enable ~= Overlay.Options.ModulesExtra[ "WorldMap" ].RangeRing ) then
+		Overlay.Options.ModulesExtra[ "WorldMap" ].RangeRing = Enable;
+
+		me.Config.RangeRing:SetChecked( Enable );
+
+		if ( me.Loaded ) then
+			if ( Enable ) then
+				me:OnMapUpdate();
+			else
+				me.RangeRing:Hide();
+			end
+		end
+		return true;
+	end
+end
+--- Synchronizes custom settings to options table.
+function me:OnSynchronize ( OptionsExtra )
+	self.RangeRingSetEnabled( OptionsExtra.RangeRing ~= false );
+end
+
+
+
+
 Overlay.Modules.Register( "WorldMap", me, L.MODULE_WORLDMAP );
+
+local Config = me.Config;
+local Checkbox = CreateFrame( "CheckButton", "$parentRangeRing", Config, "InterfaceOptionsCheckButtonTemplate" );
+Config.RangeRing = Checkbox;
+--- Toggles the range ring when clicked.
+function Checkbox.setFunc ( Enable )
+	me.RangeRingSetEnabled( Enable == "1" );
+end
+
+Checkbox:SetPoint( "TOPLEFT", Config.Enabled, "BOTTOMLEFT" );
+local Label = _G[ Checkbox:GetName().."Text" ];
+Label:SetPoint( "RIGHT", Config, "RIGHT", -6, 0 );
+Label:SetJustifyH( "LEFT" );
+Label:SetFormattedText( Overlay.L.MODULE_RANGERING_FORMAT, Overlay.DetectionRadius );
+Checkbox:SetHitRectInsets( 4, 4 - Label:GetStringWidth(), 4, 4 );
+Checkbox.SetEnabled = Overlay.Config.ModuleCheckboxSetEnabled;
+Checkbox.tooltipText = Overlay.L.MODULE_RANGERING_DESC;
+Config:AddControl( Checkbox );
+
+Config:SetHeight( Config:GetHeight() + Checkbox:GetHeight() );

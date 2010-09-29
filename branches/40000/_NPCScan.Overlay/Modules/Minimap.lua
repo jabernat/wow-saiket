@@ -15,7 +15,6 @@ me.UpdateRateRotating = 0.02; -- Faster so that spinning the minimap appears smo
 local UpdateRate = me.UpdateRateDefault;
 
 local UpdateForce, IsInside, RotateMinimap, Radius, Quadrants;
-local MapWidth, MapHeight;
 
 -- Lots of thanks to Routes (http://www.wowace.com/addons/routes/)
 
@@ -466,7 +465,8 @@ do
 		end
 
 		local Side = Radius * 2;
-		Width, Height = MapWidth / MaxDataValue / Side, MapHeight / MaxDataValue / Side; -- Simplifies data decompression
+		Width, Height = Overlay.GetMapSize( Map );
+		Width, Height = Width / MaxDataValue / Side, Height / MaxDataValue / Side; -- Simplifies data decompression
 		X, Y = NewX / Side, NewY / Side;
 		Facing = NewFacing;
 
@@ -500,15 +500,8 @@ end
 --- Force a repaint and cache map size when changing zones.
 function me:ZONE_CHANGED_NEW_AREA ()
 	UpdateForce = true;
-	local MapBackup = GetCurrentMapAreaID();
-	SetMapToCurrentZone();
-	if ( Overlay.PathData[ GetCurrentMapAreaID() ] ) then -- Need zone dimensions
-		MapWidth, MapHeight = Overlay.GetCurrentMapSize();
-	else
-		MapWidth, MapHeight = nil;
-	end
-	if ( WorldMapFrame:IsVisible() ) then -- Restore viewed zone
-		SetMapByID( MapBackup );
+	if ( not WorldMapFrame:IsVisible() ) then
+		SetMapToCurrentZone();
 	end
 end
 do
@@ -538,7 +531,7 @@ do
 	local GetCurrentMapAreaID = GetCurrentMapAreaID;
 	local UpdateNext = 0;
 	local LastX, LastY, LastFacing;
-	local Map, X, Y, Facing;
+	local Map, X, Y, Facing, Width, Height;
 	--- Throttles repaints based on a timer, and only repaints if the minimap view changes.
 	function me:OnUpdate ( Elapsed )
 		UpdateNext = UpdateNext - Elapsed;
@@ -547,7 +540,7 @@ do
 
 			Map = Overlay.GetMapID( GetRealZoneText() );
 			X, Y = GetPlayerMapPosition( "player" );
-			if ( not Map or not MapWidth or not MapHeight
+			if ( not Map
 				or ( X == 0 and Y == 0 )
 				or X < 0 or X > 1 or Y < 0 or Y > 1
 				or Map ~= GetCurrentMapAreaID() -- Coordinates will be for wrong map
@@ -562,7 +555,8 @@ do
 			UpdateRate = self[ RotateMinimap and "UpdateRateRotating" or "UpdateRateDefault" ];
 
 			Facing = RotateMinimap and GetPlayerFacing() or 0;
-			X, Y = X * MapWidth, Y * MapHeight;
+			Width, Height = Overlay.GetMapSize( Map );
+			X, Y = X * Width, Y * Height;
 
 			if ( UpdateForce or Facing ~= LastFacing or ( X - LastX ) ^ 2 + ( Y - LastY ) ^ 2 >= self.UpdateDistance ) then
 				UpdateForce = nil;
@@ -598,9 +592,6 @@ function me:OnEnable ()
 	self.ScrollFrame:Show();
 	self:RegisterEvent( "WORLD_MAP_UPDATE" );
 	self:RegisterEvent( "ZONE_CHANGED_NEW_AREA" );
-	if ( GetZoneText() ~= "" ) then -- Zone information already known
-		self:ZONE_CHANGED_NEW_AREA( "ZONE_CHANGED_NEW_AREA" );
-	end
 end
 --- Hides the canvas when disabled.
 function me:OnDisable ()

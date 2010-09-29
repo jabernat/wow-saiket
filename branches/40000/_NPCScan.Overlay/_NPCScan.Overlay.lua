@@ -385,12 +385,10 @@ do
 	function me.GetMapID ( Name )
 		return MapIDs[ Name ];
 	end
-	--- @return Width and height of the current zone in yards or nil if unavailable.
-	function me.GetCurrentMapSize ()
-		local _, X1, Y1, X2, Y2 = GetCurrentMapZone();
-		if ( X1 ) then
-			return X1 - X2, Y1 - Y2;
-		end
+	local MapWidths, MapHeights = {}, {};
+	--- @return Width and height of Map in yards or nil if unavailable.
+	function me.GetMapSize ( Map )
+		return MapWidths[ Map ], MapHeights[ Map ];
 	end
 
 	--- Saves localized map names on a given ContinentID.
@@ -401,11 +399,14 @@ do
 			local Map = GetCurrentMapAreaID();
 			if ( me.PathData[ Map ] ) then
 				local Name = select( ZoneIndex, ... );
-				local Width, Height = me.GetCurrentMapSize();
-				if ( not Width or Width == 0 or Height == 0 ) then
-					error( "Zone dimensions unavailable for "..Name.." ("..Map..")." );
-				end
 				MapNames[ Map ], MapIDs[ Name ] = Name, Map;
+
+				local _, X1, Y1, X2, Y2 = GetCurrentMapZone();
+				local Width, Height = X1 - X2, Y1 - Y2;
+				if ( not Width or Width == 0 or Height == 0 ) then
+					error( "Zone dimensions unavailable for map "..Map.."." );
+				end
+				MapWidths[ Map ], MapHeights[ Map ] = Width, Height;
 			end
 		end
 	end
@@ -422,7 +423,7 @@ do
 			end
 			-- Build a reverse lookup of NpcIDs to zones, and add them all by default
 			for Map, MapData in pairs( me.PathData ) do
-				if ( not me.GetMapName( Map ) ) then -- Zone size will be unavailable too
+				if ( not me.GetMapSize( Map ) ) then
 					error( "Zone dimensions unavailable for map "..Map.."." );
 				end
 				for NpcID in pairs( MapData ) do
