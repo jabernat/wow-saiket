@@ -97,6 +97,15 @@ function me:RangeRingPaint ( Map )
 	end
 end
 
+--- Shows a *world map* tooltip similar to the quest objective toggle button.
+function me:ToggleOnEnter ()
+	WorldMapTooltip:SetOwner( self, "ANCHOR_TOPLEFT" );
+	WorldMapTooltip:SetText( L.MODULE_WORLDMAP_TOGGLE_DESC, nil, nil, nil, nil, 1 );
+end
+--- Hides the *world map* tooltip.
+function me:ToggleOnLeave ()
+	WorldMapTooltip:Hide();
+end
 --- Toggles the module like a checkbox.
 function me:ToggleOnClick ()
 	local Enable = self:GetChecked();
@@ -225,9 +234,8 @@ function me:OnLoad ( ... )
 	Toggle:SetPoint( "TOPLEFT" );
 	hooksecurefunc( Toggle, "SetChecked", me.ToggleSetChecked );
 	Toggle:SetScript( "OnClick", me.ToggleOnClick );
-	Toggle:SetScript( "OnEnter", Overlay.Config.ControlOnEnter );
-	Toggle:SetScript( "OnLeave", GameTooltip_Hide );
-	Toggle.tooltipText = L.MODULE_WORLDMAP_TOGGLE_DESC;
+	Toggle:SetScript( "OnEnter", me.ToggleOnEnter );
+	Toggle:SetScript( "OnLeave", me.ToggleOnLeave );
 	local Normal = Toggle:CreateTexture();
 	Toggle.Normal = Normal;
 	Normal:SetTexture( [[Interface\AchievementFrame\UI-Achievement-Category-Background]] );
