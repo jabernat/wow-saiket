@@ -1,0 +1,31 @@
+## Interface: 40000
+## Title: _|cffCCCC88Dev|r
+## Notes: Special tools useful for debugging the UI.
+## Author: Saiket
+## Version: 4.0.0.2
+## X-Date: 2010-09-20
+## X-Category: Development Tools
+## X-License: GPLv3
+## X-Email: saiket.wow@gmail.com
+## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons/Dev
+## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Dev
+## X-WoWI-ID: 9333
+## X-Curse-Project-ID: dev
+## X-Localizations: enUS
+## X-CompatibleLocales: deDE, enUS, esES, esMX, frFR, koKR, ruRU, zhCN, zhTW
+## SavedVariables: _DevOptions
+## LoadWith: Blizzard_DebugTools
+## OptionalDeps: !ImprovedErrorFrame, !BugGrabber, !Swatter, !BaudErrorFrame
+Locales.xml
+
+_Dev.lua
+_Dev.xml
+
+_Dev.Dump.lua
+_Dev.AddOnChat.lua
+_Dev.Outline.lua
+_Dev.Frames.lua
+_Dev.Stats.lua
+
+_Dev.Options.lua
+_Dev.Outline.xml
