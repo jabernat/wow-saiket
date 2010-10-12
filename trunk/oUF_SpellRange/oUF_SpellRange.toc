@@ -3,7 +3,7 @@
 ## Notes: Range element for oUF that works for non-group members
 ## Author: Saiket
 ## Version: 4.0.0.1
-## X-Date: 2010-10-02
+## X-Date: 2010-10-11
 ## X-Category: UnitFrame
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
