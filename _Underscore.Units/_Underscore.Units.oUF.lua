@@ -111,14 +111,14 @@ do
 		local Frame = self:GetParent();
 		AuraShowAll( Frame.Buffs, true );
 		AuraShowAll( Frame.Debuffs, true );
-		Frame:UpdateElement( "Aura" ); -- Refilter
+		Frame.Buffs:ForceUpdate(); -- Refilter buffs and debuffs
 	end
 	--- Refilters auras once mouse leaves buff area.
 	function me:AuraMouseoverOnHide ()
 		local Frame = self:GetParent();
 		AuraShowAll( Frame.Buffs, nil );
 		AuraShowAll( Frame.Debuffs, nil );
-		Frame:UpdateElement( "Aura" );
+		Frame.Buffs:ForceUpdate();
 	end
 end
 
@@ -483,6 +483,7 @@ function me.StyleMeta.__call ( Style, Frame, UnitID )
 	Background:SetAllPoints();
 	Background:SetTexture( 0, 0, 0 );
 
+	local BarWidth = Style.Width;
 	local Bars = CreateFrame( "Frame", nil, Frame );
 	Frame.Bars = Bars;
 	-- Portrait and overlapped elements
@@ -496,6 +497,7 @@ function me.StyleMeta.__call ( Style, Frame, UnitID )
 		Portrait:SetPoint( Side );
 		Portrait:SetWidth( Style.Height );
 		Portrait.PostUpdate = me.PortraitPostUpdate;
+		BarWidth = BarWidth - Style.Height;
 
 		local Classification = Portrait:CreateTexture( nil, "OVERLAY" );
 		local Size = Style.Height * 1.35;
@@ -552,12 +554,25 @@ function me.StyleMeta.__call ( Style, Frame, UnitID )
 	if ( IsAddOnLoaded( "oUF_Smooth" ) ) then
 		Health.Smooth = true;
 	end
-	if ( IsAddOnLoaded( "oUF_HealComm4" ) ) then
-		Frame.HealCommBar = CreateBar( Health );
-		Frame.HealCommBar:SetAlpha( 0.5 );
-		Frame.HealCommBar:SetStatusBarColor( unpack( Colors.reaction[ 8 ] ) );
-		Frame.allowHealCommOverflow = true;
-	end
+
+	-- Healing prediction
+	local MyBar = CreateBar( Health );
+	MyBar:SetPoint( "TOPLEFT", Health:GetStatusBarTexture() );
+	MyBar:SetPoint( "BOTTOM", Health:GetStatusBarTexture() );
+	MyBar:SetWidth( BarWidth );
+	MyBar:SetAlpha( 0.75 );
+	MyBar:SetStatusBarColor( unpack( Colors.reaction[ 8 ] ) );
+	local OtherBar = CreateBar( Health );
+	OtherBar:SetPoint( "TOPLEFT", MyBar:GetStatusBarTexture(), "TOPRIGHT" );
+	OtherBar:SetPoint( "BOTTOM", MyBar:GetStatusBarTexture() );
+	OtherBar:SetWidth( BarWidth );
+	OtherBar:SetAlpha( 0.5 );
+	OtherBar:SetStatusBarColor( unpack( Colors.reaction[ 8 ] ) );
+	Frame.HealPrediction = {
+		myBar = MyBar;
+		otherBar = OtherBar;
+		maxOverflow = math.huge;
+	};
 
 	Health.PostUpdate = me.HealthPostUpdate;
 

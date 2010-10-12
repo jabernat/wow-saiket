@@ -119,6 +119,18 @@ do
 end
 
 
+--- Called by oUF when the unit frame's unit changes or otherwise needs a complete update.
+-- @param Event  Reason for the update.  Can be a real event, nil, or a string defined by oUF.
+local function Update ( self, Event, UnitID )
+	if ( Event ~= "OnTargetUpdate" ) then -- OnTargetUpdate is fired on a timer for *target units that don't have real events
+		ObjectRanges[ self ] = nil; -- Force update to fire
+		UpdateRange( self ); -- Update range immediately
+	end
+end
+--- Forces range to be recalculated for this element's frame immediately.
+local function ForceUpdate ( self )
+	return Update( self.__owner, "ForceUpdate", self.__owner.unit );
+end
 --- Called by oUF for new unit frames to setup range checking.
 -- @return True if the range element was actually enabled.
 local function Enable ( self, UnitID )
@@ -133,6 +145,8 @@ local function Enable ( self, UnitID )
 			self.Range = nil; -- Prevent range element from enabling, since enable order isn't stable
 		end
 
+		SpellRange.__owner = self;
+		SpellRange.ForceUpdate = ForceUpdate;
 		if ( not UpdateFrame ) then
 			UpdateFrame = CreateFrame( "Frame" );
 			UpdateFrame:SetScript( "OnUpdate", OnUpdate );
@@ -154,14 +168,6 @@ local function Disable ( self )
 	if ( not next( Objects ) ) then -- Last object
 		UpdateFrame:Hide();
 		UpdateFrame:UnregisterEvent( "SPELLS_CHANGED" );
-	end
-end
---- Called by oUF when the unit frame's unit changes or otherwise needs a complete update.
--- @param Event  Reason for the update.  Can be a real event, nil, or a string defined by oUF.
-local function Update ( self, Event, UnitID )
-	if ( Event ~= "OnTargetUpdate" ) then -- OnTargetUpdate is fired on a timer for *target units that don't have real events
-		ObjectRanges[ self ] = nil; -- Force update to fire
-		UpdateRange( self ); -- Update range immediately
 	end
 end
 

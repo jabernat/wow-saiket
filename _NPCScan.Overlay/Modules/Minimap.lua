@@ -465,15 +465,13 @@ do
 		end
 
 		local Side = Radius * 2;
-		Width, Height = Overlay.GetZoneSize( Map );
+		Width, Height = Overlay.GetMapSize( Map );
 		Width, Height = Width / MaxDataValue / Side, Height / MaxDataValue / Side; -- Simplifies data decompression
-		X = NewX / Side;
-		Y = NewY / Side;
+		X, Y = NewX / Side, NewY / Side;
 		Facing = NewFacing;
 
 		if ( RotateMinimap ) then
-			FacingSin = Sin( Facing );
-			FacingCos = Cos( Facing );
+			FacingSin, FacingCos = Sin( Facing ), Cos( Facing );
 		end
 
 		Overlay.ApplyZone( self, Map, PaintPath );
@@ -499,7 +497,7 @@ function me:MINIMAP_UPDATE_ZOOM ()
 		self:SetAlpha( self.Alpha );
 	end
 end
---- Force a repaint when changing zones.
+--- Force a repaint and cache map size when changing zones.
 function me:ZONE_CHANGED_NEW_AREA ()
 	UpdateForce = true;
 	if ( not WorldMapFrame:IsVisible() ) then
@@ -511,11 +509,11 @@ do
 	local MapLast;
 	--- Force a repaint if world map swaps back to the current zone (making player coordinates available).
 	function me:WORLD_MAP_UPDATE ()
-		local Map = GetCurrentMapAreaID() - 1;
+		local Map = GetCurrentMapAreaID();
 		if ( MapLast ~= Map ) then -- Changed zones
 			MapLast = Map;
 
-			if ( Map == Overlay.ZoneMaps[ GetRealZoneText() ] ) then -- Now showing current zone
+			if ( Map == Overlay.GetMapID( GetRealZoneText() ) ) then -- Now showing current zone
 				UpdateForce = true;
 			end
 		end
@@ -540,11 +538,12 @@ do
 		if ( UpdateForce or UpdateNext <= 0 ) then
 			UpdateNext = UpdateRate;
 
-			Map = Overlay.ZoneMaps[ GetRealZoneText() ];
+			Map = Overlay.GetMapID( GetRealZoneText() );
 			X, Y = GetPlayerMapPosition( "player" );
-			if ( not Map or ( X == 0 and Y == 0 )
+			if ( not Map
+				or ( X == 0 and Y == 0 )
 				or X < 0 or X > 1 or Y < 0 or Y > 1
-				or Map ~= GetCurrentMapAreaID() - 1 -- Coordinates will be for wrong map
+				or Map ~= GetCurrentMapAreaID() -- Coordinates will be for wrong map
 			) then
 				UpdateForce = nil;
 				self.RangeRing:Hide();
@@ -556,17 +555,15 @@ do
 			UpdateRate = self[ RotateMinimap and "UpdateRateRotating" or "UpdateRateDefault" ];
 
 			Facing = RotateMinimap and GetPlayerFacing() or 0;
-			Width, Height = Overlay.GetZoneSize( Map );
-			X = X * Width;
-			Y = Y * Height;
+			Width, Height = Overlay.GetMapSize( Map );
+			X, Y = X * Width, Y * Height;
 
 			if ( UpdateForce or Facing ~= LastFacing or ( X - LastX ) ^ 2 + ( Y - LastY ) ^ 2 >= self.UpdateDistance ) then
 				UpdateForce = nil;
-				LastX = X;
-				LastY = Y;
+				LastX, LastY = X, Y;
 				LastFacing = Facing;
 
-				self:Paint( Map, X, Y, Facing );
+				return self:Paint( Map, X, Y, Facing );
 			end
 		end
 	end
@@ -586,7 +583,7 @@ end
 --- Force a repaint if shown paths change.
 -- @param Map  AreaID that changed, or nil if all zones must update.
 function me:OnMapUpdate ( Map )
-	if ( not Map or Map == Overlay.ZoneMaps[ GetRealZoneText() ] ) then
+	if ( not Map or Map == Overlay.GetMapID( GetRealZoneText() ) ) then
 		UpdateForce = true;
 	end
 end

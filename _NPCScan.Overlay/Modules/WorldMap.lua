@@ -32,8 +32,12 @@ do
 		local Line = self[ Count ];
 		if ( not Line ) then
 			Line = self.Body:CreateFontString( nil, "OVERLAY", self.Font:GetName() );
-			Line:SetPoint( "TOPLEFT", Count == 1 and self.Title or self[ Count - 1 ], "BOTTOMLEFT" );
-			Line:SetPoint( "RIGHT", self.Title );
+			Line:SetPoint( "RIGHT", -5, 0 );
+			if ( Count == 1 ) then
+				Line:SetPoint( "TOPLEFT", 5, -5 );
+			else
+				Line:SetPoint( "TOPLEFT", self[ Count - 1 ], "BOTTOMLEFT" );
+			end
 			self[ Count ] = Line;
 		else
 			Line:Show();
@@ -45,40 +49,21 @@ do
 		Width = max( Width, Line:GetStringWidth() );
 		Height = Height + Line:GetStringHeight();
 	end
-	--- @return True if Map has a visible path on it.
-	local function MapHasNPCs ( Map )
-		local MapData = Overlay.PathData[ Map ];
-		if ( MapData ) then
-			if ( Overlay.Options.ShowAll ) then
-				return true;
-			end
-			for NpcID in pairs( MapData ) do
-				if ( Overlay.NPCsEnabled[ NpcID ] ) then
-					return true;
-				end
-			end
-		end
-	end
 	--- Fills the key in when repainting a zone.
 	-- @param Map  AreaID to add names for.
 	function me:KeyPaint ( Map )
-		if ( MapHasNPCs( Map ) ) then
-			Width = self.Title:GetStringWidth();
-			Height = self.Title:GetStringHeight();
-			Count = 0;
+		Width, Height = 0, 0;
+		Count = 0;
 
-			Overlay.ApplyZone( self, Map, KeyAddLine );
+		Overlay.ApplyZone( self, Map, KeyAddLine );
 
-			for Index = Count + 1, #self do
-				self[ Index ]:Hide();
-			end
-			self:SetSize( Width + 32, Height + 32 );
-			self:Show();
-			if ( not self.Container:IsShown() ) then -- Previously too large; OnSizeChanged won't fire
-				me.KeyOnSizeChanged( self ); -- Force size validation
-			end
-		else
-			self:Hide();
+		for Index = Count + 1, #self do
+			self[ Index ]:Hide();
+		end
+		self:SetSize( Width + 32, Height + 32 );
+		self:Show();
+		if ( not self.Container:IsShown() ) then -- Previously too large; OnSizeChanged won't fire
+			me.KeyOnSizeChanged( self ); -- Force size validation
 		end
 	end
 end
@@ -102,13 +87,16 @@ function me:KeyOnSizeChanged ()
 	me.KeyValidateSize( self );
 end
 
-
-
-
---- Toggles the module from the WorldMap frame.
-function me.ToggleSetFunc ( Enable )
-	Overlay.Modules[ Enable == "1" and "Enable" or "Disable" ]( "WorldMap" );
+--- Shows and resizes the range ring when repainting a zone.
+-- @param Map  AreaID to resize to.
+function me:RangeRingPaint ( Map )
+	if ( Overlay.Options.ModulesExtra[ "WorldMap" ].RangeRing ) then
+		local Size = ( Overlay.DetectionRadius * 2 ) / Overlay.GetMapSize( Map ) * self:GetWidth();
+		self.Child:SetSize( Size, Size );
+		self:Show();
+	end
 end
+
 --- Shows a *world map* tooltip similar to the quest objective toggle button.
 function me:ToggleOnEnter ()
 	WorldMapTooltip:SetOwner( self, "ANCHOR_TOPLEFT" );
@@ -118,14 +106,55 @@ end
 function me:ToggleOnLeave ()
 	WorldMapTooltip:Hide();
 end
+--- Toggles the module like a checkbox.
+function me:ToggleOnClick ()
+	local Enable = self:GetChecked();
+	PlaySound( Enable and "igMainMenuOptionCheckBoxOn" or "igMainMenuOptionCheckBoxOff" );
+	Overlay.Modules[ Enable and "Enable" or "Disable" ]( "WorldMap" );
+end
+--- Adjusts the toggle button's display when changing state.
+function me:ToggleSetChecked ()
+	local Enable = self:GetChecked();
+	SetDesaturation( self.Normal, not Enable );
+	SetDesaturation( self.Border, not Enable );
+	local Color;
+	if ( Enable ) then
+		self.Disabled:Hide();
+		Color = NORMAL_FONT_COLOR;
+	else
+		self.Disabled:Show();
+		Color = GRAY_FONT_COLOR;
+	end
+	self.Text:SetTextColor( Color.r, Color.g, Color.b );
+end
 
 
 
 
+--- @return True if Map has a visible path on it.
+local function MapHasNPCs ( Map )
+	local MapData = Overlay.PathData[ Map ];
+	if ( MapData ) then
+		if ( Overlay.Options.ShowAll ) then
+			return true;
+		end
+		for NpcID in pairs( MapData ) do
+			if ( Overlay.NPCsEnabled[ NpcID ] ) then
+				return true;
+			end
+		end
+	end
+end
 --- Updates the key when repainting the zone.
-function me:Paint ( ... )
-	self.KeyPaint( self.KeyParent.Key, ... );
-	return self.super.Paint( self, ... );
+function me:Paint ( Map, ... )
+	if ( MapHasNPCs( Map ) ) then
+		self.KeyPaint( self.KeyParent.Key, Map );
+		self.RangeRingPaint( self.RangeRing, Map );
+	else
+		self.KeyParent.Key:Hide();
+		self.RangeRing:Hide();
+	end
+	return self.super.Paint( self, Map, ... );
 end
 
 function me:OnEnable ( ... )
@@ -136,6 +165,7 @@ end
 function me:OnDisable ( ... )
 	self.Toggle:SetChecked( false );
 	self.KeyParent:Hide();
+	self.RangeRing:Hide();
 	return self.super.OnDisable( self, ... );
 end
 --- Adds a custom key frame to the world map template.
@@ -147,19 +177,17 @@ function me:OnLoad ( ... )
 	KeyParent:SetAllPoints();
 	KeyParent:SetScript( "OnSizeChanged", me.KeyParentOnSizeChanged );
 
-	local Container = CreateFrame( "Frame", nil, KeyParent );
-	Container:SetAllPoints();
+	local KeyContainer = CreateFrame( "Frame", nil, KeyParent );
+	KeyContainer:SetAllPoints();
 
-	local Key = CreateFrame( "Frame", nil, Container );
+	local Key = CreateFrame( "Frame", nil, KeyContainer );
 	KeyParent.Key = Key;
-	Key.KeyParent, Key.Container = KeyParent, Container;
+	Key.KeyParent, Key.Container = KeyParent, KeyContainer;
 	Key:SetScript( "OnEnter", self.KeyOnEnter );
 	Key:SetScript( "OnSizeChanged", me.KeyOnSizeChanged );
 	self.KeyOnEnter( Key ); -- Initialize starting point
 	Key:EnableMouse( true );
-	Key:SetBackdrop( {
-		edgeFile = [[Interface\AchievementFrame\UI-Achievement-WoodBorder]]; edgeSize = 48;
-	} );
+	Key:SetBackdrop( { edgeFile = [[Interface\AchievementFrame\UI-Achievement-WoodBorder]]; edgeSize = 48; } );
 
 	Key.Font = CreateFont( "_NPCScanOverlayWorldMapKeyFont" );
 	Key.Font:SetFontObject( ChatFontNormal );
@@ -168,38 +196,83 @@ function me:OnLoad ( ... )
 	Key.Body = CreateFrame( "Frame", nil, Key );
 	Key.Body:SetPoint( "BOTTOMLEFT", 10, 10 );
 	Key.Body:SetPoint( "TOPRIGHT", -10, -10 );
-	Key.Body:SetBackdrop( {
-		bgFile = [[Interface\AchievementFrame\UI-Achievement-AchievementBackground]];
-		edgeFile = [[Interface\Tooltips\UI-Tooltip-Border]]; edgeSize = 16;
-		insets = { left = 3; right = 3; top = 3; bottom = 3; };
-	} );
+	Key.Body:SetBackdrop( { edgeFile = [[Interface\Tooltips\UI-Tooltip-Border]]; edgeSize = 16; } );
 	Key.Body:SetBackdropBorderColor( 0.8, 0.4, 0.2 ); -- Light brown
-
-	local TitleBackground = Key.Body:CreateTexture( nil, "BORDER" );
-	TitleBackground:SetTexture( [[Interface\AchievementFrame\UI-Achievement-Title]] );
-	TitleBackground:SetPoint( "TOPRIGHT", -5, -5 );
-	TitleBackground:SetPoint( "LEFT", 5, 0 );
-	TitleBackground:SetHeight( 18 );
-	TitleBackground:SetTexCoord( 0, 0.9765625, 0, 0.3125 );
-	TitleBackground:SetAlpha( 0.8 );
-
-	local Title = Key.Body:CreateFontString( nil, "OVERLAY", "GameFontHighlightMedium" );
-	Key.Title = Title;
-	Title:SetAllPoints( TitleBackground );
-	Title:SetText( L.MODULE_WORLDMAP_KEY );
+	local Background = Key.Body:CreateTexture( nil, "BACKGROUND" );
+	Background:SetPoint( "TOPLEFT", 3, -3 );
+	Background:SetPoint( "BOTTOMRIGHT", -3, 3 );
+	Background:SetTexture( [[Interface\AchievementFrame\UI-Achievement-AchievementBackground]] );
+	Background:SetTexCoord( 0, 1, 0.5, 1 );
+	Background:SetVertexColor( 0.8, 0.8, 0.8 );
 
 
-	-- Create toggle button on the WorldMap
-	local Toggle = CreateFrame( "CheckButton", "_NPCScanOverlayWorldMapToggle", WorldMapFrame, "OptionsCheckButtonTemplate" );
+	-- Add range ring
+	local RangeRing = CreateFrame( "ScrollFrame", nil, WorldMapPlayer );
+	self.RangeRing = RangeRing;
+	-- Setup the range ring's textures
+	RangeRing:Hide();
+	RangeRing:SetAllPoints( WorldMapDetailFrame );
+	RangeRing:SetAlpha( 0.8 );
+
+	local RangeRingChild = CreateFrame( "Frame", nil, RangeRing );
+	RangeRing.Child = RangeRingChild;
+	RangeRing:SetScrollChild( RangeRingChild );
+	RangeRingChild:ClearAllPoints();
+	RangeRingChild:SetPoint( "CENTER", WorldMapPlayer );
+
+	local Color = NORMAL_FONT_COLOR;
+	local Texture = RangeRingChild:CreateTexture();
+	Texture:SetAllPoints();
+	Texture:SetTexture( [[Interface\BUTTONS\IconBorder-GlowRing]] );
+	Texture:SetBlendMode( "ADD" );
+	Texture:SetVertexColor( Color.r, Color.g, Color.b );
+
+
+	-- Add toggle button
+	local Toggle = CreateFrame( "CheckButton", nil, WorldMapButton );
 	self.Toggle = Toggle;
-	local Label = _G[ Toggle:GetName().."Text" ];
-	Label:SetText( L.MODULE_WORLDMAP_TOGGLE );
-	local LabelWidth = Label:GetStringWidth();
-	Toggle:SetHitRectInsets( 4, 4 - LabelWidth, 4, 4 );
-	Toggle:SetPoint( "RIGHT", WorldMapQuestShowObjectives, "LEFT", -LabelWidth - 8, 0 );
-	Toggle:SetScript( "OnEnter", self.ToggleOnEnter );
-	Toggle:SetScript( "OnLeave", self.ToggleOnLeave );
-	Toggle.setFunc = self.ToggleSetFunc;
+	Toggle:SetPoint( "TOPLEFT" );
+	hooksecurefunc( Toggle, "SetChecked", me.ToggleSetChecked );
+	Toggle:SetScript( "OnClick", me.ToggleOnClick );
+	Toggle:SetScript( "OnEnter", me.ToggleOnEnter );
+	Toggle:SetScript( "OnLeave", me.ToggleOnLeave );
+	local Normal = Toggle:CreateTexture();
+	Toggle.Normal = Normal;
+	Normal:SetTexture( [[Interface\AchievementFrame\UI-Achievement-Category-Background]] );
+	Normal:SetTexCoord( 0, 0.65, 0.12, 0.75 );
+	Normal:SetAllPoints();
+	Toggle:SetNormalTexture( Normal );
+	local Highlight = Toggle:CreateTexture( nil, "HIGHLIGHT" );
+	Highlight:SetTexture( [[Interface\AchievementFrame\UI-Achievement-Category-Highlight]] );
+	Highlight:SetTexCoord( 0, 0.65, 0.12, 0.75 );
+	Highlight:SetAllPoints();
+	Toggle:SetHighlightTexture( Highlight );
+	local Text = Toggle:CreateFontString( nil, "OVERLAY", "GameFontHighlightLarge" );
+	Toggle.Text = Text;
+	Toggle:SetFontString( Text );
+	local DisabledPadding = 8; -- Room to leave left of text for disabled "X"
+	Text:ClearAllPoints()
+	Text:SetPoint( "TOPRIGHT" );
+	Text:SetPoint( "BOTTOMLEFT", DisabledPadding, 0 )
+	Text:SetText( L.MODULE_WORLDMAP_TOGGLE );
+	local Width, Height = Text:GetStringWidth() + 16 + DisabledPadding, Text:GetStringHeight() + 16;
+	Toggle:SetSize( Width, Height );
+	local Border = Toggle:CreateTexture( nil, "BACKGROUND" );
+	Toggle.Border = Border;
+	Border:SetPoint( "TOPLEFT" );
+	Border:SetPoint( "BOTTOMRIGHT", 32, -32 );
+	Border:SetTexture( [[Interface\AchievementFrame\UI-Achievement-Alert-Background]] );
+	-- Keep bottom-right corner of border texture aligned with bottom-right of button
+	Border:SetTexCoord( ( 325 - ( Width + 32 ) ) / 512, 325 / 512,
+		( 97 - ( Height + 32 ) ) / 128, 97 / 128 );
+	local Disabled = Toggle:CreateTexture( nil, "OVERLAY" );
+	Toggle.Disabled = Disabled;
+	Disabled:SetPoint( "LEFT", -2, 0 );
+	local Size = Toggle:GetHeight() * 0.8;
+	Disabled:SetSize( Size, Size );
+	Disabled:SetTexture( [[Interface\RaidFrame\ReadyCheck-NotReady]] );
+	Disabled:SetAlpha( 0.75 );
+	Toggle:SetChecked( false ); -- Initialize button display
 
 
 	-- Cache achievement NPC names
@@ -216,13 +289,12 @@ function me:OnLoad ( ... )
 	return self.super.OnLoad( self, ... );
 end
 function me:OnUnload ( ... )
+	self.Toggle:Hide();
+	self.Toggle.SetChecked = nil;
+	self.Toggle:SetScript( "OnClick", nil );
 	self.KeyParent:SetScript( "OnSizeChanged", nil );
 	self.KeyParent.Key:SetScript( "OnEnter", nil );
 	self.KeyParent.Key:SetScript( "OnSizeChanged", nil );
-
-	self.Toggle:Hide();
-	self.Toggle:SetScript( "OnEnter", nil );
-	self.Toggle:SetScript( "OnLeave", nil );
 
 	return self.super.OnUnload( self, ... );
 end
@@ -230,4 +302,50 @@ end
 
 
 
+--- Enables the WorldMap range ring.
+-- @return True if changed.
+function me.RangeRingSetEnabled ( Enable )
+	if ( Enable ~= Overlay.Options.ModulesExtra[ "WorldMap" ].RangeRing ) then
+		Overlay.Options.ModulesExtra[ "WorldMap" ].RangeRing = Enable;
+
+		me.Config.RangeRing:SetChecked( Enable );
+
+		if ( me.Loaded ) then
+			if ( Enable ) then
+				me:OnMapUpdate();
+			else
+				me.RangeRing:Hide();
+			end
+		end
+		return true;
+	end
+end
+--- Synchronizes custom settings to options table.
+function me:OnSynchronize ( OptionsExtra )
+	self.RangeRingSetEnabled( OptionsExtra.RangeRing ~= false );
+end
+
+
+
+
 Overlay.Modules.Register( "WorldMap", me, L.MODULE_WORLDMAP );
+
+local Config = me.Config;
+local Checkbox = CreateFrame( "CheckButton", "$parentRangeRing", Config, "InterfaceOptionsCheckButtonTemplate" );
+Config.RangeRing = Checkbox;
+--- Toggles the range ring when clicked.
+function Checkbox.setFunc ( Enable )
+	me.RangeRingSetEnabled( Enable == "1" );
+end
+
+Checkbox:SetPoint( "TOPLEFT", Config.Enabled, "BOTTOMLEFT" );
+local Label = _G[ Checkbox:GetName().."Text" ];
+Label:SetPoint( "RIGHT", Config, "RIGHT", -6, 0 );
+Label:SetJustifyH( "LEFT" );
+Label:SetFormattedText( Overlay.L.MODULE_RANGERING_FORMAT, Overlay.DetectionRadius );
+Checkbox:SetHitRectInsets( 4, 4 - Label:GetStringWidth(), 4, 4 );
+Checkbox.SetEnabled = Overlay.Config.ModuleCheckboxSetEnabled;
+Checkbox.tooltipText = Overlay.L.MODULE_RANGERING_DESC;
+Config:AddControl( Checkbox );
+
+Config:SetHeight( Config:GetHeight() + Checkbox:GetHeight() );

@@ -10,5 +10,4 @@
 
 	<!-- Pseudo-modules that only adjust other modules -->
 	<Script file="Modules\Carbonite.lua"/>
-	<Script file="Modules\Mapster.lua"/>
 </Ui>

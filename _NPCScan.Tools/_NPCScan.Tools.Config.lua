@@ -86,7 +86,7 @@ do
 		for NpcID, Name in pairs( Tools.NPCList ) do
 			local MapID = Tools.NPCLocations.MapIDs[ NpcID ];
 			me.Table:AddRow( NpcID,
-				Overlay and Overlay.GetZoneName( MapID ) or MapID or "",
+				Overlay and Overlay.GetMapName( MapID ) or MapID or "",
 				NpcID,
 				Name,
 				Tools.NPCModels[ NpcID ] or "" );
