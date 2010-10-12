@@ -120,7 +120,9 @@ local function AddCastingBar ( self, UnitID, ... )
 	-- Replace solid background color
 	for Index = 1, select( "#", ... ) do
 		local Region = select( Index, ... );
-		if ( Region:GetObjectType() == "Texture" and Region:GetDrawLayer() == "BACKGROUND" and Region:GetTexture() == "Solid Texture" ) then
+		if ( Region:GetObjectType() == "Texture" and Region:GetDrawLayer() == "BACKGROUND"
+			and ( Region:GetTexture() or "" ):match( "^Color%-%x%x%x%x+$" )
+		) then
 			Region:Hide();
 			break;
 		end

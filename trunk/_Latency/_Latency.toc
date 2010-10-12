@@ -1,8 +1,8 @@
-## Interface: 30300
+## Interface: 40000
 ## Title: _|cffCCCC88Latency|r
 ## Notes: Graphs a more accurate latency measurement.
 ## Author: Saiket
-## Version: 3.3.0.2
+## Version: 4.0.0.1
 ## X-Date: 2010-06-30
 ## X-Category: Chat/Communication
 ## X-License: GPLv3

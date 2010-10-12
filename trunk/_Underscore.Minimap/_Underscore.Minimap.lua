@@ -11,7 +11,7 @@ local me = select( 2, ... );
 _Underscore.Minimap = me;
 
 me.Frame = CreateFrame( "Frame" );
-me.PingText = MinimapPing:CreateFontString( nil, "ARTWORK", "NumberFontNormalSmallGray" );
+me.PingName = CreateFrame( "ScrollFrame", nil, Minimap );
 
 local IconSize = 14;
 local MinimapScale = 0.9;
@@ -19,20 +19,6 @@ local MinimapScale = 0.9;
 
 
 
---- Hook to position the minimap ping on a square minimap.
-function me.SetPing ( X, Y, Sound )
-	if ( abs( X ) <= 0.5 and abs( Y ) <= 0.5 ) then
-		MinimapPing:SetPoint( "CENTER", Minimap, "CENTER",
-			X * Minimap:GetWidth(), Y * Minimap:GetHeight() );
-		MinimapPing:SetAlpha( 1.0 );
-		MinimapPing:Show();
-		if ( Sound ) then
-			PlaySound( "MapPing" );
-		end
-	else
-		MinimapPing:Hide();
-	end
-end
 --- Hook to broadcast a ping on a square minimap.
 function me:OnMouseUp ()
 	local CursorX, CursorY = GetCursorPosition();
@@ -42,6 +28,29 @@ function me:OnMouseUp ()
 	self:PingLocation(
 		CursorX / Scale - CenterX,
 		CursorY / Scale - CenterY );
+end
+
+
+--- Displays the name of the player who pinged.
+function me.PingName:MINIMAP_PING ( _, UnitID )
+	self:Show();
+	self:SetAlpha( 1 );
+	self.Text:SetText( UnitName( UnitID ) );
+	self.Duration = MINIMAPPING_TIMER;
+end
+--- Timer to automatically hide ping text as the blip fades out.
+function me.PingName:OnUpdate ( Elapsed )
+	self.Duration = self.Duration - Elapsed;
+	if ( self.Duration > 0 ) then
+		local X, Y = Minimap:GetPingPosition();
+		local Width, Height = Minimap:GetSize();
+		self.Text:SetPoint( "TOPLEFT", Minimap, "CENTER", X * Width + 8, Y * Height - 8 );
+		if ( self.Duration < MINIMAPPING_FADE_TIMER ) then
+			self:SetAlpha( self.Duration / MINIMAPPING_FADE_TIMER );
+		end
+	else
+		self:Hide();
+	end
 end
 
 
@@ -63,17 +72,11 @@ end
 function me:OnMouseWheel ( Delta )
 	self:SetZoom( min( max( self:GetZoom() + Delta, 0 ), self:GetZoomLevels() - 1 ) );
 end
---- Displays the name of the player who pinged.
-function me.Frame:MINIMAP_PING ( _, UnitID )
-	me.PingText:SetText( UnitName( UnitID ) );
-end
 --- Restore the original minimap shape in case _Underscore was disabled right before a reload UI.
 -- This corrects a bug where the minimap mask stays square in the default UI.
 function me.Frame:PLAYER_LOGOUT ()
 	Minimap:SetMaskTexture( [[Textures\MinimapMask]] );
 end
-
-
 --- Lets other addons know that the minimap is square.
 function me.GetMinimapShape ()
 	return "SQUARE";
@@ -83,8 +86,17 @@ end
 
 
 me.Frame:SetScript( "OnEvent", _Underscore.Frame.OnEvent );
-me.Frame:RegisterEvent( "MINIMAP_PING" );
 me.Frame:RegisterEvent( "PLAYER_LOGOUT" );
+
+me.PingName:Hide();
+me.PingName:SetAllPoints( Minimap );
+local Container = CreateFrame( "Frame", nil, me.PingName );
+Container:SetSize( 1, 1 );
+me.PingName:SetScrollChild( Container );
+me.PingName.Text = Container:CreateFontString( nil, "ARTWORK", "NumberFontNormalSmallGray" );
+me.PingName:SetScript( "OnUpdate", me.PingName.OnUpdate );
+me.PingName:SetScript( "OnEvent", _Underscore.Frame.OnEvent );
+me.PingName:RegisterEvent( "MINIMAP_PING" );
 
 MinimapCluster:ClearAllPoints();
 MinimapCluster:SetPoint( "TOPRIGHT", _Underscore.TopMargin, "BOTTOMRIGHT" );
@@ -99,11 +111,10 @@ Minimap:SetMaskTexture( [[Interface\Buttons\WHITE8X8]] );
 GetMinimapShape = me.GetMinimapShape;
 
 -- Hooks to allow pings on a square minimap
+Minimap_OnClick = me.OnMouseUp;
 Minimap:SetScript( "OnMouseUp", me.OnMouseUp );
-Minimap_SetPing = me.SetPing;
--- Show name of pinger
-me.PingText:SetPoint( "TOPRIGHT", MinimapPing, "CENTER", -8, -8 );
-me.PingText:SetAlpha( 0.75 );
+-- Show name of player who pinged
+me.PingName:SetAlpha( 0.75 );
 
 
 

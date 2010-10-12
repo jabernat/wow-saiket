@@ -10,7 +10,7 @@ local L = Tools.L;
 local me = CreateFrame( "Frame", nil, Button );
 Tools.Model = me;
 
-me.Control = CreateFrame( "Button", nil, nil, "GameMenuButtonTemplate" );
+me.Control = CreateFrame( "Button", nil, nil, "UIPanelButtonTemplate" );
 me.EditBox = CreateFrame( "EditBox", "_NPCScanToolsModelEditBox", me, "InputBoxTemplate" );
 
 
@@ -110,6 +110,7 @@ me.Backdrop:SetTexture( [[textures\ShaneCube]] );
 me.Backdrop:SetVertexColor( 0.5, 0.5, 0.5 );
 
 
+me.Control:SetSize( 144, 21 );
 me.Control:SetText( L.MODEL_CONTROL );
 me.Control:SetScript( "OnClick", me.Control.OnClick );
 

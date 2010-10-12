@@ -125,17 +125,18 @@ do
 		local Info = UIDropDownMenu_CreateInfo();
 		if ( Level == 1 ) then
 			-- Spacer
-			Info.disabled = 1;
+			Info.disabled = true;
+			Info.notCheckable = true;
 			UIDropDownMenu_AddButton( Info );
 
 			Info.text = L.ADDONCHAT_MESSAGES;
-			Info.hasArrow = 1;
-			Info.notCheckable = 1;
+			Info.hasArrow = true;
 			Info.disabled = nil;
 			UIDropDownMenu_AddButton( Info );
 		elseif ( Level == 2 and UIDROPDOWNMENU_MENU_VALUE == L.ADDONCHAT_MESSAGES ) then -- Addon Chat sub-menu
 			Info.func = me.DropDownOnSelect;
-			Info.keepShownOnClick = 1;
+			Info.isNotRadio = true;
+			Info.keepShownOnClick = true;
 
 			AddChatTypeButton( Info, "GUILD" );
 			AddChatTypeButton( Info, "RAID" );

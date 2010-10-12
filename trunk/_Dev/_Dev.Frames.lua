@@ -189,6 +189,7 @@ me:Hide();
 me:SetScript( "OnUpdate", me.OnUpdate );
 
 Primary:SetScript( "OnMouseUp", Primary.OnMouseUp );
+Primary:EnableMouse( false ); -- Enabled by SetScript
 Primary:EnableMouseWheel( true );
 Primary:SetScale( 2.0 );
 

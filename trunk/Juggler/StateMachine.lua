@@ -15,9 +15,10 @@ function StateMeta.__index:IsActive ()
 	return self.Machine:GetActiveState() == self;
 end
 --- Activates this state, replacing the previously active state.
+-- @param ...  Arguments to pass to this state's OnActivate handler.
 -- @return True if state changed successfully.
-function StateMeta.__index:Activate ()
-	return self.Machine:SetActiveState( self );
+function StateMeta.__index:Activate ( ... )
+	return self.Machine:SetActiveState( self, ... );
 end
 --- Deactivates this state.
 -- @return True if state successfully deactivated.
@@ -44,8 +45,9 @@ function MachineMeta.__index:GetActiveState ()
 end
 --- Sets the active State.
 -- @param State  State to activate, or nil to deactivate.
--- @return True if changed to desired state.
-function MachineMeta.__index:SetActiveState ( State )
+-- @param ...  Arguments to pass to the new state's OnActivate handler.
+-- @return True if changed state.
+function MachineMeta.__index:SetActiveState ( State, ... )
 	if ( self.ActiveState ~= State ) then
 		local OldState = self.ActiveState;
 		self.ActiveState = State;
@@ -54,7 +56,7 @@ function MachineMeta.__index:SetActiveState ( State )
 			OldState:OnDeactivate();
 		end
 		if ( State and State.OnActivate ) then
-			State:OnActivate();
+			State:OnActivate( ... );
 		end
 		return true;
 	end

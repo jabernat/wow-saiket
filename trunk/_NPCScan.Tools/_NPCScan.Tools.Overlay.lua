@@ -11,7 +11,7 @@ local L = Tools.L;
 local me = Overlay.Modules.WorldMapTemplate.Embed( CreateFrame( "Frame", nil, WorldMapButton ) );
 Tools.Overlay = me;
 
-me.Control = CreateFrame( "Button", nil, nil, "GameMenuButtonTemplate" );
+me.Control = CreateFrame( "Button", nil, nil, "UIPanelButtonTemplate" );
 
 me.AlphaDefault = 1;
 
@@ -116,7 +116,7 @@ end
   * Description: Shows the selected NPC's map.                                 *
   ****************************************************************************]]
 function me.Control:OnClick ()
-	ShowUIPanel( WorldMapFrame );
+	ShowUIPanel( WorldMapFrame, true );
 	SetMapByID( self.MapID );
 
 	-- Show Routes for this mob
@@ -131,6 +131,7 @@ end
 Overlay.Modules.Register( ..., me, L.OVERLAY_TITLE );
 
 
+me.Control:SetSize( 144, 21 );
 me.Control:SetText( L.OVERLAY_CONTROL );
 me.Control:SetScript( "OnClick", me.Control.OnClick );
 

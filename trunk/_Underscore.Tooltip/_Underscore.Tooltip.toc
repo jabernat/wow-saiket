@@ -1,8 +1,8 @@
-## Interface: 30300
+## Interface: 40000
 ## Title: _|cffCCCC88Underscore|r.Tooltip
 ## Notes: Skins the default UI's tooltips.
 ## Author: Saiket
-## Version: 3.3.0.1
+## Version: 4.0.0.1
 ## X-Date: 2010-07-11
 ## X-Category: Frame Modification, Miscellaneous
 ## X-License: GPLv3

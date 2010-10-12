@@ -1,8 +1,8 @@
-## Interface: 30300
+## Interface: 40000
 ## Title: _|cffCCCC88UTF|r
 ## Notes: Unicode input dialog and text replacement.
 ## Author: Saiket
-## Version: 3.3.5.3
+## Version: 4.0.0.1
 ## X-Date: 2010-08-26
 ## X-Category: Chat/Communication
 ## X-License: GPLv3

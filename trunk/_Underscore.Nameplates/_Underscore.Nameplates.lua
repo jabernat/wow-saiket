@@ -48,6 +48,8 @@ local DifficultyLevelDifference = 2; -- Hostile mobs this many levels above the 
 local InCombat = false;
 local HasTarget = false;
 
+local LibNameplate;
+
 
 
 
@@ -365,14 +367,14 @@ end
 -- Main plate handling and updating
 do
 	local ThreatBorders = [[Interface\AddOns\]]..AddOnName..[[\Skin\ThreatBorders]];
-	local GetAlpha, SetAlpha;
 	--- Adds and skins a new nameplate.
 	local function PlateAdd ( Plate )
+		if ( LibNameplate and LibNameplate.NameplateFirstLoad ) then
+			-- Allow LibNameplate to hook first for compatibility
+			LibNameplate:NameplateFirstLoad( Plate );
+		end
 		local Visual = CreateFrame( "Frame", nil, Plate );
 		Plates[ Plate ] = Visual;
-		if ( not GetAlpha ) then -- Cache methods to speed up target OnUpdate
-			GetAlpha, SetAlpha = Plate.GetAlpha, Plate.SetAlpha; -- Catches _VirtualPlates hooks.
-		end
 
 		local Health, Cast = Plate:GetChildren();
 		Visual.Health, Visual.Cast = Health, Cast;
@@ -564,6 +566,7 @@ do
 		end
 	end
 
+	local GetAlpha, SetAlpha = me.Frame.GetAlpha, me.Frame.SetAlpha;
 	--- Keeps the nameplate's alpha set properly, and updates target.
 	function me.TargetUpdater:OnUpdate ()
 		for Plate in pairs( me.PlatesVisible ) do
@@ -586,13 +589,20 @@ end
 
 
 
+--- Checks for embeded LibNameplate installs after each mod loads.
+function me.Frame:ADDON_LOADED ( Event )
+	local Lib = LibStub( "LibNameplate-1.0", true );
+	if ( Lib ) then
+		LibNameplate = Lib;
+		self:UnregisterEvent( Event );
+	end
+end
 --- Sets CVars to allow threat and class info.
 function me.Frame:VARIABLES_LOADED ( Event )
 	self[ Event ] = nil;
 
 	SetCVar( "ThreatWarning", 3 );
 	SetCVar( "ShowClassColorInNameplate", 1 );
-	SetCVar( "NameplateAllowOverlap", 1 );
 end
 --- Resize any new nameplates that couldn't be resized in combat.
 function me.Frame:PLAYER_REGEN_ENABLED ()
@@ -685,6 +695,7 @@ end
 local Frame = me.Frame;
 Frame:SetScript( "OnEvent", _Underscore.Frame.OnEvent );
 Frame:SetScript( "OnUpdate", Frame.OnUpdate );
+Frame:RegisterEvent( "ADDON_LOADED" );
 Frame:RegisterEvent( "VARIABLES_LOADED" );
 if ( IsLoggedIn() ) then
 	Frame:VARIABLES_LOADED( "VARIABLES_LOADED" );
