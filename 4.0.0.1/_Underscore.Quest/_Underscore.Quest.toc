@@ -1,0 +1,18 @@
+## Interface: 40000
+## Title: _|cffCCCC88Underscore|r.Quest
+## Notes: Skins the default UI's quest and watch frames.
+## Author: Saiket
+## Version: 4.0.0.1
+## X-Date: 2010-07-11
+## X-Category: Frame Modification, Quest
+## X-License: GPLv3
+## X-Email: saiket.wow@gmail.com
+## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons
+## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Underscore
+## X-Localizations: enUS
+## RequiredDeps: _Underscore
+## OptionalDeps: _Underscore.ActionBars, Carbonite
+Locales.xml
+
+_Underscore.Quest.lua
+_Underscore.Quest.Watch.lua

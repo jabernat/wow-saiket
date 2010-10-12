@@ -1,0 +1,15 @@
+## Interface: 40000
+## Title: _|cffCCCC88Underscore|r.Minimap
+## Notes: Skins the default UI's minimap.
+## Author: Saiket
+## Version: 4.0.0.1
+## X-Date: 2010-09-04
+## X-Category: Frame Modification, Map
+## X-License: GPLv3
+## X-Email: saiket.wow@gmail.com
+## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons
+## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Underscore
+## RequiredDeps: _Underscore
+## OptionalDeps: Carbonite
+_Underscore.Minimap.lua
+_Underscore.Minimap.LibDBIcon_1_0.lua
