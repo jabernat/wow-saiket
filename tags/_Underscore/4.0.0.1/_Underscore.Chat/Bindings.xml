@@ -1,0 +1,4 @@
+<Bindings>
+	<ModifiedClick action="_UNDERSCORE_CHAT_SCROLLPAGE" default="CTRL"/>
+	<ModifiedClick action="_UNDERSCORE_CHAT_SCROLLALL" default="ALT"/>
+</Bindings>
