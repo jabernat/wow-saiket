@@ -185,26 +185,23 @@ end
 
 
 --- Recolors the reputation bar on update.
-function me:ReputationPostUpdate ( _, _, Bar, _, _, _, _, StandingID )
-	Bar:SetStatusBarColor( unpack( Colors.reaction[ StandingID ] ) );
+function me:ReputationPostUpdate ( _, _, StandingID )
+	self:SetStatusBarColor( unpack( Colors.reaction[ StandingID ] ) );
 end
 
 --- Adjusts the rested experience bar segment.
-function me:ExperiencePostUpdate ( _, UnitID, Bar, Value, ValueMax )
-	if ( UnitID == "player" ) then
-		local RestedExperience = GetXPExhaustion();
-		if ( RestedExperience ) then
-			Bar.RestTexture:SetPoint( "RIGHT", Bar, "LEFT", Bar:GetWidth() * min( 1, ( Value + RestedExperience ) / ValueMax ), 0 );
-			Bar.RestTexture:Show();
-		else -- Not resting
-			Bar.RestTexture:Hide();
-		end
+function me:ExperiencePostUpdate ( UnitID, Value, ValueMax )
+	local RestedExperience = GetXPExhaustion();
+	if ( RestedExperience ) then
+		self.RestTexture:SetPoint( "RIGHT", self, "LEFT", self:GetWidth() * min( 1, ( Value + RestedExperience ) / ValueMax ), 0 );
+		self.RestTexture:Show();
+	else -- Not resting
+		self.RestTexture:Hide();
 	end
 end
 --- Updates the rested experience segment's size with the bar.
 function me:ExperienceOnSizeChanged ()
-	local Frame = self:GetParent();
-	me.ExperiencePostUpdate( Frame, nil, Frame.unit, self, self:GetValue(), ( select( 2, self:GetMinMaxValues() ) ) );
+	me.ExperiencePostUpdate( self, self.__owner.unit, self:GetValue(), ( select( 2, self:GetMinMaxValues() ) ) );
 end
 
 
@@ -465,7 +462,7 @@ end
 -- @param UnitID  Unit this frame represents.
 function me.StyleMeta.__call ( Style, Frame, UnitID )
 	Frame.colors = Colors;
-	Frame.disallowVehicleSwap = true;
+	Frame:SetAttribute( "toggleForVehicle", false );
 
 	Frame:SetSize( Style.Width, Style.Height );
 	Frame:SetScript( "OnEnter", me.OnEnter );
