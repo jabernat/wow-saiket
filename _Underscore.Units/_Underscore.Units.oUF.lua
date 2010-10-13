@@ -467,8 +467,7 @@ function me.StyleMeta.__call ( Style, Frame, UnitID )
 	Frame.colors = Colors;
 	Frame.disallowVehicleSwap = true;
 
-	Frame:SetAttribute( "initial-width", Style.Width );
-	Frame:SetAttribute( "initial-height", Style.Height );
+	Frame:SetSize( Style.Width, Style.Height );
 	Frame:SetScript( "OnEnter", me.OnEnter );
 	Frame:SetScript( "OnLeave", UnitFrame_OnLeave );
 
