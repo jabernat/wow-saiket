@@ -31,6 +31,17 @@ me.defaultDB = {
 
 
 do
+	local function ColorGet ( self )
+		local Property = self[ 3 ];
+		local Color = me.db.profile[ STATUS_ID ][ Property ];
+		return Color.r, Color.g, Color.b, Color.a;
+	end
+	local function ColorSet ( self, R, G, B, A )
+		local Property = self[ 3 ];
+		local Color = me.db.profile[ STATUS_ID ][ Property ];
+		Color.r, Color.g, Color.b, Color.a = R, G, B, A or 1;
+		me:UpdateAllUnits();
+	end
 	local Options = {
 		color = false; -- Don't use original color picker
 	};
@@ -41,15 +52,7 @@ do
 		Options[ Property ] = {
 			type = "color"; hasAlpha = true; order = Count;
 			name = Name; desc = Description;
-			get = function ()
-				local Color = me.db.profile[ STATUS_ID ][ Property ];
-				return Color.r, Color.g, Color.b, Color.a;
-			end;
-			set = function ( R, G, B, A )
-				local Color = me.db.profile[ STATUS_ID ][ Property ];
-				Color.r, Color.g, Color.b, Color.a = R, G, B, A or 1;
-				me:UpdateAllUnits();
-			end;
+			get = ColorGet; set = ColorSet;
 		};
 	end
 	--- Registers the HealthFade status and its options with Grid OnLoad.
