@@ -5,7 +5,7 @@
   ****************************************************************************]]
 
 
-local L = AceLibrary( "AceLocale-2.2" ):new( "GridStatusHealthFade" );
+local L = select( 2, ... ).L;
 local me = Grid:GetModule( "GridStatus" ):NewModule( "GridStatusHealthFade" );
 
 local STATUS_ID = "alert_healthFade";
@@ -47,10 +47,7 @@ do
 			end;
 			set = function ( R, G, B, A )
 				local Color = me.db.profile[ STATUS_ID ][ Property ];
-				Color.r = R;
-				Color.g = G;
-				Color.b = B;
-				Color.a = A or 1;
+				Color.r, Color.g, Color.b, Color.a = R, G, B, A or 1;
 				me:UpdateAllUnits();
 			end;
 		};
@@ -66,9 +63,9 @@ end
 --- Called when this status is enabled and used.
 function me:OnStatusEnable ( Status )
 	if ( Status == STATUS_ID ) then
-		self:RegisterEvent( "Grid_UnitJoined", "UpdateUnit" );
-		self:RegisterEvent( "Grid_UnitLeft", "RemoveUnit" );
-		self:RegisterEvent( "Grid_UnitChanged", "UpdateUnit" );
+		self:RegisterMessage( "Grid_UnitJoined", "UpdateUnit" );
+		self:RegisterMessage( "Grid_UnitLeft", "RemoveUnit" );
+		self:RegisterMessage( "Grid_UnitChanged", "UpdateUnit" );
 		self:RegisterEvent( "UNIT_HEALTH" );
 		self:RegisterEvent( "UNIT_MAXHEALTH" );
 		self:UpdateAllUnits();
@@ -78,6 +75,7 @@ end
 function me:OnStatusDisable ( Status )
 	if ( Status == STATUS_ID ) then
 		self:UnregisterAllEvents();
+		self:UnregisterAllMessages();
 		self.core:SendStatusLostAllUnits( STATUS_ID );
 		wipe( me.ColorTables );
 	end
@@ -85,8 +83,7 @@ end
 --- Completely reinitializes the status.
 function me:Reset ()
 	self.super.Reset( self );
-	self:OnDisable();
-	self:OnEnable();
+	self:UpdateAllUnits();
 end
 
 
@@ -95,19 +92,19 @@ end
 do
 	local UnitGUID = UnitGUID;
 	--- Update status when health changes.
-	function me:UNIT_HEALTH( UnitID )
-		self:UpdateUnit( UnitGUID( UnitID ), UnitID );
+	function me:UNIT_HEALTH( Event, UnitID )
+		self:UpdateUnit( Event, UnitGUID( UnitID ), UnitID );
 	end
 
 	--- Update status when max health changes.
-	function me:UNIT_MAXHEALTH( UnitID )
-		self:UpdateUnit( UnitGUID( UnitID ), UnitID );
+	function me:UNIT_MAXHEALTH( Event, UnitID )
+		self:UpdateUnit( Event, UnitGUID( UnitID ), UnitID );
 	end
 end
 
 
 --- When a unit leaves the raid, removes its color table from the cache.
-function me:RemoveUnit ( GUID, UnitID )
+function me:RemoveUnit ( Event, GUID, UnitID )
 	me.ColorTables[ GUID ] = nil;
 end
 do
@@ -115,7 +112,7 @@ do
 	--- Fully updates all active units.
 	function me:UpdateAllUnits ()
 		for GUID, UnitID in GridRoster:IterateRoster() do
-			self:UpdateUnit( GUID, UnitID );
+			self:UpdateUnit( nil, GUID, UnitID );
 		end
 	end
 end
@@ -125,7 +122,7 @@ do
 	local UnitIsDeadOrGhost = UnitIsDeadOrGhost;
 	local ceil = ceil;
 	--- Updates or removes the health fade status for a given unit.
-	function me:UpdateUnit( GUID, UnitID )
+	function me:UpdateUnit( Event, GUID, UnitID, ... )
 		local HealthMax = UnitHealthMax( UnitID );
 
 		if ( HealthMax == 0 -- Unit info is bogus
