@@ -28,6 +28,7 @@ Overlay.Modules.Carbonite = me;
 --- Repositions the canvas as the Carbonite map moves.
 function me:OnUpdate ()
 	CarboniteMap:CZF( CarboniteMap.Con, CarboniteMap.Zon, WorldMap, 1 );
+	WorldMap.RangeRing.Child:SetScale( WorldMap:GetScale() ); -- CarboniteMap:CZF also sets point
 	WorldMap.KeyParent:SetAlpha( NxMap1.NxW.BaF ); -- Obey window's "Fade Out" setting
 end
 
@@ -41,6 +42,7 @@ function me:WorldMapFrameOnShow ()
 
 		-- Undo Carbonite scaling/fading
 		WorldMap:SetScale( 1 );
+		WorldMap.RangeRing.Child:SetScale( 1 );
 		WorldMap.KeyParent:SetAlpha( 1 );
 
 		WorldMap:SetParent( WorldMapDetailFrame );
@@ -48,6 +50,10 @@ function me:WorldMapFrameOnShow ()
 
 		WorldMap.KeyParent:SetParent( WorldMapButton );
 		WorldMap.KeyParent:SetAllPoints();
+
+		WorldMap.RangeRing:SetParent( WorldMapDetailFrame );
+		WorldMap.RangeRing:SetAllPoints();
+		WorldMap.RangeRingSetTarget( PlayerArrowEffectFrame );
 	end
 end
 --- Adjusts the canvas when entering Carbonite mode.
@@ -61,6 +67,10 @@ function me:WorldMapFrameOnHide ()
 
 		WorldMap.KeyParent:SetParent( ScrollFrame );
 		WorldMap.KeyParent:SetAllPoints();
+
+		WorldMap.RangeRing:SetParent( ScrollFrame );
+		WorldMap.RangeRing:SetAllPoints();
+		WorldMap.RangeRingSetTarget( CarboniteMap.PlF );
 	end
 end
 

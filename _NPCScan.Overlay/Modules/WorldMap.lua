@@ -87,11 +87,25 @@ function me:KeyOnSizeChanged ()
 	me.KeyValidateSize( self );
 end
 
+--- Centers the range ring around Target frame.
+function me.RangeRingSetTarget ( Target )
+	me.RangeRing.Target:SetParent( Target );
+	me.RangeRing.Child:ClearAllPoints();
+	me.RangeRing.Child:SetPoint( "CENTER", Target );
+end
+--- Shows the range ring when its target is shown.
+function me:RangeRingTargetOnShow ()
+	me.RangeRing.Child:Show();
+end
+--- Hides the range ring when its target is hidden.
+function me:RangeRingTargetOnHide ()
+	me.RangeRing.Child:Hide();
+end
 --- Shows and resizes the range ring when repainting a zone.
 -- @param Map  AreaID to resize to.
 function me:RangeRingPaint ( Map )
 	if ( Overlay.Options.ModulesExtra[ "WorldMap" ].RangeRing ) then
-		local Size = ( Overlay.DetectionRadius * 2 ) / Overlay.GetMapSize( Map ) * self:GetWidth();
+		local Size = ( Overlay.DetectionRadius * 2 ) / Overlay.GetMapSize( Map ) * me:GetWidth();
 		self.Child:SetSize( Size, Size );
 		self:Show();
 	end
@@ -207,18 +221,20 @@ function me:OnLoad ( ... )
 
 
 	-- Add range ring
-	local RangeRing = CreateFrame( "ScrollFrame", nil, WorldMapPlayer );
+	local RangeRing = CreateFrame( "ScrollFrame", nil, WorldMapDetailFrame );
 	self.RangeRing = RangeRing;
-	-- Setup the range ring's textures
 	RangeRing:Hide();
-	RangeRing:SetAllPoints( WorldMapDetailFrame );
+	RangeRing:SetAllPoints();
 	RangeRing:SetAlpha( 0.8 );
+
+	local RangeRingTarget = CreateFrame( "Frame" );
+	RangeRing.Target = RangeRingTarget;
+	RangeRingTarget:SetScript( "OnShow", me.RangeRingTargetOnShow );
+	RangeRingTarget:SetScript( "OnHide", me.RangeRingTargetOnHide );
 
 	local RangeRingChild = CreateFrame( "Frame", nil, RangeRing );
 	RangeRing.Child = RangeRingChild;
 	RangeRing:SetScrollChild( RangeRingChild );
-	RangeRingChild:ClearAllPoints();
-	RangeRingChild:SetPoint( "CENTER", WorldMapPlayer );
 
 	local Color = NORMAL_FONT_COLOR;
 	local Texture = RangeRingChild:CreateTexture();
@@ -226,6 +242,8 @@ function me:OnLoad ( ... )
 	Texture:SetTexture( [[Interface\BUTTONS\IconBorder-GlowRing]] );
 	Texture:SetBlendMode( "ADD" );
 	Texture:SetVertexColor( Color.r, Color.g, Color.b );
+
+	me.RangeRingSetTarget( PlayerArrowEffectFrame );
 
 
 	-- Add toggle button
@@ -295,6 +313,8 @@ function me:OnUnload ( ... )
 	self.KeyParent:SetScript( "OnSizeChanged", nil );
 	self.KeyParent.Key:SetScript( "OnEnter", nil );
 	self.KeyParent.Key:SetScript( "OnSizeChanged", nil );
+	self.RangeRing.Target:SetScript( "OnShow", nil );
+	self.RangeRing.Target:SetScript( "OnHide", nil );
 
 	return self.super.OnUnload( self, ... );
 end
