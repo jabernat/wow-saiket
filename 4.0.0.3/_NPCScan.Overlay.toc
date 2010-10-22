@@ -1,0 +1,38 @@
+## Interface: 40000
+## Title: _|cffCCCC88NPCScan|r.Overlay
+## Notes: Adds mob patrol paths to your map.
+## Notes-deDE: Fügt deiner Karte die Laufpfade hinzu
+## Notes-frFR: Ajoute les trajets des monstres rares sur votre carte.
+## Notes-koKR: 지도에 희귀몹의 이동경로를 표시합니다.
+## Notes-zhTW: 在你的地圖上新增怪物路徑圖。
+## Author: Saiket
+## X-Credits-deDE: Localization: Freydis88
+## X-Credits-frFR: Localization: Pettigrow
+## X-Credits-koKR: Localization: kdw112
+## X-Credits-zhTW: Localization: s8095324, pepper_ep
+## Version: 4.0.0.3
+## X-Date: 2010-10-21
+## X-Category: Maps
+## X-License: GPLv3
+## X-Email: saiket.wow@gmail.com
+## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons/NPCScanOverlay
+## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:NPCScan.Overlay
+## X-WoWI-ID: 14686
+## X-Curse-Project-ID: npcscan-overlay
+## X-Localizations: deDE, enUS, frFR, koKR, zhTW
+## X-CompatibleLocales: deDE, enUS, esES, esMX, frFR, koKR, ruRU, zhCN, zhTW
+## SavedVariables: _NPCScanOverlayOptions
+## OptionalDeps: Ace3, _NPCScan, AlphaMap3, Carbonite
+Libs\LibStub\LibStub.lua
+Libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
+
+Embeds.xml
+Locales.xml
+
+_NPCScan.Overlay.lua
+_NPCScan.Overlay.Config.lua
+_NPCScan.Overlay.Modules.lua
+
+_NPCScan.Overlay.PathData.lua
+
+Modules.xml
