@@ -37,4 +37,6 @@ Overlay.L = setmetatable( {
 	MODULE_RANGERING_FORMAT = "%dyd Ring für ungefähren Entdeckungsradius (in Yards)",
 	MODULE_WORLDMAP = "Hauptweltkarte",
 	MODULE_WORLDMAP_KEY_FORMAT = "• %s",
+	MODULE_WORLDMAP_TOGGLE = "NSCs",
+	MODULE_WORLDMAP_TOGGLE_DESC = "_|cffCCCC88NPCScan|r.Overlays Pfade für verfolgte NSCs ein-/ausschalten.",
 }, { __index = Overlay.L; } );
