@@ -39,6 +39,7 @@ end
 function me:WorldMapFrameOnShow ()
 	if ( WorldMap.Loaded ) then
 		me:Hide(); -- Stop updating with Carbonite
+		WorldMap.Toggle:Show();
 
 		-- Undo Carbonite scaling/fading
 		WorldMap:SetScale( 1 );
@@ -60,6 +61,7 @@ end
 function me:WorldMapFrameOnHide ()
 	if ( WorldMap.Loaded ) then
 		me:Show(); -- Begin updating with Carbonite
+		WorldMap.Toggle:Hide();
 
 		local ScrollFrame = CarboniteMap.TSF;
 		WorldMap:SetParent( ScrollFrame:GetScrollChild() );

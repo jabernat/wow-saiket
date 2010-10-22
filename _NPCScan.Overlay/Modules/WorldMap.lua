@@ -247,9 +247,9 @@ function me:OnLoad ( ... )
 
 
 	-- Add toggle button
-	local Toggle = CreateFrame( "CheckButton", nil, WorldMapPositioningGuide );
+	local Toggle = CreateFrame( "CheckButton", nil, WorldMapButton );
 	self.Toggle = Toggle;
-	Toggle:SetPoint( "TOPLEFT", WorldMapDetailFrame );
+	Toggle:SetPoint( "TOPLEFT" );
 	hooksecurefunc( Toggle, "SetChecked", me.ToggleSetChecked );
 	Toggle:SetScript( "OnClick", me.ToggleOnClick );
 	Toggle:SetScript( "OnEnter", me.ToggleOnEnter );
