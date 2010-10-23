@@ -4,7 +4,7 @@
   ****************************************************************************]]
 
 
-local me = select( 2, ... );
+local AddOnName, me = ...;
 _Corpse = me;
 local L = me.L;
 me.Frame = CreateFrame( "Frame" );
@@ -169,6 +169,38 @@ do
 	--- Returns true if a given module is the active one.
 	function me.IsModuleActive ( Module )
 		return Module == ActiveModule;
+	end
+end
+
+
+
+
+do
+	local Constants = {
+		"CORPSE_TOOLTIP",
+		"ERR_BAD_PLAYER_NAME_S",
+		"ERR_FRIEND_ADDED_S",
+		"ERR_FRIEND_REMOVED_S",
+	};
+	--- Script to extract localization data from a client.
+	function me.LocaleExtract ()
+		local Data = {
+			Locale = GetCVar( "locale" );
+			VersionCorpse = GetAddOnMetadata( AddOnName, "Version" );
+			VersionWoW = ( "%s (%d)" ):format( GetBuildInfo() );
+
+			Constants = {};
+			Taint = {};
+		};
+		for _, Constant in ipairs( Constants ) do
+			Data.Constants[ Constant ] = _G[ Constant ];
+			local _, AddOn = issecurevariable( Constant );
+			if ( AddOn ) then
+				Data.Taint[ Constant ] = AddOn;
+			end
+		end
+		_CorpseLocale = Data;
+		ReloadUI();
 	end
 end
 

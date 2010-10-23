@@ -24,6 +24,7 @@
 ## X-Curse-Project-ID: corpse
 ## X-Localizations: deDE, enUS, frFR, koKR, zhCN, zhTW
 ## X-CompatibleLocales: deDE, enUS, esES, esMX, frFR, koKR, ruRU, zhCN, zhTW
+## SavedVariables: _CorpseLocale
 Locales.xml
 
 _Corpse.lua
