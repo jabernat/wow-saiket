@@ -18,6 +18,6 @@ _Corpse.L = setmetatable( {
 			or Text:match( "^Cadavre d'([^%s%p%d%c]+)$" );
 	end,
 	ENEMY_OFFLINE_PATTERN = "^Impossible de trouver le personnage '([^%s%p%d%c]+)'%.$",
-	FRIEND_ADDED_PATTERN = "^([^%s%p%d%c]+) fait maintenant partie de vos amis%.$",
-	FRIEND_REMOVED_PATTERN = "^([^%s%p%d%c]+) ne fait plus partie de vos amis%.$",
+	FRIEND_ADDED_PATTERN = "^([^%s%p%d%c]+) fait maintenant partie de vos contacts%.$",
+	FRIEND_REMOVED_PATTERN = "^([^%s%p%d%c]+) ne fait plus partie de vos contacts%.$",
 }, { __index = _Corpse.L; } );
