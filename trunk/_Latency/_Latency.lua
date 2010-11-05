@@ -10,6 +10,7 @@ _LatencyOptions = {
 
 
 local AddOnName, me = ...;
+_Latency = me;
 local L = me.L;
 local LibGraph = LibStub( "LibGraph-2.0" );
 
