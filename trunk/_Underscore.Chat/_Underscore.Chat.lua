@@ -215,6 +215,7 @@ for Index = 1, NUM_CHAT_WINDOWS do
 
 	me.ChatFrames[ Index ] = ChatFrame;
 	ChatFrame:SetScript( "OnMouseWheel", me.OnMouseWheel );
+	ChatFrame:EnableMouseWheel( false );
 	ChatFrame:SetFading( false );
 	if ( not PreserveMaxLines ) then -- Keep early messages in window if shift is held
 		ChatFrame:SetMaxLines( me.MaxLines );

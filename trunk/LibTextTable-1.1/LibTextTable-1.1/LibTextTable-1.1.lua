@@ -4,7 +4,7 @@
   ****************************************************************************]]
 
 
-local MAJOR, MINOR = "LibTextTable-1.1", 1;
+local MAJOR, MINOR = "LibTextTable-1.1", 2;
 
 local lib = LibStub:NewLibrary( MAJOR, MINOR );
 if ( not lib ) then
@@ -649,6 +649,7 @@ do
 		Table.ElementFont = ElementFont or "GameFontNormalSmall";
 
 		Table:SetScript( "OnMouseWheel", OnMouseWheel );
+		Table:EnableMouseWheel( false );
 		Table:SetHeader(); -- Clear all and resize
 		return Table;
 	end
