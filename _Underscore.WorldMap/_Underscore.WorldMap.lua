@@ -148,6 +148,7 @@ Tooltip.Text:SetAllPoints();
 local ScrollHandler = me.ScrollHandler;
 ScrollHandler:SetAllPoints( WorldMapButton );
 ScrollHandler:SetScript( "OnMouseWheel", ScrollHandler.OnMouseWheel );
+ScrollHandler:EnableMouseWheel( false );
 ScrollHandler:SetScript( "OnShow", ScrollHandler.OnShow );
 ScrollHandler:SetScript( "OnHide", ScrollHandler.OnHide );
 ScrollHandler:SetScript( "OnEvent", _Underscore.Frame.OnEvent );
