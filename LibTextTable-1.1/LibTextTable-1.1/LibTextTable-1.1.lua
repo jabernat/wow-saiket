@@ -483,7 +483,7 @@ do
 
 	--- Handler for scrollwheel and scroll button increment/decrement.
 	local function ScrollHandler ( Scroll, Delta )
-		Scroll:SetValue( Scroll:GetValue() + Delta * Scroll:GetLength() / 2 )
+		Scroll:SetValue( Scroll:GetValue() + Delta * Scroll:GetLength() / 2 );
 	end
 	--- Scrolls the view vertically, or horizontally if shift is held.
 	local function OnMouseWheel ( Table, Delta )
