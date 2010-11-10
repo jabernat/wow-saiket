@@ -217,7 +217,7 @@ do
 			local Texture = self.Classification;
 			if ( Type ) then
 				Texture:Show();
-				SetDesaturation( Texture, Type == "rare" );
+				Texture:SetDesaturated( Type == "rare" );
 			else
 				Texture:Hide();
 			end

@@ -61,7 +61,7 @@ function me.ToggleLocked ( Locked )
 
 	me.Frame:EnableMouse( Enable );
 	me.Close:EnableMouse( Enable );
-	SetDesaturation( me.Close:GetNormalTexture(), Locked );
+	me.Close:GetNormalTexture():SetDesaturated( Locked );
 	me.Resize:EnableMouse( Enable );
 	if ( Enable ) then
 		me.Close:Enable();
