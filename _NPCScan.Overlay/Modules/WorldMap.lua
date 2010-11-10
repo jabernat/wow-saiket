@@ -129,8 +129,8 @@ end
 --- Adjusts the toggle button's display when changing state.
 function me:ToggleSetChecked ()
 	local Enable = self:GetChecked();
-	SetDesaturation( self.Normal, not Enable );
-	SetDesaturation( self.Border, not Enable );
+	self.Normal:SetDesaturated( not Enable );
+	self.Border:SetDesaturated( not Enable );
 	local Color;
 	if ( Enable ) then
 		self.Disabled:Hide();

@@ -240,7 +240,7 @@ do
 	end
 	function CursorsPanel.EnableControls ()
 		CursorsPanel.Preview:EnableMouse( true );
-		SetDesaturation( CursorsPanel.Preview.Backdrop, false );
+		CursorsPanel.Preview.Backdrop:SetDesaturated( false );
 		EnableSlider( CursorsPanel.X );
 		EnableSlider( CursorsPanel.Y );
 		EnableSlider( CursorsPanel.Scale );
@@ -258,7 +258,7 @@ do
 	end
 	function CursorsPanel.DisableControls ()
 		CursorsPanel.Preview:EnableMouse( false );
-		SetDesaturation( CursorsPanel.Preview.Backdrop, true );
+		CursorsPanel.Preview.Backdrop:SetDesaturated( true );
 		DisableSlider( CursorsPanel.X );
 		DisableSlider( CursorsPanel.Y );
 		DisableSlider( CursorsPanel.Scale );

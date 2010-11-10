@@ -430,7 +430,7 @@ do
 		Visual.ClassIcon:SetTexture( [[Interface\Glues\CharacterCreate\UI-CharacterCreate-Classes]] );
 		Visual.ClassIcon:SetBlendMode( "ADD" );
 		Visual.ClassIcon:SetAlpha( 0.5 );
-		SetDesaturation( Visual.ClassIcon, true );
+		Visual.ClassIcon:SetDesaturated( true );
 
 
 		-- Health bar
