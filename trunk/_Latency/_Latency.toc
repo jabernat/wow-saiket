@@ -3,7 +3,7 @@
 ## Notes: Graphs a more accurate latency measurement.
 ## Author: Saiket
 ## Version: 4.0.0.1
-## X-Date: 2010-11-05
+## X-Date: 2010-11-11
 ## X-Category: Chat/Communication
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com

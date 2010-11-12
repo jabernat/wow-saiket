@@ -272,6 +272,7 @@ Frame:SetResizable( true );
 Frame:SetClampedToScreen( true );
 Frame:SetClampRectInsets( me.Padding + 2, -me.Padding, -me.Padding - 18, me.Padding );
 Frame:CreateTitleRegion():SetAllPoints();
+Frame:SetDontSavePosition( true );
 -- Close button
 me.Close = CreateFrame( "Button", nil, Frame, "UIPanelCloseButton" );
 me.Close:SetPoint( "TOPRIGHT", 4, 4 );
