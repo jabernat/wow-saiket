@@ -106,12 +106,12 @@ do
 	end
 	--- Enables or disables syntax highlighting in the edit box.
 	function me:ScriptSetLua ( _, Script )
-		if ( Script == self.Script and IndentationLib ) then
+		if ( Script == self.Script and _DevPad.IndentationLib ) then
 			if ( Script.Lua ) then
-				IndentationLib.enable( self.Edit, nil, TabWidth );
+				_DevPad.IndentationLib.enable( self.Edit, TabWidth );
 				SetVertexColors( self.Lua, 1, 1, 1 );
 			else
-				IndentationLib.disable( self.Edit );
+				_DevPad.IndentationLib.disable( self.Edit );
 				SetVertexColors( self.Lua, 0.4, 0.4, 0.4 );
 			end
 		end
@@ -170,7 +170,7 @@ function me.Margin:Update ()
 	local Width = me.ScrollFrame:GetWidth()
 		- ( self:GetWidth() + TextInset ); -- Size of margins
 	local EndingLast;
-	for Line, Ending in me.Edit:GetText():gmatch( "([^\r\n]*)()" ) do
+	for Line, Ending in me.Edit:GetText( true ):gmatch( "([^\r\n]*)()" ) do
 		if ( EndingLast ~= Ending ) then
 			EndingLast = Ending;
 			Index, Count = Index + 1, Count + 1;
@@ -206,17 +206,20 @@ function me.Margin:OnMouseDown ()
 			Index = Index - 1;
 		end
 		local Line = Lines[ Index ] or 1;
-		local Start, End = Edit:GetLinePosition( Line ),
-			Line < #Lines and Edit:GetLinePosition( Line + 1 ) or #Edit:GetText();
-		Edit:SetFocus();
-		Edit:SetCursorPosition( End or Start );
+		local Start = Edit:GetLinePosition( Line );
+		local End = Edit:GetLinePosition( Line + 1 );
+		if ( Start == End ) then -- Last line
+			End = #Edit:GetText( true );
+		end
+		Edit:SetCursorPosition( End );
 		Edit:HighlightText( Start, End );
+		Edit:SetFocus();
 	end
 end
 --- Focus the edit box text if empty space gets clicked.
 function me.Focus:OnMouseDown ()
+	me.Edit:SetCursorPosition( #me.Edit:GetText( true ) );
 	me.Edit:SetFocus();
-	me.Edit:SetCursorPosition( #me.Edit:GetText() );
 end
 --- Moves the edit box's view to follow the cursor.
 function me.Edit:OnCursorChanged ( CursorX, CursorY, CursorWidth, CursorHeight )
@@ -242,7 +245,7 @@ end
 --- @return Cursor position for the start of Line within the edit box.
 function me.Edit:GetLinePosition ( Line )
 	local Count, PositionLast = 1, 0;
-	for Position in self:GetText():gmatch( "()[\r\n]" ) do
+	for Position in self:GetText( true ):gmatch( "()[\r\n]" ) do
 		if ( Count >= Line ) then
 			return PositionLast;
 		end
@@ -313,7 +316,9 @@ function me:GoToOnAccept ()
 	if ( Line == 0 ) then
 		return true; -- Keep open
 	end
-	me.Edit:SetCursorPosition( me.Edit:GetLinePosition( Line ) );
+	local Position = me.Edit:GetLinePosition( Line );
+	me.Edit:HighlightText( Position, Position ); -- Clear
+	me.Edit:SetCursorPosition( Position );
 	me.Edit:SetFocus();
 end
 --- Undo changes to the edit box.
@@ -329,7 +334,7 @@ function me.Shortcuts:G ()
 	if ( IsControlKeyDown() ) then
 		local PositionLast, LineMax, LineCurrent = 0, 0, 1;
 		local Cursor = me.Edit:GetCursorPosition() + 1;
-		for Start, End in me.Edit:GetText():gmatch( "()[^\r\n]*()" ) do
+		for Start, End in me.Edit:GetText( true ):gmatch( "()[^\r\n]*()" ) do
 			if ( PositionLast ~= Start ) then
 				LineMax, PositionLast = LineMax + 1, End;
 				if ( Cursor and Start <= Cursor and Cursor <= End ) then
@@ -449,7 +454,7 @@ local function SetupTitleButton ( Button, TooltipText, Offset )
 	Button:SetMotionScriptsWhileDisabled( true );
 	Button.tooltipText = TooltipText;
 end
-if ( IndentationLib ) then
+if ( _DevPad.IndentationLib ) then
 	SetupTitleButton( me.Lua, L.LUA_TOGGLE );
 else
 	me.Lua:Hide();
