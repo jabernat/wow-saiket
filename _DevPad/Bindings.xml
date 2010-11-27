@@ -1,0 +1,5 @@
+<Bindings>
+	<Binding name="_DEV_PAD_SHOW" header="_DEV_PAD">
+		ToggleFrame( _Dev.Pad.List );
+	</Binding>
+</Bindings>
