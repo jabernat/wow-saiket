@@ -1,0 +1,6 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
+	<Include file="Libs\AceSerializer-3.0\AceSerializer-3.0.xml" />
+	<Include file="Libs\AceComm-3.0\AceComm-3.0.xml" />
+	<Script file="Libs\FlyPaper\FlyPaper.lua" />
+	<Script file="Libs\ForAllIndentsAndPurposes\indent.lua" />
+</Ui>
