@@ -95,6 +95,7 @@ function me:SetRenaming ( Object )
 			Edit:SetFontObject( Button.Name:GetFontObject() );
 			Edit:SetText( Object.Name );
 			Edit:Show();
+			Edit:SetFocus();
 		else
 			Edit:Hide();
 		end
