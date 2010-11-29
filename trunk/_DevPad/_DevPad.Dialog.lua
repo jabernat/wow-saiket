@@ -136,10 +136,10 @@ end
 --- Saves position and size information for saved variables.
 function me:Pack ()
 	local Options, _ = {};
+	Options.Width, Options.Height = self:GetSize();
 	if ( self.StickTarget ) then
 		Options.StickTarget, Options.StickPoint = self.StickTarget, self.StickPoint;
 	else
-		Options.Width, Options.Height = self:GetSize();
 		Options.Point, _, _, Options.X, Options.Y = self:GetPoint();
 	end
 	return Options;
