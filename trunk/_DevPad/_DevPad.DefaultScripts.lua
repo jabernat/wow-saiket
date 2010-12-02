@@ -41,8 +41,7 @@ for _, BookData in ipairs( DB.books ) do
   end
   Hack:Insert( Book );
 end
-return _DevPad.FolderRoot:Insert( Hack );
-]=];
+return _DevPad.FolderRoot:Insert( Hack );]=];
 		},
 		{	Class = "Script"; Name = "TinyPad"; Lua = true;
 			Text = [=[
@@ -59,8 +58,7 @@ for Index, Text in ipairs( DB ) do
   Script:SetLua( false );
   TinyPad:Insert( Script );
 end
-return _DevPad.FolderRoot:Insert( TinyPad );
-]=];
+return _DevPad.FolderRoot:Insert( TinyPad );]=];
 		},
 		{	Class = "Script"; Name = "WowLua"; Lua = true;
 			Text = [=[
@@ -79,8 +77,7 @@ for _, PageData in ipairs( DB.pages ) do
   Script:SetLua( true );
   WowLua:Insert( Script );
 end
-return _DevPad.FolderRoot:Insert( WowLua );
-]=];
+return _DevPad.FolderRoot:Insert( WowLua );]=];
 		},
 	}
 };
