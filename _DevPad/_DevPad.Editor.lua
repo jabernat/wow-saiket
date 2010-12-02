@@ -89,7 +89,6 @@ function me:SetScriptObject ( Script )
 		if ( Script ) then
 			self:ObjectSetName( nil, Script );
 			_DevPad.RegisterCallback( self, "ObjectSetName" );
-			self:ScriptSetLua( nil, Script );
 			_DevPad.RegisterCallback( self, "ScriptSetLua" );
 			if ( Script.Parent ) then
 				_DevPad.RegisterCallback( self, "FolderRemove" );
@@ -97,6 +96,7 @@ function me:SetScriptObject ( Script )
 			self.ScrollFrame.Bar:SetValue( 0 );
 			self.Edit:SetText( Script.Text:gsub( "|", "||" ) );
 			self.Edit:SetCursorPosition( 0 );
+			self:ScriptSetLua( nil, Script );
 			self:Show();
 		else
 			_DevPad.UnregisterCallback( self, "ObjectSetName" );
