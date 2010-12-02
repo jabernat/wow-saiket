@@ -66,8 +66,8 @@ return _DevPad.FolderRoot:Insert( TinyPad );
 			Text = [=[
 --- Run with WowLua loaded to transfer all settings to _DevPad.
 -- _DevPad doesn't support script "locking"; All imported scripts will be writable.
--- NOTE: If you use AddonLoader, you must first open WowLua using its slash command.
 
+LoadAddOn( "WowLua" ); -- In case AddonLoader is installed
 local DB = assert( WowLua_DB, "WowLua saved variables not found." );
 local ScriptClass = _DevPad.GetClass( "Script" );
 local WowLua = _DevPad.GetClass( "Folder" ):New();
