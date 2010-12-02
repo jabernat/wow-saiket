@@ -29,13 +29,49 @@ me.DefaultWidth, me.DefaultHeight = 500, 500;
 
 local TextInset = 8; -- If too small, mouse dragging the text selection won't scroll the view easily.
 local TabWidth = 2;
+local AutoIndent = true; -- True to enable auto-indentation for Lua scripts
+if ( _DevPad.IndentationLib ) then
+	local T = _DevPad.IndentationLib.Tokens;
+	me.SyntaxColors = {};
+	--- Assigns a color to multiple tokens at once.
+	local function Color ( Code, ... )
+		for Index = 1, select( "#", ... ) do
+			me.SyntaxColors[ select( Index, ... ) ] = Code;
+		end
+	end
+	Color( "|cff8dbbd7", T.KEYWORD ); -- Reserved words
+	Color( "|cffc27272", T.CONCAT, T.VARARG,
+		T.ASSIGNMENT, T.PERIOD, T.COMMA, T.SEMICOLON, T.COLON, T.SIZE );
+	Color( "|cffffa600", T.NUMBER );
+	Color( "|cff888888", T.STRING, T.STRING_LONG );
+	Color( "|cff55cc55", T.COMMENT_SHORT, T.COMMENT_LONG );
+	Color( "|cffccaa88", T.LEFTCURLY, T.RIGHTCURLY,
+		T.LEFTBRACKET, T.RIGHTBRACKET,
+		T.LEFTPAREN, T.RIGHTPAREN,
+		T.ADD, T.SUBTRACT, T.MULTIPLY, T.DIVIDE, T.POWER, T.MODULUS );
+	Color( "|cffccddee", T.EQUALITY, T.NOTEQUAL, T.LT, T.LTE, T.GT, T.GTE );
+	Color( "|cff55ddcc", -- Minimal standard Lua functions
+		"assert", "error", "ipairs", "next", "pairs", "pcall", "print", "select",
+		"tonumber", "tostring", "type", "unpack",
+		-- Libraries
+		"bit", "coroutine", "math", "string", "table" );
+	Color( "|cffddaaff", -- Some of WoW's aliases for standard Lua functions
+		-- math
+		"abs", "ceil", "floor", "max", "min",
+		-- string
+		"format", "gsub", "strbyte", "strchar", "strconcat", "strfind", "strjoin",
+		"strlower", "strmatch", "strrep", "strrev", "strsplit", "strsub", "strtrim",
+		"strupper", "tostringall",
+		-- table
+		"sort", "tinsert", "tremove", "wipe" );
+end
 
 local DejaVuSansMono = [[Interface\AddOns\]]..( ... )..[[\Skin\DejaVuSansMono.ttf]];
 me.Font = CreateFont( "_DevPadEditorFont" );
 me.Font.Paths = { -- Font file paths for font cycling button
 	DejaVuSansMono,
-  [[Fonts\FRIZQT__.TTF]],
-  [[Fonts\ARIALN.TTF]]
+	[[Fonts\FRIZQT__.TTF]],
+	[[Fonts\ARIALN.TTF]]
 };
 
 -- Editor colors
@@ -59,7 +95,7 @@ function me:SetScriptObject ( Script )
 				_DevPad.RegisterCallback( self, "FolderRemove" );
 			end
 			self.ScrollFrame.Bar:SetValue( 0 );
-			self.Edit:SetText( Script.Text );
+			self.Edit:SetText( Script.Text:gsub( "|", "||" ) );
 			self.Edit:SetCursorPosition( 0 );
 			self:Show();
 		else
@@ -108,10 +144,11 @@ do
 	function me:ScriptSetLua ( _, Script )
 		if ( Script == self.Script and _DevPad.IndentationLib ) then
 			if ( Script.Lua ) then
-				_DevPad.IndentationLib.enable( self.Edit, TabWidth );
+				_DevPad.IndentationLib.Enable( self.Edit,
+					AutoIndent and TabWidth, me.SyntaxColors );
 				SetVertexColors( self.Lua, 1, 1, 1 );
 			else
-				_DevPad.IndentationLib.disable( self.Edit );
+				_DevPad.IndentationLib.Disable( self.Edit );
 				SetVertexColors( self.Lua, 0.4, 0.4, 0.4 );
 			end
 		end
@@ -159,7 +196,7 @@ function me.Lua:OnClick ()
 end
 --- Undoes changes since the player opened this script.
 function me.Revert:OnClick ()
-	return me.Edit:SetText( me.Script.TextOriginal );
+	return me.Edit:SetText( me.Script.TextOriginal:gsub( "|", "||" ) );
 end
 
 
@@ -221,23 +258,36 @@ function me.Focus:OnMouseDown ()
 	me.Edit:SetCursorPosition( #me.Edit:GetText( true ) );
 	me.Edit:SetFocus();
 end
---- Moves the edit box's view to follow the cursor.
-function me.Edit:OnCursorChanged ( CursorX, CursorY, CursorWidth, CursorHeight )
-	self.LineHeight = CursorHeight;
-	if ( self:HasFocus() ) then
-		local ScrollFrame = me.ScrollFrame;
-		if ( ScrollFrame:GetVerticalScrollRange() > 0 ) then
-			CursorY = -CursorY;
-			local CursorBottom = CursorY + CursorHeight + 2 * TextInset;
+--- Focus the edit box text if empty space gets clicked.
+function me.Edit:OnTabPressed ()
+	self:Insert( ( " " ):rep( TabWidth ) );
+end
+do
+	local LastX, LastY, LastWidth, LastHeight;
+	--- Moves the edit box's view to follow the cursor.
+	function me.Edit:OnCursorChanged ( CursorX, CursorY, CursorWidth, CursorHeight )
+		self.LineHeight = CursorHeight;
+		if ( self:HasFocus() and (
+			LastX ~= CursorX or LastY ~= CursorY -- Only move view when cursor *moves*
+			or LastWidth ~= CursorWidth or LastHeight ~= CursorHeight
+		) ) then
+			LastX, LastY = CursorX, CursorY;
+			LastWidth, LastHeight = CursorWidth, CursorHeight;
 
-			local Height = ScrollFrame:GetHeight();
-			local Top = ScrollFrame:GetVerticalScroll();
-			local Bottom = Top + Height;
+			local ScrollFrame = me.ScrollFrame;
+			if ( ScrollFrame:GetVerticalScrollRange() > 0 ) then
+				CursorY = -CursorY;
+				local CursorBottom = CursorY + CursorHeight + 2 * TextInset;
 
-			if ( CursorY < Top ) then -- Too high
-				ScrollFrame:SetVerticalScroll( CursorY );
-			elseif ( CursorBottom > Bottom ) then -- Too low
-				ScrollFrame:SetVerticalScroll( CursorBottom - Height );
+				local Height = ScrollFrame:GetHeight();
+				local Top = ScrollFrame:GetVerticalScroll();
+				local Bottom = Top + Height;
+
+				if ( CursorY < Top ) then -- Too high
+					ScrollFrame:SetVerticalScroll( CursorY );
+				elseif ( CursorBottom > Bottom ) then -- Too low
+					ScrollFrame:SetVerticalScroll( CursorBottom - Height );
+				end
 			end
 		end
 	end
@@ -260,7 +310,7 @@ function me.Edit:OnTextChanged ()
 		if ( not Script.TextOriginal ) then
 			Script.TextOriginal = Script.Text;
 		end
-		Script:SetText( self:GetText() );
+		Script:SetText( self:GetText():gsub( "||", "|" ) );
 		if ( Script.TextOriginal == Script.Text ) then
 			me.Revert:Disable();
 		else
@@ -492,6 +542,7 @@ Edit:SetFontObject( me.Font );
 -- Note: Left inset simulated by margin.
 Edit:SetTextInsets( 0, TextInset, TextInset, TextInset );
 Edit:SetScript( "OnEscapePressed", Edit.ClearFocus );
+Edit:SetScript( "OnTabPressed", Edit.OnTabPressed );
 Edit:SetScript( "OnCursorChanged", Edit.OnCursorChanged );
 Edit:SetScript( "OnTextChanged", Edit.OnTextChanged );
 -- Enable extra keyboard shortcuts

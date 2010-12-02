@@ -19,1119 +19,707 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]
 
--- This is a _DevPad-specific version of "For All Indents And Purposes",
+--- This is a _DevPad-specific version of "For All Indents And Purposes",
 -- originally by krka <kristofer.karlsson@gmail.com> and modified for Hack by
 -- Mud, aka Eric Tetz <erictetz@gmail.com>.
 --
--- Mud's changes from FAIAP r17:
--- * Fixed bug which caused vertical bars to be consumed when enabling/disabling
---   the library on an edit box.
--- * Moved token and byte constants to function upvalues for performance.
--- * Rewrote lib.stripWowColors for performance.
--- * Replaced caret positioning code with EditBox:Get/SetCursorPosition.
--- * Hardcoded syntax highlighting color table into the library as "colorTable".
--- Saiket's changes:
--- * The hooked EditBox:GetText method accepts an optional parameter "Raw" to
---   return text including syntax highlighting color escape sequences.
+-- @usage Apply auto-indentation/syntax highlighting to an editboxe like this:
+--   lib.Enable(Editbox, [TabWidth], [ColorTable]);
+-- If TabWidth or ColorTable are omitted, those featues won't be applied.
+-- ColorTable should map TokenIDs and string Token values to color codes.
+-- @see lib.Tokens
 
 
 local lib = {};
 select( 2, ... ).IndentationLib = lib;
 
 
-lib.defaultTabWidth = 2
-local colorTable = { [0] = '|r' } -- Filled in below token constants
 
-local stringformat = string.format
-local stringfind = string.find
-local stringsub = string.sub
-local stringbyte = string.byte
-local stringchar = string.char
-local stringrep = string.rep
-local stringgsub = string.gsub
 
 do
-	-- token types
-	local TOKEN_UNKNOWN = 0
-	local TOKEN_NUMBER = 1
-	local TOKEN_LINEBREAK = 2
-	local TOKEN_WHITESPACE = 3
-	local TOKEN_IDENTIFIER = 4
-	local TOKEN_ASSIGNMENT = 5
-	local TOKEN_EQUALITY = 6
-	local TOKEN_MINUS = 7
-	local TOKEN_COMMENT_SHORT = 8
-	local TOKEN_COMMENT_LONG = 9
-	local TOKEN_STRING = 10
-	local TOKEN_LEFTBRACKET = 11
-	local TOKEN_PERIOD = 12
-	local TOKEN_DOUBLEPERIOD = 13
-	local TOKEN_TRIPLEPERIOD = 14
-	local TOKEN_LTE = 15
-	local TOKEN_LT = 16
-	local TOKEN_GTE = 17
-	local TOKEN_GT = 18
-	local TOKEN_NOTEQUAL = 19
-	local TOKEN_COMMA = 20
-	local TOKEN_SEMICOLON = 21
-	local TOKEN_COLON = 22
-	local TOKEN_LEFTPAREN = 23
-	local TOKEN_RIGHTPAREN = 24
-	local TOKEN_PLUS = 25
-	local TOKEN_SLASH = 27
-	local TOKEN_LEFTWING = 28
-	local TOKEN_RIGHTWING = 29
-	local TOKEN_CIRCUMFLEX = 30
-	local TOKEN_ASTERISK = 31
-	local TOKEN_RIGHTBRACKET = 32
-	local TOKEN_KEYWORD = 33
-	local TOKEN_SPECIAL = 34
-	local TOKEN_VERTICAL = 35
-	local TOKEN_TILDE = 36
+	local CursorPosition, CursorDelta;
+	--- Callback for gsub to remove unescaped codes.
+	local function StripCodeGsub ( Escapes, Code, End )
+		if ( #Escapes % 2 == 0 ) then -- Doesn't escape Code
+			if ( CursorPosition and CursorPosition >= End - 1 ) then
+				CursorDelta = CursorDelta - #Code;
+			end
+			return Escapes;
+		end
+	end
+	--- Removes a single escape sequence.
+	local function StripCode ( Pattern, Text, OldCursor )
+		CursorPosition, CursorDelta = OldCursor, 0;
+		return Text:gsub( Pattern, StripCodeGsub ),
+			OldCursor and CursorPosition + CursorDelta;
+	end
+	--- Strips Text of all color escape sequences.
+	-- @param Cursor  Optional cursor position to keep track of.
+	-- @return Stripped text, and the updated cursor position if Cursor was given.
+	function lib.StripColors ( Text, Cursor )
+		Text, Cursor = StripCode( "(|*)(|c%x%x%x%x%x%x%x%x)()", Text, Cursor );
+		return StripCode( "(|*)(|r)()", Text, Cursor );
+	end
+end
 
-	-- WoW specific tokens
-	local TOKEN_COLORCODE_START = 37
-	local TOKEN_COLORCODE_STOP = 38
+do
+	local Enabled, Dirty = {}, {};
 
-	-- new as of lua 5.1
-	local TOKEN_HASH = 39
-	local TOKEN_PERCENT = 40
+	local CodeCache, ColoredCache = {}, {};
+	local NumLinesCache = {};
 
+	local SetTextBackup, GetTextBackup, InsertBackup;
+	--- Reapplies formatting to this editbox using settings from when it was enabled.
+	-- @param ForceIndent  Forces auto-indent even if the line count didn't change.
+	-- @return True if text was changed.
+	function lib:Update ( ForceIndent )
+		if ( not Enabled[ self ] ) then
+			return;
+		end
+		Dirty[ self ] = nil;
 
-	-- color scheme
-	do
-		local function set(color, ...)
-			for i=1,select('#',...) do
-				colorTable[select(i,...)] = color
+		local Colored = GetTextBackup( self );
+		if ( ColoredCache[ self ] == Colored ) then
+			return;
+		end
+		local Code, Cursor = lib.StripColors( Colored, self:GetCursorPosition() );
+
+		if ( self.faiap_tabWidth ) then
+			-- Reindent if line count changes
+			local NumLines, IndexLast = 0, 0;
+			for Index in Code:gmatch( "[^\r\n]*()" ) do
+				if ( IndexLast ~= Index ) then
+					NumLines, IndexLast = NumLines + 1, Index;
+				end
+			end
+			if ( NumLinesCache[ self ] ~= NumLines ) then
+				NumLinesCache[ self ], ForceIndent = NumLines, true;
 			end
 		end
-		set('|c008DBBD7', TOKEN_KEYWORD)
-		set('|c00FFA600', TOKEN_SPECIAL, '..','...')
-		set('|c00c27272', TOKEN_STRING, TOKEN_NUMBER)
-		set('|c00888855', TOKEN_COMMENT_SHORT, TOKEN_COMMENT_LONG)
-		set('|c00ccbbaa', '{','}','[',']','(',')','+','-','/','*')
-		set('|c00ccddee', '==','<','<=','>','>=','~=','and','or','not')
+
+		ForceIndent = true;
+		local ColoredNew, Cursor = lib.FormatCode( Code,
+			ForceIndent and self.faiap_tabWidth, self.faiap_colorTable, Cursor );
+		CodeCache[ self ], ColoredCache[ self ] = Code, ColoredNew;
+
+		if ( Colored ~= ColoredNew ) then
+			SetTextBackup( self, ColoredNew );
+			self:SetCursorPosition( Cursor );
+			return true;
+		end
+	end
+	--- @return True if successfully disabled for this editbox.
+	function lib:Disable ()
+		if ( not Enabled[ self ] ) then
+			return;
+		end
+		Enabled[ self ] = nil;
+		self.GetText, self.SetText, self.Insert = nil;
+
+		local Code, Cursor = lib.StripColors( self:GetText(),
+			self:GetCursorPosition() );
+		self:SetText( Code );
+		self:SetCursorPosition( Cursor );
+
+		self:SetMaxBytes( self.faiap_maxBytes );
+		self:SetCountInvisibleLetters( self.faiap_countInvisible );
+
+		CodeCache[ self ], ColoredCache[ self ] = nil;
+		NumLinesCache[ self ] = nil;
+		return true;
 	end
 
-
-	-- ascii codes
-	local BYTE_LINEBREAK_UNIX = stringbyte("\n")
-	local BYTE_LINEBREAK_MAC = stringbyte("\r")
-	local BYTE_SINGLE_QUOTE = stringbyte("'")
-	local BYTE_DOUBLE_QUOTE = stringbyte('"')
-	local BYTE_0 = stringbyte("0")
-	local BYTE_9 = stringbyte("9")
-	local BYTE_PERIOD = stringbyte(".")
-	local BYTE_SPACE = stringbyte(" ")
-	local BYTE_TAB = stringbyte("\t")
-	local BYTE_E = stringbyte("E")
-	local BYTE_e = stringbyte("e")
-	local BYTE_MINUS = stringbyte("-")
-	local BYTE_EQUALS = stringbyte("=")
-	local BYTE_LEFTBRACKET = stringbyte("[")
-	local BYTE_RIGHTBRACKET = stringbyte("]")
-	local BYTE_BACKSLASH = stringbyte("\\")
-	local BYTE_COMMA = stringbyte(",")
-	local BYTE_SEMICOLON = stringbyte(";")
-	local BYTE_COLON = stringbyte(":")
-	local BYTE_LEFTPAREN = stringbyte("(")
-	local BYTE_RIGHTPAREN = stringbyte(")")
-	local BYTE_TILDE = stringbyte("~")
-	local BYTE_PLUS = stringbyte("+")
-	local BYTE_SLASH = stringbyte("/")
-	local BYTE_LEFTWING = stringbyte("{")
-	local BYTE_RIGHTWING = stringbyte("}")
-	local BYTE_CIRCUMFLEX = stringbyte("^")
-	local BYTE_ASTERISK = stringbyte("*")
-	local BYTE_LESSTHAN = stringbyte("<")
-	local BYTE_GREATERTHAN = stringbyte(">")
-	-- WoW specific chars
-	local BYTE_VERTICAL = stringbyte("|")
-	local BYTE_r = stringbyte("r")
-	local BYTE_c = stringbyte("c")
-
-	-- new as of lua 5.1
-	local BYTE_HASH = stringbyte("#")
-	local BYTE_PERCENT = stringbyte("%")
-
-	local linebreakCharacters = {}
-	lib.linebreakCharacters = linebreakCharacters
-	linebreakCharacters[BYTE_LINEBREAK_UNIX] = 1
-	linebreakCharacters[BYTE_LINEBREAK_MAC] = 1
-
-	local whitespaceCharacters = {}
-	lib.whitespaceCharacters = whitespaceCharacters
-	whitespaceCharacters[BYTE_SPACE] = 1
-	whitespaceCharacters[BYTE_TAB] = 1
-
-	local specialCharacters = {}
-	lib.specialCharacters = specialCharacters
-	specialCharacters[BYTE_PERIOD] = -1
-	specialCharacters[BYTE_LESSTHAN] = -1
-	specialCharacters[BYTE_GREATERTHAN] = -1
-	specialCharacters[BYTE_LEFTBRACKET] = -1
-	specialCharacters[BYTE_EQUALS] = -1
-	specialCharacters[BYTE_MINUS] = -1
-	specialCharacters[BYTE_SINGLE_QUOTE] = -1
-	specialCharacters[BYTE_DOUBLE_QUOTE] = -1
-	specialCharacters[BYTE_TILDE] = -1
-	specialCharacters[BYTE_RIGHTBRACKET] = TOKEN_RIGHTBRACKET
-	specialCharacters[BYTE_COMMA] = TOKEN_COMMA
-	specialCharacters[BYTE_COLON] = TOKEN_COLON
-	specialCharacters[BYTE_SEMICOLON] = TOKEN_SEMICOLON
-	specialCharacters[BYTE_LEFTPAREN] = TOKEN_LEFTPAREN
-	specialCharacters[BYTE_RIGHTPAREN] = TOKEN_RIGHTPAREN
-	specialCharacters[BYTE_PLUS] = TOKEN_PLUS
-	specialCharacters[BYTE_SLASH] = TOKEN_SLASH
-	specialCharacters[BYTE_LEFTWING] = TOKEN_LEFTWING
-	specialCharacters[BYTE_RIGHTWING] = TOKEN_RIGHTWING
-	specialCharacters[BYTE_CIRCUMFLEX] = TOKEN_CIRCUMFLEX
-	specialCharacters[BYTE_ASTERISK] = TOKEN_ASTERISK
-	-- WoW specific
-	specialCharacters[BYTE_VERTICAL] = -1
-	-- new as of lua 5.1
-	specialCharacters[BYTE_HASH] = TOKEN_HASH
-	specialCharacters[BYTE_PERCENT] = TOKEN_PERCENT
-
-	local function nextNumberExponentPartInt(text, pos)
-		while true do
-			local byte = stringbyte(text, pos)
-			if not byte then
-				return TOKEN_NUMBER, pos
-			end
-
-			if byte >= BYTE_0 and byte <= BYTE_9 then
-				pos = pos + 1
-			else
-				return TOKEN_NUMBER, pos
+	local GetTime = GetTime;
+	--- Flags the editbox to be reformatted when its contents change.
+	local function OnTextChanged ( self, ... )
+		if ( Enabled[ self ] ) then
+			Dirty[ self ], CodeCache[ self ] = GetTime();
+		end
+		if ( self.faiap_OnTextChanged ) then
+			return self:faiap_OnTextChanged( ... );
+		end
+	end
+	--- Forces a re-indent for this editbox on tab.
+	local function OnTabPressed ( self, ... )
+		if ( self.faiap_OnTabPressed ) then
+			self:faiap_OnTabPressed( ... );
+		end
+		if ( Enabled[ self ] ) then
+			return lib.Update( self, true );
+		end
+	end
+	--- Throttles updates from typed text.
+	local function OnUpdate ( self, ... )
+		if ( self.faiap_OnUpdate ) then
+			self:faiap_OnUpdate( ... );
+		end
+		if ( Enabled[ self ] ) then
+			local Now = GetTime();
+			local LastUpdate = Dirty[ self ] or Now;
+			if ( Now - LastUpdate > 0.2 ) then
+				return lib.Update( self );
 			end
 		end
 	end
-
-	local function nextNumberExponentPart(text, pos)
-		local byte = stringbyte(text, pos)
-		if not byte then
-			return TOKEN_NUMBER, pos
-		end
-
-		if byte == BYTE_MINUS then
-			-- handle this case: a = 1.2e-- some comment
-			-- i decide to let 1.2e be parsed as a a number
-			byte = stringbyte(text, pos + 1)
-			if byte == BYTE_MINUS then
-				return TOKEN_NUMBER, pos
-			end
-			return nextNumberExponentPartInt(text, pos + 1)
-		end
-
-		return nextNumberExponentPartInt(text, pos)
-	end
-
-	local function nextNumberFractionPart(text, pos)
-		while true do
-			local byte = stringbyte(text, pos)
-			if not byte then
-				return TOKEN_NUMBER, pos
-			end
-
-			if byte >= BYTE_0 and byte <= BYTE_9 then
-				pos = pos + 1
-			elseif byte == BYTE_E or byte == BYTE_e then
-				return nextNumberExponentPart(text, pos + 1)
-			else
-				return TOKEN_NUMBER, pos
-			end
-		end
-	end
-
-	local function nextNumberIntPart(text, pos)
-		while true do
-			local byte = stringbyte(text, pos)
-			if not byte then
-				return TOKEN_NUMBER, pos
-			end
-
-			if byte >= BYTE_0 and byte <= BYTE_9 then
-				pos = pos + 1
-			elseif byte == BYTE_PERIOD then
-				return nextNumberFractionPart(text, pos + 1)
-			elseif byte == BYTE_E or byte == BYTE_e then
-				return nextNumberExponentPart(text, pos + 1)
-			else
-				return TOKEN_NUMBER, pos
-			end
-		end
-	end
-
-	local function nextIdentifier(text, pos)
-		while true do
-			local byte = stringbyte(text, pos)
-
-			if not byte or
-				linebreakCharacters[byte] or
-				whitespaceCharacters[byte] or
-				specialCharacters[byte] then
-				return TOKEN_IDENTIFIER, pos
-			end
-			pos = pos + 1
-		end
-	end
-
-	-- returns false or: true, nextPos, equalsCount
-	local function isBracketStringNext(text, pos)
-		local byte = stringbyte(text, pos)
-		if byte == BYTE_LEFTBRACKET then
-			local pos2 = pos + 1
-			byte = stringbyte(text, pos2)
-			while byte == BYTE_EQUALS do
-				pos2 = pos2 + 1
-				byte = stringbyte(text, pos2)
-			end
-			if byte == BYTE_LEFTBRACKET then
-				return true, pos2 + 1, (pos2 - 1) - pos
-			else
-				return false
-			end
+	--- @return Un-colored text as if FAIAP wasn't there.
+	-- @param Raw  True to return fully formatted contents.
+	local function GetText( self, Raw )
+		if ( Raw ) then
+			return GetTextBackup( self );
 		else
-			return false
+			local Code = CodeCache[ self ];
+			if ( not Code ) then
+				Code = lib.StripColors( ( GetTextBackup( self ) ) );
+				CodeCache[ self ] = Code;
+			end
+			return Code;
 		end
 	end
-
-
-	-- Already parsed the [==[ part when get here
-	local function nextBracketString(text, pos, equalsCount)
-		local state = 0
-		while true do
-			local byte = stringbyte(text, pos)
-			if not byte then
-				return TOKEN_STRING, pos
-			end
-
-			if byte == BYTE_RIGHTBRACKET then
-				if state == 0 then
-					state = 1
-				elseif state == equalsCount + 1 then
-					return TOKEN_STRING, pos + 1
-				else
-					state = 0
-				end
-			elseif byte == BYTE_EQUALS then
-				if state > 0 then
-					state = state + 1
-				end
-			else
-				state = 0
-			end
-			pos = pos + 1
-		end
+	--- Clears cached contents if set directly.
+	-- This is necessary because OnTextChanged won't fire immediately or if the
+	-- edit box is hidden.
+	local function SetText ( self, ... )
+		CodeCache[ self ] = nil;
+		return SetTextBackup( self, ... );
+	end
+	local function Insert ( self, ... )
+		CodeCache[ self ] = nil;
+		return InsertBackup( self, ... );
 	end
 
-	local function nextComment(text, pos)
-		-- When we get here we have already parsed the "--"
-		-- Check for long comment
-		local isBracketString, nextPos, equalsCount = isBracketStringNext(text, pos)
-		if isBracketString then
-			local tokenType, nextPos2 = nextBracketString(text, nextPos, equalsCount)
-			return TOKEN_COMMENT_LONG, nextPos2
-		end
-
-		local byte = stringbyte(text, pos)
-
-		-- Short comment, find the first linebreak
-		while true do
-			byte = stringbyte(text, pos)
-			if not byte then
-				return TOKEN_COMMENT_SHORT, pos
-			end
-			if linebreakCharacters[byte] then
-				return TOKEN_COMMENT_SHORT, pos
-			end
-			pos = pos + 1
+	local function HookHandler ( self, Handler, Script )
+		if ( not self[ "faiap_"..Handler ] ) then -- Not already hooked
+			self[ "faiap_"..Handler ] = self:GetScript( Handler );
+			self:SetScript( Handler, Script );
 		end
 	end
-
-	local function nextString(text, pos, character)
-		local even = true
-		while true do
-			local byte = stringbyte(text, pos)
-			if not byte then
-				return TOKEN_STRING, pos
-			end
-
-			if byte == character then
-				if even then
-					return TOKEN_STRING, pos + 1
-				end
-			end
-			if byte == BYTE_BACKSLASH then
-				even = not even
-			else
-				even = true
-			end
-
-			pos = pos + 1
+	--- Enables syntax highlighting or auto-indentation on this edit box.
+	-- Can be run again to change the TabWidth or ColorTable.
+	-- @param TabWidth  Tab width to indent code by, or nil for no indentation.
+	-- @param ColorTable  Table of tokens and token types to color codes used for
+	--   syntax highlighting, or nil for no syntax highlighting.
+	-- @return True if enabled and formatted.
+	function lib:Enable ( TabWidth, ColorTable )
+		if ( not SetTextBackup ) then
+			SetTextBackup, GetTextBackup = self.SetText, self.GetText;
+			InsertBackup = self.Insert;
 		end
-	end
-
-	-- INPUT
-	-- 1: text: text to search in
-	-- 2: tokenPos:  where to start searching
-	-- OUTPUT
-	-- 1: token type
-	-- 2: position after the last character of the token
-	local function nextToken(text, pos)
-		local byte = stringbyte(text, pos)
-		if not byte then
-			return nil
+		if ( not ( TabWidth or ColorTable ) ) then
+			return lib.Disable( self );
 		end
 
-		if linebreakCharacters[byte] then
-			return TOKEN_LINEBREAK, pos + 1
-		end
-
-		if whitespaceCharacters[byte] then
-			while true do
-				pos = pos + 1
-				byte = stringbyte(text, pos)
-				if not byte or not whitespaceCharacters[byte] then
-					return TOKEN_WHITESPACE, pos
-				end
-			end
-		end
-
-		local token = specialCharacters[byte]
-		if token then
-			if token ~= -1 then
-				return token, pos + 1
-			end
-
-			-- WoW specific (for color codes)
-			if byte == BYTE_VERTICAL then
-				byte = stringbyte(text, pos + 1)
-				if byte == BYTE_VERTICAL then
-					return TOKEN_VERTICAL, pos + 1
-				end
-				if byte == BYTE_c then
-					return TOKEN_COLORCODE_START, pos + 10
-				end
-				if byte == BYTE_r then
-					return TOKEN_COLORCODE_STOP, pos + 2
-				end
-				return TOKEN_UNKNOWN, pos + 1
-			end
-
-			if byte == BYTE_MINUS then
-				byte = stringbyte(text, pos + 1)
-				if byte == BYTE_MINUS then
-					return nextComment(text, pos + 2)
-				end
-				return TOKEN_MINUS, pos + 1
-			end
-
-			if byte == BYTE_SINGLE_QUOTE then
-				return nextString(text, pos + 1, BYTE_SINGLE_QUOTE)
-			end
-
-			if byte == BYTE_DOUBLE_QUOTE then
-				return nextString(text, pos + 1, BYTE_DOUBLE_QUOTE)
-			end
-
-			if byte == BYTE_LEFTBRACKET then
-				local isBracketString, nextPos, equalsCount = isBracketStringNext(text, pos)
-				if isBracketString then
-					return nextBracketString(text, nextPos, equalsCount)
-				else
-					return TOKEN_LEFTBRACKET, pos + 1
-				end
-			end
-
-			if byte == BYTE_EQUALS then
-				byte = stringbyte(text, pos + 1)
-				if not byte then
-					return TOKEN_ASSIGNMENT, pos + 1
-				end
-				if byte == BYTE_EQUALS then
-					return TOKEN_EQUALITY, pos + 2
-				end
-				return TOKEN_ASSIGNMENT, pos + 1
-			end
-
-			if byte == BYTE_PERIOD then
-				byte = stringbyte(text, pos + 1)
-				if not byte then
-					return TOKEN_PERIOD, pos + 1
-				end
-				if byte == BYTE_PERIOD then
-					byte = stringbyte(text, pos + 2)
-					if byte == BYTE_PERIOD then
-						return TOKEN_TRIPLEPERIOD, pos + 3
-					end
-					return TOKEN_DOUBLEPERIOD, pos + 2
-				elseif byte >= BYTE_0 and byte <= BYTE_9 then
-					return nextNumberFractionPart(text, pos + 2)
-				end
-				return TOKEN_PERIOD, pos + 1
-			end
-
-			if byte == BYTE_LESSTHAN then
-				byte = stringbyte(text, pos + 1)
-				if byte == BYTE_EQUALS then
-					return TOKEN_LTE, pos + 2
-				end
-				return TOKEN_LT, pos + 1
-			end
-
-			if byte == BYTE_GREATERTHAN then
-				byte = stringbyte(text, pos + 1)
-				if byte == BYTE_EQUALS then
-					return TOKEN_GTE, pos + 2
-				end
-				return TOKEN_GT, pos + 1
-			end
-
-			if byte == BYTE_TILDE then
-				byte = stringbyte(text, pos + 1)
-				if byte == BYTE_EQUALS then
-					return TOKEN_NOTEQUAL, pos + 2
-				end
-				return TOKEN_TILDE, pos + 1
-			end
-
-			return TOKEN_UNKNOWN, pos + 1
-		elseif byte >= BYTE_0 and byte <= BYTE_9 then
-			return nextNumberIntPart(text, pos + 1)
+		self.faiap_tabWidth, self.faiap_colorTable = TabWidth, ColorTable;
+		if ( Enabled[ self ] ) then
+			ColoredCache[ self ] = nil; -- Force update with new tab width/colors
 		else
-			return nextIdentifier(text, pos + 1)
+			Enabled[ self ] = true;
+			self.GetText, self.SetText = GetText, SetText;
+
+			self.faiap_maxBytes = self:GetMaxBytes();
+			self.faiap_countInvisible = self:IsCountInvisibleLetters();
+			self:SetMaxBytes( 0 );
+			self:SetCountInvisibleLetters( false );
+
+			HookHandler( self, "OnTextChanged", OnTextChanged );
+			HookHandler( self, "OnTabPressed", OnTabPressed );
+			HookHandler( self, "OnUpdate", OnUpdate );
+		end
+
+		return lib.Update( self, true );
+	end
+end
+
+
+
+
+-- Token types
+lib.Tokens = {}; --- Token names to TokenTypeIDs, used to define custom ColorTables.
+local NewToken;
+do
+	local Count = 0;
+	--- @return A new token ID assigned to Name.
+	function NewToken ( Name )
+		Count = Count + 1;
+		lib.Tokens[ Name ] = Count;
+		return Count;
+	end
+end
+
+local TK_UNKNOWN = NewToken( "UNKNOWN" );
+local TK_IDENTIFIER = NewToken( "IDENTIFIER" );
+local TK_KEYWORD = NewToken( "KEYWORD" ); -- Reserved words
+
+local TK_ADD = NewToken( "ADD" );
+local TK_ASSIGNMENT = NewToken( "ASSIGNMENT" );
+local TK_COLON = NewToken( "COLON" );
+local TK_COMMA = NewToken( "COMMA" );
+local TK_COMMENT_LONG = NewToken( "COMMENT_LONG" );
+local TK_COMMENT_SHORT = NewToken( "COMMENT_SHORT" );
+local TK_CONCAT = NewToken( "CONCAT" );
+local TK_DIVIDE = NewToken( "DIVIDE" );
+local TK_EQUALITY = NewToken( "EQUALITY" );
+local TK_GT = NewToken( "GT" );
+local TK_GTE = NewToken( "GTE" );
+local TK_LEFTBRACKET = NewToken( "LEFTBRACKET" );
+local TK_LEFTCURLY = NewToken( "LEFTCURLY" );
+local TK_LEFTPAREN = NewToken( "LEFTPAREN" );
+local TK_LINEBREAK = NewToken( "LINEBREAK" );
+local TK_LT = NewToken( "LT" );
+local TK_LTE = NewToken( "LTE" );
+local TK_MODULUS = NewToken( "MODULUS" );
+local TK_MULTIPLY = NewToken( "MULTIPLY" );
+local TK_NOTEQUAL = NewToken( "NOTEQUAL" );
+local TK_NUMBER = NewToken( "NUMBER" );
+local TK_PERIOD = NewToken( "PERIOD" );
+local TK_POWER = NewToken( "POWER" );
+local TK_RIGHTBRACKET = NewToken( "RIGHTBRACKET" );
+local TK_RIGHTCURLY = NewToken( "RIGHTCURLY" );
+local TK_RIGHTPAREN = NewToken( "RIGHTPAREN" );
+local TK_SEMICOLON = NewToken( "SEMICOLON" );
+local TK_SIZE = NewToken( "SIZE" );
+local TK_STRING = NewToken( "STRING" );
+local TK_STRING_LONG = NewToken( "STRING_LONG" ); -- [=[...]=]
+local TK_SUBTRACT = NewToken( "SUBTRACT" );
+local TK_VARARG = NewToken( "VARARG" );
+local TK_WHITESPACE = NewToken( "WHITESPACE" );
+
+local strbyte = string.byte;
+local BYTE_0 = strbyte( "0" );
+local BYTE_9 = strbyte( "9" );
+local BYTE_ASTERISK = strbyte( "*" );
+local BYTE_BACKSLASH = strbyte( "\\" );
+local BYTE_CIRCUMFLEX = strbyte( "^" );
+local BYTE_COLON = strbyte( ":" );
+local BYTE_COMMA = strbyte( "," );
+local BYTE_CR = strbyte( "\r" );
+local BYTE_DOUBLE_QUOTE = strbyte( "\"" );
+local BYTE_E = strbyte( "E" );
+local BYTE_e = strbyte( "e" );
+local BYTE_EQUALS = strbyte( "=" );
+local BYTE_GREATERTHAN = strbyte( ">" );
+local BYTE_HASH = strbyte( "#" );
+local BYTE_LEFTBRACKET = strbyte( "[" );
+local BYTE_LEFTCURLY = strbyte( "{" );
+local BYTE_LEFTPAREN = strbyte( "(" );
+local BYTE_LESSTHAN = strbyte( "<" );
+local BYTE_LF = strbyte( "\n" );
+local BYTE_MINUS = strbyte( "-" );
+local BYTE_PERCENT = strbyte( "%" );
+local BYTE_PERIOD = strbyte( "." );
+local BYTE_PLUS = strbyte( "+" );
+local BYTE_RIGHTBRACKET = strbyte( "]" );
+local BYTE_RIGHTCURLY = strbyte( "}" );
+local BYTE_RIGHTPAREN = strbyte( ")" );
+local BYTE_SEMICOLON = strbyte( ";" );
+local BYTE_SINGLE_QUOTE = strbyte( "'" );
+local BYTE_SLASH = strbyte( "/" );
+local BYTE_SPACE = strbyte( " " );
+local BYTE_TAB = strbyte( "\t" );
+local BYTE_TILDE = strbyte( "~" );
+
+local Linebreaks = {
+	[ BYTE_CR ] = true;
+	[ BYTE_LF ] = true;
+};
+local Whitespace = {
+	[ BYTE_SPACE ] = true;
+	[ BYTE_TAB ] = true;
+};
+--- Mapping of bytes to the only tokens they can represent, or true if indeterminate
+local TokenBytes = {
+	[ BYTE_ASTERISK ] = TK_MULTIPLY;
+	[ BYTE_CIRCUMFLEX ] = TK_POWER;
+	[ BYTE_COLON ] = TK_COLON;
+	[ BYTE_COMMA ] = TK_COMMA;
+	[ BYTE_DOUBLE_QUOTE ] = true;
+	[ BYTE_EQUALS ] = true;
+	[ BYTE_GREATERTHAN ] = true;
+	[ BYTE_HASH ] = TK_SIZE;
+	[ BYTE_LEFTBRACKET ] = true;
+	[ BYTE_LEFTCURLY ] = TK_LEFTCURLY;
+	[ BYTE_LEFTPAREN ] = TK_LEFTPAREN;
+	[ BYTE_LESSTHAN ] = true;
+	[ BYTE_MINUS ] = true;
+	[ BYTE_PERCENT ] = TK_MODULUS;
+	[ BYTE_PERIOD ] = true;
+	[ BYTE_PLUS ] = TK_ADD;
+	[ BYTE_RIGHTBRACKET ] = TK_RIGHTBRACKET;
+	[ BYTE_RIGHTCURLY ] = TK_RIGHTCURLY;
+	[ BYTE_RIGHTPAREN ] = TK_RIGHTPAREN;
+	[ BYTE_SEMICOLON ] = TK_SEMICOLON;
+	[ BYTE_SINGLE_QUOTE ] = true;
+	[ BYTE_SLASH ] = TK_DIVIDE;
+	[ BYTE_TILDE ] = true;
+};
+
+local function NextNumberExponentPartInt ( Text, Pos )
+	while ( true ) do
+		local Byte = strbyte( Text, Pos );
+		if ( Byte and Byte >= BYTE_0 and Byte <= BYTE_9 ) then
+			Pos = Pos + 1;
+		else
+			return TK_NUMBER, Pos;
 		end
 	end
+end
+local function NextNumberExponentPart ( Text, Pos )
+	local Byte = strbyte( Text, Pos );
+	if ( not Byte ) then
+		return TK_NUMBER, Pos;
+	end
 
-	-- Cool stuff begins here! (indentation and highlighting)
+	if ( Byte == BYTE_MINUS ) then
+		-- Handle this case: "1.2e-- comment" with "1.2e" as a number
+		Byte = strbyte( Text, Pos + 1 );
+		if ( Byte == BYTE_MINUS ) then
+			return TK_NUMBER, Pos;
+		end
+		return NextNumberExponentPartInt( Text, Pos + 1 );
+	end
+	return NextNumberExponentPartInt( Text, Pos );
+end
+local function NextNumberFractionPart ( Text, Pos )
+	while ( true ) do
+		local Byte = strbyte( Text, Pos );
+		if ( Byte and Byte >= BYTE_0 and Byte <= BYTE_9 ) then
+			Pos = Pos + 1;
+		elseif ( Byte == BYTE_E or Byte == BYTE_e ) then
+			return NextNumberExponentPart( Text, Pos + 1 );
+		else
+			return TK_NUMBER, Pos;
+		end
+	end
+end
+local function NextNumber ( Text, Pos )
+	while ( true ) do
+		local Byte = strbyte( Text, Pos );
+		if ( Byte and Byte >= BYTE_0 and Byte <= BYTE_9 ) then
+			Pos = Pos + 1;
+		elseif ( Byte == BYTE_PERIOD ) then
+			return NextNumberFractionPart( Text, Pos + 1 );
+		elseif ( Byte == BYTE_E or Byte == BYTE_e ) then
+			return NextNumberExponentPart( Text, Pos + 1 );
+		else
+			return TK_NUMBER, Pos;
+		end
+	end
+end
 
-	local noIndentEffect = {0, 0}
-	local indentLeft = {-1, 0}
-	local indentRight = {0, 1}
-	local indentBoth = {-1, 1}
+local function NextIdentifier ( Text, Pos )
+	while ( true ) do
+		local Byte = strbyte( Text, Pos );
+		if ( not Byte
+			or Linebreaks[ Byte ] or Whitespace[ Byte ] or TokenBytes[ Byte ]
+		) then
+			return TK_IDENTIFIER, Pos;
+		end
+		Pos = Pos + 1;
+	end
+end
 
-	local keywords = {}
-	lib.keywords = keywords
-	keywords["and"] = noIndentEffect
-	keywords["break"] = noIndentEffect
-	keywords["false"] = noIndentEffect
-	keywords["for"] = noIndentEffect
-	keywords["if"] = noIndentEffect
-	keywords["in"] = noIndentEffect
-	keywords["local"] = noIndentEffect
-	keywords["nil"] = noIndentEffect
-	keywords["not"] = noIndentEffect
-	keywords["or"] = noIndentEffect
-	keywords["return"] = noIndentEffect
-	keywords["true"] = noIndentEffect
-	keywords["while"] = noIndentEffect
-
-	keywords["until"] = indentLeft
-	keywords["elseif"] = indentLeft
-	keywords["end"] = indentLeft
-
-	keywords["do"] = indentRight
-	keywords["then"] = indentRight
-	keywords["repeat"] = indentRight
-	keywords["function"] = indentRight
-
-	keywords["else"] = indentBoth
-
-	local tokenIndentation = {}
-	lib.tokenIndentation = tokenIndentation
-	tokenIndentation[TOKEN_LEFTPAREN] = indentRight
-	tokenIndentation[TOKEN_LEFTBRACKET] = indentRight
-	tokenIndentation[TOKEN_LEFTWING] = indentRight
-
-	tokenIndentation[TOKEN_RIGHTPAREN] = indentLeft
-	tokenIndentation[TOKEN_RIGHTBRACKET] = indentLeft
-	tokenIndentation[TOKEN_RIGHTWING] = indentLeft
-
-	local workingTable = {}
-	local workingTable2 = {}
-
-	function lib.colorCodeCode(code, caretPosition)
-		local stopColor = colorTable and colorTable[0]
-		if not stopColor then
-			return code, caretPosition
+--- @return True, PosNext, EqualsCount if next token is a long string.
+local function IsNextLongString ( Text, Start )
+	local Byte = strbyte( Text, Start );
+	if ( Byte == BYTE_LEFTBRACKET ) then
+		local Pos = Start + 1;
+		Byte = strbyte( Text, Pos );
+		while ( Byte == BYTE_EQUALS ) do
+			Pos = Pos + 1;
+			Byte = strbyte( Text, Pos );
+		end
+		if ( Byte == BYTE_LEFTBRACKET ) then
+			return true, Pos + 1, ( Pos - 1 ) - Start;
+		end
+	end
+end
+local function NextLongString ( Text, Pos, EqualsCount )
+	-- Beginning of long string already parsed
+	local EqualsCurrent;
+	while ( true ) do
+		local Byte = strbyte( Text, Pos );
+		if ( not Byte ) then
+			return TK_STRING_LONG, Pos;
 		end
 
-		local stopColorLen = #stopColor
-
-		wipe(workingTable)
-		local tsize = 0
-		local totalLen = 0
-
-		local numLines = 0
-		local newCaretPosition
-		local prevTokenWasColored = false
-		local prevTokenWidth = 0
-
-		local pos = 1
-		local level = 0
-
-		while true do
-			if caretPosition and not newCaretPosition and pos >= caretPosition then
-				if pos == caretPosition then
-					newCaretPosition = totalLen
-				else
-					newCaretPosition = totalLen
-					local diff = pos - caretPosition
-					if diff > prevTokenWidth then
-						diff = prevTokenWidth
-					end
-					if prevTokenWasColored then
-						diff = diff + stopColorLen
-					end
-					newCaretPosition = newCaretPosition - diff
-				end
-			end
-
-			prevTokenWasColored = false
-			prevTokenWidth = 0
-
-			local tokenType, nextPos = nextToken(code, pos)
-
-			if not tokenType then
-				break
-			end
-
-			if tokenType == TOKEN_COLORCODE_START or tokenType == TOKEN_COLORCODE_STOP or tokenType == TOKEN_UNKNOWN then
-				-- ignore color codes
-
-			elseif tokenType == TOKEN_LINEBREAK or tokenType == TOKEN_WHITESPACE then
-				if tokenType == TOKEN_LINEBREAK then
-					numLines = numLines + 1
-				end
-				local str = stringsub(code, pos, nextPos - 1)
-				prevTokenWidth = nextPos - pos
-
-				tsize = tsize + 1
-				workingTable[tsize] = str
-				totalLen = totalLen + #str
+		if ( Byte == BYTE_RIGHTBRACKET ) then
+			if ( not EqualsCurrent ) then
+				EqualsCurrent = 0;
+			elseif ( EqualsCurrent == EqualsCount ) then
+				return TK_STRING_LONG, Pos + 1;
 			else
-				local str = stringsub(code, pos, nextPos - 1)
-
-				prevTokenWidth = nextPos - pos
-
-				-- Add coloring
-				if keywords[str] then
-					tokenType = TOKEN_KEYWORD
-				end
-
-				local color
-				if stopColor then
-					color = colorTable[str]
-					if not color then
-						color = colorTable[tokenType]
-						if not color then
-							if tokenType == TOKEN_IDENTIFIER then
-								color = colorTable[TOKEN_IDENTIFIER]
-							else
-								color = colorTable[TOKEN_SPECIAL]
-							end
-						end
-					end
-				end
-
-				if color then
-					tsize = tsize + 1
-					workingTable[tsize] = color
-					tsize = tsize + 1
-					workingTable[tsize] = str
-					tsize = tsize + 1
-					workingTable[tsize] = stopColor
-
-					totalLen = totalLen + #color + (nextPos - pos) + stopColorLen
-					prevTokenWasColored = true
-				else
-					tsize = tsize + 1
-					workingTable[tsize] = str
-
-					totalLen = totalLen + #str
-				end
+				EqualsCurrent = nil;
 			end
-
-			pos = nextPos
+		elseif ( EqualsCurrent and Byte == BYTE_EQUALS ) then
+			EqualsCurrent = EqualsCurrent + 1;
+		else
+			EqualsCurrent = nil;
 		end
-		return table.concat(workingTable), newCaretPosition, numLines
+		Pos = Pos + 1;
+	end
+end
+
+local function NextComment ( Text, Pos )
+	-- Beginning of short comment already parsed
+	local IsLong, PosNext, EqualsCount = IsNextLongString( Text, Pos );
+	if ( IsLong ) then
+		local _, PosNext = NextLongString( Text, PosNext, EqualsCount );
+		return TK_COMMENT_LONG, PosNext;
 	end
 
-	function lib.indentCode(code, tabWidth, caretPosition)
-		if ( not tabWidth ) then
-			tabWidth = lib.defaultTabWidth
+	-- Short comment, find the first linebreak
+	while ( true ) do
+		local Byte = strbyte( Text, Pos );
+		if ( not Byte or Linebreaks[ Byte ] ) then
+			return TK_COMMENT_SHORT, Pos;
+		end
+		Pos = Pos + 1;
+	end
+end
+
+local function NextString ( Text, Pos, Quote )
+	local Escaped = false;
+	while ( true ) do
+		local Byte = strbyte( Text, Pos );
+		if ( not Byte ) then
+			return TK_STRING, Pos;
 		end
 
-		wipe(workingTable)
-		local tsize = 0
-		local totalLen = 0
+		if ( Escaped ) then
+			Escaped = false;
+		elseif ( Byte == BYTE_BACKSLASH ) then
+			Escaped = true;
+		elseif ( Byte == Quote ) then
+			return TK_STRING, Pos + 1;
+		end
+		Pos = Pos + 1;
+	end
+end
 
-		wipe(workingTable2)
-		local tsize2 = 0
-		local totalLen2 = 0
+--- @return Token type or nil if end of string, position of char after token.
+local function NextToken ( Text, Pos )
+	local Byte = strbyte( Text, Pos );
+	if ( not Byte ) then
+		return;
+	end
 
+	if ( Linebreaks[ Byte ] ) then
+		return TK_LINEBREAK, Pos + 1;
+	end
 
-		local stopColor = colorTable and colorTable[0]
-		local stopColorLen = not stopColor or #stopColor
+	if ( Whitespace[ Byte ] ) then
+		while ( Whitespace[ Byte ] ) do
+			Pos = Pos + 1;
+			Byte = strbyte( Text, Pos );
+		end
+		return TK_WHITESPACE, Pos;
+	end
 
-		local newCaretPosition
-		local newCaretPositionFinalized = false
-		local prevTokenWasColored = false
-		local prevTokenWidth = 0
+	local Token = TokenBytes[ Byte ];
+	if ( Token ) then
+		if ( Token ~= true ) then -- Byte can only represent this token
+			return Token, Pos + 1;
+		end
 
-		local pos = 1
-		local level = 0
+		if ( Byte == BYTE_SINGLE_QUOTE or Byte == BYTE_DOUBLE_QUOTE ) then
+			return NextString( Text, Pos + 1, Byte );
+		end
 
-		local hitNonWhitespace = false
-		local hitIndentRight = false
-		local preIndent = 0
-		local postIndent = 0
-		while true do
-			if caretPosition and not newCaretPosition and pos >= caretPosition then
-				if pos == caretPosition then
-					newCaretPosition = totalLen + totalLen2
-				else
-					newCaretPosition = totalLen + totalLen2
-					local diff = pos - caretPosition
-					if diff > prevTokenWidth then
-						diff = prevTokenWidth
-					end
-					if prevTokenWasColored then
-						diff = diff + stopColorLen
-					end
-					newCaretPosition = newCaretPosition - diff
-				end
-			end
-
-			prevTokenWasColored = false
-			prevTokenWidth = 0
-
-			local tokenType, nextPos = nextToken(code, pos)
-
-			if not tokenType or tokenType == TOKEN_LINEBREAK then
-				level = level + preIndent
-				if level < 0 then level = 0 end
-
-				local s = stringrep(" ", level * tabWidth)
-
-				tsize = tsize + 1
-				workingTable[tsize] = s
-				totalLen = totalLen + #s
-
-				if newCaretPosition and not newCaretPositionFinalized then
-					newCaretPosition = newCaretPosition + #s
-					newCaretPositionFinalized = true
-				end
-
-
-				for k, v in next,workingTable2 do
-					tsize = tsize + 1
-					workingTable[tsize] = v
-					totalLen = totalLen + #v
-				end
-
-				if not tokenType then
-					break
-				end
-
-				tsize = tsize + 1
-				workingTable[tsize] = stringsub(code, pos, nextPos - 1)
-				totalLen = totalLen + nextPos - pos
-
-				level = level + postIndent
-				if level < 0 then level = 0 end
-
-				wipe(workingTable2)
-				tsize2 = 0
-				totalLen2 = 0
-
-				hitNonWhitespace = false
-				hitIndentRight = false
-				preIndent = 0
-				postIndent = 0
-			elseif tokenType == TOKEN_WHITESPACE then
-				if hitNonWhitespace then
-					prevTokenWidth = nextPos - pos
-
-					tsize2 = tsize2 + 1
-					local s = stringsub(code, pos, nextPos - 1)
-					workingTable2[tsize2] = s
-					totalLen2 = totalLen2 + #s
-				end
-			elseif tokenType == TOKEN_COLORCODE_START or tokenType == TOKEN_COLORCODE_STOP or tokenType == TOKEN_UNKNOWN then
-				-- skip these, though they shouldn't be encountered here anyway
+		if ( Byte == BYTE_LEFTBRACKET ) then
+			local IsLongString, PosNext, EqualsCount = IsNextLongString( Text, Pos );
+			if ( IsLongString ) then
+				return NextLongString( Text, PosNext, EqualsCount );
 			else
-				hitNonWhitespace = true
-
-				local str = stringsub(code, pos, nextPos - 1)
-
-				prevTokenWidth = nextPos - pos
-
-				-- See if this is an indent-modifier
-				local indentTable
-				if tokenType == TOKEN_IDENTIFIER then
-					indentTable = keywords[str]
-				else
-					indentTable = tokenIndentation[tokenType]
-				end
-
-				if indentTable then
-					if hitIndentRight then
-						postIndent = postIndent + indentTable[1] + indentTable[2]
-					else
-						local pre = indentTable[1]
-						local post = indentTable[2]
-						if post > 0 then
-							hitIndentRight = true
-						end
-						preIndent = preIndent + pre
-						postIndent = postIndent + post
-					end
-				end
-
-				-- Add coloring
-				if keywords[str] then
-					tokenType = TOKEN_KEYWORD
-				end
-
-				local color
-				if stopColor then
-					color = colorTable[str]
-					if not color then
-						color = colorTable[tokenType]
-						if not color then
-							if tokenType == TOKEN_IDENTIFIER then
-								color = colorTable[TOKEN_IDENTIFIER]
-							else
-								color = colorTable[TOKEN_SPECIAL]
-							end
-						end
-					end
-				end
-
-				if color then
-					tsize2 = tsize2 + 1
-					workingTable2[tsize2] = color
-					totalLen2 = totalLen2 + #color
-
-					tsize2 = tsize2 + 1
-					workingTable2[tsize2] = str
-					totalLen2 = totalLen2 + nextPos - pos
-
-					tsize2 = tsize2 + 1
-					workingTable2[tsize2] = stopColor
-					totalLen2 = totalLen2 + stopColorLen
-
-					prevTokenWasColored = true
-				else
-					tsize2 = tsize2 + 1
-					workingTable2[tsize2] = str
-					totalLen2 = totalLen2 + nextPos - pos
-
-				end
+				return TK_LEFTBRACKET, Pos + 1;
 			end
-			pos = nextPos
 		end
-		return table.concat(workingTable), newCaretPosition
-	end
-end
 
+		local Byte2 = strbyte( Text, Pos + 1 );
 
-
--- WoW specific code:
-local GetTime = GetTime
-
-local editboxSetText
-local editboxGetText
-
--- Caret code (thanks Tem!)
-local function critical_enter(editbox)
-	local script = editbox:GetScript("OnTextSet")
-	if script then
-		editbox:SetScript("OnTextSet", nil)
-	end
-	return script
-end
-
-local function critical_leave(editbox, script)
-	if script then
-		editbox:SetScript("OnTextSet", script)
-	end
-end
-
-function lib.stripWowColors(code)
-	code = stringgsub(code, '||','\1')
-	code = stringgsub(code, '|c%x%x%x%x%x%x%x%x','')
-	code = stringgsub(code, '|r','')
-	code = stringgsub(code, '\1', '||')
-	return code
-end
-
-function lib.stripWowColorsWithPos(code, pos)
-	code = stringsub(code, 1, pos) .. '\2' .. stringsub(code, pos + 1)
-	code = lib.stripWowColors(code)
-	pos = stringfind(code, '\2', 1, 1)
-	code = stringsub(code, 1, pos - 1) .. stringsub(code, pos + 1)
-	return code, pos
-end
-
-function lib.decode(code)
-	return lib.stripWowColors(code)
-end
-
-function lib.encode(code)
-	return code
-end
-
--- returns the padded code, and true if modified, false if unmodified
-local linebreak = stringbyte("\n")
-function lib.padWithLinebreaks(code)
-	local len = #code
-	if stringbyte(code, len) == linebreak then
-		if stringbyte(code, len - 1) == linebreak then
-			return code, false
+		if ( Byte == BYTE_MINUS ) then
+			if ( Byte2 == BYTE_MINUS ) then
+				return NextComment( Text, Pos + 2 );
+			end
+			return TK_SUBTRACT, Pos + 1;
 		end
-		return code .. "\n", true
-	end
-	return code .. "\n\n", true
 
-end
-
--- Data tables
--- No weak table magic, since editboxes can never be removed in WoW
-local enabled = {}
-local dirty = {}
-
-local editboxIndentCache = {}
-local decodeCache = {}
-local editboxStringCache = {}
-local editboxNumLinesCache = {}
-
-function lib.colorCodeEditbox(editbox)
-	dirty[editbox] = nil
-
-	local tabWidth = editbox.faiap_tabWidth
-
-	local orgCode = editboxGetText(editbox)
-	local prevCode = editboxStringCache[editbox]
-	if prevCode == orgCode then
-		return
-	end
-
-	local pos = editbox:GetCursorPosition()
-
-	local code
-	code, pos = lib.stripWowColorsWithPos(orgCode, pos)
-
-	colorTable[0] = "|r"
-
-	local newCode, newPos, numLines = lib.colorCodeCode(code, pos)
-	newCode = lib.padWithLinebreaks(newCode)
-
-	editboxStringCache[editbox] = newCode
-	if orgCode ~= newCode then
-		local script = critical_enter(editbox)
-		decodeCache[editbox] = nil
-		local stringlenNewCode = #newCode
-
-		editboxSetText(editbox, newCode)
-		if newPos then
-			if newPos < 0 then newPos = 0 end
-			if newPos > stringlenNewCode then newPos = stringlenNewCode end
-
-			editbox:SetCursorPosition(newPos)
+		if ( Byte == BYTE_EQUALS ) then
+			if ( Byte2 == BYTE_EQUALS ) then
+				return TK_EQUALITY, Pos + 2;
+			end
+			return TK_ASSIGNMENT, Pos + 1;
 		end
-		critical_leave(editbox, script)
-	end
 
-	if editboxNumLinesCache[editbox] ~= numLines then
-		lib.indentEditbox(editbox)
-	end
-	editboxNumLinesCache[editbox] = numLines
-end
-
-function lib.indentEditbox(editbox)
-	dirty[editbox] = nil
-
-	local tabWidth = editbox.faiap_tabWidth
-
-	local orgCode = editboxGetText(editbox)
-	local prevCode = editboxIndentCache[editbox]
-	if prevCode == orgCode then
-		return
-	end
-
-	local pos = editbox:GetCursorPosition()
-
-	local code
-	code, pos = lib.stripWowColorsWithPos(orgCode, pos)
-
-	colorTable[0] = "|r"
-	local newCode, newPos = lib.indentCode(code, tabWidth, pos)
-	newCode = lib.padWithLinebreaks(newCode)
-	editboxIndentCache[editbox] = newCode
-	if code ~= newCode then
-		local script = critical_enter(editbox)
-		decodeCache[editbox] = nil
-
-		local stringlenNewCode = #newCode
-
-		editboxSetText(editbox, newCode)
-
-		if newPos then
-			if newPos < 0 then newPos = 0 end
-			if newPos > stringlenNewCode then newPos = stringlenNewCode end
-			editbox:SetCursorPosition(newPos)
+		if ( Byte == BYTE_PERIOD ) then
+			if ( Byte2 == BYTE_PERIOD ) then
+				if ( strbyte( Text, Pos + 2 ) == BYTE_PERIOD ) then
+					return TK_VARARG, Pos + 3;
+				end
+				return TK_CONCAT, Pos + 2;
+			elseif ( Byte2 and Byte2 >= BYTE_0 and Byte2 <= BYTE_9 ) then
+				return NextNumberFractionPart( Text, Pos + 2 );
+			end
+			return TK_PERIOD, Pos + 1;
 		end
-		critical_leave(editbox, script)
-	end
-end
 
-local function hookHandler(editbox, handler, newFun)
-	local oldFun = editbox:GetScript(handler)
-	if oldFun == newFun then
-		-- already hooked, ignore it
-		return
-	end
-	editbox["faiap_old_" .. handler] = oldFun
-	editbox:SetScript(handler, newFun)
-end
-
-local function textChangedHook(editbox, ...)
-	local oldFun = editbox["faiap_old_OnTextChanged"]
-	if oldFun then
-		oldFun(editbox, ...)
-	end
-	if enabled[editbox] then
-		dirty[editbox] = GetTime()
-	end
-end
-
-local function tabPressedHook(editbox, ...)
-	local oldFun = editbox["faiap_old_OnTabPressed"]
-	if oldFun then
-		oldFun(editbox, ...)
-	end
-	if enabled[editbox] then
-		return lib.indentEditbox(editbox)
-	end
-end
-
-local function onUpdateHook(editbox, ...)
-	local oldFun = editbox["faiap_old_OnUpdate"]
-	if oldFun then
-		oldFun(editbox, ...)
-	end
-	if enabled[editbox] then
-		local now = GetTime()
-		local lastUpdate = dirty[editbox] or now
-		if now - lastUpdate > 0.2 then
-			decodeCache[editbox] = nil
-			return lib.colorCodeEditbox(editbox)
+		if ( Byte == BYTE_LESSTHAN ) then
+			if ( Byte2 == BYTE_EQUALS ) then
+				return TK_LTE, Pos + 2;
+			end
+			return TK_LT, Pos + 1;
 		end
-	end
-end
 
-local function newGetText(editbox, raw)
-	if ( raw ) then
-		return editboxGetText( editbox )
+		if ( Byte == BYTE_GREATERTHAN ) then
+			if ( Byte2 == BYTE_EQUALS ) then
+				return TK_GTE, Pos + 2;
+			end
+			return TK_GT, Pos + 1;
+		end
+
+		if ( Byte == BYTE_TILDE and Byte2 == BYTE_EQUALS ) then
+			return TK_NOTEQUAL, Pos + 2;
+		end
+
+		return TK_UNKNOWN, Pos + 1;
+	elseif ( Byte >= BYTE_0 and Byte <= BYTE_9 ) then
+		return NextNumber( Text, Pos + 1 );
 	else
-		local decoded = decodeCache[editbox]
-		if not decoded then
-			decoded = lib.decode(editboxGetText(editbox))
-			decodeCache[editbox] = decoded
+		return NextIdentifier( Text, Pos + 1 );
+	end
+end
+
+
+local Keywords = {
+	[ "nil" ] = true;
+	[ "true" ] = true;
+	[ "false" ] = true;
+	[ "local" ] = true;
+	[ "and" ] = true;
+	[ "or" ] = true;
+	[ "not" ] = true;
+	[ "while" ] = true;
+	[ "for" ] = true;
+	[ "in" ] = true;
+	[ "do" ] = true;
+	[ "repeat" ] = true;
+	[ "break" ] = true;
+	[ "until" ] = true;
+	[ "if" ] = true;
+	[ "elseif" ] = true;
+	[ "then" ] = true;
+	[ "else" ] = true;
+	[ "function" ] = true;
+	[ "return" ] = true;
+	[ "end" ] = true;
+};
+local IndentOpen = { 0, 1 };
+local IndentClose = { -1, 0 };
+local IndentBoth = { -1, 1 };
+local Indents = {
+	[ "do" ] = IndentOpen;
+	[ "then" ] = IndentOpen;
+	[ "repeat" ] = IndentOpen;
+	[ "function" ] = IndentOpen;
+	[ TK_LEFTPAREN ] = IndentOpen;
+	[ TK_LEFTBRACKET ] = IndentOpen;
+	[ TK_LEFTCURLY ] = IndentOpen;
+
+	[ "until" ] = IndentClose;
+	[ "elseif" ] = IndentClose;
+	[ "end" ] = IndentClose;
+	[ TK_RIGHTPAREN ] = IndentClose;
+	[ TK_RIGHTBRACKET ] = IndentClose;
+	[ TK_RIGHTCURLY ] = IndentClose;
+
+	[ "else" ] = IndentBoth;
+};
+
+
+local strrep = string.rep;
+local strsub = string.sub;
+local tinsert = table.insert;
+local Buffer = {};
+local ColorStop = "|r";
+--- Syntax highlights and indents a string of Lua code.
+-- @param CursorOld  Optional cursor position to keep track of.
+-- @see lib.Enable
+-- @return Formatted text, and an updated cursor position if requested.
+function lib:FormatCode ( TabWidth, ColorTable, CursorOld )
+	if ( not ( TabWidth or ColorTable ) ) then
+		return self, CursorOld;
+	end
+
+	wipe( Buffer );
+	local BufferLen = 0;
+	local Cursor, CursorIndented;
+	local ColorLast;
+
+	local LineLast, PassedIndent = 0, false;
+	local Depth, DepthNext = 0, 0;
+
+	local TokenType, PosNext, Pos = TK_UNKNOWN, 1;
+	while ( TokenType ) do
+		Pos, TokenType, PosNext = PosNext, NextToken( self, PosNext );
+
+		if ( TokenType
+			and ( PassedIndent or not TabWidth or TokenType ~= TK_WHITESPACE )
+		) then
+			PassedIndent = true; -- Passed leading whitespace
+			local Token = strsub( self, Pos, PosNext - 1 );
+
+			if ( ColorTable ) then -- Add coloring
+				local Color = ColorTable[ Keywords[ Token ] and TK_KEYWORD or Token ]
+					or ColorTable[ TokenType ];
+				if ( ColorLast and not Color ) then -- Stop color
+					Buffer[ #Buffer + 1 ], BufferLen = ColorStop, BufferLen + #ColorStop;
+				elseif Color and Color ~= ColorLast then -- Change color
+					Buffer[ #Buffer + 1 ], BufferLen = Color, BufferLen + #Color;
+				end
+				ColorLast = Color;
+			end
+
+			Buffer[ #Buffer + 1 ], BufferLen = Token, BufferLen + #Token;
+
+			if ( CursorOld and not Cursor and CursorOld < PosNext ) then
+				local Offset = PosNext - CursorOld - 1; -- Distance to end of token
+				if ( Offset > #Token ) then -- Cursor was in a previous skipped token
+					Offset = #Token; -- Move to start of current token
+				end
+				Cursor = BufferLen - Offset;
+			end
+
+			if ( TabWidth ) then -- See if this is an indent-modifier
+				local Indent = TokenType == TK_IDENTIFIER
+					and Indents[ Token ] or Indents[ TokenType ];
+				if ( Indent ) then
+					if ( DepthNext > 0 ) then
+						DepthNext = DepthNext + Indent[ 1 ];
+					else
+						Depth = Depth + Indent[ 1 ];
+					end
+					DepthNext = DepthNext + Indent[ 2 ];
+				end
+			end
 		end
-		return decoded or ""
-	end
-end
 
-local function newSetText(editbox, text)
-	decodeCache[editbox] = nil
-	if text then
-		local encoded = lib.encode(text)
+		if ( TabWidth and ( not TokenType or TokenType == TK_LINEBREAK ) ) then
+			-- Indent previous line
+			local Indent = strrep( " ", Depth * TabWidth );
+			BufferLen = BufferLen + #Indent;
+			tinsert( Buffer, LineLast + 1, Indent );
 
-		return editboxSetText(editbox, encoded)
-	end
-end
+			if ( Cursor and not CursorIndented ) then
+				Cursor = Cursor + #Indent;
+				if ( CursorOld < Pos ) then -- Cursor on this line
+					CursorIndented = true;
+				end -- Else cursor is on next line and must be indented again
+			end
 
-function lib.enable(editbox, tabWidth)
-	if not editboxSetText then
-		editboxSetText = editbox.SetText
-		editboxGetText = editbox.GetText
-	end
-
-	local modified
-	if editbox.faiap_tabWidth ~= tabWidth then
-		editbox.faiap_tabWidth = tabWidth
-		modified = true
-	end
-
-	if enabled[editbox] then
-		if modified then
-			lib.indentEditbox(editbox)
+			LineLast, PassedIndent = #Buffer, false;
+			Depth, DepthNext = Depth + DepthNext, 0;
+			if ( Depth < 0 ) then
+				Depth = 0;
+			end
 		end
-		return
 	end
-
-	-- Editbox is possibly hooked, but disabled
-	enabled[editbox] = true
-
-	editbox.oldMaxBytes = editbox:GetMaxBytes()
-	editbox.oldMaxLetters = editbox:GetMaxLetters()
-	editbox:SetMaxBytes(0)
-	editbox:SetMaxLetters(0)
-
-	editbox.GetText = newGetText
-	editbox.SetText = newSetText
-
-	hookHandler(editbox, "OnTextChanged", textChangedHook)
-	hookHandler(editbox, "OnTabPressed", tabPressedHook)
-	hookHandler(editbox, "OnUpdate", onUpdateHook)
-
-	lib.indentEditbox(editbox)
-end
-
-function lib.disable(editbox)
-	if not enabled[editbox] then
-		return
-	end
-	enabled[editbox] = nil
-
-	-- revert settings for max bytes / letters
-	editbox:SetMaxBytes(editbox.oldMaxBytes)
-	editbox:SetMaxLetters(editbox.oldMaxLetters)
-
-	-- try a real unhooking, if possible
-	if editbox:GetScript("OnTextChanged") == textChangedHook then
-		editbox:SetScript("OnTextChanged", editbox.faiap_old_OnTextChanged)
-		editbox.faiap_old_OnTextChanged = nil
-	end
-
-	if editbox:GetScript("OnTabPressed") == tabPressedHook then
-		editbox:SetScript("OnTabPressed", editbox.faiap_old_OnTabPressed)
-		editbox.faiap_old_OnTabPressed = nil
-	end
-
-	if editbox:GetScript("OnUpdate") == onUpdateHook then
-		editbox:SetScript("OnUpdate", editbox.faiap_old_OnUpdate)
-		editbox.faiap_old_OnUpdate = nil
-	end
-
-	editbox.GetText = nil
-	editbox.SetText = nil
-
-	-- change the text back to unformatted
-	local pos = editbox:GetCursorPosition()
-	local code = editbox:GetText()
-	code, pos =  lib.stripWowColorsWithPos(code, pos)
-	editbox:SetText(code)
-	editbox:SetCursorPosition(pos-1)
-
-	-- clear caches
-	editboxIndentCache[editbox] = nil
-	decodeCache[editbox] = nil
-	editboxStringCache[editbox] = nil
-	editboxNumLinesCache[editbox] = nil
+	return table.concat( Buffer ), Cursor or 0;
 end
