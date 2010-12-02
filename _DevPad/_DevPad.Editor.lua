@@ -12,7 +12,7 @@ _DevPad.Editor = me;
 
 me.Run = CreateFrame( "Button", nil, me );
 me.Lua = me:NewButton( [[Interface\MacroFrame\MacroFrame-Icon]] );
-me.FontCycle = me:NewButton( [[Interface\ICONS\INV_Letter_18]] );
+me.FontCycle = me:NewButton( [[Interface\ICONS\INV_Misc_Note_04]] );
 me.FontDecrease = me:NewButton( [[Interface\Icons\Spell_ChargeNegative]] );
 me.FontIncrease = me:NewButton( [[Interface\Icons\Spell_ChargePositive]] );
 me.Revert = CreateFrame( "Button", nil, me );
@@ -403,6 +403,19 @@ function me.Shortcuts:G ()
 end
 
 
+do
+	local Backup = ChatEdit_InsertLink;
+	--- Hook to add clicked links' code to the edit box.
+	function me.ChatEditInsertLink ( Link, ... )
+		if ( Link and me.Edit:HasFocus() ) then
+			me.Edit:Insert( Link:gsub( "|", "||" ) );
+			return true;
+		end
+		return Backup( Link, ... );
+	end
+end
+
+
 function me:OnShow ()
 	PlaySound( "igQuestListOpen" );
 	UISpecialFrames[ "_DevPad" ] = self:GetName(); -- Cause escape to close the editor before the list frame
@@ -553,6 +566,7 @@ me.Shortcuts:SetScript( "OnKeyDown", me.Shortcuts.OnKeyDown );
 me.Shortcuts:SetScript( "OnHide", me.Shortcuts.OnHide );
 me.Shortcuts:EnableKeyboard( false );
 
+ChatEdit_InsertLink = me.ChatEditInsertLink;
 _DevPad.RegisterCallback( me, "ListSetSelection" );
 
 me:Unpack( {} ); -- Default position/size and font
