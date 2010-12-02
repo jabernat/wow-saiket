@@ -113,7 +113,7 @@ do
 		if ( not Enabled[ self ] ) then
 			return;
 		end
-		Enabled[ self ] = nil;
+		Enabled[ self ] = false;
 		self.GetText, self.SetText, self.Insert = nil;
 
 		local Code, Cursor = lib.StripColors( self:GetText(),
@@ -188,10 +188,8 @@ do
 	end
 
 	local function HookHandler ( self, Handler, Script )
-		if ( not self[ "faiap_"..Handler ] ) then -- Not already hooked
-			self[ "faiap_"..Handler ] = self:GetScript( Handler );
-			self:SetScript( Handler, Script );
-		end
+		self[ "faiap_"..Handler ] = self:GetScript( Handler );
+		self:SetScript( Handler, Script );
 	end
 	--- Enables syntax highlighting or auto-indentation on this edit box.
 	-- Can be run again to change the TabWidth or ColorTable.
@@ -212,17 +210,18 @@ do
 		if ( Enabled[ self ] ) then
 			ColoredCache[ self ] = nil; -- Force update with new tab width/colors
 		else
-			Enabled[ self ] = true;
-			self.GetText, self.SetText = GetText, SetText;
-
 			self.faiap_maxBytes = self:GetMaxBytes();
 			self.faiap_countInvisible = self:IsCountInvisibleLetters();
 			self:SetMaxBytes( 0 );
 			self:SetCountInvisibleLetters( false );
+			self.GetText, self.SetText = GetText, SetText;
 
-			HookHandler( self, "OnTextChanged", OnTextChanged );
-			HookHandler( self, "OnTabPressed", OnTabPressed );
-			HookHandler( self, "OnUpdate", OnUpdate );
+			if ( Enabled[ self ] == nil ) then -- Never hooked before
+				HookHandler( self, "OnTextChanged", OnTextChanged );
+				HookHandler( self, "OnTabPressed", OnTabPressed );
+				HookHandler( self, "OnUpdate", OnUpdate );
+			end
+			Enabled[ self ] = true;
 		end
 
 		return lib.Update( self, true );
