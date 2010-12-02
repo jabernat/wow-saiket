@@ -34,7 +34,7 @@ for _, BookData in ipairs( DB.books ) do
   for _, PageData in ipairs( BookData.data ) do
     local Script = ScriptClass:New();
     Script:SetName( PageData.name );
-    Script:SetText( PageData.data );
+    Script:SetText( PageData.data:gsub( "||", "|" ) ); -- Unescape
     Script:SetAutoRun( PageData.autorun );
     Script:SetLua( PageData.colorize );
     Book:Insert( Script );
