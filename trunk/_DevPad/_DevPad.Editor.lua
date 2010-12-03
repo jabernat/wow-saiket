@@ -39,10 +39,10 @@ if ( _DevPad.IndentationLib ) then
 			me.SyntaxColors[ select( Index, ... ) ] = Code;
 		end
 	end
-	Color( "|cff8dbbd7", T.KEYWORD ); -- Reserved words
-	Color( "|cffc27272", T.CONCAT, T.VARARG,
+	Color( "|cff88bbdd", T.KEYWORD ); -- Reserved words
+	Color( "|cffcc7777", T.CONCAT, T.VARARG,
 		T.ASSIGNMENT, T.PERIOD, T.COMMA, T.SEMICOLON, T.COLON, T.SIZE );
-	Color( "|cffffa600", T.NUMBER );
+	Color( "|cffffaa00", T.NUMBER );
 	Color( "|cff888888", T.STRING, T.STRING_LONG );
 	Color( "|cff55cc55", T.COMMENT_SHORT, T.COMMENT_LONG );
 	Color( "|cffccaa88", T.LEFTCURLY, T.RIGHTCURLY,
@@ -146,7 +146,7 @@ do
 			if ( Script.Lua ) then
 				_DevPad.IndentationLib.Enable( self.Edit,
 					AutoIndent and TabWidth, me.SyntaxColors );
-				SetVertexColors( self.Lua, 1, 1, 1 );
+				SetVertexColors( self.Lua, 0.4, 0.8, 1 );
 			else
 				_DevPad.IndentationLib.Disable( self.Edit );
 				SetVertexColors( self.Lua, 0.4, 0.4, 0.4 );
@@ -366,9 +366,8 @@ function me:GoToOnAccept ()
 	if ( Line == 0 ) then
 		return true; -- Keep open
 	end
-	local Position = me.Edit:GetLinePosition( Line );
-	me.Edit:HighlightText( Position, Position ); -- Clear
-	me.Edit:SetCursorPosition( Position );
+	me.Edit:HighlightText( 0, 0 );
+	me.Edit:SetCursorPosition( me.Edit:GetLinePosition( Line ) );
 	me.Edit:SetFocus();
 end
 --- Undo changes to the edit box.

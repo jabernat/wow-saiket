@@ -42,18 +42,19 @@ List Window:
   * Send scripts and entire folders to friends by selecting them and clicking the trumped icon in the top-right corner.
   * Copy an entry by sending it to yourself!
   * A LuaDoc comment (triple dash) at the start of a script will appear as that script's tooltip.  This readme includes one as an example.
-  * Search entry titles and script contents using the search bar at the bottom of the list.
+  * Search script contents using the search bar at the bottom of the list.
 
 
 Editor Window:
   * Line numbering is an approximation and can be wrong for wrapped lines!
-  * Optional syntax highlighting courtesy of krka's ForAllIndentsAndPurposes can be turned on per script using the icon at the top-right of the editor.  This also automatically indents code as you type.
+  * Optional syntax highlighting courtesy of krka's ForAllIndentsAndPurposes can be turned on per script using the keyboard icon at the top-right of the editor.  This also automatically indents code as you type.
   * Font and font size controls are also at the top-right of the window.
   * Click a line number to select that entire line (even if the line numbers appear out of alignment).
   * Text is saved as you type.  You can revert to the script's original text (since the start of the session) using the back arrow icon at the top-right.
   * Limited keyboard shortcuts are available:
     + <Ctrl+G>: Go to line number dialog.
-    + <Ctrl+F>: Focus the list's Find text edit box.
+    + <Ctrl+F>: Focus the list's search edit box.
+    + <F3>/<Shift+F3>: Jump to next/previous search result.
 
 
 Scripts and the _DevPad API:
