@@ -126,40 +126,40 @@ do
 	local ceil = ceil;
 	--- Updates or removes the health fade status for a given unit.
 	function me:UpdateUnit( Event, GUID, UnitID, ... )
+		local Settings = self.db.profile[ STATUS_ID ];
+
 		local HealthMax = UnitHealthMax( UnitID );
-
-		if ( HealthMax == 0 -- Unit info is bogus
-			or UnitIsDeadOrGhost( UnitID )
-		) then
-			self.core:SendStatusLost( GUID, STATUS_ID );
+		local Percentage;
+		if ( HealthMax == 0 ) then -- Unknown (offline, etc.)
+			Percentage = 1;
+		elseif ( UnitIsDeadOrGhost( UnitID ) ) then
+			Percentage = 0; -- Keep label from rounding up to 1%
 		else
-			local Percentage = UnitHealth( UnitID ) / HealthMax;
-			local Settings = self.db.profile[ STATUS_ID ];
-			local High, Low = Settings.ColorHigh, Settings.ColorLow;
-
-			local Color = me.ColorTables[ GUID ];
-			if ( not Color ) then
-				Color = {};
-				me.ColorTables[ GUID ] = Color;
-			end
-			Color.r = High.r * Percentage + Low.r * ( 1 - Percentage );
-			Color.g = High.g * Percentage + Low.g * ( 1 - Percentage );
-			Color.b = High.b * Percentage + Low.b * ( 1 - Percentage );
-			Color.a = High.a * Percentage + Low.a * ( 1 - Percentage );
-
-			-- Hack to force updates when the color changes
-			local Cache = self.core:GetCachedStatus( GUID, STATUS_ID );
-			if ( Cache ) then
-				Cache.color = nil;
-			end
-			self.core:SendStatusGained( GUID, STATUS_ID,
-				Settings.priority,
-				( Settings.range and 40 ),
-				Color,
-				L.LABEL_FORMAT:format( ceil( Percentage * 100 ) ),
-				Percentage,
-				1,
-				Settings.icon );
+			Percentage = UnitHealth( UnitID ) / HealthMax;
 		end
+
+		local Color = me.ColorTables[ GUID ];
+		if ( not Color ) then
+			Color = {};
+			me.ColorTables[ GUID ] = Color;
+		end
+		local High, Low = Settings.ColorHigh, Settings.ColorLow;
+		Color.r = High.r * Percentage + Low.r * ( 1 - Percentage );
+		Color.g = High.g * Percentage + Low.g * ( 1 - Percentage );
+		Color.b = High.b * Percentage + Low.b * ( 1 - Percentage );
+		Color.a = High.a * Percentage + Low.a * ( 1 - Percentage );
+
+		-- Hack to force updates when the color changes
+		local Cache = self.core:GetCachedStatus( GUID, STATUS_ID );
+		if ( Cache ) then
+			Cache.color = nil;
+		end
+		self.core:SendStatusGained( GUID, STATUS_ID,
+			Settings.priority,
+			( Settings.range and 40 ),
+			Color,
+			Health ~= 0 and L.LABEL_FORMAT:format( ceil( Percentage * 100 ) ),
+			Percentage, 1,
+			Settings.icon );
 	end
 end
