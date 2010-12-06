@@ -19,10 +19,13 @@ me.NewFolder = me:NewButton( [[Interface\MINIMAP\TRACKING\Banker]] );
 
 me.Edited = me:CreateTexture( nil, "OVERLAY" );
 me.RenameEdit = CreateFrame( "EditBox" );
-me.FindEdit = CreateFrame( "EditBox", "_DevPadListFindEdit", me.Bottom, "InputBoxTemplate" );
+me.SearchEdit = CreateFrame( "EditBox", "_DevPadListSearchEdit", me.Bottom, "InputBoxTemplate" );
+me.SearchEdit.InactiveAlpha = 0.5;
+me.SearchMismatchAlpha = 0.5;
+me.SearchFrequency = 0.25; -- Update rate of list item highlighting
 
 me.DefaultWidth, me.DefaultHeight = 180, 250;
-me.SendNoticeThreshold = 4096; -- Larger objects print a status message
+me.SendNoticeThreshold = 4096; -- Larger objects print a wait message
 
 local ButtonHeight = 16;
 local IndentSize = 20;
@@ -54,6 +57,10 @@ function me:SetRoot ( Folder )
 			end
 			_DevPad.RegisterCallback( self, "ObjectReceived" );
 			_DevPad.RegisterCallback( self, "FolderInsert" );
+			self.SearchEdit:Show();
+		else
+			self:SetSearch();
+			self.SearchEdit:Hide();
 		end
 		return true;
 	end
@@ -82,11 +89,11 @@ end
 -- @return True if renaming target changed.
 function me:SetRenaming ( Object )
 	if ( self.Renaming ~= Object ) then
-		local Edit = me.RenameEdit;
 		if ( self.Renaming ) then -- Restore last edited button
 			ObjectButtons[ self.Renaming ].Name:Show();
 		end
 		self.Renaming = Object;
+		local Edit = self.RenameEdit;
 		if ( Object ) then
 			local Button = ObjectButtons[ Object ];
 			Button.Name:Hide();
@@ -168,6 +175,79 @@ do
 			end
 			return true;
 		end
+	end
+end
+--- Updates the search highlight or stops searching.
+-- @param Search  Pattern to search for in scripts, or nil to stop.
+-- @return True if search pattern changed.
+function me:SetSearch ( Search )
+	Search = Search ~= "" and Search;
+	if ( self.Search ~= Search ) then
+		self.Search = Search;
+		local Edit = self.SearchEdit;
+		Edit:SetText( Search or "" );
+
+		if ( Search ) then
+			Edit:SetAlpha( 1 );
+			self:UpdateSearch();
+		else
+			if ( not Edit:HasFocus() ) then
+				Edit:SetAlpha( Edit.InactiveAlpha );
+			end
+			for _, Button in pairs( ObjectButtons ) do
+				Button.Visual:SetAlpha( 1 );
+			end
+		end
+		return true;
+	end
+end
+do
+	local ipairs = ipairs;
+	local pcall, strfind = pcall, strfind;
+	--- Recursively highlights folders if any of their children match.
+	-- @return True if the folder contained at least one match.
+	local function UpdateFolder ( Folder )
+		local MatchChild;
+		for _, Child in ipairs( Folder or me.Root ) do
+			if ( Child.Class == "Folder" ) then
+				MatchChild = UpdateFolder( Child ) or MatchChild;
+			elseif ( Child.Class == "Script" ) then
+				local Valid, Match = pcall( strfind, Child.Text, me.Search );
+				Match = Valid and Match ~= nil; -- Valid pattern too
+				MatchChild = MatchChild or Match;
+				ObjectButtons[ Child ].Visual:SetAlpha(
+					Match and 1 or me.SearchMismatchAlpha );
+			end
+		end
+		if ( Folder ) then -- Not root
+			ObjectButtons[ Folder ].Visual:SetAlpha(
+				MatchChild and 1 or me.SearchMismatchAlpha );
+		end
+		return MatchChild;
+	end
+
+	local Timer = me.SearchEdit:CreateAnimationGroup();
+	Timer:CreateAnimation( "Animation" ):SetDuration( 1e-7 );
+	local Animation = Timer:CreateAnimation( "Animation" );
+	Animation:SetOrder( 2 ); -- Note: Keeps OnPlay from firing right after :Play.
+	Animation:SetDuration( me.SearchFrequency );
+	--- Throttles search updates.
+	Animation:SetScript( "OnPlay", function ( self )
+		Timer.UpdatePending = nil;
+		if ( me.Search ) then
+			return UpdateFolder();
+		end
+	end );
+	--- Refilter after the cooldown if requested since the last update.
+	Timer:SetScript( "OnFinished", function ( self )
+		if ( self.UpdatePending ) then
+			return self:Play();
+		end
+	end );
+	--- Updates search match highlights.
+	function me:UpdateSearch ()
+		Timer.UpdatePending = true;
+		return Timer:Play();
 	end
 end
 do
@@ -438,6 +518,35 @@ do
 end
 
 
+--- Lights up search box while typing.
+function me.SearchEdit:OnEditFocusGained ()
+	self:HighlightText();
+	self:SetAlpha( 1 );
+end
+--- Dims search box if no longer searching.
+function me.SearchEdit:OnEditFocusLost ()
+	self:HighlightText( 0, 0 );
+	if ( self:GetText() == "" ) then
+		self:SetAlpha( self.InactiveAlpha );
+	end
+end
+--- Jumps to next search result.
+function me.SearchEdit:OnEnterPressed ()
+	return self:ClearFocus();
+end
+--- Jumps to next search result.
+function me.SearchEdit:OnTextChanged ()
+	return me:SetSearch( self:GetText() );
+end
+--- Builds a standard tooltip for a control.
+function me.SearchEdit:OnEnter ()
+	GameTooltip:ClearAllPoints();
+	GameTooltip:SetPoint( "TOPLEFT", self, "BOTTOMLEFT" );
+	GameTooltip:SetOwner( self, "ANCHOR_PRESERVE" );
+	GameTooltip:SetText( L.SEARCH_DESC, nil, nil, nil, nil, 1 );
+end
+
+
 --- Updates an object's name text.
 function me:ObjectSetName ( _, Object )
 	if ( ObjectButtons[ Object ] ) then
@@ -589,6 +698,7 @@ do
 			me:ObjectSetName( nil, Object );
 			if ( Object.Class == "Script" ) then
 				me:ScriptSetAutoRun( nil, Object );
+				me:ScriptSetText( nil, Object );
 			elseif ( Object.Class == "Folder" ) then
 				me:FolderSetClosed( nil, Object );
 			end
@@ -601,6 +711,7 @@ do
 			if ( Object.Class == "Folder" ) then -- Also assign child buttons
 				RecurseChildren( Object, ObjectButtonAssign );
 			end
+			self:UpdateSearch();
 			if ( not Object:IsHidden() ) then
 				return self:Update();
 			end
@@ -611,6 +722,9 @@ do
 	local function ObjectButtonRecycle ( Object )
 		local Button = ObjectButtons[ Object ];
 		Button:Hide();
+		if ( me.Search ) then
+			Button.Visual:SetAlpha( 1 );
+		end
 		if ( me.Edited:GetParent() == Button ) then
 			me:EditorSetScriptObject()
 		end
@@ -624,6 +738,7 @@ do
 			if ( Object.Class == "Folder" ) then
 				RecurseChildren( Object, ObjectButtonRecycle );
 			end
+			self:UpdateSearch();
 			if ( not ( Folder.Closed or Folder:IsHidden() ) ) then
 				return self:Update();
 			end
@@ -674,6 +789,12 @@ function me:ScriptSetAutoRun ( _, Script )
 			Normal:SetVertexColor( 0.6, 0.6, 0.6 );
 			Pushed:SetVertexColor( 0.6, 0.6, 0.6 );
 		end
+	end
+end
+--- Updates search match highlight when text changes.
+function me:ScriptSetText ( _, Script )
+	if ( ObjectButtons[ Script ] ) then
+		return self:UpdateSearch();
 	end
 end
 --- Adds a highlight to scripts open for editing.
@@ -773,22 +894,25 @@ StaticPopupDialogs[ "_DEVPAD_RECEIVE_CONFIRM" ] = {
 
 -- Search bar
 me.Bottom:SetHeight( 24 );
-local Find = me.FindEdit;
-Find:SetAutoFocus( false );
-Find:SetScript( "OnEscapePressed", Find.ClearFocus );
-Find:SetScript( "OnEditFocusGained", Find.HighlightText );
-Find:SetHeight( 28 );
-Find:SetPoint( "BOTTOM", 0, -2 );
-Find:SetPoint( "RIGHT", me.Resize, "LEFT", 12, 0 );
-Find:SetPoint( "LEFT", 24, 0 );
-Find:SetHitRectInsets( 0, 0, 4, 4 );
-Find:SetText( "[NYI]" );
-Find:SetTextInsets( 12, 0, 0, 0 );
-local Icon = Find:CreateTexture( nil, "OVERLAY" );
-Icon:SetPoint( "LEFT", -4, 0 );
-Icon:SetSize( 20, 20 );
+local Search = me.SearchEdit;
+Search:SetHeight( 20 );
+Search:SetPoint( "BOTTOMLEFT", 12, 2 );
+Search:SetPoint( "RIGHT", -10, 0 );
+Search:SetAutoFocus( false );
+Search:SetTextInsets( 12, 0, 0, 0 );
+Search:SetFontObject( ChatFontSmall );
+Search:SetScript( "OnEditFocusGained", Search.OnEditFocusGained );
+Search:SetScript( "OnEditFocusLost", Search.OnEditFocusLost );
+Search:SetScript( "OnEnterPressed", Search.OnEnterPressed );
+Search:SetScript( "OnEscapePressed", Search.ClearFocus );
+Search:SetScript( "OnTextChanged", Search.OnTextChanged );
+Search:SetScript( "OnEnter", Search.OnEnter );
+Search:SetScript( "OnLeave", GameTooltip_Hide );
+local Icon = Search:CreateTexture( nil, "OVERLAY" );
+Icon:SetPoint( "LEFT", 0, -2 );
+Icon:SetSize( 14, 14 );
 Icon:SetTexture( [[Interface\COMMON\UI-Searchbox-Icon]] );
-Icon:SetAlpha( 0.5 );
+me:SetSearch();
 
 -- Object renaming edit box
 local Rename = me.RenameEdit;
@@ -811,6 +935,7 @@ _DevPad.RegisterCallback( me, "ObjectSetName" );
 _DevPad.RegisterCallback( me, "FolderRemove" );
 _DevPad.RegisterCallback( me, "FolderSetClosed" );
 _DevPad.RegisterCallback( me, "ScriptSetAutoRun" );
+_DevPad.RegisterCallback( me, "ScriptSetText" );
 _DevPad.RegisterCallback( me, "ListSetSelection" );
 _DevPad.RegisterCallback( me, "EditorSetScriptObject" );
 

@@ -201,6 +201,7 @@ do
 		Text = type( Text ) == "string" and Text or "";
 		if ( self.Text ~= Text ) then
 			self.Text, self.TextChanged = Text, true;
+			me.Callbacks:Fire( "ScriptSetText", self );
 			return true;
 		end
 	end
