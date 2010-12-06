@@ -19,6 +19,9 @@ overwrites <../../_NPCScan/_NPCScan.TamableIDs.lua>.
 local RareMapOverrides = { -- [ NpcID ] = ForcedMapID;
 	[ 11497 ] = 13; -- "The Razza" spawns in the Dire Maul courtyard, which doesn't properly appear in Feralas. Use Kalimdor map instead.
 };
+local CreatureTypeBlacklist = { -- Querying WowHead for these results in an empty result
+	[ 59 ] = true; -- Silithid
+};
 local OutputFilename = [[../../_NPCScan/_NPCScan.TamableIDs.lua]];
 
 
@@ -52,7 +55,9 @@ local CreatureFamilies = DbcCSV.Parse( [[DBFilesClient/CreatureFamily.dbc.csv]],
 
 local PetTypes = {};
 for ID, CreatureFamily in pairs( CreatureFamilies ) do
-	if ( CreatureFamily.PetTalentType ~= -1 ) then -- Tamable mob type
+	if ( CreatureFamily.PetTalentType ~= -1 -- Tamable mob type
+		and not CreatureTypeBlacklist[ ID ]
+	) then
 		PetTypes[ #PetTypes + 1 ] = ID;
 	end
 end
@@ -116,17 +121,15 @@ local function HandleRare ( NpcData ) -- Parses WowHead's rare data
 	local ID = assertf( tonumber( NpcData.id ), "Invalid Npc ID %s.", NpcData.id );
 	local Name = assert( NpcData.name, "Missing Npc name." );
 	print( ( "[%d]\t%s" ):format( ID, Name ) );
+	local LocationTable = NpcData.location;
 
 	local MapID;
 	if ( RareMapOverrides[ ID ] ) then
 		print( "  - Map override set; Ignoring reported zone." );
 		MapID = RareMapOverrides[ ID ];
-	else
-		local LocationTable = assert( NpcData.location, "Missing location table." );
-		assertf( type( LocationTable ) == "table" and #LocationTable > 0, "Invalid location table." );
-
+	elseif ( type( LocationTable ) == "table" and #LocationTable > 0 ) then
 		if ( #LocationTable == 1 ) then
-			MapID = MapIDs[ LocationTable[ 1 ] ] or true;
+			MapID = MapIDs[ LocationTable[ 1 ] ];
 		else -- Check WoWDB for the most frequent zone
 			print( "  - Multiple possible zones: Checking with WoWDB..." );
 			local Success, NpcMap = pcall( GetNpcMap, ID );
@@ -138,15 +141,15 @@ local function HandleRare ( NpcData ) -- Parses WowHead's rare data
 				MapID = NpcMap;
 			else -- WoWDB didn't work or had no data
 				print( "    - No results; Falling back on WowHead data." );
-				MapID = MapIDs[ LocationTable[ 1 ] ] or true;
+				MapID = MapIDs[ LocationTable[ 1 ] ];
 			end
 		end
 	end
 
-	if ( MapID == true ) then
+	if ( not MapID ) then
 		print( "  - Mapless zone; Don't filter by location." );
 	end
-	return { ID = ID; Name = Name; MapID = MapID; };
+	return { ID = ID; Name = Name; MapID = MapID or true; };
 end
 
 
@@ -155,7 +158,7 @@ end
 print( "Reading tamable rare list:" );
 
 -- Query to filter all rare/rare elite tamable mobs
-local Query = ( "http://www.wowhead.com/?npcs&filter=cl=4:2;fa=%s" ):format( table.concat( PetTypes, ":" ) );
+local Query = ( "http://www.wowhead.com/npcs?filter=cl=4:2;fa=%s" ):format( table.concat( PetTypes, ":" ) );
 local ListViewPattern = [[<script type="text/javascript">//<!%[CDATA%[
 new Listview%((%b{})%);
 //%]%]></script>]]
