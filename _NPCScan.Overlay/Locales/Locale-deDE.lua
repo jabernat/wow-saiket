@@ -13,10 +13,6 @@ end
 local Overlay = select( 2, ... );
 Overlay.L = setmetatable( {
 	NPCs = setmetatable( {
-		[ 1140 ] = "Scharfzahnmatriarchin",
-		[ 5842 ] = "Takk der Springer",
-		[ 6581 ] = "Ravasaurusmatriarchin",
-		[ 14232 ] = "Pfeil",
 		[ 18684 ] = "Bro'Gaz der Klanlose",
 		[ 32491 ] = "Zeitverlorener Protodrache",
 		[ 33776 ] = "Gondria",
