@@ -39,10 +39,6 @@ D¨Ÿ&®Ÿ&®±-2ÿ¥µ3M³9S{±-2ÿ¼ÆPÿ¸J­›CGyŸ&®Ÿ&®¥µ3M¢¶6ã±äXÈ³9S{¼ÆPÿ¤]¥¸J­Ÿ&®Ÿ
 ¢êŒV¢êŒV¡@’nœ‹‘‰˜Ôƒ¯–\
 …+ƒvµƒvµ¯ÿXâ­i]Š¢êŒVœ‹‘‰ž\\—œC„¢˜Ôƒ¯ƒvµƒvµ­i]Š¢êŒV¢êŒVž\\—óˆ*œC„¢ƒvµ¢êŒV¢êŒVóˆ*œC„¢";
 	};
-	[ 141 ] = { -- Dustwallow Marsh
-		-- Dart
-		[ 14232 ] = "tÐ2u)xÇ%›xÇ%›{À$3}¥&Â}¥&Â~æ3T}O5Ï}O5Ïy6tÐ2tÐ2xÇ%›}¥&Â}¥&Â}O5ÏtÐ2";
-	};
 	[ 490 ] = { -- Grizzly Hills
 		-- Arcturis
 		[ 38453 ] = "Ni’MNBBQåBQåBQÊ’@Ni’M";
@@ -146,10 +142,6 @@ fµÁub©´2}VµÈ˜†³¢‰D·r„Â·r„Â¼…Â¿H²¿H²¾!œÌ¼‹Ÿ'¼‹Ÿ'¹	µÈ˜†µÈ˜†·r„Â¿H²¿H²¼‹Ÿ'µÈ
 		[ 18685 ] = "K^k¬O±fRRˆlPRˆlPNŠuFLúoØRˆlPLúoØK^k¬|Ó-w}\"Þ~ù!ò~ù!ò„•)ï€ÿ4t€ÿ4t~Ò4|Ó-w~ù!ò€ÿ4t|Ó-w”t9—s7l›=à›=à›˜Fm’{=›=à’{=”t9¼žŒ/«‘-©*‘-©*’&«P‘±œ‘±œ”S¶\
 ‘½¤¼ž‘-©*‘±œ‘±œ‘½¤¼ž";
 	};
-	[ 11 ] = { -- The Barrens
-		-- Takk the Leaper
-		[ 5842 ] = "•€”`h—šU—šUœÙÝž¤Œž¤ŒŸ!œô'Yœô'Y›²&f›¹Ì˜Ç»•€—šUž¤Œœô'Y›¹Ì›¹Ì˜Ç»—šU—šUž¤Œ›¹Ì";
-	};
 	[ 495 ] = { -- The Storm Peaks
 		-- Dirkee
 		[ 32500 ] = "gšƒŽhr€‰i†€oi†€oj’…Ži0‰ b”¢d9–ïb-œôb-œô^\\™	]B”L]B”L^‘aª‹’fÈ†sgšƒŽi†€oi†€oi0‰ ezŠ#b Ab”¢b-œôb-œô]B”Laª‹’fÈ†si†€oezŠ#b Ab-œôaª‹’aª‹’fÈ†sezŠ#cÐŒ~b Aaª‹’ezŠ#cÐŒ~aª‹’ifh“c×móaumóauoicþj¦ij¦ilwmÌj6p\rj6p\rgÈjºififmóauj¦iifj¦ij6p\r«}}«vE«Útg«Útg­¤tŽ¯¤{q¯¤{q­ÅÅ¬5Å¬5Å«}}«Útg«Útg¯¤{q¬5Å";
@@ -176,14 +168,6 @@ W8¥%FR~ƒGf_\\G†hryxaƒ@X­|ÙdkdšCruš¦nÒfEÑ£uµÕýa‰Ôµa‰Ôµ^I¼˜]¥´`WšªôOb«’JõªkFR~
 pòcÊnHaÊgfm¥Œæpël¿“÷iD—­\\„§y^O f\
 pòaÊgfh1lk)ŠCm¥Œæl¿“÷iD—­^O a£wfsf\
 pòh1ljD…ék)ŠCl¿“÷l¿“÷iD—­a£wfãŽ;fsh1ll¿“÷a£weý•fãŽ;h1ljD…éjD…él¿“÷eý•jD…éeý•fãŽ;";
-	};
-	[ 201 ] = { -- Un'Goro Crater
-		-- Ravasaur Matriarch
-		[ 6581 ] = "›…¤”¢Ýšç©—s©—s¬p—X°G›…°G›…²3¢&²G©­²G©­¬„µf©õµm¢Ý´¨Ÿò¾!›CÀë›CÀë—Î¿¾–¹î–¹î–Â²,›…¤”›…¤”©—s°G›…°G›…²G©­©õµm¤Ï°¢Ý´¨›CÀë›CÀë–¹î›…¤”°G›…©õµm§_±¤Ï°›CÀë›…¤”›…¤”°G›…§_±§_±¤Ï°›…¤”";
-	};
-	[ 40 ] = { -- Wetlands
-		-- Razormaw Matriarch
-		[ 1140 ] = "«„M¬˜J)°|G®°|G®´?IµÖLôµÖLôµöOì³T÷³T÷²gXr°'X“¯;Tg¬Pb«„M«„M°|G®µÖLôµÖLô³T÷°'X“¯;Tg«„MµÖLôµÖLô°'X“¯;Tg";
 	};
 	[ 467 ] = { -- Zangarmarsh
 		-- Bog Lurker

@@ -13,10 +13,6 @@ end
 local Overlay = select( 2, ... );
 Overlay.L = setmetatable( {
 	NPCs = setmetatable( {
-		[ 1140 ] = "Matriarca Tajobuche",
-		[ 5842 ] = "Takk el Saltarín",
-		[ 6581 ] = "Matriarca ravasaurio",
-		[ 14232 ] = "Dardo",
 		[ 18684 ] = "Bro'Gaz sin Clan",
 		[ 32491 ] = "Protodraco Tiempo Perdido",
 		[ 33776 ] = "Gondria",

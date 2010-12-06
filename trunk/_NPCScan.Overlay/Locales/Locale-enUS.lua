@@ -7,10 +7,6 @@
 -- See http://wow.curseforge.com/addons/npcscan-overlay/localization/enUS/
 select( 2, ... ).L = setmetatable( {
 	NPCs = { -- Note: Don't use a metatable default; Missing keys must return nil
-		[ 1140 ] = "Razormaw Matriarch",
-		[ 5842 ] = "Takk the Leaper",
-		[ 6581 ] = "Ravasaur Matriarch",
-		[ 14232 ] = "Dart",
 		[ 18684 ] = "Bro'Gaz the Clanless",
 		[ 32491 ] = "Time-Lost Proto Drake",
 		[ 33776 ] = "Gondria",
