@@ -21,6 +21,7 @@ me.Focus = CreateFrame( "Frame", nil, me.Window );
 me.Margin = CreateFrame( "Frame", nil, me.ScrollFrame );
 me.Margin.Gutter = me.Focus:CreateTexture( nil, "BORDER" );
 me.Margin.Lines = {};
+local MarginUpdateFrequency = 0.2; -- Time to wait after last keypress before updating
 me.Edit = CreateFrame( "EditBox", nil, me.Margin );
 
 me.Shortcuts = CreateFrame( "Frame", nil, me.Edit );
@@ -97,6 +98,7 @@ function me:SetScriptObject ( Script )
 			self.Edit:SetText( Script.Text:gsub( "|", "||" ) );
 			self.Edit:SetCursorPosition( 0 );
 			self:ScriptSetLua( nil, Script );
+			self.Margin:Update();
 			self:Show();
 		else
 			_DevPad.UnregisterCallback( self, "ObjectSetName" );
@@ -221,7 +223,7 @@ function me.Margin:Update ()
 			end
 		end
 	end
-	for Index = Index + 1, #Lines do
+	for Index = #Lines, Index + 1, -1 do
 		Lines[ Index ] = nil;
 	end
 
@@ -255,6 +257,7 @@ function me.Margin:OnMouseDown ()
 end
 --- Focus the edit box text if empty space gets clicked.
 function me.Focus:OnMouseDown ()
+	me.Edit:HighlightText( 0, 0 );
 	me.Edit:SetCursorPosition( #me.Edit:GetText( true ) );
 	me.Edit:SetFocus();
 end
@@ -303,21 +306,31 @@ function me.Edit:GetLinePosition ( Line )
 	end
 	return PositionLast;
 end
---- Updates line numbers and saves text.
-function me.Edit:OnTextChanged ()
-	local Script = me.Script;
-	if ( Script ) then
-		if ( not Script.TextOriginal ) then
-			Script.TextOriginal = Script.Text;
-		end
-		Script:SetText( self:GetText():gsub( "||", "|" ) );
-		if ( Script.TextOriginal == Script.Text ) then
-			me.Revert:Disable();
-		else
-			me.Revert:Enable();
-		end
+do
+	--- Updates the margin a moment after the user quits typing.
+	local function OnFinished ( Updater )
+		return Updater:GetParent():Update();
 	end
-	return me.Margin:Update();
+	local Updater = me.Margin:CreateAnimationGroup();
+	Updater:CreateAnimation( "Animation" ):SetDuration( MarginUpdateFrequency );
+	Updater:SetScript( "OnFinished", OnFinished );
+	--- Updates line numbers and saves text.
+	function me.Edit:OnTextChanged ()
+		local Script = me.Script;
+		if ( Script ) then
+			if ( not Script.TextOriginal ) then
+				Script.TextOriginal = Script.Text;
+			end
+			Script:SetText( self:GetText():gsub( "||", "|" ) );
+			if ( Script.TextOriginal == Script.Text ) then
+				me.Revert:Disable();
+			else
+				me.Revert:Enable();
+			end
+		end
+		Updater:Stop();
+		Updater:Play();
+	end
 end
 --- Start listening for shortcut keys.
 function me.Edit:OnEditFocusGained ()
@@ -533,6 +546,7 @@ Focus:SetAllPoints( me.ScrollFrame);
 Focus:SetScript( "OnMouseDown", Focus.OnMouseDown );
 
 local ScrollFrame, Margin = me.ScrollFrame, me.Margin;
+Margin:SetSize( 1, 1 );
 ScrollFrame:SetScrollChild( Margin );
 Margin:SetScript( "OnMouseDown", Margin.OnMouseDown );
 local Text = Margin:CreateFontString();
