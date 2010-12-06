@@ -356,7 +356,7 @@ end
 --- Focus search edit box.
 function me.Shortcuts:F ()
 	if ( IsControlKeyDown() ) then
-		self:SetFocus( _DevPad.List.FindEdit );
+		self:SetFocus( _DevPad.List.SearchEdit );
 	end
 end
 
