@@ -22,7 +22,7 @@ me.RenameEdit = CreateFrame( "EditBox" );
 me.SearchEdit = CreateFrame( "EditBox", "_DevPadListSearchEdit", me.Bottom, "InputBoxTemplate" );
 me.SearchEdit.InactiveAlpha = 0.5;
 me.SearchMismatchAlpha = 0.5;
-me.SearchFrequency = 0.25; -- Update rate of list item highlighting
+local SearchFrequency = 0.25; -- Update rate of list item highlighting
 
 me.DefaultWidth, me.DefaultHeight = 180, 250;
 me.SendNoticeThreshold = 4096; -- Larger objects print a wait message
@@ -230,7 +230,7 @@ do
 	Timer:CreateAnimation( "Animation" ):SetDuration( 1e-7 );
 	local Animation = Timer:CreateAnimation( "Animation" );
 	Animation:SetOrder( 2 ); -- Note: Keeps OnPlay from firing right after :Play.
-	Animation:SetDuration( me.SearchFrequency );
+	Animation:SetDuration( SearchFrequency );
 	--- Throttles search updates.
 	Animation:SetScript( "OnPlay", function ( self )
 		Timer.UpdatePending = nil;
@@ -538,7 +538,7 @@ end
 function me.SearchEdit:OnTextChanged ()
 	return me:SetSearch( self:GetText() );
 end
---- Builds a standard tooltip for a control.
+--- Builds a tooltip under the edit box so it doesn't cover the list.
 function me.SearchEdit:OnEnter ()
 	GameTooltip:ClearAllPoints();
 	GameTooltip:SetPoint( "TOPLEFT", self, "BOTTOMLEFT" );
