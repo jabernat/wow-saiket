@@ -33,6 +33,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 local lib = {};
 select( 2, ... ).IndentationLib = lib;
 
+local UpdateCooldown = 0.2; -- Time to wait after last keypress before updating
+
 
 
 
@@ -63,7 +65,7 @@ do
 end
 
 do
-	local Enabled, Dirty = {}, {};
+	local Enabled, Updaters = {}, {};
 
 	local CodeCache, ColoredCache = {}, {};
 	local NumLinesCache = {};
@@ -76,7 +78,6 @@ do
 		if ( not Enabled[ self ] ) then
 			return;
 		end
-		Dirty[ self ] = nil;
 
 		local Colored = GetTextBackup( self );
 		if ( ColoredCache[ self ] == Colored ) then
@@ -133,7 +134,10 @@ do
 	--- Flags the editbox to be reformatted when its contents change.
 	local function OnTextChanged ( self, ... )
 		if ( Enabled[ self ] ) then
-			Dirty[ self ], CodeCache[ self ] = GetTime();
+			CodeCache[ self ] = nil;
+			local Updater = Updaters[ self ];
+			Updater:Stop();
+			Updater:Play();
 		end
 		if ( self.faiap_OnTextChanged ) then
 			return self:faiap_OnTextChanged( ... );
@@ -146,19 +150,6 @@ do
 		end
 		if ( Enabled[ self ] ) then
 			return lib.Update( self, true );
-		end
-	end
-	--- Throttles updates from typed text.
-	local function OnUpdate ( self, ... )
-		if ( self.faiap_OnUpdate ) then
-			self:faiap_OnUpdate( ... );
-		end
-		if ( Enabled[ self ] ) then
-			local Now = GetTime();
-			local LastUpdate = Dirty[ self ] or Now;
-			if ( Now - LastUpdate > 0.2 ) then
-				return lib.Update( self );
-			end
 		end
 	end
 	--- @return Un-colored text as if FAIAP wasn't there.
@@ -185,6 +176,10 @@ do
 	local function Insert ( self, ... )
 		CodeCache[ self ] = nil;
 		return InsertBackup( self, ... );
+	end
+	--- Updates the code a moment after the user quits typing.
+	local function UpdaterOnFinished ( Updater )
+		return lib.Update( Updater:GetParent() );
 	end
 
 	local function HookHandler ( self, Handler, Script )
@@ -217,9 +212,12 @@ do
 			self.GetText, self.SetText = GetText, SetText;
 
 			if ( Enabled[ self ] == nil ) then -- Never hooked before
+				local Updater = self:CreateAnimationGroup();
+				Updaters[ self ] = Updater;
+				Updater:CreateAnimation( "Animation" ):SetDuration( UpdateCooldown );
+				Updater:SetScript( "OnFinished", UpdaterOnFinished );
 				HookHandler( self, "OnTextChanged", OnTextChanged );
 				HookHandler( self, "OnTabPressed", OnTabPressed );
-				HookHandler( self, "OnUpdate", OnUpdate );
 			end
 			Enabled[ self ] = true;
 		end
