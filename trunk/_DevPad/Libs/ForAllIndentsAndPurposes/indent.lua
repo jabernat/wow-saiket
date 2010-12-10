@@ -98,7 +98,6 @@ do
 			end
 		end
 
-		ForceIndent = true;
 		local ColoredNew, Cursor = lib.FormatCode( Code,
 			ForceIndent and self.faiap_tabWidth, self.faiap_colorTable, Cursor );
 		CodeCache[ self ], ColoredCache[ self ] = Code, ColoredNew;
