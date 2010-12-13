@@ -426,7 +426,7 @@ do
 			if ( Object.Class == "Script" ) then
 				SanitizeScript( Object );
 			elseif ( Object.Class == "Folder" ) then
-				_DevPad.IterateScripts( SanitizeScript, Object );
+				_DevPad:IterateScripts( SanitizeScript, Object );
 			end
 			Object.Author = Author;
 
@@ -466,7 +466,7 @@ do
 	--- Creates a new object above the selection or at the end.
 	local function InsertObject ( Class )
 		if ( me.Root ) then
-			local Object = _DevPad.GetClass( Class ):New();
+			local Object = _DevPad:GetClass( Class ):New();
 			if ( me.Selection ) then -- Add just before selection
 				me.Selection.Parent:Insert( Object, me.Selection:GetIndex() );
 			else -- Default to end of list
