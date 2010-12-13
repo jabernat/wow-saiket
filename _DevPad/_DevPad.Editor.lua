@@ -372,6 +372,12 @@ function me.Shortcuts:F ()
 		self:SetFocus( _DevPad.List.SearchEdit );
 	end
 end
+--- Jump to next/previous search result.
+function me.Shortcuts:F3 ()
+	if ( _DevPad.List.Search ) then
+		_DevPad.Print( "NYI" );
+	end
+end
 
 --- Goes to the given line number.
 function me:GoToOnAccept ()
