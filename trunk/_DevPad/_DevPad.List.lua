@@ -530,11 +530,15 @@ function me.SearchEdit:OnEditFocusLost ()
 		self:SetAlpha( self.InactiveAlpha );
 	end
 end
---- Jumps to next search result.
+--- Jumps to next/previous search result.
 function me.SearchEdit:OnEnterPressed ()
-	return self:ClearFocus();
+	if ( me.Search ) then
+		_DevPad.Print( "NYI" );
+	else
+		return self:ClearFocus();
+	end
 end
---- Jumps to next search result.
+--- Refilters the list when the search pattern changes.
 function me.SearchEdit:OnTextChanged ()
 	return me:SetSearch( self:GetText() );
 end
