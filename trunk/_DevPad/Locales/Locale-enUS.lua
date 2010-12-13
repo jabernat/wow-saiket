@@ -21,48 +21,45 @@ select( 2, ... ).L = setmetatable( {
 	README = "Instruction Manual",
 	README_TEXT = [=[--- A short guide to _DevPad's features.
 
-    Many thanks to Mud's wonderful Hack mod for inspiration!
+  *Many thanks to Mud's wonderful Hack mod for inspiration!*
 
 
 
 _DevPad lets you write notes, scripts, and mini addons in-game.  The following sections describe key features of the mod:
 
 
-General:
+# Windows:
   * Windows can be snapped together by dragging one near another.
 
-
-List Window:
+## List Window:
   * _DevPad organizes scripts into nestable folders, shown in the list.  You can organize them and their scripts by dragging and dropping.
   * The arrow to the right of each script toggles auto-running it when you log in or reload UI.  Use it to turn a script into a mini addon.
   * Double click any entry to rename it.
   * Multiple entries can have the same name, even within the same folder.
   * New folders and scripts are created by clicking their respective bag and note icons at the top-right of the list.
   * Delete entries by selecting them and using the red cross-out icon in the top-right corner.
-  * Send scripts and entire folders to friends by selecting them and clicking the trumped icon in the top-right corner.
+  * Send scripts and entire folders to friends by selecting them and clicking the trumpet icon in the top-right corner.
   * Copy an entry by sending it to yourself!
   * A LuaDoc comment (triple dash) at the start of a script will appear as that script's tooltip.  This readme includes one as an example.
   * Search script contents using the search bar at the bottom of the list.
 
-
-Editor Window:
+## Editor Window:
   * Line numbering is an approximation and can be wrong for wrapped lines!
   * Optional syntax highlighting courtesy of krka's ForAllIndentsAndPurposes can be turned on per script using the keyboard icon at the top-right of the editor.  This also automatically indents code as you type.
   * Font and font size controls are also at the top-right of the window.
   * Click a line number to select that entire line (even if the line numbers appear out of alignment).
   * Text is saved as you type.  You can revert to the script's original text (since the start of the session) using the back arrow icon at the top-right.
   * Limited keyboard shortcuts are available:
-    + <Ctrl+G>: Go to line number dialog.
-    + <Ctrl+F>: Focus the list's search edit box.
-    + <F3>/<Shift+F3>: Jump to next/previous search result.
+    + `Ctrl+G`: Go to line number dialog.
+    + `Ctrl+F`: Focus the list's search edit box.
+    + `F3`/`Shift+F3`: Jump to next/previous search result.
 
 
-Scripts and the _DevPad API:
-  * Scripts receive the following arguments: (ScriptName, StateTable, ...), where ... are custom parameters from the caller.
-  * The StateTable parameter can be used for anything, like the addon table passed to addons.  It is static to its script, so the same one gets passed each call.
+# Scripts and the _DevPad API:
+  * Scripts receive the following arguments: `(ScriptObject, ...)`, where `...` are custom parameters from the caller.
   * Optional returns from the script's main chunk propagate out to the caller.
-  * Run other scripts like this: _DevPad.FindScript( "NamePattern" )( ... );
-  * See <_DevPad/_DevPad.lua> for documentation on manipulating scripts and folders programatically.
+  * Run other scripts like this: `_DevPad:FindScript( "NamePattern" )( ... );` or `_DevPad:GetAbsObject( "Path", "to", "script" )( ... );`
+  * See `_DevPad.lua` for documentation on manipulating scripts and folders programatically.
 ]=],
 	RECEIVE_CONFIRM_SCRIPT_FORMAT = [=[%s has sent you a script called |cff808080“%s”|r.  Add it to your _|cffcccc88DevPad|r?
 |cffff1111WARNING: Inspect all untrustworthy scripts before you run them!|r]=],
