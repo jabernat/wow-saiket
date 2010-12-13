@@ -22,10 +22,10 @@ _DevPad.DefaultScripts = { Class = "Folder";
 --- Run with Hack enabled to transfer all settings to _DevPad.
 -- Hack books transfer as folders.
 -- NOTE: You must replace script references to Hack yourself!
---   Ex) Hack.Run("Page") > _DevPad.FindScript("Page")()
+--   Ex) Hack.Run("Page") > _DevPad:FindScript("Page")()
 
 local DB = assert( HackDB, "Hack saved variables not found." );
-local FolderClass, ScriptClass = _DevPad.GetClass( "Folder" ), _DevPad.GetClass( "Script" );
+local FolderClass, ScriptClass = _DevPad:GetClass( "Folder" ), _DevPad:GetClass( "Script" );
 local Hack = FolderClass:New();
 Hack:SetName( "Hack Import" );
 for _, BookData in ipairs( DB.books ) do
@@ -48,8 +48,8 @@ return _DevPad.FolderRoot:Insert( Hack );]=];
 --- Run with TinyPad enabled to transfer all settings to _DevPad.
 
 local DB = assert( TinyPadPages, "TinyPad saved variables not found." );
-local ScriptClass = _DevPad.GetClass( "Script" );
-local TinyPad = _DevPad.GetClass( "Folder" ):New();
+local ScriptClass = _DevPad:GetClass( "Script" );
+local TinyPad = _DevPad:GetClass( "Folder" ):New();
 TinyPad:SetName( "TinyPad Import" );
 for Index, Text in ipairs( DB ) do
   local Script = ScriptClass:New();
@@ -67,8 +67,8 @@ return _DevPad.FolderRoot:Insert( TinyPad );]=];
 
 LoadAddOn( "WowLua" ); -- In case AddonLoader is installed
 local DB = assert( WowLua_DB, "WowLua saved variables not found." );
-local ScriptClass = _DevPad.GetClass( "Script" );
-local WowLua = _DevPad.GetClass( "Folder" ):New();
+local ScriptClass = _DevPad:GetClass( "Script" );
+local WowLua = _DevPad:GetClass( "Folder" ):New();
 WowLua:SetName( "WowLua Import" );
 for _, PageData in ipairs( DB.pages ) do
   local Script = ScriptClass:New();

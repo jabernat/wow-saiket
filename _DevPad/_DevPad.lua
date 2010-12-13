@@ -70,6 +70,44 @@ do
 			end
 		end
 	end
+	do
+		local Parts = {};
+		--- @return List of path name parts pointing to this object.
+		function ObjectMeta.__index:GetPath ()
+			wipe( Parts );
+			while ( self and self.Parent ) do -- Leave the root's name out
+				tinsert( Parts, 1, self.Name );
+				self = self.Parent;
+			end
+			return unpack( Parts );
+		end
+	end
+	--- Gets an object by path relative to this object.
+	-- @param ...  List of path parts.  Values of true go up like URLs' "..".
+	-- @return Found object, or nil if not found.
+	function ObjectMeta.__index:GetRelObject ( ... )
+		local Object, Parent = self;
+		for Index = 1, select( "#", ... ) do
+			local Name = select( Index, ... );
+			if ( Name == true ) then -- Up/".."
+				Object = Object.Parent;
+			else
+				Parent, Object = Object;
+				if ( Parent.Class == "Folder" ) then
+					for _, Child in ipairs( Parent ) do
+						if ( Name == Child.Name ) then
+							Object = Child;
+							break;
+						end
+					end
+				end
+				if ( not Object ) then
+					return;
+				end
+			end
+		end
+		return Object;
+	end
 	--- @return True if this object is in a closed folder.
 	function ObjectMeta.__index:IsHidden ()
 		local Parent = self.Parent;
@@ -90,7 +128,7 @@ do
 		return Meta;
 	end
 	--- @return The class' metatable index table if the class exists.
-	function me.GetClass ( Name )
+	function me:GetClass ( Name )
 		if ( Classes[ Name ] ) then
 			return Classes[ Name ].__index;
 		end
@@ -174,7 +212,7 @@ do
 		end
 		for Index, Child in ipairs( Settings ) do
 			if ( type( Child ) == "table" ) then
-				local Class = me.GetClass( Child.Class );
+				local Class = me:GetClass( Child.Class );
 				if ( Class ) then
 					local Object = Class:New();
 					self:Insert( Object );
@@ -236,10 +274,7 @@ do
 			end
 			self.Chunk, self.TextChanged = Chunk;
 		end
-		if ( not self.State ) then
-			self.State = {}; -- Similar to addon table but preserved between calls
-		end
-		return me.Assert( pcall( self.Chunk, self.Name, self.State, ... ) );
+		return me.Assert( pcall( self.Chunk, self, ... ) );
 	end
 	--- Shortcut for Script:Run.
 	function ScriptMeta:__call ( ... )
@@ -280,14 +315,14 @@ end
 -- @param Folder  Optional sub-folder to iterate over.
 -- @param ...  Extra args passed after Script to Callback.
 -- @return The logically true value returned by the final callback call, if any.
-function me.IterateScripts ( Callback, Folder, ... )
+function me:IterateScripts ( Callback, Folder, ... )
 	if ( not Folder ) then
-		Folder = me.FolderRoot;
+		Folder = self.FolderRoot;
 	end
 	for _, Child in ipairs( Folder ) do
 		local Result;
 		if ( Child.Class == "Folder" ) then
-			Result = me.IterateScripts( Callback, Child, ... );
+			Result = self:IterateScripts( Callback, Child, ... );
 		elseif ( Child.Class == "Script" ) then
 			Result = Callback( Child, ... );
 		end
@@ -298,7 +333,7 @@ function me.IterateScripts ( Callback, Folder, ... )
 end
 do
 	--- Matches scripts by name.
-	-- @see _DevPad.IterateScripts
+	-- @see _DevPad:IterateScripts
 	local function Callback ( Script, Pattern )
 		if ( Script.Name:match( Pattern ) ) then
 			return Script;
@@ -307,9 +342,14 @@ do
 	--- Finds a Script object by name.
 	-- @param Pattern  Name pattern to match by.
 	-- @return The first matching script object found, or nil if none.
-	function me.FindScript ( Pattern, Folder )
-		return me.IterateScripts( Callback, Folder, Pattern );
+	function me:FindScript ( Pattern, Folder )
+		return self:IterateScripts( Callback, Folder, Pattern );
 	end
+end
+--- Gets an object by path from the folder root.
+-- @see Object:GetRelObject
+function me:GetAbsObject ( ... )
+	return self.FolderRoot:GetRelObject( ... );
 end
 
 
@@ -317,7 +357,7 @@ end
 function me:OnCommReceived ( Prefix, Text, Channel, Author )
 	local Success, MessageType, Settings = AceSerializer:Deserialize( Text );
 	if ( Success and MessageType == "Object" and type( Settings ) == "table" ) then
-		local Class = self.GetClass( Settings.Class );
+		local Class = self:GetClass( Settings.Class );
 		if ( Class ) then
 			local Object = Class:New();
 			local Success = pcall( Object.Unpack, Object, Settings );
@@ -333,7 +373,8 @@ function me.Frame:ADDON_LOADED ( Event, AddOn )
 		self:UnregisterEvent( Event );
 		self[ Event ] = nil;
 
-		me.FolderRoot = me.GetClass( "Folder" ):New();
+		me.FolderRoot = me:GetClass( "Folder" ):New();
+		me.FolderRoot:SetName( "ROOT" );
 		AceComm.RegisterComm( me, me.COMM_PREFIX );
 		me.List:SetRoot( me.FolderRoot );
 
@@ -349,7 +390,7 @@ function me.Frame:ADDON_LOADED ( Event, AddOn )
 		if ( Scripts ) then
 			me.FolderRoot:Unpack( Scripts );
 		end
-		me.IterateScripts( function ( Script )
+		me:IterateScripts( function ( Script )
 			if ( Script.AutoRun ) then
 				Script();
 			end
@@ -381,7 +422,7 @@ function me.SlashCommand ( Input )
 	if ( Pattern == "" ) then
 		ToggleFrame( me.List );
 	else
-		local Script = me.FindScript( Pattern );
+		local Script = me:FindScript( Pattern );
 		if ( Script ) then
 			return Script();
 		else
