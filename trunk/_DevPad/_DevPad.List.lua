@@ -833,7 +833,6 @@ end
 _DevPad.Dialog.StickyFrames[ "List" ] = me;
 me:SetScript( "OnShow", me.OnShow );
 me:SetScript( "OnHide", me.OnHide );
-UISpecialFrames[ "_DevPad" ] = me:GetName();
 me.Title:SetText( L.LIST_TITLE );
 
 me.ScrollChild:SetSize( 1, 1 );
@@ -921,6 +920,7 @@ me:SetSearch();
 -- Object renaming edit box
 local Rename = me.RenameEdit;
 Rename:Hide();
+Rename:SetAutoFocus( false );
 Rename:SetScript( "OnEnterPressed", Rename.OnEnterPressed );
 Rename:SetScript( "OnEscapePressed", Rename.ClearFocus );
 Rename:SetScript( "OnEditFocusGained", Rename.HighlightText );

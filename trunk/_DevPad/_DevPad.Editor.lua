@@ -437,14 +437,11 @@ end
 
 function me:OnShow ()
 	PlaySound( "igQuestListOpen" );
-	UISpecialFrames[ "_DevPad" ] = self:GetName(); -- Cause escape to close the editor before the list frame
 end
 --- Close the open script.
 function me:OnHide ()
 	PlaySound( "igQuestListClose" );
 	StaticPopup_Hide( "_DEVPAD_GOTO" );
-	-- Note: Don't add/remove keys, since :Hide was likely called while looping over UISpecialFrames.
-	UISpecialFrames[ "_DevPad" ] = _DevPad.List:GetName(); -- Allow escape to close the list frame next
 	return self:SetScriptObject();
 end
 
