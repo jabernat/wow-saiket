@@ -249,7 +249,7 @@ function me.Margin:OnMouseDown ()
 		local Start = Edit:GetLinePosition( Line );
 		local End = Edit:GetLinePosition( Line + 1 );
 		if ( Start == End ) then -- Last line
-			End = #Edit:GetText( true );
+			End = #Edit:GetText();
 		end
 		Edit:SetCursorPosition( End );
 		Edit:HighlightText( Start, End );
@@ -259,7 +259,7 @@ end
 --- Focus the edit box text if empty space gets clicked.
 function me.Focus:OnMouseDown ()
 	me.Edit:HighlightText( 0, 0 );
-	me.Edit:SetCursorPosition( #me.Edit:GetText( true ) );
+	me.Edit:SetCursorPosition( #me.Edit:GetText() );
 	me.Edit:SetFocus();
 end
 --- Focus the edit box text if empty space gets clicked.
@@ -299,7 +299,7 @@ end
 --- @return Cursor position for the start of Line within the edit box.
 function me.Edit:GetLinePosition ( Line )
 	local Count, PositionLast = 1, 0;
-	for Position in self:GetText( true ):gmatch( "()[\r\n]" ) do
+	for Position in self:GetText():gmatch( "()[\r\n]" ) do
 		if ( Count >= Line ) then
 			return PositionLast;
 		end
@@ -403,7 +403,7 @@ function me.Shortcuts:G ()
 	if ( IsControlKeyDown() ) then
 		local PositionLast, LineMax, LineCurrent = 0, 0, 1;
 		local Cursor = me.Edit:GetCursorPosition() + 1;
-		for Start, End in me.Edit:GetText( true ):gmatch( "()[^\r\n]*()" ) do
+		for Start, End in me.Edit:GetText():gmatch( "()[^\r\n]*()" ) do
 			if ( PositionLast ~= Start ) then
 				LineMax, PositionLast = LineMax + 1, End;
 				if ( Cursor and Start <= Cursor and Cursor <= End ) then
