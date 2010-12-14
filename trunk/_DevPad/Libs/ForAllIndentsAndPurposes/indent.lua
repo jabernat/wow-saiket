@@ -19,9 +19,10 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]
 
---- This is a _DevPad-specific version of "For All Indents And Purposes",
--- originally by krka <kristofer.karlsson@gmail.com> and modified for Hack by
--- Mud, aka Eric Tetz <erictetz@gmail.com>.
+--- This is a specialized version of "For All Indents And Purposes", originally
+-- by krka <kristofer.karlsson@gmail.com>, modified for Hack by Mud, aka
+-- Eric Tetz <erictetz@gmail.com>, and then further modified by Saiket
+-- <saiket.wow@gmail.com> for _DevPad.
 --
 -- @usage Apply auto-indentation/syntax highlighting to an editboxe like this:
 --   lib.Enable(Editbox, [TabWidth], [ColorTable]);
@@ -71,6 +72,7 @@ do
 	local NumLinesCache = {};
 
 	local SetTextBackup, GetTextBackup, InsertBackup;
+	local GetCursorPositionBackup, SetCursorPositionBackup, HighlightTextBackup;
 	--- Reapplies formatting to this editbox using settings from when it was enabled.
 	-- @param ForceIndent  Forces auto-indent even if the line count didn't change.
 	-- @return True if text was changed.
@@ -83,7 +85,8 @@ do
 		if ( ColoredCache[ self ] == Colored ) then
 			return;
 		end
-		local Code, Cursor = lib.StripColors( Colored, self:GetCursorPosition() );
+		local Code, Cursor = lib.StripColors( Colored,
+			GetCursorPositionBackup( self ) );
 
 		if ( self.faiap_tabWidth ) then
 			-- Reindent if line count changes
@@ -104,7 +107,7 @@ do
 
 		if ( Colored ~= ColoredNew ) then
 			SetTextBackup( self, ColoredNew );
-			self:SetCursorPosition( Cursor );
+			SetCursorPositionBackup( self, Cursor );
 			return true;
 		end
 	end
@@ -115,6 +118,7 @@ do
 		end
 		Enabled[ self ] = false;
 		self.GetText, self.SetText, self.Insert = nil;
+		self.GetCursorPosition, self.SetCursorPosition, self.HighlightText = nil;
 
 		local Code, Cursor = lib.StripColors( self:GetText(),
 			self:GetCursorPosition() );
@@ -151,18 +155,22 @@ do
 			return lib.Update( self, true );
 		end
 	end
+	--- @return Cached plain text contents.
+	local function GetCodeCached ( self )
+		local Code = CodeCache[ self ];
+		if ( not Code ) then
+			Code = lib.StripColors( ( GetTextBackup( self ) ) );
+			CodeCache[ self ] = Code;
+		end
+		return Code;
+	end
 	--- @return Un-colored text as if FAIAP wasn't there.
 	-- @param Raw  True to return fully formatted contents.
 	local function GetText( self, Raw )
 		if ( Raw ) then
 			return GetTextBackup( self );
 		else
-			local Code = CodeCache[ self ];
-			if ( not Code ) then
-				Code = lib.StripColors( ( GetTextBackup( self ) ) );
-				CodeCache[ self ] = Code;
-			end
-			return Code;
+			return GetCodeCached( self );
 		end
 	end
 	--- Clears cached contents if set directly.
@@ -175,6 +183,33 @@ do
 	local function Insert ( self, ... )
 		CodeCache[ self ] = nil;
 		return InsertBackup( self, ... );
+	end
+	--- @return Cursor position within un-colored text.
+	local function GetCursorPosition ( self, ... )
+		local _, Cursor = lib.StripColors( GetTextBackup( self ),
+			GetCursorPositionBackup( self, ... ) );
+		return Cursor;
+	end
+	--- Sets the cursor position relative to un-colored text.
+	local function SetCursorPosition ( self, Cursor, ... )
+		local _, Cursor = lib.FormatCode( GetCodeCached( self ),
+			nil, self.faiap_colorTable, Cursor );
+		return SetCursorPositionBackup( self, Cursor, ... );
+	end
+	--- Highlights a substring relative to un-colored text.
+	local function HighlightText ( self, Start, End, ... )
+		if ( Start ~= End and ( Start or End ) ) then
+			local Code, _ = GetCodeCached( self );
+			if ( Start ) then
+				_, Start = lib.FormatCode( GetCodeCached( self ),
+					nil, self.faiap_colorTable, Start );
+			end
+			if ( End ) then
+				_, End = lib.FormatCode( GetCodeCached( self ),
+					nil, self.faiap_colorTable, End );
+			end
+		end
+		return HighlightTextBackup( self, Start, End, ... );
 	end
 	--- Updates the code a moment after the user quits typing.
 	local function UpdaterOnFinished ( Updater )
@@ -193,8 +228,11 @@ do
 	-- @return True if enabled and formatted.
 	function lib:Enable ( TabWidth, ColorTable )
 		if ( not SetTextBackup ) then
-			SetTextBackup, GetTextBackup = self.SetText, self.GetText;
+			GetTextBackup, SetTextBackup = self.GetText, self.SetText;
 			InsertBackup = self.Insert;
+			GetCursorPositionBackup = self.GetCursorPosition;
+			SetCursorPositionBackup = self.SetCursorPosition;
+			HighlightTextBackup = self.HighlightText;
 		end
 		if ( not ( TabWidth or ColorTable ) ) then
 			return lib.Disable( self );
@@ -209,6 +247,10 @@ do
 			self:SetMaxBytes( 0 );
 			self:SetCountInvisibleLetters( false );
 			self.GetText, self.SetText = GetText, SetText;
+			self.Insert = Insert;
+			self.GetCursorPosition = GetCursorPosition;
+			self.SetCursorPosition = SetCursorPosition;
+			self.HighlightText = HighlightText;
 
 			if ( Enabled[ self ] == nil ) then -- Never hooked before
 				local Updater = self:CreateAnimationGroup();
