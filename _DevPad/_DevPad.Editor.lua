@@ -168,6 +168,7 @@ end
 
 --- Runs the open script.
 function me.Run:OnClick ()
+	PlaySound( "igMiniMapZoomIn" );
 	return me.Script:Run();
 end
 --- Cycles to the next available font.
