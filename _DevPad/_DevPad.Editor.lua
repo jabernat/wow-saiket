@@ -551,6 +551,7 @@ Focus:SetScript( "OnMouseDown", Focus.OnMouseDown );
 
 local ScrollFrame, Margin = me.ScrollFrame, me.Margin;
 Margin:SetSize( 1, 1 );
+Margin:SetHitRectInsets( 0, 0, 0, TextInset );
 ScrollFrame:SetScrollChild( Margin );
 Margin:SetScript( "OnMouseDown", Margin.OnMouseDown );
 local Text = Margin:CreateFontString();
