@@ -408,6 +408,30 @@ function me.Frame:PLAYER_LOGOUT ()
 		Editor = me.Editor:Pack();
 	};
 end
+do
+	local Active = IsLoggedIn();
+	--- Keeps the default UI from hiding open dialogs when zoning.
+	function me.Frame:PLAYER_LEAVING_WORLD ()
+		Active = false;
+	end
+	function me.Frame:PLAYER_ENTERING_WORLD ()
+		Active = true;
+	end
+	--- @return True if the dialog was hidden.
+	local function Hide ( self )
+		if ( self:IsShown() ) then
+			self:Hide();
+			return true;
+		end
+	end
+	local Backup = CloseSpecialWindows;
+	--- Hook to hide dialog windows when escape is pressed.
+	-- Used instead of UISpecialFrames to prevent closing when zoning.
+	function CloseSpecialWindows ( ... )
+		return Backup( ... )
+			or Active and ( Hide( me.Editor ) or Hide( me.List ) );
+	end
+end
 --- Global event handler.
 function me.Frame:OnEvent ( Event, ... )
 	if ( self[ Event ] ) then
@@ -436,5 +460,7 @@ end
 
 me.Frame:SetScript( "OnEvent", me.Frame.OnEvent );
 me.Frame:RegisterEvent( "ADDON_LOADED" );
+me.Frame:RegisterEvent( "PLAYER_ENTERING_WORLD" );
+me.Frame:RegisterEvent( "PLAYER_LEAVING_WORLD" );
 
 SlashCmdList[ "_DEVPAD" ] = me.SlashCommand;
