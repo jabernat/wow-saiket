@@ -122,6 +122,14 @@ function me:SetFont ( Path, Size )
 		return true;
 	end
 end
+--- Highlights a substring in the editor and moves the view to it.
+function me:SetHighlight ( Start, End )
+	self.Edit:HighlightText( Start or 0, End or 0 );
+	if ( End ) then
+		self.Edit.CursorForceUpdate = true; -- Force into view, even if not focused
+		self.Edit:SetCursorPosition( End );
+	end
+end
 
 
 --- Shows the selected script from the list frame.
@@ -271,10 +279,12 @@ do
 	--- Moves the edit box's view to follow the cursor.
 	function me.Edit:OnCursorChanged ( CursorX, CursorY, CursorWidth, CursorHeight )
 		self.LineHeight = CursorHeight;
-		if ( self:HasFocus() and (
-			LastX ~= CursorX or LastY ~= CursorY -- Only move view when cursor *moves*
-			or LastWidth ~= CursorWidth or LastHeight ~= CursorHeight
-		) ) then
+		if ( self.CursorForceUpdate -- Force view to cursor, even if it didn't change
+			or ( self:HasFocus() and ( -- Only move view when cursor *moves*
+				LastX ~= CursorX or LastY ~= CursorY
+				or LastWidth ~= CursorWidth or LastHeight ~= CursorHeight
+		) ) ) then
+			self.CursorForceUpdate = nil;
 			LastX, LastY = CursorX, CursorY;
 			LastWidth, LastHeight = CursorWidth, CursorHeight;
 
@@ -376,7 +386,11 @@ end
 --- Jump to next/previous search result.
 function me.Shortcuts:F3 ()
 	if ( _DevPad.List.Search ) then
-		_DevPad.Print( "NYI" );
+		local Cursor, Reverse = me.Edit:GetCursorPosition(), IsShiftKeyDown();
+		if ( Reverse and Cursor > 0 ) then
+			Cursor = Cursor - 1;
+		end
+		me:SetHighlight( _DevPad.List:NextMatchWrap( me.Script, Cursor, Reverse ) );
 	end
 end
 

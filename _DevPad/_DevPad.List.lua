@@ -250,6 +250,65 @@ do
 		return Timer:Play();
 	end
 end
+--- Gets the position of the next match within a given script.
+-- @param Script  Script to search within.
+-- @param Cursor  Cursor position to start from.
+-- @param Reverse  True to find the previous match.
+-- @return (Start position, End position), or nil if no match.
+function me:NextMatch ( Script, Cursor, Reverse )
+	local Start, End;
+	if ( Reverse ) then
+		local StartCurrent, EndCurrent;
+		EndCurrent = 0;
+		while ( EndCurrent and EndCurrent <= Cursor ) do
+			Start, End = StartCurrent, EndCurrent;
+			StartCurrent, EndCurrent = Script.Text:find( self.Search, EndCurrent + 1 );
+		end
+	else
+		Start, End = Script.Text:find( self.Search, Cursor + 1 );
+	end
+	if ( Start ) then
+		return Start - 1, End;
+	end
+end
+--- Gets the position of the next match, possibly wrapping around.
+-- @see me:NextMatch
+function me:NextMatchWrap ( Script, Cursor, Reverse )
+	local Start, End = self:NextMatch( Script, Cursor, Reverse );
+	if ( not Start ) then
+		Cursor = Reverse and #Script.Text or 0;
+		Start, End = self:NextMatch( Script, Cursor, Reverse );
+	end
+	return Start, End;
+end
+do
+	--- @return Next script after the given one.
+	local function NextScript ( Script, Reverse )
+		error"NYI"
+	end
+	--- Gets the position of the next match, cycling through all scripts for a match.
+	-- @see me:NextMatch
+	function me:NextMatchGlobal ( Script, Cursor, Reverse )
+		if ( not Script ) then
+			error"NYI" -- Start at first script after/before selection or top of list
+		end
+		local Start, End = self:NextMatch( Script, Cursor, Reverse );
+		if ( Start or not self.Root or not self.Root:Contains( Script ) ) then
+			return Script, Start, End;
+		end
+		local ScriptStart = Script;
+		repeat
+			Script = NextScript( Script, Reverse );
+			Start, End = self:NextMatch( Script, Reverse and #Script.Text or 0, Reverse );
+			if ( Start and ( Script ~= ScriptStart
+				or ( Reverse and Start > Cursor ) -- In original script, but before start
+				or ( not Reverse and End <= Cursor )
+			) ) then
+				return Script, Start, End;
+			end
+		until ( Script == ScriptStart );
+	end
+end
 do
 	--- Recursively adds script and folder buttons to the list.
 	-- @param Depth  How deep Folder is nested.  Leave nil on initial call.
@@ -533,7 +592,16 @@ end
 --- Jumps to next/previous search result.
 function me.SearchEdit:OnEnterPressed ()
 	if ( me.Search ) then
-		_DevPad.Print( "NYI" );
+		local Script, Cursor, Reverse = _DevPad.Editor.Script, 0, IsShiftKeyDown();
+		if ( Script ) then
+			Cursor = _DevPad.Editor.Edit:GetCursorPosition();
+			if ( Reverse and Cursor > 0 ) then
+				Cursor = Cursor - 1;
+			end
+		end
+		local ScriptNew, Start, End = me:NextMatchGlobal( Script, Cursor, Reverse );
+		_DevPad.Editor:SetScriptObject( ScriptNew );
+		_DevPad.Editor:SetHighlight( Start, End );
 	else
 		return self:ClearFocus();
 	end
