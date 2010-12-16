@@ -147,28 +147,39 @@ do
 		end
 	end
 end
---- Updates the search highlight or stops searching.
--- @param Search  Pattern to search for in scripts, or nil to stop.
--- @return True if search pattern changed.
-function me:SetSearch ( Search )
-	Search = Search ~= "" and Search;
-	if ( self.Search ~= Search ) then
-		self.Search = Search;
-		local Edit = self.SearchEdit;
-		Edit:SetText( Search or "" );
-
-		if ( Search ) then
-			Edit:SetAlpha( 1 );
-			self:UpdateSearch();
-		else
-			if ( not Edit:HasFocus() ) then
-				Edit:SetAlpha( Edit.InactiveAlpha );
-			end
-			for _, Button in pairs( ObjectButtons ) do
-				Button.Visual:SetAlpha( 1 );
-			end
+do
+	local Escapes = { n = "\n"; r = "\r"; };
+	--- Unescapes escape sequences found by gsub.
+	local function EscapesGsub ( Character )
+		return Escapes[ Character ] or Character;
+	end
+	--- Updates the search highlight or stops searching.
+	-- @param Search  Pattern to search for in scripts; Empty string to stop.
+	--   Backslashes and pipes get unescaped.
+	-- @return True if search pattern changed.
+	function me:SetSearch ( Text )
+		local Search = false;
+		if ( Text ~= "" ) then
+			Search = Text:gsub( "||", "|" ):gsub( [[\(.)]], EscapesGsub );
 		end
-		return true;
+		if ( self.Search ~= Search ) then
+			self.Search = Search;
+			local Edit = self.SearchEdit;
+			Edit:SetText( Text );
+
+			if ( Search ) then
+				Edit:SetAlpha( 1 );
+				self:UpdateSearch();
+			else
+				if ( not Edit:HasFocus() ) then
+					Edit:SetAlpha( Edit.InactiveAlpha );
+				end
+				for _, Button in pairs( ObjectButtons ) do
+					Button.Visual:SetAlpha( 1 );
+				end
+			end
+			return true;
+		end
 	end
 end
 do
@@ -953,7 +964,7 @@ local Icon = Search:CreateTexture( nil, "OVERLAY" );
 Icon:SetPoint( "LEFT", 0, -2 );
 Icon:SetSize( 14, 14 );
 Icon:SetTexture( [[Interface\COMMON\UI-Searchbox-Icon]] );
-me:SetSearch();
+me:SetSearch( "" );
 
 -- Object renaming edit box
 local Rename = me.RenameEdit;

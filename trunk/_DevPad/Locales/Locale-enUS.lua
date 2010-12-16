@@ -72,7 +72,8 @@ _DevPad lets you write notes, scripts, and mini addons in-game.  The following s
 	SCRIPT_NEW = "Create a new script.",
 	SCRIPT_AUTORUN_DESC = "Auto-run at startup.",
 	SCRIPT_RUN = "Run this script.",
-	SEARCH_DESC = "Search the text of all scripts for a pattern.  |cffffffff<Enter>|r/|cffffffff<Shift-Enter>|r jump to the next/previous match text.",
+	SEARCH_DESC = [=[Search scripts' text by Lua pattern.  Escape newlines and backslashes!
+|cff808080(Hold shift for reverse)|r]=],
 	SEND = "Send this script or folder to other _|cffcccc88DevPad|r users.",
 	SEND_COMPLETE_FORMAT = "Finished sending |cff808080“%s”|r to |cffffffff%s|r.",
 	SEND_LARGE_FORMAT = "Please wait while |cff808080“%s”|r (%.2fkb) is sent to |cffffffff%s|r…",
