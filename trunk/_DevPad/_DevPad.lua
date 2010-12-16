@@ -403,10 +403,6 @@ function me.Frame:ADDON_LOADED ( Event, AddOn )
 		self:UnregisterEvent( Event );
 		self[ Event ] = nil;
 
-		me.FolderRoot = me:GetClass( "Folder" ):New();
-		me.FolderRoot:SetName( "ROOT" );
-		AceComm.RegisterComm( me, me.COMM_PREFIX );
-		me.List:SetRoot( me.FolderRoot );
 
 		local Options = _DevPadOptions;
 		if ( Options and Options.List ) then
@@ -425,6 +421,7 @@ function me.Frame:ADDON_LOADED ( Event, AddOn )
 				return Script();
 			end
 		end );
+		AceComm.RegisterComm( me, me.COMM_PREFIX );
 		-- Replace settings last in case of errors loading them
 		self:RegisterEvent( "PLAYER_LOGOUT" );
 		--_DevPadOptions = nil; -- GC options
@@ -487,6 +484,9 @@ end
 
 
 
+
+me.FolderRoot = me:GetClass( "Folder" ):New();
+me.FolderRoot:SetName( "ROOT" );
 
 me.Frame:SetScript( "OnEvent", me.Frame.OnEvent );
 me.Frame:RegisterEvent( "ADDON_LOADED" );

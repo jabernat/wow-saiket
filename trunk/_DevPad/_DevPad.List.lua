@@ -35,36 +35,6 @@ local ObjectButtons = {}; -- [ Object ] = Button;
 
 
 
---- Sets a folder to show the contents of.
--- @return True if root folder changed.
-function me:SetRoot ( Folder )
-	if ( self.Root ~= Folder ) then
-		if ( self.Root ) then
-			_DevPad.UnregisterCallback( self, "ObjectReceived" );
-			_DevPad.UnregisterCallback( self, "FolderInsert" );
-			-- Release buttons
-			for Index, Child in ipairs( self.Root ) do
-				self:FolderRemove( nil, self.Root, Child );
-			end
-			StaticPopup_Hide( "_DEVPAD_DELETE_CONFIRM" );
-			StaticPopup_Hide( "_DEVPAD_SEND_PLAYER" );
-			StaticPopup_Hide( "_DEVPAD_RECEIVE_CONFIRM" );
-		end
-		self.Root = Folder;
-		if ( Folder ) then
-			for Index, Child in ipairs( Folder ) do
-				self:FolderInsert( nil, Folder, Child );
-			end
-			_DevPad.RegisterCallback( self, "ObjectReceived" );
-			_DevPad.RegisterCallback( self, "FolderInsert" );
-			self.SearchEdit:Show();
-		else
-			self:SetSearch();
-			self.SearchEdit:Hide();
-		end
-		return true;
-	end
-end
 --- Sets or clears the list selection.
 -- @param Object  Descendant of Root to select, or nil to clear.
 -- @return True if selection changed.
@@ -154,9 +124,9 @@ do
 			end
 		end
 		if ( not self:IsMouseOver( 0, 0, -Huge, Huge ) ) then -- Above or below
-			if ( SetAbsPosition( self.Object, me.Root, CursorY / ButtonHeight ) ) then
+			if ( SetAbsPosition( self.Object, _DevPad.FolderRoot, CursorY / ButtonHeight ) ) then
 				-- Below end of tree
-				return me.Root:Insert( self.Object );
+				return _DevPad.FolderRoot:Insert( self.Object );
 			end
 		end
 	end
@@ -208,7 +178,7 @@ do
 	-- @return True if the folder contained at least one match.
 	local function UpdateFolder ( Folder )
 		local MatchChild;
-		for _, Child in ipairs( Folder or me.Root ) do
+		for _, Child in ipairs( Folder or _DevPad.FolderRoot ) do
 			if ( Child.Class == "Folder" ) then
 				MatchChild = UpdateFolder( Child ) or MatchChild;
 			elseif ( Child.Class == "Script" ) then
@@ -282,31 +252,42 @@ function me:NextMatchWrap ( Script, Cursor, Reverse )
 	return Start, End;
 end
 do
-	--- @return Next script after the given one.
-	local function NextScript ( Script, Reverse )
-		error"NYI"
+	--- @return Script at or after Start, or nil if no scripts found.
+	local function NextScript ( Start, Direction )
+		local Object = Start;
+		repeat
+			if ( Object.Class == "Script" ) then
+				return Object;
+			end
+			Object = Object[ Direction ];
+		until ( Object == Start );
 	end
 	--- Gets the position of the next match, cycling through all scripts for a match.
 	-- @see me:NextMatch
 	function me:NextMatchGlobal ( Script, Cursor, Reverse )
+		local Direction = Reverse and "Previous" or "Next";
 		if ( not Script ) then
-			error"NYI" -- Start at first script after/before selection or top of list
+			Script = NextScript( self.Selection or _DevPad.FolderRoot, Direction );
+			if ( not Script ) then -- No scripts in root
+				return;
+			end
 		end
 		local Start, End = self:NextMatch( Script, Cursor, Reverse );
-		if ( Start or not self.Root or not self.Root:Contains( Script ) ) then
+		if ( Start ) then
 			return Script, Start, End;
 		end
-		local ScriptStart = Script;
+		-- Wrap through other scripts, then search the rest of the first one
+		local First = Script;
 		repeat
-			Script = NextScript( Script, Reverse );
+			Script = NextScript( Script[ Direction ], Direction );
 			Start, End = self:NextMatch( Script, Reverse and #Script.Text or 0, Reverse );
-			if ( Start and ( Script ~= ScriptStart
-				or ( Reverse and Start > Cursor ) -- In original script, but before start
+			if ( Start and ( Script ~= First
+				or ( Reverse and Start > Cursor ) -- Wrapped back into rest of start
 				or ( not Reverse and End <= Cursor )
 			) ) then
 				return Script, Start, End;
 			end
-		until ( Script == ScriptStart );
+		until ( Script == First );
 	end
 end
 do
@@ -324,7 +305,6 @@ do
 				local Button = ObjectButtons[ Child ];
 				Button:SetPoint( "TOP", 0, -( Count - 1 ) * ButtonHeight );
 				Button.Visual:SetPoint( "LEFT", IndentSize * Depth, 0 );
-				Button:Show();
 
 				if ( Child.Class == "Folder" ) then
 					Count = LayoutFolder( Child, Depth + 1, Count );
@@ -336,9 +316,7 @@ do
 	--- Throttles tree repaints to once per frame.
 	local function OnUpdate ( self )
 		self:SetScript( "OnUpdate", nil );
-		if ( self.Root ) then
-			return LayoutFolder( self.Root );
-		end
+		return LayoutFolder( _DevPad.FolderRoot );
 	end
 	--- Request that the list be redrawn before the next frame.
 	function me:Update ()
@@ -393,7 +371,7 @@ do
 		elseif ( UnitIsUnit( Name, "player" ) ) then -- Direct copy
 			local Copy = Object:Copy();
 			Copy:SetName( L.COPY_OBJECTNAME_FORMAT:format( Object.Name ) );
-			me.Root:Insert( Copy );
+			_DevPad.FolderRoot:Insert( Copy );
 		else
 			Send( Object, "WHISPER", Name, Name );
 		end
@@ -436,7 +414,7 @@ do
 	--- Add the received object to the list.
 	function me.Send:ReceiveOnAccept ( Object )
 		Object:SetName( L.RECEIVE_OBJECTNAME_FORMAT:format( Object.Name, Object.Author ) );
-		me.Root:Insert( Object );
+		_DevPad.FolderRoot:Insert( Object );
 	end
 	local MAX_IGNORE = 50;
 	local IgnoredAuthors = {};
@@ -513,16 +491,14 @@ end
 do
 	--- Creates a new object above the selection or at the end.
 	local function InsertObject ( Class )
-		if ( me.Root ) then
-			local Object = _DevPad:GetClass( Class ):New();
-			if ( me.Selection ) then -- Add just before selection
-				me.Selection.Parent:Insert( Object, me.Selection:GetIndex() );
-			else -- Default to end of list
-				me.Root:Insert( Object );
-			end
-			me:SetSelection( Object );
-			me:SetRenaming( Object );
+		local Object = _DevPad:GetClass( Class ):New();
+		if ( me.Selection ) then -- Add just before selection
+			me.Selection.Parent:Insert( Object, me.Selection:GetIndex() );
+		else -- Default to end of list
+			_DevPad.FolderRoot:Insert( Object );
 		end
+		me:SetSelection( Object );
+		me:SetRenaming( Object );
 	end
 	--- Creates a new script.
 	function me.NewScript:OnClick ()
@@ -589,7 +565,9 @@ function me.SearchEdit:OnEnterPressed ()
 			end
 		end
 		local ScriptNew, Start, End = me:NextMatchGlobal( Script, Cursor, Reverse );
-		_DevPad.Editor:SetScriptObject( ScriptNew );
+		if ( ScriptNew ) then
+			_DevPad.Editor:SetScriptObject( ScriptNew );
+		end
 		_DevPad.Editor:SetHighlight( Start, End );
 	else
 		return self:ClearFocus();
@@ -748,11 +726,18 @@ do
 		[ "Script" ] = setmetatable( {}, { __call = CreateScriptButton; } );
 	};
 
+	--- Shows or hides an object's button.
+	local function ObjectButtonUpdateVisible ( Object )
+		local Button = ObjectButtons[ Object ];
+		if ( Button ) then
+			return Button[ Object:IsHidden() and "Hide" or "Show" ]( Button );
+		end
+	end
 	--- Assigns a button to a new script or folder.
 	local function ObjectButtonAssign ( Object )
-		local Unused = not ObjectButtons[ Object ] and UnusedButtons[ Object.Class ];
-		if ( Unused ) then -- Known class and not already assigned
-			local Button = next( Unused ) or Unused();
+		local Button, Unused = ObjectButtons[ Object ], UnusedButtons[ Object.Class ];
+		if ( not Button and Unused ) then -- Known class and not already assigned
+			Button = next( Unused ) or Unused();
 			Unused[ Button ] = nil;
 			ObjectButtons[ Object ], Button.Object = Button, Object;
 
@@ -764,10 +749,11 @@ do
 				me:FolderSetClosed( nil, Object );
 			end
 		end
+		ObjectButtonUpdateVisible( Object );
 	end
 	--- Updates the tree view when an object gets added to a folder.
 	function me:FolderInsert ( _, Folder, Object )
-		if ( self.Root:Contains( Object ) ) then
+		if ( _DevPad.FolderRoot:Contains( Object ) ) then
 			ObjectButtonAssign( Object );
 			if ( Object.Class == "Folder" ) then -- Also assign child buttons
 				RecurseChildren( Object, ObjectButtonAssign );
@@ -806,10 +792,6 @@ do
 		end
 	end
 
-	--- Hides an object's button.
-	local function ObjectButtonHide ( Object )
-		return ObjectButtons[ Object ]:Hide();
-	end
 	--- Sets both button textures' texcoords.
 	local function SetTexCoords ( self, ... )
 		self:GetNormalTexture():SetTexCoord( ... );
@@ -817,20 +799,19 @@ do
 	end
 	--- Redraws a folder when it opens or closes.
 	function me:FolderSetClosed ( _, Folder )
-		if ( ObjectButtons[ Folder ] ) then
-			local Expand = ObjectButtons[ Folder ].Expand;
+		local Button = ObjectButtons[ Folder ];
+		if ( Button ) then
 			if ( Folder.Closed ) then
-				SetTexCoords( Expand, 0, 0.5, 0.5, 0.75 );
+				SetTexCoords( Button.Expand, 0, 0.5, 0.5, 0.75 );
 			else
-				SetTexCoords( Expand, 0, 0.5, 0.75, 1 );
+				SetTexCoords( Button.Expand, 0, 0.5, 0.75, 1 );
 			end
-
-			if ( not Folder:IsHidden() ) then -- Contents visible
-				if ( Folder.Closed ) then
-					RecurseChildren( Folder, ObjectButtonHide, true );
-				end
-				return self:Update();
-			end
+		end
+		if ( Folder == _DevPad.FolderRoot
+			or ( Button and not Folder:IsHidden() ) -- Contents visible
+		) then
+			RecurseChildren( Folder, ObjectButtonUpdateVisible, true );
+			return self:Update();
 		end
 	end
 end
@@ -993,6 +974,8 @@ Edited:SetTexCoord( 0.029, 0.635, 0.149, 0.733 );
 Edited:SetAlpha( 0.5 );
 
 _DevPad.RegisterCallback( me, "ObjectSetName" );
+_DevPad.RegisterCallback( me, "ObjectReceived" );
+_DevPad.RegisterCallback( me, "FolderInsert" );
 _DevPad.RegisterCallback( me, "FolderRemove" );
 _DevPad.RegisterCallback( me, "FolderSetClosed" );
 _DevPad.RegisterCallback( me, "ScriptSetAutoRun" );
