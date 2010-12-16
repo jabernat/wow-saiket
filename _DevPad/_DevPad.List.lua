@@ -469,10 +469,6 @@ do
 			self:SetScript( "OnUpdate", nil );
 		end
 	end
-	--- Limited sanitization of untrusted Script object.
-	local function SanitizeScript ( Script )
-		Script:SetAutoRun( false );
-	end
 	local SafeNameReplacements = {
 		[ "|" ] = "||";
 		[ "\n" ] = [[\n]];
@@ -482,13 +478,6 @@ do
 	--- Prompt the user to save received objects.
 	function me:ObjectReceived ( _, Object, Channel, Author )
 		if ( not IgnoredAuthors[ Author:lower() ] ) then
-			if ( Object.Class == "Script" ) then
-				SanitizeScript( Object );
-			elseif ( Object.Class == "Folder" ) then
-				_DevPad:IterateScripts( SanitizeScript, Object );
-			end
-			Object.Author = Author;
-
 			PlaySound( "Glyph_MinorCreate" );
 			local SafeName = Object.Name:gsub( "[|\r\n]", SafeNameReplacements );
 			_DevPad.Print( L.RECEIVE_MESSAGE_FORMAT:format( Author, SafeName ) );

@@ -139,6 +139,13 @@ end
 do
 	local FolderMeta = RegisterClass( "Folder" );
 	do
+		--- @return Last descendant of Object.
+		local function GetLastDescendant ( Object )
+			while ( Object.Class == "Folder" and #Object > 0 ) do
+				Object = Object[ #Object ];
+			end
+			return Object;
+		end
 		local FireEvents = true;
 		--- Adds a child object to this folder.
 		-- @return True if child moved successfully.
@@ -155,6 +162,14 @@ do
 				end
 				Object.Parent = self;
 				tinsert( self, Index, Object );
+
+				-- Doubly-circular linked list of objects in tree
+				Object.Previous = Index == 1 and self
+					or GetLastDescendant( self[ Index - 1 ] );
+				local ObjectLast = GetLastDescendant( Object );
+				ObjectLast.Next = Object.Previous.Next;
+				Object.Previous.Next = Object;
+				ObjectLast.Next.Previous = ObjectLast;
 				me.Callbacks:Fire( "FolderInsert", self, Object, Index );
 				return true;
 			end
@@ -162,6 +177,11 @@ do
 		--- @return True if child removed successfully.
 		function FolderMeta.__index:Remove ( Object )
 			if ( Object.Parent == self ) then
+				local ObjectLast = GetLastDescendant( Object );
+				ObjectLast.Next.Previous = Object.Previous;
+				Object.Previous.Next = ObjectLast.Next;
+				Object.Previous = ObjectLast;
+				ObjectLast.Next = Object;
 				tremove( self, assert( Object:GetIndex(), "Child not found in parent folder." ) ).Parent = nil;
 				if ( FireEvents ) then
 					me.Callbacks:Fire( "FolderRemove", self, Object );
@@ -224,6 +244,7 @@ do
 	--- @return New Folder instance.
 	function FolderMeta.__index:New ()
 		local Folder = setmetatable( {}, FolderMeta );
+		Folder.Previous, Folder.Next = Folder, Folder;
 		Folder:SetName();
 		Folder:SetClosed( false );
 		return Folder;
@@ -301,6 +322,7 @@ do
 	--- @return New Script instance.
 	function ScriptMeta.__index:New ()
 		local Script = setmetatable( {}, ScriptMeta );
+		Script.Previous, Script.Next = Script, Script;
 		Script:SetName();
 		Script:SetText();
 		Script:SetAutoRun( false );
@@ -315,14 +337,14 @@ end
 -- @param Folder  Optional sub-folder to iterate over.
 -- @param ...  Extra args passed after Script to Callback.
 -- @return The logically true value returned by the final callback call, if any.
-function me:IterateScripts ( Callback, Folder, ... )
+function me:IterateScripts ( Folder, Callback, ... )
 	if ( not Folder ) then
 		Folder = self.FolderRoot;
 	end
 	for _, Child in ipairs( Folder ) do
 		local Result;
 		if ( Child.Class == "Folder" ) then
-			Result = self:IterateScripts( Callback, Child, ... );
+			Result = self:IterateScripts( Child, Callback, ... );
 		elseif ( Child.Class == "Script" ) then
 			Result = Callback( Child, ... );
 		end
@@ -343,7 +365,7 @@ do
 	-- @param Pattern  Name pattern to match by.
 	-- @return The first matching script object found, or nil if none.
 	function me:FindScript ( Pattern, Folder )
-		return self:IterateScripts( Callback, Folder, Pattern );
+		return self:IterateScripts( Folder, Callback, Pattern );
 	end
 end
 --- Gets an object by path from the folder root.
@@ -362,6 +384,14 @@ function me:OnCommReceived ( Prefix, Text, Channel, Author )
 			local Object = Class:New();
 			local Success = pcall( Object.Unpack, Object, Settings );
 			if ( Success ) then
+				Object.Author = Author;
+				-- Sanitize scripts
+				if ( Object.Class == "Script" ) then
+					Object:SetAutoRun( false );
+				elseif ( Object.Class == "Folder" ) then
+					self:IterateScripts( Object,
+						self:GetClass( "Script" ).SetAutoRun, false );
+				end
 				self.Callbacks:Fire( "ObjectReceived", Object, Channel, Author );
 			end
 		end
@@ -390,9 +420,9 @@ function me.Frame:ADDON_LOADED ( Event, AddOn )
 		if ( Scripts ) then
 			me.FolderRoot:Unpack( Scripts );
 		end
-		me:IterateScripts( function ( Script )
+		me:IterateScripts( nil, function ( Script )
 			if ( Script.AutoRun ) then
-				Script();
+				return Script();
 			end
 		end );
 		-- Replace settings last in case of errors loading them
