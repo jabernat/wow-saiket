@@ -570,7 +570,7 @@ function me.SearchEdit:OnEnterPressed ()
 	if ( me.Search ) then
 		local Script, Cursor, Reverse = _DevPad.Editor.Script, 0, IsShiftKeyDown();
 		if ( Script ) then
-			Cursor = _DevPad.Editor.Edit:GetCursorPosition();
+			Cursor = _DevPad.Editor:GetScriptCursorPosition();
 			if ( Reverse and Cursor > 0 ) then
 				Cursor = Cursor - 1;
 			end
@@ -579,7 +579,7 @@ function me.SearchEdit:OnEnterPressed ()
 		if ( ScriptNew ) then
 			_DevPad.Editor:SetScriptObject( ScriptNew );
 		end
-		_DevPad.Editor:SetHighlight( Start, End );
+		_DevPad.Editor:SetScriptHighlight( Start, End );
 	else
 		return self:ClearFocus();
 	end

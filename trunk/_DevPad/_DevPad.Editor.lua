@@ -122,12 +122,38 @@ function me:SetFont ( Path, Size )
 		return true;
 	end
 end
---- Highlights a substring in the editor and moves the view to it.
-function me:SetHighlight ( Start, End )
-	self.Edit:HighlightText( Start or 0, End or 0 );
-	if ( End ) then
-		self.Edit.CursorForceUpdate = true; -- Force into view, even if not focused
-		self.Edit:SetCursorPosition( End );
+do
+	--- @return Number of Substring found between cursor positions Start and End.
+	local function CountSubstring ( Text, Substring, Start, End )
+		local Count = 0;
+		Start, End = Start + 1, End - #Substring + 1;
+		while ( true ) do
+			Start = Text:find( Substring, Start, true );
+			if ( not Start or Start > End ) then
+				return Count;
+			end
+			Count, Start = Count + 1, Start + #Substring;
+		end
+	end
+	--- Highlights a substring in the editor and moves the view to it.
+	-- Positions should be relative to script text, not edit box contents, to
+	-- account for pipe characters being escaped.
+	function me:SetScriptHighlight ( Start, End )
+		if ( Start ) then
+			local Text = self.Script.Text;
+			local PipesBefore = CountSubstring( Text, "|", 0, Start );
+			End = End + PipesBefore + CountSubstring( Text, "|", Start, End );
+			Start = Start + PipesBefore;
+
+			self.Edit.CursorForceUpdate = true; -- Force into view, even if not focused
+			self.Edit:SetCursorPosition( End );
+		end
+		self.Edit:HighlightText( Start or 0, End or 0 );
+	end
+	--- @return Cursor position, ignoring extra pipe escape characters.
+	function me:GetScriptCursorPosition ()
+		local Cursor = self.Edit:GetCursorPosition();
+		return Cursor - CountSubstring( self.Edit:GetText(), "||", 0, Cursor );
 	end
 end
 
@@ -386,11 +412,12 @@ end
 --- Jump to next/previous search result.
 function me.Shortcuts:F3 ()
 	if ( _DevPad.List.Search ) then
-		local Cursor, Reverse = me.Edit:GetCursorPosition(), IsShiftKeyDown();
+		local Cursor, Reverse = me:GetScriptCursorPosition(), IsShiftKeyDown();
 		if ( Reverse and Cursor > 0 ) then
 			Cursor = Cursor - 1;
 		end
-		me:SetHighlight( _DevPad.List:NextMatchWrap( me.Script, Cursor, Reverse ) );
+		me:SetScriptHighlight(
+			_DevPad.List:NextMatchWrap( me.Script, Cursor, Reverse ) );
 	end
 end
 
