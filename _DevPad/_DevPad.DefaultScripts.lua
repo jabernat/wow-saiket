@@ -12,7 +12,7 @@ local L = _DevPad.L;
 
 --- Settings table compatible with Folder:Unpack used when no saved variables are found.
 -- Note: Don't use tabs in script text fields!
-_DevPad.DefaultScripts = { Class = "Folder";
+_DevPad.DefaultScripts = { Class = "Folder"; Name = "ROOT";
 	{	Class = "Script"; Name = L.README;
 		Text = L.README_TEXT;
 	},

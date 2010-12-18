@@ -486,7 +486,6 @@ end
 
 
 me.FolderRoot = me:GetClass( "Folder" ):New();
-me.FolderRoot:SetName( "ROOT" );
 
 me.Frame:SetScript( "OnEvent", me.Frame.OnEvent );
 me.Frame:RegisterEvent( "ADDON_LOADED" );
