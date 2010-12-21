@@ -24,12 +24,19 @@ function me.Print ( Message, Color )
 	end
 	DEFAULT_CHAT_FRAME:AddMessage( me.L.PRINT_FORMAT:format( Message ), Color.r, Color.g, Color.b );
 end
---- Throws a non-breaking error if a call fails.
-function me.Assert ( Success, ... )
-	if ( not Success ) then
-		geterrorhandler()( ... );
+do
+	--- Raises an error message when pcall fails.
+	local function HandleError ( Success, ... )
+		if ( not Success ) then
+			geterrorhandler()( ... );
+		end
+		return Success, ...;
 	end
-	return Success, ...;
+	--- Throws a non-breaking error if a call fails.
+	-- @return Success boolean prepended to Script's returns like pcall.
+	function me.SafeCall ( Script, ... )
+		return HandleError( pcall( Script, ... ) );
+	end
 end
 
 
@@ -289,13 +296,10 @@ do
 	-- @return Any values returned from the script.
 	function ScriptMeta.__index:Run ( ... )
 		if ( self.TextChanged ) then -- Recompile
-			local Chunk = me.Assert( loadstring( self.Text, self.Name ) );
-			if ( not Chunk ) then
-				return;
-			end
-			self.Chunk, self.TextChanged = Chunk;
+			self.Chunk = assert( loadstring( self.Text, self.Name ) );
+			self.TextChanged = nil;
 		end
-		return me.Assert( pcall( self.Chunk, self, ... ) );
+		return self:Chunk( ... );
 	end
 	--- Shortcut for Script:Run.
 	function ScriptMeta:__call ( ... )
@@ -418,7 +422,7 @@ function me.Frame:ADDON_LOADED ( Event, AddOn )
 		end
 		me:IterateScripts( nil, function ( Script )
 			if ( Script.AutoRun ) then
-				return Script();
+				me.SafeCall( Script );
 			end
 		end );
 		AceComm.RegisterComm( me, me.COMM_PREFIX );
@@ -475,7 +479,7 @@ function me.SlashCommand ( Input )
 	else
 		local Script = me:FindScript( Pattern );
 		if ( Script ) then
-			return Script();
+			return me.SafeCall( Script );
 		else
 			me.Print( me.L.SLASH_NOTFOUND_FORMAT:format( Pattern ) );
 		end
