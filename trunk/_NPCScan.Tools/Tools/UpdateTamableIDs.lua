@@ -20,8 +20,6 @@ print( "WARNING: Overrides present for Terrorpene and Ghostcrawler!\n" );
 os.execute( "PAUSE" );
 
 local RareMapOverrides = { -- [ NpcID ] = ForcedMapID;
-	[ 11497 ] = 13; -- "The Razza" spawns in the Dire Maul courtyard, which doesn't properly appear in Feralas. Use Kalimdor map instead.
-
 	-- Mobs not spotted by WowHead yet
 	[ 50058 ] = 606; -- "Terrorpene" from Mount Hyjal
 	[ 50051 ] = 614; -- "Ghostcrawler" from Vashj'ir - Abyssal Depths
@@ -72,13 +70,16 @@ end
 
 -- Create a lookup for zone AreaTable IDs used by WowHead to WorldMapArea IDs
 local WorldMapAreas = DbcCSV.Parse( [[DBFilesClient/WorldMapArea.dbc.csv]], 1,
-	"ID", nil, "AreaTableID" );
+	"ID", nil, "AreaTableID", nil, nil, nil, nil, nil, nil, nil, nil, "Flags" );
 local AreaTable = DbcCSV.Parse( [[DBFilesClient/AreaTable.dbc.csv]], 1,
 	"ID", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, "Localization" );
 
 local MapIDs, MapNames = {}, {};
+local FLAG_PHASE = 0x2;
 for ID, WorldMapArea in pairs( WorldMapAreas ) do
-	if ( WorldMapArea.AreaTableID ~= 0 ) then -- Not a continent
+	if ( WorldMapArea.AreaTableID ~= 0 -- Not a continent
+		and bit.band( tonumber( WorldMapArea.Flags, 16 ), FLAG_PHASE ) == 0 -- Not a phased map
+	) then
 		MapIDs[ WorldMapArea.AreaTableID ] = ID;
 		MapNames[ ID ] = AreaTable[ WorldMapArea.AreaTableID ].Localization;
 	end
