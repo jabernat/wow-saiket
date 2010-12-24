@@ -74,8 +74,11 @@ local AreaTable = DbcCSV.Parse( [[DBFilesClient/AreaTable.dbc.csv]], 1,
 	"Localization" );
 
 local MapIDs, MapNames = {}, {};
+local FLAG_PHASE = 0x2;
 for ID, WorldMapArea in pairs( WorldMapAreas ) do
-	if ( WorldMapArea.AreaTableID ~= 0 ) then -- Not a continent
+	if ( WorldMapArea.AreaTableID ~= 0 -- Not a continent
+		and bit.band( tonumber( WorldMapArea.Flags, 16 ), FLAG_PHASE ) == 0 -- Not a phased map
+	) then
 		MapIDs[ WorldMapArea.Filename ] = ID;
 		MapNames[ ID ] = AreaTable[ WorldMapArea.AreaTableID ].Localization;
 	end
