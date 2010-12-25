@@ -28,11 +28,19 @@ me.OptionsDefault = {
 
 
 me.NPCsEnabled = {};
+me.NPCCounts = {}; -- Number of enabled NPCs that use this NPC path
 me.NPCsFoundX = {};
 me.NPCsFoundY = {};
 me.NPCsFoundIgnored = {
 	[ 32487 ] = true; -- Putridus the Ancient
 	[ 50009 ] = true; -- Mobus
+};
+me.NPCAliases = { -- (Key) NPC also shows (Value) NPC's path
+	-- Madexx (Brown)
+	[ 51401 ] = 50154; -- Madexx (Red)
+	[ 51402 ] = 50154; -- Madexx (Green)
+	[ 51403 ] = 50154; -- Madexx (Black)
+	[ 51404 ] = 50154; -- Madexx (Blue)
 };
 me.Achievements = { -- Achievements whos criteria mobs are all mapped
 	[ 1312 ] = true; -- Bloody Rare (Outlands)
@@ -240,7 +248,7 @@ function me:ApplyZone ( Map, Callback )
 
 		for NpcID, PathData in pairs( MapData ) do
 			ColorIndex = ColorIndex + 1;
-			if ( me.Options.ShowAll or me.NPCsEnabled[ NpcID ] ) then
+			if ( me.Options.ShowAll or me.NPCCounts[ NpcID ] ) then
 				local Color = assert( me.Colors[ ColorIndex ], "Ran out of unique path colors." );
 				Callback( self, PathData, me.NPCsFoundX[ NpcID ], me.NPCsFoundY[ NpcID ], Color.r, Color.g, Color.b, NpcID );
 			end
@@ -252,33 +260,75 @@ end
 
 
 --- Enables an NPC map overlay by NpcID.
-local function NPCAdd ( NpcID )
-	local Map = me.GetNPCMapID( NpcID );
-	if ( Map and not me.NPCsEnabled[ NpcID ] ) then
+-- @param Force  Increment use counter even if already enabled.
+local function NPCAdd ( NpcID, Force )
+	if ( Force or not me.NPCsEnabled[ NpcID ] ) then
 		me.NPCsEnabled[ NpcID ] = true;
+		me.NPCCounts[ NpcID ] = ( me.NPCCounts[ NpcID ] or 0 ) + 1;
 
-		if ( not me.Options.ShowAll ) then
-			me.Modules.UpdateMap( Map );
+		local Map = me.GetNPCMapID( NpcID );
+		if ( Map and me.NPCCounts[ NpcID ] == 1 and not me.Options.ShowAll ) then
+			me.Modules.UpdateMap( Map ); -- Visible path first added
+		end
+
+		local AliasID = me.NPCAliases[ NpcID ];
+		if ( AliasID ) then
+			NPCAdd( AliasID, true );
 		end
 	end
 end
 --- Disables an NPC map overlay by NpcID.
-local function NPCRemove ( NpcID )
-	if ( me.NPCsEnabled[ NpcID ] ) then
+-- @param Force  Decrement use counter even if already disabled.
+local function NPCRemove ( NpcID, Force )
+	if ( Force or me.NPCsEnabled[ NpcID ] ) then
 		me.NPCsEnabled[ NpcID ] = nil;
+		local Count = assert( me.NPCCounts[ NpcID ], "Enabled NPC wasn't active." );
+		me.NPCCounts[ NpcID ] = Count > 1 and Count - 1 or nil;
 
-		if ( not me.Options.ShowAll ) then
-			me.Modules.UpdateMap( me.GetNPCMapID( NpcID ) );
+		local Map = me.GetNPCMapID( NpcID );
+		if ( Map and not me.NPCCounts[ NpcID ] and not me.Options.ShowAll ) then
+			me.Modules.UpdateMap( Map ); -- Visible path completely removed
+		end
+
+		local AliasID = me.NPCAliases[ NpcID ];
+		if ( AliasID ) then
+			NPCRemove( AliasID, true );
+		end
+	end
+end
+--- Saves an NPC's last seen position at the player.
+local function NPCFound ( NpcID )
+	if ( not me.NPCsFoundIgnored[ NpcID ] ) then
+		local Map = me.GetNPCMapID( NpcID );
+		if ( Map ) then
+			SetMapToCurrentZone();
+
+			if ( Map == GetCurrentMapAreaID() ) then
+				local X, Y = GetPlayerMapPosition( "player" );
+				if ( X ~= 0 and Y ~= 0 ) then
+					me.NPCsFoundX[ NpcID ], me.NPCsFoundY[ NpcID ] = X, Y;
+					if ( me.NPCCounts[ NpcID ] ) then
+						me.Modules.UpdateMap( Map );
+					end
+				end
+			end
+		end
+
+		local AliasID = me.NPCAliases[ NpcID ];
+		if ( AliasID ) then
+			NPCFound( AliasID );
 		end
 	end
 end
 
 
 do
-	-- See <http://sites.google.com/site/wowsaiket/Add-Ons/NPCScanOverlay/API> for Overlay message documentation.
+	-- See <http://sites.google.com/site/wowsaiket/Add-Ons/NPCScanOverlay/API>
+	-- for Overlay message documentation.
 	local ScannerAddOn;
 	--- Grants exclusive control of mob path visibility to the first addon that registers.
-	-- @param AddOn  Logically true identifier for the controller addon.  Must be used in all subsequent messages.
+	-- @param AddOn  Logically true identifier for the controller addon.  Must be
+	--   used in all subsequent messages.
 	me.Events[ MESSAGE_REGISTER ] = function ( self, Event, AddOn )
 		self:UnregisterMessage( Event );
 		self[ Event ] = nil;
@@ -296,37 +346,26 @@ do
 	-- @param NpcID  Numeric creature ID to add.
 	-- @param AddOn  Identifier used in registration message.
 	me.Events[ MESSAGE_ADD ] = function ( self, _, NpcID, AddOn )
-		if ( AddOn == ScannerAddOn ) then
-			NPCAdd( assert( tonumber( NpcID ), "Add message NpcID must be numeric." ) );
+		if ( ScannerAddOn and AddOn == ScannerAddOn ) then
+			return NPCAdd( assert( tonumber( NpcID ),
+				"Add message NpcID must be numeric." ) );
 		end
 	end;
 	--- Removes a mob's path if it has already been shown.
 	-- @param NpcID  Numeric creature ID to remove.
 	-- @param AddOn  Identifier used in registration message.
 	me.Events[ MESSAGE_REMOVE ] = function ( self, _, NpcID, AddOn )
-		if ( AddOn == ScannerAddOn ) then
-			NPCRemove( assert( tonumber( NpcID ), "Remove message NpcID must be numeric." ) );
+		if ( ScannerAddOn and AddOn == ScannerAddOn ) then
+			return NPCRemove( assert( tonumber( NpcID ),
+				"Remove message NpcID must be numeric." ) );
 		end
 	end;
 	--- Saves an NPC's last seen position at the player.
 	-- Will fail if the current zone doesn't match saved path data.
 	-- @param NpcID  Numeric creature ID that was found.
 	me.Events[ MESSAGE_FOUND ] = function ( self, _, NpcID )
-		NpcID = assert( tonumber( NpcID ), "Found message Npc ID must be a number." );
-		local Map = me.GetNPCMapID( NpcID );
-		if ( Map and not me.NPCsFoundIgnored[ NpcID ] ) then
-			SetMapToCurrentZone();
-
-			if ( Map == GetCurrentMapAreaID() ) then
-				local X, Y = GetPlayerMapPosition( "player" );
-				if ( X ~= 0 and Y ~= 0 ) then
-					me.NPCsFoundX[ NpcID ], me.NPCsFoundY[ NpcID ] = X, Y;
-					if ( me.NPCsEnabled[ NpcID ] ) then
-						me.Modules.UpdateMap( Map );
-					end
-				end
-			end
-		end
+		return NPCFound( assert( tonumber( NpcID ),
+			"Found message Npc ID must be a number." ) );
 	end;
 end
 
@@ -346,7 +385,7 @@ function me.SetShowAll ( Enable )
 		for Map, MapData in pairs( me.PathData ) do
 			-- If a map has a disabled path, it must be redrawn
 			for NpcID in pairs( MapData ) do
-				if ( not me.NPCsEnabled[ NpcID ] ) then
+				if ( not me.NPCCounts[ NpcID ] ) then
 					me.Modules.UpdateMap( Map );
 					break;
 				end
@@ -372,7 +411,14 @@ do
 	local NPCMaps = {}; -- [ NpcID ] = MapID;
 	--- @return Map ID that NpcID can be found on or nil if unknown.
 	function me.GetNPCMapID ( NpcID )
-		return NPCMaps[ NpcID ];
+		local Map = NPCMaps[ NpcID ];
+		if ( Map ) then
+			return Map;
+		end
+		local AliasID = me.NPCAliases[ NpcID ];
+		if ( AliasID ) then
+			return ( me.GetNPCMapID( AliasID ) ); -- Parens prevent tail-call recursion
+		end
 	end
 	local MapNames = {};
 	--- @return Localized zone name for Map or nil if unknown.

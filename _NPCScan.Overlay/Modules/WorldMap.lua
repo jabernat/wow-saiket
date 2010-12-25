@@ -153,7 +153,7 @@ local function MapHasNPCs ( Map )
 			return true;
 		end
 		for NpcID in pairs( MapData ) do
-			if ( Overlay.NPCsEnabled[ NpcID ] ) then
+			if ( Overlay.NPCCounts[ NpcID ] ) then
 				return true;
 			end
 		end
