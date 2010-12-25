@@ -32,6 +32,7 @@ me.NPCsFoundX = {};
 me.NPCsFoundY = {};
 me.NPCsFoundIgnored = {
 	[ 32487 ] = true; -- Putridus the Ancient
+	[ 50009 ] = true; -- Mobus
 };
 me.Achievements = { -- Achievements whos criteria mobs are all mapped
 	[ 1312 ] = true; -- Bloody Rare (Outlands)
