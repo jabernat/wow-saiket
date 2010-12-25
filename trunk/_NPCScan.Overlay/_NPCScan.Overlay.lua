@@ -241,7 +241,7 @@ function me:ApplyZone ( Map, Callback )
 		for NpcID, PathData in pairs( MapData ) do
 			ColorIndex = ColorIndex + 1;
 			if ( me.Options.ShowAll or me.NPCsEnabled[ NpcID ] ) then
-				local Color = me.Colors[ ( ColorIndex - 1 ) % #me.Colors + 1 ];
+				local Color = assert( me.Colors[ ColorIndex ], "Ran out of unique path colors." );
 				Callback( self, PathData, me.NPCsFoundX[ NpcID ], me.NPCsFoundY[ NpcID ], Color.r, Color.g, Color.b, NpcID );
 			end
 		end
