@@ -12,12 +12,13 @@ Overlay.Modules.WorldMapTemplate = me;
 
 
 do
+	local MapCurrent;
 	--- Callback to draw a single NPC's paths for a zone.
 	local function PaintPath ( self, PathData, FoundX, FoundY, R, G, B, NpcID )
 		Overlay.DrawPath( self, PathData, "ARTWORK", R, G, B );
 		if ( FoundX ) then
 			Overlay.DrawFound( self, FoundX, FoundY,
-				Overlay.DetectionRadius / Overlay.GetMapSize( Overlay.GetNPCMapID( NpcID ) ),
+				Overlay.DetectionRadius / Overlay.GetMapSize( MapCurrent ),
 				"OVERLAY", R, G, B );
 		end
 	end
@@ -25,6 +26,7 @@ do
 	-- Must be viewing Map using the WorldMap API.
 	-- @param Map  AreaID to draw paths for.
 	function me:Paint ( Map )
+		MapCurrent = Map;
 		Overlay.TextureRemoveAll( self );
 		Overlay.ApplyZone( self, Map, PaintPath );
 	end

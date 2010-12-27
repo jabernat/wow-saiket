@@ -29,13 +29,13 @@ me.OptionsDefault = {
 
 me.NPCsEnabled = {};
 me.NPCCounts = {}; -- Number of enabled NPCs that use this NPC path
-me.NPCsFoundX = {};
-me.NPCsFoundY = {};
+me.NPCMaps = {}; -- [ NpcID ] = { [ MapID1 ] = (true|{FoundX,FoundY}); ... };
 me.NPCsFoundIgnored = {
 	[ 32487 ] = true; -- Putridus the Ancient
 	[ 50009 ] = true; -- Mobus
 };
-me.NPCAliases = { -- (Key) NPC also shows (Value) NPC's path
+me.NPCAliases = { -- (Key) NPC shows (Value) NPC's path instead
+	-- Note: Circular references will lock client!
 	-- Madexx (Brown)
 	[ 51401 ] = 50154; -- Madexx (Red)
 	[ 51402 ] = 50154; -- Madexx (Green)
@@ -250,7 +250,11 @@ function me:ApplyZone ( Map, Callback )
 			ColorIndex = ColorIndex + 1;
 			if ( me.Options.ShowAll or me.NPCCounts[ NpcID ] ) then
 				local Color = assert( me.Colors[ ColorIndex ], "Ran out of unique path colors." );
-				Callback( self, PathData, me.NPCsFoundX[ NpcID ], me.NPCsFoundY[ NpcID ], Color.r, Color.g, Color.b, NpcID );
+				local Found, FoundX, FoundY = me.NPCMaps[ NpcID ][ Map ];
+				if ( type( Found ) == "table" ) then
+					FoundX, FoundY = unpack( Found );
+				end
+				Callback( self, PathData, FoundX, FoundY, Color.r, Color.g, Color.b, NpcID );
 			end
 		end
 	end
@@ -259,65 +263,79 @@ end
 
 
 
+--- @return Aliased NPC ID, or original if not aliased.
+local function GetRealNpcID ( NpcID )
+	local AliasID = me.NPCAliases[ NpcID ];
+	while ( AliasID ) do
+		NpcID, AliasID = AliasID, me.NPCAliases[ AliasID ];
+	end
+	return NpcID;
+end
+--- @return First Map ID that NpcID can be found on or nil if unknown.
+function me.GetNPCMapID ( NpcID )
+	local Maps = me.NPCMaps[ GetRealNpcID( NpcID ) ];
+	if ( Maps ) then
+		return ( next( Maps ) );
+	end
+end
+
 --- Enables an NPC map overlay by NpcID.
--- @param Force  Increment use counter even if already enabled.
-local function NPCAdd ( NpcID, Force )
-	if ( Force or not me.NPCsEnabled[ NpcID ] ) then
-		me.NPCsEnabled[ NpcID ] = true;
+local function NPCAdd ( NpcID )
+	local AliasID, NpcID = NpcID, GetRealNpcID( NpcID );
+	if ( not me.NPCsEnabled[ AliasID ] and me.NPCMaps[ NpcID ] ) then
+		me.NPCsEnabled[ AliasID ] = true;
+
 		me.NPCCounts[ NpcID ] = ( me.NPCCounts[ NpcID ] or 0 ) + 1;
-
-		local Map = me.GetNPCMapID( NpcID );
-		if ( Map and me.NPCCounts[ NpcID ] == 1 and not me.Options.ShowAll ) then
-			me.Modules.UpdateMap( Map ); -- Visible path first added
-		end
-
-		local AliasID = me.NPCAliases[ NpcID ];
-		if ( AliasID ) then
-			NPCAdd( AliasID, true );
+		if ( me.NPCCounts[ NpcID ] == 1 and not me.Options.ShowAll ) then
+			for Map in pairs( me.NPCMaps[ NpcID ] ) do
+				me.Modules.UpdateMap( Map );
+			end
 		end
 	end
 end
 --- Disables an NPC map overlay by NpcID.
--- @param Force  Decrement use counter even if already disabled.
-local function NPCRemove ( NpcID, Force )
-	if ( Force or me.NPCsEnabled[ NpcID ] ) then
+local function NPCRemove ( NpcID )
+	if ( me.NPCsEnabled[ NpcID ] ) then
 		me.NPCsEnabled[ NpcID ] = nil;
+
+		NpcID = GetRealNpcID( NpcID );
 		local Count = assert( me.NPCCounts[ NpcID ], "Enabled NPC wasn't active." );
 		me.NPCCounts[ NpcID ] = Count > 1 and Count - 1 or nil;
 
-		local Map = me.GetNPCMapID( NpcID );
-		if ( Map and not me.NPCCounts[ NpcID ] and not me.Options.ShowAll ) then
-			me.Modules.UpdateMap( Map ); -- Visible path completely removed
-		end
-
-		local AliasID = me.NPCAliases[ NpcID ];
-		if ( AliasID ) then
-			NPCRemove( AliasID, true );
+		if ( not ( Count > 1 or me.Options.ShowAll ) ) then
+			for Map in pairs( me.NPCMaps[ NpcID ] ) do
+				me.Modules.UpdateMap( Map );
+			end
 		end
 	end
 end
 --- Saves an NPC's last seen position at the player.
 local function NPCFound ( NpcID )
-	if ( not me.NPCsFoundIgnored[ NpcID ] ) then
-		local Map = me.GetNPCMapID( NpcID );
-		if ( Map ) then
-			SetMapToCurrentZone();
+	NpcID = GetRealNpcID( NpcID );
+	if ( me.NPCMaps[ NpcID ] and not me.NPCsFoundIgnored[ NpcID ] ) then
+		local MapOld, MapNew = GetCurrentMapAreaID(), nil;
+		SetMapToCurrentZone();
+		local MapCurrent = GetCurrentMapAreaID();
+		for Map, Found in pairs( me.NPCMaps[ NpcID ] ) do
+			SetMapByID( Map );
+			local X, Y = GetPlayerMapPosition( "player" );
+			if ( X ~= 0 or Y ~= 0 ) then -- Found on this map
+				if ( MapNew ~= MapCurrent ) then -- Current map has priority if found there
+					MapNew = Map; -- Force map to view found rare
+				end
 
-			if ( Map == GetCurrentMapAreaID() ) then
-				local X, Y = GetPlayerMapPosition( "player" );
-				if ( X ~= 0 and Y ~= 0 ) then
-					me.NPCsFoundX[ NpcID ], me.NPCsFoundY[ NpcID ] = X, Y;
-					if ( me.NPCCounts[ NpcID ] ) then
-						me.Modules.UpdateMap( Map );
-					end
+				if ( type( Found ) ~= "table" ) then
+					Found = {};
+					me.NPCMaps[ NpcID ][ Map ] = Found;
+				end
+				Found[ 1 ], Found[ 2 ] = X, Y;
+
+				if ( me.NPCCounts[ NpcID ] ) then
+					me.Modules.UpdateMap( Map );
 				end
 			end
 		end
-
-		local AliasID = me.NPCAliases[ NpcID ];
-		if ( AliasID ) then
-			NPCFound( AliasID );
-		end
+		SetMapByID( MapNew or MapOld );
 	end
 end
 
@@ -408,18 +426,6 @@ function me.Synchronize ( Options )
 	me.Modules.OnSynchronize( Options );
 end
 do
-	local NPCMaps = {}; -- [ NpcID ] = MapID;
-	--- @return Map ID that NpcID can be found on or nil if unknown.
-	function me.GetNPCMapID ( NpcID )
-		local Map = NPCMaps[ NpcID ];
-		if ( Map ) then
-			return Map;
-		end
-		local AliasID = me.NPCAliases[ NpcID ];
-		if ( AliasID ) then
-			return ( me.GetNPCMapID( AliasID ) ); -- Parens prevent tail-call recursion
-		end
-	end
 	local MapNames = {};
 	--- @return Localized zone name for Map or nil if unknown.
 	-- Note that only true continent sub-zones are supported.
@@ -474,7 +480,10 @@ do
 					error( "Zone dimensions unavailable for map "..Map.."." );
 				end
 				for NpcID in pairs( MapData ) do
-					NPCMaps[ NpcID ] = Map;
+					if ( not me.NPCMaps[ NpcID ] ) then
+						me.NPCMaps[ NpcID ] = {};
+					end
+					me.NPCMaps[ NpcID ][ Map ] = true;
 					NPCAdd( NpcID );
 				end
 			end
