@@ -2,7 +2,7 @@
 select( 2, ... ).PathData = {
 	[ 614 ] = { -- Abyssal Depths
 		-- Ghostcrawler
-		[ 50051 ] = "1-²©1:«Í2u§§2u§§7l¤ã<Ú¦»Rh²tZD±©\\¿´9\\¿´9\\ô¹W[ç¾oU¼ÉDQhÑ{M5ÓÉM5ÓÉHÓt:7Ñ–4êÕ80ØÝ-ßU-ßU&zß–\"TÛÆ\"TÛÆ ‰×Õ!\rÐ‰!\rÐ‰\"·É#%ZÆK)1Ãm,ºq/Ò¶ö1-²©2u§§<Ú¦»EL±3Rh²t\\¿´9\\¿´9[ç¾oU¼ÉDU¼ÉDM5ÓÉ:7Ñ–4êÕ8-ßU\"TÛÆ\"TÛÆ!\rÐ‰%ZÆK/Ò¶ö1-²©<Ú¦»EL±3\\¿´9U¼ÉD:7Ñ–4êÕ8\"TÛÆ\"TÛÆ%ZÆK)1Ãm)1Ãm/Ò¶ö<Ú¦»Bh®¸EL±3U¼ÉD:7Ñ–\"TÛÆ)1Ãm)1Ãm<Ú¦»Bh®¸Bh®¸U¼ÉD:7Ñ–Bh®¸:7Ñ–)1Ãm";
+		[ 50051 ] = "1b²0Š61å„1å„5ð€H9Î€49Î€4;ô…<PŸ±EL±3Rh²tVšµöVšµöWf¿ªU¼ÉDU¼ÉDQhÑ{M5ÓÉM5ÓÉHÓt:7Ñ–4êÕ80ØÝ-ßU-ßU&zß–\"TÛÆ\"TÛÆ ‰×Õ!\rÐ‰!\rÐ‰\"·É#%ZÆK)1Ãm,ºq/Ò¶ö1b²1å„9Î€4EL±3VšµöU¼ÉDU¼ÉDM5ÓÉ:7Ñ–4êÕ8-ßU\"TÛÆ\"TÛÆ!\rÐ‰%ZÆK1b²9Î€4<PŸ±Bh®¸EL±3U¼ÉD:7Ñ–4êÕ8\"TÛÆ\"TÛÆ%ZÆK)1Ãm/Ò¶ö1b²<PŸ±Bh®¸U¼ÉD:7Ñ–:7Ñ–\"TÛÆ)1Ãm)1Ãm/Ò¶ö<PŸ±=à¦»Bh®¸:7Ñ–:7Ñ–)1Ãm<PŸ±<PŸ±=à¦»:7Ñ–";
 		-- Mobus
 		[ 50009 ] = "ª¹%%µE\"¾.$Ž¾.$ŽÆ>,Ì81Ì81Ï\000F»ÍBW1ÍBW1È7d•ÀTl~ÀTl~µp±ªûm„ªûm„¢dÉœ~W†œ~W†š¦I	¢½I £ä?O¢½I š¦I	š¦I	58ü¢:-Ù¢:-Ùª¹%%¾.$Ž¾.$ŽÌ81ÍBW1ÍBW1ÀTl~ªûm„œ~W†¢½I ¤ST¨§š68£ä?Oš¦I	ªûm„œ~W†¤ST¨§š68š¦I	¢:-Ùªûm„¤ST¨¨Á]Ù­¿/—§š68¢:-Ùªûm„¨Á]Ù®ÒbÃµ%-à­¿/—¢:-Ùªûm„®ÒbÃµLd›µ%-à¢:-Ù¾.$Žªûm„µLd›»¹ba»Ó/Òµ%-à¾.$ŽÍBW1ªûm„»¹baÁ@5t»Ó/Ò¾.$ŽÍBW1»¹baÁT]²Ås=<Á@5t¾.$ŽÍBW1ÁT]²ÅéS‚Ås=<¾.$ŽÍBW1ÍBW1ÅéS‚Ç1HÍBW1Ç1HÅs=<";
 		-- Poseidus
@@ -130,7 +130,7 @@ fµÁub©´2}VµÈ˜†³¢‰D·r„Â·r„Â¼…Â¿H²¿H²¾!œÌ¼‹Ÿ'¼‹Ÿ'¹	µÈ˜†µÈ˜†·r„Â¿H²¿H²¼‹Ÿ'µÈ
 		-- Garr
 		[ 50056 ] = "_4ÌcÉg+ËÓg+ËÓhÇÒFgKØegKØecÛ\"_Ø™_Ø™]ŠÒa_4Ì_4Ìg+ËÓgKØegKØe_Ø™_4Ì";
 		-- Terrorpene
-		[ 50058 ] = "‹‹Âž¾ÒÁþÒÁþ‘Åš‹‹Â‰Ò¯‡KÏ-‰eË~‰eË~‹¹Ï-‰Ò¯";
+		[ 50058 ] = "‹‹Âž¾ÒÁþÒÁþ‘Åš‹‹Â‰Ò¯‡KÏ-‰eË~‰eË~‹¹Ï-‰Ò¯‚&¼P·¸Î‚µ‚µ„•¸Î‚&¼P";
 		-- Thartuk the Exile
 		[ 50053 ] = "o¾T¯oÅQ|s¼QÊs¼QÊuðRÞ{³WAS¯‚ÐP\000…MÙ…MÙòFR’nG¡’nG¡”µK¦’ZQò“FYÁ”m\\à’‚^!’‚^!‘ZQ\rQG„ÉQ-‚MVL|çYÎ|çYÎz¹Yºu‡U”sTT¨o¾T¯s¼QÊ’ZQò“FYÁ’‚^!’‚^!\rQG‘äKÍu‡U”sTT¨s¼QÊ’ZQò’‚^!‘äKÍ|çYÎu‡U”s¼QÊ’nG¡’ZQò‘äKÍ|çYÎs¼QÊ{³W’nG¡‘äKÍAIe|çYÎ{³WAS¯…MÙ’nG¡AIe„ÉQ-|çYÎAS¯…MÙAIe„ÉQ-AS¯…MÙ„ÉQ-";
 	};
@@ -240,7 +240,7 @@ pòh1ljD…ék)ŠCl¿“÷l¿“÷iD—­a£wfãŽ;fsh1ll¿“÷a£weý•fãŽ;h1ljD…éjD…él¿“÷eý•jD
 		-- Cyrus the Black
 		[ 50064 ] = "•ÂŸ|—ÕœI™ÔŸ\\™ÔŸ\\—â¢{•ÂŸ|¨X±äª=®±¬<±Ä¬<±Äª6´›¨X±ä³•¾Åµ®ºô¸¾¤¸¾¤µðÂ9³•¾Å“MÕ$•2Ñ£—_Õ—_Õ•YØK“MÕ$";
 		-- Madexx
-		[ 50154 ] = "m}!Ërˆæw>æw>æ{¬ ¾€ $Œ6&±%¼‘-&é‘-&é‘3)Q,’Œ<úCZ‹ûG>‹ûG>‰xI™†8I™†8I™‚nGï~D¨~D¨pv;¹kÚ5‡kÚ5‡j-]jÔ'jÔ'm}!Ëw>æ…¨%ÝŒ6&‘-&éŒ<ú‹ûG>†8I™†8I™~D¨kÚ5‡kÚ5‡jÔ'w>æ…¨%Ý‘-&é,’Œà2NŒ<ú†8I™†8I™kÚ5‡w>æ€ $…¨%Ý,’Œà2N†8I™w>æ€ $,’Œà2Nw>æ€ $Œà2N";
+		[ 50154 ] = "lC+…o\rrnèrnèuf\"y !øy !ø‰0.ž‹Ó4ä‹Ó4äŠÇ;†_A†_AAGr‚<¥r‚<¥n¸6slC+…lC+…rnèy !øy !ø‹Ó4ä†_A†_Ar‚<¥lC+…y !ø†_AlC+…";
 	};
 	[ 467 ] = { -- Zangarmarsh
 		-- Bog Lurker
