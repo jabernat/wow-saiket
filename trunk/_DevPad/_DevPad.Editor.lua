@@ -96,8 +96,8 @@ function me:SetScriptObject ( Script )
 			end
 			self.ScrollFrame.Bar:SetValue( 0 );
 			self.Edit:SetText( Script.Text:gsub( "|", "||" ) );
-			self.Edit:SetCursorPosition( 0 );
 			self:ScriptSetLua( nil, Script );
+			self.Edit:SetCursorPosition( 0 );
 			self.Margin:Update();
 			self:Show();
 		else
