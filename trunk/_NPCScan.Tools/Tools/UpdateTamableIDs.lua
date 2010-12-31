@@ -16,13 +16,7 @@ overwrites <../../_NPCScan/_NPCScan.TamableIDs.lua>.
 ]]
 
 
-print( "WARNING: Overrides present for Terrorpene and Ghostcrawler!\n" );
-os.execute( "PAUSE" );
-
 local RareMapOverrides = { -- [ NpcID ] = ForcedMapID;
-	-- Mobs not spotted by WowHead yet
-	[ 50058 ] = 606; -- "Terrorpene" from Mount Hyjal
-	[ 50051 ] = 614; -- "Ghostcrawler" from Vashj'ir - Abyssal Depths
 };
 local CreatureTypeBlacklist = { -- Querying WowHead for these results in an empty result
 	[ 59 ] = true; -- Silithid
