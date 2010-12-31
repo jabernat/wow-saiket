@@ -17,11 +17,8 @@ me.EditBox = CreateFrame( "EditBox", "_NPCScanToolsConfigEditBox", nil, "InputBo
 
 
 
---[[****************************************************************************
-  * Function: _NPCScan.Tools.Config:TableRowOnClick                            *
-  * Description: Clear the selection if it gets clicked again.                 *
-  ****************************************************************************]]
 do
+	--- @return The first region in ... that is under the cursor.
 	local function GetMouseoverRegion ( ... )
 		for Index = 1, select( "#", ... ) do
 			local Region = select( Index, ... );
@@ -30,10 +27,11 @@ do
 			end
 		end
 	end
+	--- Adds additional click actions to table rows.
 	function me:TableRowOnClick ( Button )
-		if ( Button == "RightButton" ) then
+		if ( Button == "RightButton" ) then -- Select text for copying.
 			me.EditBox:SetElement( GetMouseoverRegion( self:GetRegions() ) );
-		else
+		else -- Clear selection if row already selected.
 			me.EditBox:SetElement();
 			local Table = self:GetParent().Table;
 			if ( not Table:SetSelection( self ) ) then
@@ -42,30 +40,25 @@ do
 		end
 	end
 end
---[[****************************************************************************
-  * Function: _NPCScan.Tools.Config:TableAddRow                                *
-  ****************************************************************************]]
 do
 	local function AddHooks( Row, ... )
 		Row:SetScript( "OnClick", me.TableRowOnClick );
 		return Row, ...;
 	end
-
 	local CreateRowBackup;
+	--- Hooks row methods when a new row is created.
 	function me:TableCreateRow ( ... )
 		return AddHooks( CreateRowBackup( self, ... ) );
 	end
---[[****************************************************************************
-  * Function: _NPCScan.Tools.Config:OnShow                                     *
-  ****************************************************************************]]
+	--- Enables context sensitive actions based on which row is selected.
 	local function OnSelect ( self, NpcID, ... )
-		Tools.Overlay.Select( NpcID );
 		for Index, Control in ipairs( me.Controls ) do
 			if ( Control.OnSelect ) then
 				Control:OnSelect( NpcID, ... );
 			end
 		end
 	end
+	--- Creates the data table and fills it when first shown.
 	function me:OnShow ()
 		self:SetScript( "OnShow", nil );
 		me.OnShow = nil;
@@ -74,7 +67,7 @@ do
 		me.Table:SetAllPoints();
 		me.Table.OnSelect = OnSelect;
 
-		me.Table:SetHeader( L.CONFIG_MAPID, L.CONFIG_ID, L.CONFIG_NAME, L.CONFIG_MODEL );
+		me.Table:SetHeader( L.CONFIG_MAPID, L.CONFIG_ID, L.CONFIG_NAME, L.CONFIG_DISPLAYID );
 		me.Table:SetSortHandlers( true, true, true, true );
 		me.Table:SetSortColumn( 1 ); -- Default to MapID
 		CreateRowBackup = me.Table.CreateRow;
@@ -83,34 +76,31 @@ do
 		me.EditBox:SetFontObject( me.Table.ElementFont );
 
 		local Overlay = _NPCScan.Overlay;
-		for NpcID, Name in pairs( Tools.NPCList ) do
-			local MapID = Tools.NPCLocations.MapIDs[ NpcID ];
+		for NpcID, Name in pairs( Tools.NPCNames ) do
+			local MapID = Tools.NPCMapIDs[ NpcID ];
 			me.Table:AddRow( NpcID,
-				Overlay and Overlay.GetMapName( MapID ) or MapID or "",
-				NpcID,
-				Name,
-				Tools.NPCModels[ NpcID ] or "" );
+				tostring( Overlay and Overlay.GetMapName( MapID ) or MapID or "" ),
+				NpcID, Name,
+				tostring( Tools.NPCDisplayIDs[ NpcID ] or "" ) );
 		end
 	end
 end
 
 
---[[****************************************************************************
-  * Function: _NPCScan.Tools.Config.EditBox:SetElement                         *
-  ****************************************************************************]]
+--- Mimic region Element with this editbox to copy text contents.
 function me.EditBox:SetElement ( Element )
 	if ( Element ) then
 		self:SetParent( Element:GetParent() );
 		self:SetAllPoints( Element );
 		self:SetText( Element:GetText() or "" );
 		self:Show();
+		self:SetFocus();
+		self:HighlightText();
 	else
 		self:Hide();
 	end
 end
---[[****************************************************************************
-  * Function: _NPCScan.Tools.Config.EditBox:OnHide                             *
-  ****************************************************************************]]
+--- Removes the mimic editbox if its target gets hidden.
 function me.EditBox:OnHide ()
 	self:ClearFocus();
 	self:SetText( "" );
@@ -118,9 +108,7 @@ function me.EditBox:OnHide ()
 end
 
 
---[[****************************************************************************
-  * Function: _NPCScan.Tools.Config.Controls:Add                               *
-  ****************************************************************************]]
+--- Register context sensitive GUI Control to update when selection changes.
 function me.Controls:Add ( Control )
 	Control:SetParent( self );
 	if ( #self == 0 ) then
@@ -149,12 +137,11 @@ me:Hide();
 me:SetScript( "OnShow", me.OnShow );
 
 -- Pane title
-me.Title = me:CreateFontString( nil, "ARTWORK", "GameFontNormalLarge" );
-me.Title:SetPoint( "TOPLEFT", 16, -16 );
-me.Title:SetText( L.CONFIG_TITLE );
+local Title = me:CreateFontString( nil, "ARTWORK", "GameFontNormalLarge" );
+Title:SetPoint( "TOPLEFT", 16, -16 );
+Title:SetText( L.CONFIG_TITLE );
 local SubText = me:CreateFontString( nil, "ARTWORK", "GameFontHighlightSmall" );
-me.SubText = SubText;
-SubText:SetPoint( "TOPLEFT", me.Title, "BOTTOMLEFT", 0, -8 );
+SubText:SetPoint( "TOPLEFT", Title, "BOTTOMLEFT", 0, -8 );
 SubText:SetPoint( "RIGHT", -32, 0 );
 SubText:SetHeight( 32 );
 SubText:SetJustifyH( "LEFT" );

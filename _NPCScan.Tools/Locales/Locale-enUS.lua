@@ -11,7 +11,7 @@ select( 2, ... ).L = setmetatable( {
 	CONFIG_MAPID = "MapID";
 	CONFIG_ID = "ID";
 	CONFIG_NAME = "Name";
-	CONFIG_MODEL = "Model File Path";
+	CONFIG_DISPLAYID = "DisplayID";
 
 	MODEL_CONTROL = "Show Model";
 

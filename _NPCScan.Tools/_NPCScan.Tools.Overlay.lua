@@ -7,8 +7,7 @@
 local Routes = LibStub( "AceAddon-3.0" ):GetAddon( "Routes" );
 local Tools = select( 2, ... );
 local Overlay = _NPCScan.Overlay;
-local L = Tools.L;
-local me = Overlay.Modules.WorldMapTemplate.Embed( CreateFrame( "Frame", nil, WorldMapButton ) );
+local me = Overlay.Modules.WorldMapTemplate.Embed( CreateFrame( "Frame", nil, WorldMapDetailFrame ) );
 Tools.Overlay = me;
 
 me.Control = CreateFrame( "Button", nil, nil, "UIPanelButtonTemplate" );
@@ -18,26 +17,23 @@ me.AlphaDefault = 1;
 
 
 
---[[****************************************************************************
-  * Function: _NPCScan.Tools.Overlay:Paint                                     *
-  ****************************************************************************]]
 do
+	local MapCurrent;
 	local Max = 2 ^ 16 - 1;
-	local X, X2, Y, Y2, Density;
-	local Width, Height, Texture;
+	local X, X2, Y, Y2;
 	local SelectionDrawn;
+	--- Draws an NPC's points from WowHead on the worldmap.
 	local function PaintPoints ( self, _, _, _, R, G, B, NpcID )
-		if ( not self.NpcIDSelected or self.NpcIDSelected == NpcID ) then
+		if ( self.NpcID == NpcID ) then
 			SelectionDrawn = true;
-			local Data = Tools.NPCLocations.PositionData[ NpcID ];
+			local Data = Tools.NPCPointData[ NpcID ];
 			if ( Data ) then
-				Width, Height = self:GetSize();
-				for Index = 1, #Data, 5 do
-					X, X2, Y, Y2, Density = Data:byte( Index, Index + 4 );
+				local Width, Height = self:GetSize();
+				for Index = 1, #Data, 4 do
+					X, X2, Y, Y2 = Data:byte( Index, Index + 3 );
 					X, Y = ( X * 256 + X2 ) / Max, ( Y * 256 + Y2 ) / Max;
-					Density = Density / 255;
 
-					Texture = Overlay.TextureCreate( self, "OVERLAY", R, G, B, Density );
+					local Texture = Overlay.TextureCreate( self, "OVERLAY", R, G, B );
 					Texture:SetTexture( [[Interface\OPTIONSFRAME\VoiceChat-Record]] );
 					Texture:SetTexCoord( 0, 1, 0, 1 );
 					Texture:SetSize( 8, 8 );
@@ -46,15 +42,16 @@ do
 			end
 		end
 	end
+	--- Draws points on the map for where this NPC was spotted by WowHead.
 	function me:Paint ( Map )
 		Overlay.TextureRemoveAll( self );
-		if ( not self.NpcIDSelected or Tools.NPCLocations.MapIDs[ self.NpcIDSelected ] == Map ) then
-			SelectionDrawn = false;
+		if ( Map and self.MapID == Map ) then
+			MapCurrent, SelectionDrawn = Map, false;
 			Overlay.ApplyZone( self, Map, PaintPoints );
-			if ( self.NpcIDSelected and not SelectionDrawn ) then
+			if ( not SelectionDrawn ) then
 				-- _NPCScan.Overlay has no data on mob, and therefore no assigned color
 				local Color = HIGHLIGHT_FONT_COLOR;
-				PaintPoints( self, nil, nil, nil, Color.r, Color.g, Color.b, self.NpcIDSelected );
+				PaintPoints( self, nil, nil, nil, Color.r, Color.g, Color.b, self.NpcID );
 			end
 		end
 	end
@@ -63,30 +60,13 @@ end
 
 
 
---[[****************************************************************************
-  * Function: _NPCScan.Tools.Overlay.Select                                    *
-  ****************************************************************************]]
-function me.Select ( NpcID )
-	if ( me.NpcIDSelected ~= NpcID ) then
-		me.NpcIDSelected = NpcID;
-
-		local MapID = Tools.NPCLocations.MapIDs[ NpcID ];
-		if ( not NpcID or MapID ) then
-			me:OnMapUpdate( MapID );
-		end
-		return true;
-	end
-end
-
---[[****************************************************************************
-  * Function: _NPCScan.Tools.Overlay.Control:SetRoutesEnabled                  *
-  ****************************************************************************]]
-function me.Control:SetRoutesEnabled ( NpcID, Enable )
-	local RoutesDB = Routes.db.global.routes[ self.MapFile ];
+--- Enables or disables paths for NpcID on MapFile.
+function me.SetRoutesEnabled ( MapFile, NpcID, Enable )
+	local RoutesDB = Routes.db.global.routes[ MapFile ];
 	if ( RoutesDB ) then
 		for Name, Route in pairs( RoutesDB ) do
-			local NpcID = tonumber( Name:match( "^Overlay:([^:]+)" ) );
-			if ( NpcID == self.NpcID ) then -- Path of selected mob
+			local CurrentNpcID = tonumber( Name:match( "^Overlay:([^:]+)" ) );
+			if ( CurrentNpcID == NpcID ) then -- Path of selected mob
 				Route.hidden = not Enable;
 				Routes:DrawWorldmapLines();
 				Routes:DrawMinimapLines( true );
@@ -94,45 +74,52 @@ function me.Control:SetRoutesEnabled ( NpcID, Enable )
 		end
 	end
 end
---[[****************************************************************************
-  * Function: _NPCScan.Tools.Overlay.Control:OnSelect                          *
-  ****************************************************************************]]
+--- Validates that the selected NPC's map can be shown.
 function me.Control:OnSelect ( NpcID )
-	if ( self.MapFile ) then
+	if ( me.MapFile ) then
 		-- Re-hide routes for last shown mob
-		self:SetRoutesEnabled( NpcID, false );
-		self.MapFile = nil;
+		me.SetRoutesEnabled( me.MapFile, me.NpcID, false );
+		me:OnMapUpdate( me.MapID );
+		me.MapFile = nil;
 	end
 
-	self.NpcID, self.MapID = NpcID, Tools.NPCLocations.MapIDs[ NpcID ];
-	if ( self.MapID ) then
+	me.NpcID, me.MapID = NpcID, Tools.NPCMapIDs[ NpcID ];
+	if ( me.MapID ) then
+		-- Show routes for this mob
+		local MapOld = GetCurrentMapAreaID();
+		SetMapByID( me.MapID );
+		me.MapFile = GetMapInfo();
+		me.SetRoutesEnabled( me.MapFile, me.NpcID, true );
+		SetMapByID( MapOld );
+		me:OnMapUpdate( me.MapID );
+
 		self:Enable();
+		me:Show();
 	else
 		self:Disable();
+		me:Hide();
 	end
 end
---[[****************************************************************************
-  * Function: _NPCScan.Tools.Overlay.Control:OnClick                           *
-  * Description: Shows the selected NPC's map.                                 *
-  ****************************************************************************]]
+--- Shows the selected NPC's map.
 function me.Control:OnClick ()
 	ShowUIPanel( WorldMapFrame, true );
-	SetMapByID( self.MapID );
-
-	-- Show Routes for this mob
-	local MapFile = GetMapInfo();
-	self.MapFile = MapFile;
-	self:SetRoutesEnabled( self.NpcID, true );
+	SetMapByID( me.MapID );
+end
+--- Hides shown routes on logout.
+function me:PLAYER_LOGOUT ()
+	self.Control:OnSelect();
 end
 
 
 
 
-Overlay.Modules.Register( ..., me, L.OVERLAY_TITLE );
+me:Hide();
+me:RegisterEvent( "PLAYER_LOGOUT" );
+Overlay.Modules.Register( ..., me, Tools.L.OVERLAY_TITLE );
 
+local Control = me.Control;
+Control:SetSize( 144, 21 );
+Control:SetText( Tools.L.OVERLAY_CONTROL );
+Control:SetScript( "OnClick", Control.OnClick );
 
-me.Control:SetSize( 144, 21 );
-me.Control:SetText( L.OVERLAY_CONTROL );
-me.Control:SetScript( "OnClick", me.Control.OnClick );
-
-Tools.Config.Controls:Add( me.Control );
+Tools.Config.Controls:Add( Control );
