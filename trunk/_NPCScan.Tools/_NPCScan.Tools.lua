@@ -18,9 +18,7 @@ local MatrixMetaSymbolic = me.Matrix.MetaSymbolic;
 
 
 
---[[****************************************************************************
-  * Function: _NPCScan.Tools.Matrix.Meta.__index:New                           *
-  ****************************************************************************]]
+--- @return A new matrix instance.
 function MatrixMeta.__index:New ( ... )
 	-- Create a new identity matrix
 	local Matrix = setmetatable( {}, self.Meta );
@@ -29,17 +27,13 @@ function MatrixMeta.__index:New ( ... )
 	end
 	return Matrix;
 end
---[[****************************************************************************
-  * Function: _NPCScan.Tools.Matrix.Meta.__index:Copy                          *
-  ****************************************************************************]]
+--- @return A new matrix instance with elements identical to this one.
 function MatrixMeta.__index:Copy ()
 	return self:New( unpack( self ) );
 end
---[[****************************************************************************
-  * Function: _NPCScan.Tools.Matrix.Meta.__mul                                 *
-  ****************************************************************************]]
 do
 	local floor = floor;
+	--- @return The result of matrix multiplication Op1 * Op2.
 	function MatrixMeta.__mul ( Op1, Op2 )
 		local Result = Op1:New();
 
@@ -56,22 +50,16 @@ do
 end
 
 
---[[****************************************************************************
-  * Function: _NPCScan.Tools.Matrix.Meta.__index:Translate                     *
-  ****************************************************************************]]
+--- @return The result of translating this matrix by (X,Y).
 function MatrixMeta.__index:Translate ( X, Y )
 	return self:New( 1, 0, X, 0, 1, Y ) * self;
 end
---[[****************************************************************************
-  * Function: _NPCScan.Tools.Matrix.Meta.__index:Scale                         *
-  ****************************************************************************]]
+--- @return The result of scaling this matrix by (ScaleX,ScaleY).
 function MatrixMeta.__index:Scale ( ScaleX, ScaleY )
 	return self:New( ScaleX, 0, 0, 0, ScaleY, 0 ) * self;
 end
---[[****************************************************************************
-  * Function: _NPCScan.Tools.Matrix.Meta.__index:Rotate                        *
-  * Description: Takes an angle in rads or a pair of sin/cos values.           *
-  ****************************************************************************]]
+--- @param Sin..Cos  An angle in rads or precalculated sin/cos values.
+-- @return The result of rotating this matrix.
 function MatrixMeta.__index:Rotate ( Sin, Cos )
 	if ( not Cos ) then
 		local Angle = Sin;
@@ -80,9 +68,7 @@ function MatrixMeta.__index:Rotate ( Sin, Cos )
 	end
 	return self:New( Cos, Sin, 0, -Sin, Cos, 0 ) * self;
 end
---[[****************************************************************************
-  * Function: _NPCScan.Tools.Matrix.Meta.__index:Shear                         *
-  ****************************************************************************]]
+--- @return The result of shearing this matrix by (FactorX,FactorY).
 function MatrixMeta.__index:Shear ( FactorX, FactorY )
 	return self:New( 1, FactorX or 0, 0, FactorY or 0, 1, 0 ) * self;
 end
@@ -90,13 +76,12 @@ end
 
 
 
---[[****************************************************************************
-  * Function: _NPCScan.Tools.Matrix.MetaSymbolic.__mul                         *
-  ****************************************************************************]]
 do
 	local Values = {};
 	local floor = floor;
 	local wipe = wipe;
+	--- @return Matrix of symbolic equations used to calculate multiplication of Op1 * Op2.
+	-- @see MatrixMeta.__mul
 	function MatrixMetaSymbolic.__mul ( Op1, Op2 )
 		local Result = Op1:New();
 		for Index = 1, 9 do

@@ -6,83 +6,68 @@
 
 local Tools = select( 2, ... );
 local Button = _NPCScan.Button;
-local L = Tools.L;
-local me = CreateFrame( "Frame", nil, Button );
+local me = CreateFrame( "Frame" );
 Tools.Model = me;
 
 me.Control = CreateFrame( "Button", nil, nil, "UIPanelButtonTemplate" );
-me.EditBox = CreateFrame( "EditBox", "_NPCScanToolsModelEditBox", me, "InputBoxTemplate" );
+me.EditBox = CreateFrame( "EditBox", "_NPCScanToolsModelEditBox", Button, "InputBoxTemplate" );
 
 
 
 
---[[****************************************************************************
-  * Function: _NPCScan.Tools.Model.ButtonUpdate                                *
-  * Description: Hides model controls when a real alert appears.               *
-  ****************************************************************************]]
+--- Hides model controls when a real alert appears.
 function me.ButtonUpdate ()
-	me:Hide();
+	me.EditBox:Hide();
 	me.Backdrop:Hide();
 end
---[[****************************************************************************
-  * Function: _NPCScan.Tools.Model:PLAYER_REGEN_ENABLED                        *
-  ****************************************************************************]]
+--- Re-enables showing the model after leaving combat.
 function me:PLAYER_REGEN_ENABLED ()
-	if ( self.Control.NpcID ) then
+	if ( self.DisplayID ) then
 		self.Control:Enable();
 	end
 end
---[[****************************************************************************
-  * Function: _NPCScan.Tools.Model:PLAYER_REGEN_DISABLED                       *
-  ****************************************************************************]]
+--- Disables showing the model in combat.
 function me:PLAYER_REGEN_DISABLED ()
 	self.Control:Disable();
 end
 
 
---[[****************************************************************************
-  * Function: _NPCScan.Tools.Model.EditBox:Save                                *
-  ****************************************************************************]]
-function me.EditBox:Save ()
-	Button.Model:Reset();
-	Button.Model:SetCreature( self.NpcID );
-	local Model = Button.Model:GetModel();
-	if ( type( Model ) ~= "string" ) then
-		Button.Model:SetModel( Tools.NPCModels[ self.NpcID ] );
-		Model = Button.Model:GetModel(); -- Extension changes to *.m2
+local GetDisplayModel;
+do
+	local Model = CreateFrame( "PlayerModel" );
+	--- @return Model path for DisplayID.
+	function GetDisplayModel ( DisplayID )
+		Model:SetDisplayInfo( DisplayID );
+		local Path = Model:GetModel();
+		return type( Path ) == "string" and Path:lower();
 	end
-
-	Button.ModelCameras[ Model:lower() ] = self:GetText():gsub( "||", "|" );
+end
+--- Saves modified model settings.
+function me.EditBox:OnEnterPressed ()
+	local Model = assert( GetDisplayModel( me.DisplayID ), "Unknown model for DisplayID." );
+	Button.ModelCameras[ Model ] = self:GetText():gsub( "||", "|" );
+	Button.Model:Reset();
+	Button.Model:SetDisplayInfo( me.DisplayID );
 end
 
 
---[[****************************************************************************
-  * Function: _NPCScan.Tools.Model.Control:OnSelect                            *
-  ****************************************************************************]]
-function me.Control:OnSelect ( NpcID, _, _, Name, Model )
-	self.NpcID, self.Name, self.Model = NpcID, Name, Model;
-	if ( Tools.NPCModels[ NpcID ] and not InCombatLockdown() ) then
+--- Validates that the selected NPC's model can be shown.
+function me.Control:OnSelect ( NpcID, _, _, Name )
+	me.NpcID, me.Name, me.DisplayID = NpcID, Name, Tools.NPCDisplayIDs[ NpcID ];
+	if ( me.DisplayID and not InCombatLockdown() ) then
 		self:Enable();
 	else
 		self:Disable();
 	end
 end
---[[****************************************************************************
-  * Function: _NPCScan.Tools.Model.Control:OnClick                             *
-  * Description: Shows the selected NPC in _NPCScan's alert button.            *
-  ****************************************************************************]]
+--- Shows the selected NPC in _NPCScan's alert button.
 function me.Control:OnClick ()
-	Button:Update( self.NpcID, self.Name );
+	Button:Update( me.NpcID, me.Name );
+	Button.Model:SetDisplayInfo( me.DisplayID );
 
-	local Model = Button.Model:GetModel();
-	if ( type( Model ) ~= "string" ) then -- Wasn't in cache
-		Button.Model:SetModel( self.Model );
-		Model = Button.Model:GetModel(); -- Extension changes to *.m2
-	end
-
-	me.EditBox:SetText( ( Button.ModelCameras[ Model:lower() ] or "" ):gsub( "|", "||" ) );
-	me.EditBox.NpcID = self.NpcID;
-	me:Show();
+	local Settings = Button.ModelCameras[ GetDisplayModel( me.DisplayID ) ] or "";
+	me.EditBox:SetText( Settings:gsub( "|", "||" ) );
+	me.EditBox:Show();
 	me.Backdrop:Show();
 	me.EditBox:SetFocus();
 end
@@ -91,17 +76,18 @@ end
 
 
 me:Hide();
-me:SetScript( "OnEvent", _NPCScan.OnEvent );
+me:SetScript( "OnEvent", _NPCScan.Frame.OnEvent );
 me:RegisterEvent( "PLAYER_REGEN_ENABLED" );
 me:RegisterEvent( "PLAYER_REGEN_DISABLED" );
 hooksecurefunc( Button, "Update", me.ButtonUpdate );
 
-me.EditBox:SetPoint( "TOPLEFT", Button, "BOTTOMLEFT", 8, 0 );
-me.EditBox:SetPoint( "RIGHT", Button, -4, 0 );
-me.EditBox:SetHeight( 16 );
-me.EditBox:SetAutoFocus( false );
-me.EditBox:SetScript( "OnEnterPressed", me.EditBox.Save );
-me.EditBox:SetScript( "OnEditFocusGained", nil );
+local EditBox = me.EditBox;
+EditBox:SetPoint( "BOTTOMLEFT", 8, 4 );
+EditBox:SetPoint( "RIGHT", -4, 0 );
+EditBox:SetHeight( 16 );
+EditBox:SetAutoFocus( false );
+EditBox:SetScript( "OnEnterPressed", EditBox.OnEnterPressed );
+EditBox:SetScript( "OnEditFocusGained", nil );
 
 me.Backdrop = Button.Model:CreateTexture( nil, "BACKGROUND" );
 me.Backdrop:Hide();
@@ -110,8 +96,8 @@ me.Backdrop:SetTexture( [[textures\ShaneCube]] );
 me.Backdrop:SetVertexColor( 0.5, 0.5, 0.5 );
 
 
-me.Control:SetSize( 144, 21 );
-me.Control:SetText( L.MODEL_CONTROL );
-me.Control:SetScript( "OnClick", me.Control.OnClick );
-
-Tools.Config.Controls:Add( me.Control );
+local Control = me.Control;
+Control:SetSize( 144, 21 );
+Control:SetText( Tools.L.MODEL_CONTROL );
+Control:SetScript( "OnClick", Control.OnClick );
+Tools.Config.Controls:Add( Control );

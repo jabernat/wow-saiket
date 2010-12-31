@@ -2,8 +2,8 @@
 ## Title: _|cffCCCC88NPCScan|r.|cff888888Tools|r
 ## Notes: Tools to help maintain _|cffCCCC88NPCScan|r and _|cffCCCC88NPCScan|r.Overlay.
 ## Author: Saiket
-## Version: 4.0.0.1
-## X-Date: 2010-08-26
+## Version: 4.0.3.1
+## X-Date: 2010-12-30
 ## X-Category: Maps, Development Tools, Data Export
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
@@ -13,9 +13,7 @@
 Locales.xml
 
 _NPCScan.Tools.lua
-_NPCScan.Tools.NPCList.lua
-_NPCScan.Tools.NPCLocations.lua
-_NPCScan.Tools.NPCModels.lua
+_NPCScan.Tools.NPCData.lua
 
 _NPCScan.Tools.Config.lua
 
