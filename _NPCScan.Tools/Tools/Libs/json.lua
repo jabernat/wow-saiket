@@ -300,7 +300,7 @@ function decode_scanObjectKey ( s, startPos )
 	if ( curChar == [[']] or curChar == [["]] ) then
     return decode_scanString(s,startPos)
 	else
-		local _, endPos, key = s:find( "^([_a-zA-Z][_a-zA-Z0-9]*)", startPos );
+		local _, endPos, key = s:find( "^([_a-zA-Z0-9]+)", startPos );
     base.assert(key, 'JSON string ended unexpectedly scanning object.')
 		return key, endPos + 1;
 	end
