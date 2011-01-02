@@ -89,9 +89,9 @@ EditBox:SetAutoFocus( false );
 EditBox:SetScript( "OnEnterPressed", EditBox.OnEnterPressed );
 EditBox:SetScript( "OnEditFocusGained", nil );
 
-me.Backdrop = Button.Model:CreateTexture( nil, "BACKGROUND" );
+me.Backdrop = Button:CreateTexture( nil, "BACKGROUND" );
 me.Backdrop:Hide();
-me.Backdrop:SetAllPoints();
+me.Backdrop:SetAllPoints( Button.Model );
 me.Backdrop:SetTexture( [[textures\ShaneCube]] );
 me.Backdrop:SetVertexColor( 0.5, 0.5, 0.5 );
 
