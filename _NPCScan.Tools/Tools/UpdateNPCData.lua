@@ -25,7 +25,7 @@ package.path = [[.\Libs\?.lua;]]..package.path;
 local http = require( "socket.http" );
 require( "json" );
 require( "bit" );
-require( "DbcCSV" );
+require( "DbcCsv" );
 
 
 
@@ -53,10 +53,10 @@ local DataPath = assertf( AccountFile:read(),
 	"<%s> must have account data path on first line.", AccountFilename );
 assertf( #DataPath > 0, "Missing account data path in <%s>.", AccountFilename );
 
-local Achievements = DbcCSV.Parse( [[DBFilesClient/Achievement.dbc.csv]], 1,
+local Achievements = DbcCsv.Parse( [[DBFilesClient/Achievement.dbc.csv]], 1,
 	"ID", nil, nil, "CriteriaParent", "Name" );
 
-local AchievementCriteria = DbcCSV.Parse( [[DBFilesClient/Achievement_Criteria.dbc.csv]], 1,
+local AchievementCriteria = DbcCsv.Parse( [[DBFilesClient/Achievement_Criteria.dbc.csv]], 1,
 	"ID", "AchievementID", "Type", "AssetID", nil, nil, nil, nil, nil, "Name" );
 
 -- Load _NPCScan saved variables
@@ -118,7 +118,7 @@ table.sort( SortOrder );
 print( "Reading NPC data..." );
 
 -- Create a lookup of AreaTableIDs to zone IDs
-local WorldMapAreas = DbcCSV.Parse( [[DBFilesClient/WorldMapArea.dbc.csv]], 1,
+local WorldMapAreas = DbcCsv.Parse( [[DBFilesClient/WorldMapArea.dbc.csv]], 1,
 	"ID", nil, "AreaTableID", nil, nil, nil, nil, nil, nil, nil, nil, "Flags" );
 
 local AreaMapIDs = {};

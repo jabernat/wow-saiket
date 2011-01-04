@@ -1,5 +1,5 @@
---[[ DbcCSV by Saiket
-DbcCSV.lua: Parses CSV files into tables.
+--[[ DbcCsv by Saiket
+DbcCsv.lua: Parses CSV files into tables.
 ]]
 
 
@@ -10,7 +10,7 @@ local ipairs = ipairs;
 local select = select;
 local tonumber = tonumber;
 local setmetatable = setmetatable;
-module( "DbcCSV" );
+module( "DbcCsv" );
 
 
 do
