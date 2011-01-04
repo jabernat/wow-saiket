@@ -54,12 +54,7 @@ local DataPath = assertf( AccountFile:read(),
 assertf( #DataPath > 0, "Missing account data path in <%s>.", AccountFilename );
 
 local Achievements = DbcCSV.Parse( [[DBFilesClient/Achievement.dbc.csv]], 1,
-	"ID", nil, nil, nil, "Name",
-	nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
-	nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
-	nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
-	nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
-	"CriteriaParent" );
+	"ID", nil, nil, "CriteriaParent", "Name" );
 
 local AchievementCriteria = DbcCSV.Parse( [[DBFilesClient/Achievement_Criteria.dbc.csv]], 1,
 	"ID", "AchievementID", "Type", "AssetID", nil, nil, nil, nil, nil, "Name" );
