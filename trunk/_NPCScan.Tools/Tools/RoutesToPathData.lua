@@ -39,7 +39,7 @@ local OutputFilename = [[../../_NPCScan.Overlay/_NPCScan.Overlay.PathData.lua]];
 package.cpath = [[.\Libs\?.dll;]]..package.cpath;
 package.path = [[.\Libs\?.lua;]]..package.path;
 require( "bit" );
-require( "DbcCSV" );
+require( "DbcCsv" );
 
 
 
@@ -67,9 +67,9 @@ assertf( AccountName and #AccountName > 0, "Missing account name in <%s>.", Acco
 
 
 -- Create lookups for map filenames to IDs, and IDs to localized names
-local WorldMapAreas = DbcCSV.Parse( [[DBFilesClient/WorldMapArea.dbc.csv]], 1,
+local WorldMapAreas = DbcCsv.Parse( [[DBFilesClient/WorldMapArea.dbc.csv]], 1,
 	"ID", nil, "AreaTableID", "Filename", nil, nil, nil, nil, nil, nil, nil, "Flags" );
-local AreaTable = DbcCSV.Parse( [[DBFilesClient/AreaTable.dbc.csv]], 1,
+local AreaTable = DbcCsv.Parse( [[DBFilesClient/AreaTable.dbc.csv]], 1,
 	"ID", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
 	"Localization" );
 

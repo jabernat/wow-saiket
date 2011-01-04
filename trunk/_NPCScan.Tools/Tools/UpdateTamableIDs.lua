@@ -29,7 +29,7 @@ package.path = [[.\Libs\?.lua;]]..package.path;
 local http = require( "socket.http" );
 require( "json" );
 require( "bit" );
-require( "DbcCSV" );
+require( "DbcCsv" );
 
 
 
@@ -49,7 +49,7 @@ end
 
 
 -- Create a list of all tamable creature types for the WowHead query
-local CreatureFamilies = DbcCSV.Parse( [[DBFilesClient/CreatureFamily.dbc.csv]], 1,
+local CreatureFamilies = DbcCsv.Parse( [[DBFilesClient/CreatureFamily.dbc.csv]], 1,
 	"ID", nil, nil, nil, nil, nil, nil, nil, "PetTalentType" );
 
 local PetTypes = {};
@@ -63,9 +63,9 @@ end
 
 
 -- Create a lookup for zone AreaTable IDs used by WowHead to WorldMapArea IDs
-local WorldMapAreas = DbcCSV.Parse( [[DBFilesClient/WorldMapArea.dbc.csv]], 1,
+local WorldMapAreas = DbcCsv.Parse( [[DBFilesClient/WorldMapArea.dbc.csv]], 1,
 	"ID", nil, "AreaTableID", nil, nil, nil, nil, nil, nil, nil, nil, "Flags" );
-local AreaTable = DbcCSV.Parse( [[DBFilesClient/AreaTable.dbc.csv]], 1,
+local AreaTable = DbcCsv.Parse( [[DBFilesClient/AreaTable.dbc.csv]], 1,
 	"ID", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, "Localization" );
 
 local MapIDs, MapNames = {}, {};
