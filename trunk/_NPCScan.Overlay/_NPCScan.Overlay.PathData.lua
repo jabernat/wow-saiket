@@ -2,7 +2,16 @@
 select( 2, ... ).PathData = {
 	[ 614 ] = { -- Abyssal Depths
 		-- Ghostcrawler
-		[ 50051 ] = "1b²0Š61å„1å„5ð€H9Î€49Î€4;ô…<PŸ±EL±3Rh²tVšµöVšµöWf¿ªU¼ÉDU¼ÉDQhÑ{M5ÓÉM5ÓÉHÓt:7Ñ–4êÕ80ØÝ-ßU-ßU&zß–\"TÛÆ\"TÛÆ ‰×Õ!\rÐ‰!\rÐ‰\"·É#%ZÆK)1Ãm,ºq/Ò¶ö1b²1å„9Î€4EL±3VšµöU¼ÉDU¼ÉDM5ÓÉ:7Ñ–4êÕ8-ßU\"TÛÆ\"TÛÆ!\rÐ‰%ZÆK1b²9Î€4<PŸ±Bh®¸EL±3U¼ÉD:7Ñ–4êÕ8\"TÛÆ\"TÛÆ%ZÆK)1Ãm/Ò¶ö1b²<PŸ±Bh®¸U¼ÉD:7Ñ–:7Ñ–\"TÛÆ)1Ãm)1Ãm/Ò¶ö<PŸ±=à¦»Bh®¸:7Ñ–:7Ñ–)1Ãm<PŸ±<PŸ±=à¦»:7Ñ–";
+		[ 50051 ] = "-æ°‚.¿’,0;8ö‡È0—‹À.ú‹\"-cƒ,7+wf<àvf<àvf<ú{‹7»|\"1\r‡\
+9º‚a;…„,;…„,;Úv97–\
+0ß±Ê'ÕÄÉ#ÐÉÇ5‡¨“;ÔŸÿ=Ì ò=Ì òA£²@ù´ÜOËàO;Â&R¹DP·ÁM˜¾ƒG+½æFÜÂ©L¬Ã¼LŸÇlR{Â¶R×Í.M5ÕR?5Õ28*Á‚9·RpÙ ßÇš&ÂÀ–-cƒ,<àvf7»|\"FÜÂ©LŸÇlC{Æ+UÉ¶âR{Â¶M5ÕR-cƒ,7»|\"0o„mG+½æFÜÂ©C{Æ+.ú‹\"-cƒ,0o„mG+½æC{Æ+Dn¹¦.ú‹\"0o„m1\r‡\
+G+½æDn¹¦LWº68ö‡È.ú‹\"1\r‡\
+P·ÁG+½æLWº68ö‡È1\r‡\
+;…„,P·ÁLWº6Nì±×9>Žv8ö‡È;…„,R¹DP·ÁNì±×9>Žv;…„,97–\
+R¹DNì±×UÉ¶â8‘n9>Žv97–\
+OËàR¹DUÉ¶â0;8‘n97–\
+OËàUÉ¶âM5ÕR0;97–\
+1u”ÂLPÐuOËàM5ÕR-æ°‚0;1u”Â@·ÐLPÐuM5ÕR-æ°‚1u”Â0ß±Ê@·ÐM5ÕR?5Õ2&ÂÀ–-æ°‚0ß±Ê;P¿Ä@·Ð?5Õ2&ÂÀ–0ß±Ê#ÐÉÇ;P¿Ä?5Õ29·RpÙ&ÂÀ–#ÐÉÇ<¹Ç;P¿Ä9·RpÙ#ÐÉÇ\"Ö§@ù´Ü<¹Ç9·R(€ãˆpÙ\"Ö§@ù´Ü9·R>O²Z(€ãˆ\"Ö§)*Þ!=Ì ò@ù´Ü>O²Z4SÜÅ(€ãˆ)*Þ!=Ì ò>O²Z;x¦4SÜÅ)*Þ!1hÙk5‡¨“=Ì ò;x¦4¶Ó4SÜÅ1hÙk5‡¨“;x¦7Üª^4¶Ó1hÙk1£Õm*Ï5‡¨“7Üª^.\\ÍI4¶Ó1£Õm*Ï7Üª^.\\ÍI1£Õm*Ï.\\ÍI";
 		-- Mobus
 		[ 50009 ] = "ª¹%%µE\"¾.$Ž¾.$ŽÆ>,Ì81Ì81Ï\000F»ÍBW1ÍBW1È7d•ÀTl~ÀTl~µp±ªûm„ªûm„¢dÉœ~W†œ~W†š¦I	¢½I £ä?O¢½I š¦I	š¦I	58ü¢:-Ù¢:-Ùª¹%%¾.$Ž¾.$ŽÌ81ÍBW1ÍBW1ÀTl~ªûm„œ~W†¢½I ¤ST¨§š68£ä?Oš¦I	ªûm„œ~W†¤ST¨§š68š¦I	¢:-Ùªûm„¤ST¨¨Á]Ù­¿/—§š68¢:-Ùªûm„¨Á]Ù®ÒbÃµ%-à­¿/—¢:-Ùªûm„®ÒbÃµLd›µ%-à¢:-Ù¾.$Žªûm„µLd›»¹ba»Ó/Òµ%-à¾.$ŽÍBW1ªûm„»¹baÁ@5t»Ó/Ò¾.$ŽÍBW1»¹baÁT]²Ås=<Á@5t¾.$ŽÍBW1ÁT]²ÅéS‚Ås=<¾.$ŽÍBW1ÍBW1ÅéS‚Ç1HÍBW1Ç1HÅs=<";
 		-- Poseidus
@@ -16,7 +25,7 @@ select( 2, ... ).PathData = {
 		-- Morcrush
 		[ 18690 ] = "˜r7Âœô1–Ÿ3ZŸ3Z ò9lŸ=Æ›ÓA™™C½–A:–A:–>;˜r7Â˜r7ÂŸ3ZŸ=ÆŸ=Æ›ÓA–A:Ÿ=Æ–A:˜r7Â­BÃZ«¬£®OŸ4®OŸ4±-¢²¯Â¢²¯Â¢°Å®­BÃZ®OŸ4²¯Â¢­BÃZ ÿ‰ £ŒV£•‹\"µÖe?¶K¹¸ÁC¸ÁC½Š;~Áñ9 Ç>:7Ì\"E‡ÉáG€¸“MB¸Xf¶ÈiD²½k~«‚©¤ãŽŠ¤ãŽŠ ÿ‰£•‹\"Ç>:7ÉáG€Åã=w¤ãŽŠ£•‹\"¨è€°Áñ9 Ç>:7Åã=w²½k~¤ãŽŠ¨è€°Áñ9 Åã=wÂ=²½k~¨è€°± hyÁñ9 Â=¾ƒ>²¶ÈiD²½k~± hy¸ÁCÁñ9 ¾ƒ>²¶ÈiD± hyµÖe?¸ÁC¾ƒ>²º¬Eð¸“MB¶ÈiDµÖe?¸ÁCº¬Eð¸“MBµÖe?¸ÁC¸“MB";
 		-- Speaker Mar'grom
-		[ 18693 ] = "e¼‚ëi=zŒmàxïmàxïoÅ|o4‰­o4‰­lÓ‘nfÕ•zfÕ•zdê“e¼‚ëe¼‚ëmàxïo4‰­o4‰­fÕ•ze¼‚ë\\@v\r=‹’u@U’u@U—üKû˜1R ˜1R ”›YÎƒZƒZŒæW§RÑ4L²ŽÙI	\\@v\\@v’u@U˜1R ˜1R ƒZRÑ4L²\\@v˜1R ˜1R RÑ;P±˜1R ;P±4L²¢¢/—¥€,Ó¨¦/(¨¦/(¯@.­—F\
+		[ 18693 ] = "e¼‚ëi=zŒmàxïmàxïoÅ|o4‰­o4‰­lÓ‘nfÕ•zfÕ•zdê“e¼‚ëe¼‚ëmàxïo4‰­o4‰­fÕ•ze¼‚ë\\BëË?¸•‡K•‡K•ðQ4Žæ`vŽæ`vŒI]/’P’ML¹\\Bë•‡K•‡KŽæ`v’P•‡K’P’ML¹¢¢/—¥€,Ó¨¦/(¨¦/(¯@.­—F\
 ­—F\
 «dF¦é?±¦é?±¢4¢¢/—¢¢/—¨¦/(­—F\
 ­—F\
@@ -24,12 +33,12 @@ select( 2, ... ).PathData = {
 	};
 	[ 486 ] = { -- Borean Tundra
 		-- Fumblub Gearwind
-		[ 32358 ] = "£t'L¨ *=±-2ÿ±-2ÿ¬:eª5F³9S{¯vOƒ®JÇ®JÇ¬:e±-2ÿ±-2ÿ»‘C¯½iGÕ¼ÆPÿ¾ZD¼V_;¼V_;µ2g®¤]¥¤]¥žUTS¸J­›CGy˜lGl–\
+		[ 32358 ] = "£t'L¨ *=±-2ÿ±-2ÿ¬:eª5FŸ|<Ÿ¢@A¤?H¢×SGª‹WR®![d³9S{¯vOƒ®JÇ®JÇ¬:e±-2ÿ±-2ÿ¸;¸ü>¤¸ü>¤¶Á@·²{@N¸>M²¹…GÏ»ÆE`»ÆE`½cG€½ÌR:½ÌR:¼ZD¸¦aÿ¸¦aÿ®«cþžó[‹žó[‹„Xš\\Rn›wD¶˜lGl–\
 D¨–\
-D¨—5?Ÿ&®Ÿ&®£t'L±-2ÿ±-2ÿª5F¥µ3M³9S{®JÇ±-2ÿ±-2ÿ½iGÕ¼ÆPÿ›CGy–\
-D¨Ÿ&®Ÿ&®±-2ÿ¥µ3M³9S{±-2ÿ¼ÆPÿ¸J­›CGyŸ&®Ÿ&®¥µ3M¢¶6ã±äXÈ³9S{¼ÆPÿ¤]¥¸J­Ÿ&®Ÿ&®¢¶6ã¡ñ>(±äXÈ¼ÆPÿ¼V_;¤]¥Ÿ&®¡ñ>(®![d±äXÈ¼V_;¤]¥¡ñ>(¤LK6®![d¼V_;¤]¥¤]¥¤LK6§»U”§»U”®![d¤]¥";
+D¨–L;^˜e0±˜e0±™­#ˆ›Ó\"°›Ó\"°£t'L±-2ÿ±-2ÿª5F¤F0ØŸ|<Ÿ¤?H¢×SG±-2ÿ¸ü>¤²{@N¸>M²»ÆE`½ÌR:¸¦aÿžó[‹\\Rn›wD¶–\
+D¨˜e0±›Ó\"°±-2ÿ¤F0Ø±-2ÿ²{@N°òCµÏO!¸>M²½ÌR:OEz›wD¶˜e0±˜e0±›Ó\"°¤F0Ø®JÇ±-2ÿ°òCµÏO!½ÌR:¸¦aÿ˜e0±¤F0Ø A71³9S{®JÇ°òC³LŸµÏO!¸¦aÿOEz˜e0± A71³9S{°òC±ÞIk±ÞIk³LŸ¸¦aÿOEz A71Ÿ|<Ÿ³9S{±ÞIk¸¦aÿžpJkOEzŸ|<Ÿ±äXÈ³9S{¸¦aÿžpJkŸ|<Ÿ¢×SG®![d±äXÈ¸¦aÿ\\RnžpJk¢×SG®![d¸¦aÿ\\Rn¢×SG®![d\\Rn";
 		-- Icehorn
-		[ 32361 ] = "Ìpz¦Î4r•ÐTobÓ¼sœÛwxlÚq~ÙÖ$|ÎË}ÌÌpz¦Ìpz¦ÐTobÓ¼sœÓ¼sœÚq~ÙÖ$|Ó¼sœÖ$|Ìpz¦Ò©LÔéM¥Ø0SœØ0SœÞUR–ã9R3ã9R3ìVN(ïSÝïSÝâ©YkÑ–XâÑ–XâËŸTñÏoMíÏoMíÒ©LØ0SœØ0Sœã9R3ïSÝÑ–XâÏoMíØ0SœØ0SœïSÝÑ–XâèXbäÜæcgÜÅ`ÜÅ`è*`èXbä";
+		[ 32361 ] = "ÌÙyÌút¼ÚÚuÚÚuÛy ÌÙyÜIV”ì!PNí.TÉÜ\"[’Î}PòÐMÜIV”í.TÉÜ\"[’ÜIV”Ü\"[’ÐMâgiQà-f+âMb¶âMb¶äzeéâgiQ";
 		-- Old Crystalbark
 		[ 32357 ] = "4Lq5SC¯9áC¢I™Q'N(K^Q-KXïEýV¡C{U?;U?;V;0Z#?¸Z#?¸\\\"Cˆ[‹L[‹LT`TRTUSIrW€>^7¡XÁ4Lq9áC¢8âJ™I™Q'Q-KU%OåXïEýU?;Z#?¸[‹LRTUSIrW€7¡XÁ4Lq8âJ™AoUðI™Q'U%OåW†M]XïEýZ#?¸7¡XÁ8âJ™;#S3W†M]Z#?¸[‹L7¡XÁ;#S3AoUðU%OåW†M][‹LIrW€7¡XÁAoUðU%Oå[‹LIrW€AoUðU%OåIrW€";
 	};
@@ -51,49 +60,36 @@ h†uÂaTum£¶m/Žq4–š…¨hK~}fuÂaTum£¶q4–švýœp…¨hKuÂaT†Â`‰‰7¢ˆum£¶výœp‹Ín—…¨hK†Â`‰‰7
 	};
 	[ 488 ] = { -- Dragonblight
 		-- Crazed Indu'le Survivor
-		[ 32409 ] = "&+•ý&éI)†‹À,’ŽŠ3ä‰Q>B„É>B„É@.‡lD¼Ž¤D¼Ž¤K¦Ž\000U¡ŽBU¡ŽBW‘ K6¢@K6¢@H´¢ÊD{›PD{›PA½—ü@‘|2Ñ,J—´(Á˜r(Á˜r&+•ý)†‹À,’ŽŠ>B„ÉD¼Ž¤D¼Ž¤U¡ŽBK6¢@K6¢@D{›P@‘|(Á˜r)†‹À,’ŽŠD¼Ž¤K6¢@@‘|2Ñ(Á˜r,’ŽŠD¼Ž¤@‘|<íŽÙ<íŽÙ2Ñ,’ŽŠ,’ŽŠD¼Ž¤<íŽÙ%ŽwR%Ép¾(Õoª(Õoª+)yk) {/(Õoª) {/%ŽwR";
+		[ 32409 ] = "%÷”Â3ŠÚ=†=†?'‡»HÈšáJ…šMw“ÉUýUýW$’OU—ÛOU—ÛKk H¡@4S4'R™^%÷”ÂJ…šUýOU—Û<íŒc4S4%÷”ÂJ…šOU—ÛH¡@<íŒc%÷”Â=†HÈšáJ…šH¡@H¡@<íŒc=†=†HÈšáH¡@%ŽwR%Ép¾(Õoª(Õoª+)yk) {/(Õoª) {/%ŽwR";
 		-- Scarlet Highlord Daion
-		[ 32417 ] = "³•7Üµ®2‚¸á9Á¾ANÄ¯F”ÃSHâÃSHâ¼/G”¶§C@¶§C@³•7Ü¸á9Á¸á9Á¾ANÃSHâ¸á9ÁÃSHâ¶§C@Ù=mÌØjŸÚô`|Úô`|Ý\\`\000â©f_â©f_ãmi¦àøn!àøn!Þ!ooÙ=mÌÙ=mÌÚô`|â©f_â©f_àøn!Ù=mÌ¶ü·R¶´­¿¸è­ß¹r»w»ÌÀGº’Áø²øÀA±@Æs¯|Å®¯|Å®±n½V´Ï¸Q¶ü·R¸è­ß¹r»w¹r»wº’Áø·¾²øÀA¯|Å®´Ï¸Q´Ï¸Q¶ü·R¹r»w¹r»w·¾µ\
+		[ 32417 ] = "³•7Üµ®2‚¸á9Á¾ANÄ¯F”ÃSHâÃSHâ¼/G”¶§C@¶§C@³•7Ü¸á9Á¸á9Á¾ANÃSHâ¸á9ÁÃSHâ¶§C@Ü}m˜ÚW\\~Û¹YáÛ¹Yáá£YÎâ¢[çâ¢[çß‰n!Ü}m˜Û¹Yáâ¢[çÜ}m˜¶ü·R¶´­¿¸è­ß¹r»w»ÌÀGº’Áø²øÀA±@Æs¯|Å®¯|Å®±n½V´Ï¸Q¶ü·R¸è­ß¹r»w¹r»wº’Áø·¾²øÀA¯|Å®´Ï¸Q´Ï¸Q¶ü·R¹r»w¹r»w·¾µ\
 ½Oµ\
 ½O²øÀA´Ï¸Q¹r»wµ\
 ½O´Ï¸Q";
 		-- Tukemuth
-		[ 32400 ] = "™M}›íHšž;I­§QGªqLI¯vHÎ¯vHÎ´FHè¶âLí¶âLí·>TZ´ÜX®brG´w®µÂ|ÓµÂ|Ó²ø•Ö°ožƒ°ožƒ­„Ÿvª˜“¡@’n¡@šdžËž\ržËž\r”,™Í–¡‘[”ÉŽ¾–¡‘[”,™Í”,™Í‰™…‡”¨…‡”¨…sÒƒvµƒvµ•€[W™M}™M}ž;I­ oNÒ§QG¯vHÎ¶âLí¶âLí´ÜX¯ÿXâ®brGµÂ|Ó°ožƒ°ožƒª˜“©W‡*žËž\r–¡‘[™³’½”‡‰e”ÉŽ¾”,™Í”,™Í…‡”¨ƒvµƒvµ™M} oNÒ§QG¶âLí¯ÿXâ­i]Š®brG°ožƒ°ožƒ©W‡*§\
-¡@’nžËž\r™³’½”‡‰e”,™Íƒvµƒvµ oNÒ£`Q°£`Q°§QG¯ÿXâ­i]Š°ožƒ§\
-¡@’n™³’½œ‹‘‰–\
-…+”‡‰eƒvµƒvµ£`Q°¯ÿXâ­i]Š§\
-¢êŒV¢êŒV¡@’nœ‹‘‰˜Ôƒ¯–\
-…+ƒvµƒvµ¯ÿXâ­i]Š¢êŒVœ‹‘‰ž\\—œC„¢˜Ôƒ¯ƒvµƒvµ­i]Š¢êŒV¢êŒVž\\—óˆ*œC„¢ƒvµ¢êŒV¢êŒVóˆ*œC„¢";
+		[ 32400 ] = "™JTÖ˜§I†œ/HÁœ/HÁ\\Uã–ýj	Iyûœ‹l¿¢&\\¯ÿKx©ŒO!¨™I†¨™I†°E¼³ÝHK³ÝHK·LŸ·rTZ·rTZµ®X®ù\\C¯rGµ~\\µÖˆ^µÖˆ^­Oªš²t€Þ¬žuª~k~ o£SŠ0 o–´ o–´œ¿ž±˜§Ÿå˜§Ÿå”,™Í–¡‘[”ÉŽ¾–¡‘[”,™Í‘‰7ŠWš¦‡“˜X‡“˜XŽÙ„z“,yx“,yx“n¸“©h7™JTÖœ/HÁ–ýj	¯ÿKx¨™I†³ÝHKµÖˆ^ªš²Z†€²t€Þª~k~¨Ôb× o–´˜§Ÿå–¡‘[”‡‰e”ÉŽ¾”,™Í‘‰7‡“˜X“,yx“,yx“©h7™JTÖ™JTÖ–ýj	–>ph³ŽO'¯ÿKx³ÝHKµÖˆ^²Z†€²t€Þ o–´–¡‘[™³’½”‡‰e”,™Í‘‰7‘‰7“,yx™JTÖ³ŽO'³ÝHK·rTZ¯rGµÖˆ^²t€Þ o–´™³’½œ‹‘‰–\
+…+”‡‰e‘‰7‘‰7™JTÖ–>ph³@S,³ŽO'·rTZ«ú`ì¯rG²t€Þ o–´œ‹‘‰ž\\—–\
+…+‘‰7–>ph­žV³@S,·rTZ«ú`ì²t€Þ¨Ôb× o o–´ž\\—–\
+…+–>ph–âyº¢&\\­žV·rTZ®ù\\C«ú`ì¨Ôb× ož\\—óˆ*˜Ôƒ¯–\
+…+–âyº¢&\\·rTZ®ù\\C®ù\\C¨Ôb×¦»`U oóˆ*œC„¢œC„¢˜Ôƒ¯–âyº¢&\\®ù\\C¦»`UœC„¢–âyº™=|‹¢&\\¦»`U¤‡`œC„¢™=|‹Iyû¢&\\¤‡` o oœC„¢IyûIyû¢&\\ o";
 	};
 	[ 490 ] = { -- Grizzly Hills
 		-- Arcturis
 		[ 38453 ] = "Ni’MNBBQåBQåBQÊ’@Ni’M";
 		-- Grocklar
-		[ 32422 ] = "ÓuÁjW*f8*f8Ídz«f_!ër'yÛ(1€o(1€o'R\r%S’,%S’,¹“¼Æ‘aÓu*f8«f_!ër(1€o%S’,%S’,Æ‘ažòžòÓu«f_«f_!ër%S’,žò«f_%S’,Q·’³M\"Ê²×\"Ê²×)ü®71®B71®B8ö±:³¹û:³¹û9¼ž/¾¸*%9¶lQ·\"Ê²×\"Ê²×71®B:³¹û/¾¸*%9¶l\"Ê²×\"Ê²×:³¹û/¾¸*3¢Ä5SB<Ú‰À<Ú‰ÀB ˆ§D%‹)D%‹)DM–ÜBT™xBT™x5êšÚ3Ã–Ü3Ã–Ü3¢Ä<Ú‰À<Ú‰ÀD%‹)BT™x<Ú‰ÀBT™x3Ã–Ü";
+		[ 32422 ] = "ÓuÁjW*f8*f8Ídz«f_!ër'yÛ(1€o(1€o'R\r%S’,%S’,¹“¼Æ‘aÓu*f8«f_!ër(1€o%S’,%S’,Æ‘ažòžòÓu«f_«f_!ër%S’,žò«f_%S’,Q·’³M\"Ê²×\"Ê²×(X¯A+¬°½2G¶†9“¶E;…½\\;…½\\:	¿b.»Ú)­¶%9¶lQ·Q·\"Ê²×+¬°½2G¶†;…½\\.»Ú)­¶Q·+¬°½+¬°½2G¶†.»Ú+¬°½.»Ú)­¶3¢Ä5SB<Ú‰À<Ú‰ÀB ˆ§D%‹)D%‹)DM–ÜBT™xBT™x5êšÚ3Ã–Ü3Ã–Ü3¢Ä<Ú‰À<Ú‰ÀD%‹)BT™x<Ú‰ÀBT™x3Ã–ÜHKn¾Fk‹HRh*HRh*J…k=HKn¾";
 		-- Seething Hate
 		[ 32429 ] = "C,vfDq[H†r•H†r•I#vâDÐz’H†r•DÐz’C,vfW$zW[]{/[=|[=|Y	‚ˆU`[=|U`W$zWd9yºhz’i ¤i ¤fð„a£€Øa£€ØaN|úd9yºi ¤a£€Ød9yº";
 		-- Syreian the Bonecarver
-		[ 32438 ] = "œ„Wž.Rh¤¯Kû­ÅB¯ª=w±n=æ±n=æ²T?ù± D¯´M¿ºCR¾.Y¦¾.Y¦ÃZ³Åð_;Å_cñÆgÕÄ”l„Ä”l„¾Oqë¼¸pH¹îbþ³•]j±ÄZ)©™Vð¬¥\\q­waÿ­waÿ­kÚ«nO«nO§kî§dÃ¥µa |^Š[À[Àœ„W¤¯Kû­ÅB±n=æ± D¯¾.Y¦Åð_;Å_cñÅ_cñÄ”l„¼¸pH¹îbþ±ÄZ)°:R½©™Vð­waÿ«nO¥µa[À¤¯Kû¤¯Kû­ÅB± D¯´M¿¾.Y¦Å_cñÅ_cñ¼¸pH½\000j)©™Vð«nO§dÃ§dÃ¥µa¤¯Kû¤¯Kû± D¯°£Hâ´M¿Å_cñ½\000j)©ÚR©™Vð§dÃ¤¯Kû°£Hâ´M¿´M¿½\000j)¹îbþ©ÚR§dÃ¤¯Kû´M¿¹îbþ°:R½¬cP;©ÚR¤¯Kû´M¿°:R½¬cP;¤¯Kû´M¿¬cP;";
+		[ 32438 ] = "¥öTÝ¦K­ÅB­ÅB¯ª=w±n=æ±n=æ²T?ù± D¯´M¿ºCR¾.Y¦¾ìaoÂ©`ÄÄcˆÄcˆÅ2lÓ¾ƒqN¾ƒqN¼¸pH»Æjx¹îbþ°S©­æLC©™Vð¬¥\\q­waÿ­waÿ­kÚ«nO«nO§kî§dÃ¦^BŸªb:„`\r„`\r›çXÈžvW§­ÅB±n=æ± D¯´M¿¾.Y¦¾ìao¾ìaoÄcˆ¾ƒqN¾ƒqN»Æjx¹îbþ©™Vð­waÿ«nO«nO§dÃ¦^B„`\ržvW§ Ë[³­ÅB± D¯°£Hâ°£Hâ´M¿¾ìao¾ìao¾ƒqN¹îbþ©	M¿©™Vð«nO¦^B„`\r Ë[³°£Hâ¾ìao¹îbþ©	M¿«nO¦^B¦^B Ë[³£êY™­ÅB°£Hâ¹îbþ¦^B£êY™¥öTÝ­ÅB¹îbþ­æLC©	M¿¦^B¥öTÝ­ÅB­æLC¬/K©	M¿¥öTÝ­ÅB­ÅB¬/K©	M¿";
 	};
 	[ 465 ] = { -- Hellfire Peninsula
 		-- Fulgorge
-		[ 18678 ] = "; G9ü•f:Žp:Žp;ÀƒÃ>5y	>5y	B obGöj=KçcZN}YQ:YÎQ:YÎQ‚\\ôP‰d¯P‰d¯NÅi	Ko\\@‰}@ò¤É>—§Î>—§Î:e¦; G; G:Žp>5y	KçcZQ:YÎP‰d¯P‰d¯Ko\\Gs@i@‰}>—§Î>—§Î; G>5y	Göj=KçcZP‰d¯@i>—§Î>5y	>5y	Göj=P‰d¯AØƒF@i>5y	>5y	P‰d¯GsCÃyAØƒF>5y	>5y	GsCÃyH ²½F²ZFÜ©ŒFÜ©ŒJº¢¯P\000œ\"X1”¯ZÍ‰À]‡\
-]‡\
-aë€åi=Anc}órGz0sñ{Úsñ{ÚsnƒSqª†8qª†8j=‰™d›ˆe[6‘ÿ[)›ÆX ÑLú¨üH ²½FÜ©ŒFÜ©ŒP\000œ\"UÖ™]‡\
-i=Anc}ónc}ósñ{Úqª†8[6‘ÿX ÑT9ŸìRG åLú¨üFÜ©Œ]‡\
-nc}óqª†8]I‹ç[6‘ÿT9ŸìRG åFÜ©ŒUÖ™]‡\
-qª†8d›ˆe]I‹çT9ŸìRG åRG åUÖ™X1”¯]‡\
-d›ˆe]I‹ç]I‹çRG åX1”¯X1”¯]‡\
-]I‹çf°hg¨ºhõ§Rhõ§Rkq¬k¥²Ým/¶1u?²&€¯å€¯åæ±ñ•é´L•é´L—­·*–‡¼‘–‡¼‘‘½c»¥qø¹l»‹gK¹gK¹f°hhõ§Rm/¶1€¯å•é´L•é´L–‡¼‘»¥vâ·âqø¹gK¹gK¹hõ§Rk¥²Ý•é´L»¥z’¸†gK¹k¥²Ým/¶1m/¶1•é´Lz’¸†vâ·âgK¹m/¶1m/¶1z’¸†vâ·â";
+		[ 18678 ] = "<q¦>:0“@?;u÷?;u÷E›kLeSLeSN}YQ£ZkQ£ZkNÅhlG€o·>“g@!¤É<q¦>LeSQ£ZkG€o·>“g<q¦>?;u÷?;u÷LeSG€o·B‰x´>“g?;u÷?;u÷G€o·B‰x´IÛ±‚FL²FÜ©ŒFÜ©ŒJº¢¯Q:™ûX1“tY“Š\\à„ã\\à„ãc&€–kJ€Ëp£}ós¶z~u”~žu”~žr3ƒl\"†8[6‘ÿYîšÚWŸåJ…ª…IÛ±‚FÜ©ŒFÜ©ŒQ:™ûV?™ÍV?™ÍX1“t\\à„ãkJ€Ëp£}óu”~žu”~žl\"†8cþ†ÜMc¥µJ…ª…FÜ©Œ\\à„ãkJ€Ëu”~žQÞŸùMc¥µFÜ©Œ\\à„ãu”~žcþ†ÜQÞŸùFÜ©ŒV?™Í\\à„ãcþ†Ü]I‹çWŸåQÞŸùV?™ÍV?™Í\\à„ã]I‹ç[6‘ÿWŸåV?™ÍV?™Í]I‹ç[6‘ÿf®¸Áfs¥¨jd¥Èm/¶1t¢¯±zÔ¯å²µ—´µ—º—ºÌºkz^¶_u¨¶Yqø¹l»‹f®¸Ájd¥Èj6´gm/¶1zÔ¯å²µ²µ—ºz^¶_u¨¶Yl»‹f®¸Áf®¸Áj6´gm/¶1m/¶1²µz^¶_u¨¶Yf®¸Ám/¶1m/¶1z^¶_u¨¶Y";
 		-- Mekthorg the Wild
-		[ 18677 ] = "rÊss©k‹tth1tth1vh>y³mpy³mp|Iuµz’{}(€4…~OŽùÅŽùÅŽ;‚nƒ‡´}I™*}\\p{xž\rk=´zj»hü·´hü·´ie³Fm/Ÿ¾m/Ÿ¾qN•v®–vxrsTu2rÊsrÊstth1y³mp}(€4ŽùÅƒ‡´}c”?}I™*{xž\roO¢ak=´zhü·´vxrrÊsy³mpzî~}(€4ƒ‡´}c”?{xž\rvÜœÙoO¢ahü·´m/Ÿ¾yŒƒ÷vxry³mpzî~ƒ‡´€ª€ª}c”?vÜœÙr&ž±oO¢am/Ÿ¾yŒƒ÷y³mpz’{€ªvÜœÙr&ž±r&ž±m/Ÿ¾v®–yX‹…yŒƒ÷z’{€ªr&ž±v®–yX‹…z’{zî~€ªv®–yX‹…zî~€ªyX‹…¬\"Çè¤LÀu¢ä½Ù¢ä½Ù£¯µR¥»²•¥»²•¯¾®U±Ñ¯.±Ñ¯.¶öµµ·¹J°½½®pÆy¬\"Çè¬\"Çè¢ä½Ù¥»²•¥»²•±Ñ¯.·¹J°½½¬\"Çè¥»²•¥»²•·¹J²Ýº¥»²•²Ýº°½½";
+		[ 18677 ] = "rÊsqœmcsnh1snh1vh>w§k˜~\\~žŠ~ÙŽ;‚nŽ;‚nƒ‡´‰k{’½vÜœÙr&ž±k=´zjŸ¸>hü·´hü·´ie³Fk‹¢‚k‹¢‚pH—yru”ÏvxrsTu2rÊsrÊssnh1w§k˜~\\~žŽ;‚n‰k‰k{’½r&ž±oO¢ak=´zhü·´hü·´k‹¢‚ru”ÏvxrrÊsw§k˜|¿}\"~\\~ž‰k‰kr&ž±oO¢aoO¢ahü·´ru”Ïz’„ãvxrw§k˜w§k˜|¿}\"‰koO¢aru”ÏuÜ•Ïz’„ãw§k˜‰k‰koO¢auÜ•Ïzû‰z’„ã‰k‰kuÜ•Ïzû‰¬\"Çè¤LÀu¢ä½Ù¢ä½Ù£¯µR¥»²•¥»²•¯¾®U±Ñ¯.±Ñ¯.¶öµµ·¹J°½½®pÆy¬\"Çè¬\"Çè¢ä½Ù¥»²•¥»²•±Ñ¯.·¹J°½½¬\"Çè¥»²•¥»²•·¹J²Ýº¥»²•²Ýº°½½";
 		-- Vorakem Doomspeaker
-		[ 18679 ] = "ˆFã‰ÔCþÌG_¡©G†¨“Ct«‹FE«‹FE«ŸNO©xQ ©xQ  [TŽ“¶Sþ“¶SþŒúQG‡sKÆ‡sKÆˆFãÌG_–yI†¡©G†«‹FE«‹FE©xQ “¶Sþ“¶Sþ‡sKÆÌG_–yI†«‹FE“¶SþÌG_–yI†“¶Sþ²a{¹±[r·\
-fµ·\
-fµºÚ]í¼Ù[=¼Ù[=¿b[çÁub©Áub©Âk¹½¸qh½¸qhº]yõ´2}V´2}V²a{¹·\
-fµ·\
-fµ¼Ù[=Áub©Áub©½¸qh´2}V·\
-fµÁub©´2}VµÈ˜†³¢‰D·r„Â·r„Â¼…Â¿H²¿H²¾!œÌ¼‹Ÿ'¼‹Ÿ'¹	µÈ˜†µÈ˜†·r„Â¿H²¿H²¼‹Ÿ'µÈ˜†b-PvcL’h_K~h_K~o—Mío¾VýjkSþjkXRhÇY†hÇY†ctVfb-Pvh_K~o¾VýjkSþjkSþhÇY†b-Pvh_K~jkSþb-Pv";
+		[ 18679 ] = "†lFE‡üC¯˜ÁL]ŸKÓ¥LH­¨áJD¨áJD©áO—§üRa§üRa¤RÑˆMˆM†lFE˜ÁL]ŸKÓ¨áJD§üRa§üRaˆM˜ÁL]˜ÁL]ŸKÓ§üRa²ax	¯Nr°°ëov¹Jg¡º¦aë½^ž½^ž¿Ëao¿'gK¿'gK¹õw1¶syX¶syX²ax	°ëov¹Jg¡½^ž¿'gK¶syX°ëov³ãoØ³ãoØ¹Jg¡¿'gK³ãoØ¿'gK¶syX³¯ùµˆ§º=‰Àº=‰À¾\r’ë¾!˜Î¾!˜Îº³œ²¸7š™¸7š™³¯ùº=‰Àº=‰À¾!˜Î¸7š™a'NžcKkIXkIXo.L²mžTMmžTMjkUÂc©T@c©T@a'NžkIXkIXmžTMc©T@";
 	};
 	[ 491 ] = { -- Howling Fjord
 		-- King Ping
@@ -109,7 +105,7 @@ fµÁub©´2}VµÈ˜†³¢‰D·r„Â·r„Â¼…Â¿H²¿H²¾!œÌ¼‹Ÿ'¼‹Ÿ'¹	µÈ˜†µÈ˜†·r„Â¿H²¿H²¼‹Ÿ'µÈ
 		[ 32501 ] = "­ßg´¬²b©­«]p­«]p°‰ZÇµ\
 \\/»W¡½;Oi¿ËPo¿ËPo½Z^¶â_.¶â_.¶Èf´iõ´iõ°Aj­ßg´­ßg´­«]pµ\
 \\/»W¡¿ËPo¶â_.¶â_.´iõ­ßg´­ßg´µ\
-\\/»W¡»W¡¶â_.­ßg´|PáauLØûttÑÊttÑÊvéÈ­zûÅ_zûÅ_~ÊÀƒ&Ûƒ&Û€oá{|Páa|PáattÑÊzûÅ_zûÅ_ƒ&Û|PáaN›…PòœÌPN¡©WE¬àZQ©Q[~«²[²^Ù³_v·1_v·1]„·èZõ¶+SÃµsP–µãOƒ³ZPA¯M uN›…WE¬à[~«²X´®p[²_v·1Zõ¶+Zõ¶+SÃµsOƒ³ZPA¯N›…PN¡©WE¬àX´®p[²[²Zõ¶+Oƒ³ZPA¯PN¡©WE¬àWE¬à[²Oƒ³ZWE¬àOƒ³ZPA¯";
+\\/»W¡»W¡¶â_.­ßg´|PáavðÛqxXÇÁxXÇÁzûÅ_òËòËÒàA|PáaxXÇÁòË|PáaN›…PòœÌPN¡©S©°:\\d°½]„³›]„³›\\d¶+P–µãP–µãOƒ³ZPA¯PA¯M uN›…N›…PN¡©S©°:S©°:]„³›P–µãPA¯N›…S©°:S©°:P–µãPA¯";
 		-- Hildana Deathstealer
 		[ 32495 ] = "JqÞHXu¨HRdðLçTIÛL¥JJF¡JJF¡MAªQÄB ]Ó?\r]p<j_:Ô_:Ô`ò<ç`@\000`@\000^(DŽUtIÁM}N‘P.S¶N.]O` RdtS9ieS9ieR&nìL²uIÎwöEê}ODÝ{ŸHXu¨JqÞNÒmVJºfRJqÞHRdð]B3]Ó?\r_:ÔLIJÇM}N‘N.]S9ieL²uIÎwöIÎwöDÝ{ŸHXu¨LŸb×JºfRHRdð]B3_:Ô`@\000S9ieIÎwöHXu¨LŸb×HRdðK)]„]B3`@\000UtIÁS9ieHXu¨NÒmVO¾hšLŸb×K)]„U¨FÜ]B3UtIÁS9ieNÒmVO¾hšO¾hšK)]„LçTQÄB U¨FÜUtIÁO` S9ieO¾hšQÄB UtIÁP±EêN.]O` O¾hšQÄB P±EêMóEÂN.]O¾hšLçTJJF¡QÄB MóEÂLIJÇN.]LçTJJF¡MóEÂLIJÇLçTJJF¡LIJÇ†\
 ŽB†Š~ˆr‡Áˆr‡Á‹„ŽÒ„2’äŠû—ü‡§™‰Í–öÞš6—R™’ú™’ú—E ò“M¡£“M¡£“Ðžv–öp‰*Šô‡§²†\
@@ -126,13 +122,17 @@ fµÁub©´2}VµÈ˜†³¢‰D·r„Â·r„Â¼…Â¿H²¿H²¾!œÌ¼‹Ÿ'¼‹Ÿ'¹	µÈ˜†µÈ˜†·r„Â¿H²¿H²¼‹Ÿ'µÈ
 	};
 	[ 606 ] = { -- Mount Hyjal
 		-- Blazewing
-		[ 50057 ] = "k=–Lk³“tŽ—üŸ“Ž¡ë§“ŠQ§“ŠQ¯±Š~¯„£t‘: ª–+œô˜^œô˜^˜Ô–´ŠtÉ›Ck=–LtŽ—ü§“ŠQ¯„¨²y—tÉ›CtŽ—üŸ“Ž§“ŠQ¨²y—tŽ—üw•ŽŸ“Ž¨²£t‘:{cy—w•Žœà•EŸ“Ž£t‘:{cw•ŽyD‹qœà•E£t‘:œô˜^:‡{cyD‹q™’“Ãœà•Eœô˜^:‡yD‹q€Þƒê™’“Ãœô˜^ŠŠ:‡€Þƒê‘T‡†™’“ÃŠ€Þƒê‘T‡†Š";
+		[ 50057 ] = "kx–lí’{oO’ÊŸ“Ž¡ë§“‡>§“‡>®ƒ„ã°ë‡l°ë‡l±¶‹²¯„£t‘: ª–+œô˜^œô˜^˜Ô–´–Â“t~–Â“t˜Ô–´y—tÉ›CoßžBoßžBlôkx–kx–oO’ÊtŽ—üŸ“Ž§“‡>°ë‡l°ë‡l¯„¨²œô˜^–Â“tŠ~˜Ô–´~O“~O“y—oßžBoßžBkx–tŽ—üŸ“Ž°ë‡l¨²z=“~~O“~O“oßžBtŽ—üŸ“Ž¨²£t‘:~O“tŽ—üw•Žœà•EŸ“Ž£t‘:z=“~O“w•Žœà•E£t‘:œô˜^{cz=“w•Ž™’“Ãœà•Eœô˜^{cw•ŽyD‹q™’“Ãœô˜^Š:‡{cyD‹q‘T‡†™’“ÃŠ:‡yD‹q€Þƒê€Þƒê‘T‡†Š€ÞƒêŠ:‡";
 		-- Garr
-		[ 50056 ] = "_4ÌcÉg+ËÓg+ËÓhÇÒFgKØegKØecÛ\"_Ø™_Ø™]ŠÒa_4Ì_4Ìg+ËÓgKØegKØe_Ø™_4Ì";
+		[ 50056 ] = "cÉg+ËÓhÇÒFhÇÒFfzÖ>cÖÕcÖÕ`¾Óµ`ÑÌŠ`ÑÌŠ\\ô¹Ÿ_Š¸rcÉhÇÒFcÖÕcÖÕ`ÑÌŠ_Š¸rcÉcÖÕ_Š¸r";
 		-- Terrorpene
-		[ 50058 ] = "‹‹Âž¾ÒÁþÒÁþ‘Åš‹‹Â‰Ò¯‡KÏ-‰eË~‰eË~‹¹Ï-‰Ò¯‚&¼P·¸Î‚µ‚µ„•¸Î‚&¼P";
+		[ 50058 ] = "ŠÎòŒcÁ°\r½‘\r½‘’¶¾;”?Å”?Å’&Å¨°Á:ŒÑœ…ÉÙ6„gÖ\
+\r½‘”?Å°Á:ŒÑœ„gÖ\
+ŠÎò\r½‘°Á:Ž5ÄŽ5ÄŒÑœŠÎò\r½‘Ž5ÄŠÎò…¡½Ù€[¹kn¶\
+n¶\
+†Ïº¦…¡½Ù";
 		-- Thartuk the Exile
-		[ 50053 ] = "o¾T¯oÅQ|s¼QÊs¼QÊuðRÞ{³WAS¯‚ÐP\000…MÙ…MÙòFR’nG¡’nG¡”µK¦’ZQò“FYÁ”m\\à’‚^!’‚^!‘ZQ\rQG„ÉQ-‚MVL|çYÎ|çYÎz¹Yºu‡U”sTT¨o¾T¯s¼QÊ’ZQò“FYÁ’‚^!’‚^!\rQG‘äKÍu‡U”sTT¨s¼QÊ’ZQò’‚^!‘äKÍ|çYÎu‡U”s¼QÊ’nG¡’ZQò‘äKÍ|çYÎs¼QÊ{³W’nG¡‘äKÍAIe|çYÎ{³WAS¯…MÙ’nG¡AIe„ÉQ-|çYÎAS¯…MÙAIe„ÉQ-AS¯…MÙ„ÉQ-";
+		[ 50053 ] = "oùQ-s¼QÊuðRÞAS¯‚ÐP\000…MÙ…MÙòFR’nG¡’nG¡”µK¦’ZQò“FYÁ—è]}–š`åÞ\\)\rQG‘äKÍ„ÉQ-‚MVL|çYÎ|çYÎz¹Yºu‡U”sTT¨o¾T¯kPÄdmAª_}>«_¤:ºoùQ-uðRÞ{³W“FYÁ–š`åÞ\\)u‡U”sTT¨kPÄdmAª_¤:ºe÷>I’ZQò“FYÁÞ\\)kPÄdmAªe÷>I’nG¡’ZQòÞ\\)kPÄe÷>IlM’nG¡Þ\\)‘äKÍkPÄlMoùQ-’nG¡‘äKÍAIeu‡U”kPÄoùQ-…MÙ’nG¡AIe|çYÎu‡U”oùQ-…MÙAIe„ÉQ-|çYÎoùQ-{³WAS¯…MÙ„ÉQ-|çYÎ{³WAS¯AS¯„ÉQ-|çYÎ";
 	};
 	[ 477 ] = { -- Nagrand
 		-- Bro'Gaz the Clanless
@@ -179,7 +179,8 @@ fµÁub©´2}VµÈ˜†³¢‰D·r„Â·r„Â¼…Â¿H²¿H²¾!œÌ¼‹Ÿ'¼‹Ÿ'¹	µÈ˜†µÈ˜†·r„Â¿H²¿H²¼‹Ÿ'µÈ
 		-- Aotona
 		[ 32481 ] = "r{ˆl{À‰îy#“kÍ’þiœúd–>d–>c÷j’j’iÇƒFl€4l€4pr{ˆlr{ˆly#“p·p·kÍ’þd–>j’l€4r{ˆlr{ˆlp·d–>r{ˆld–>j’‡§‚©Š\000[°[°’°…¡øˆ“øˆ“ˆD‰­†¡†¡†¡†¡‡§‚©[°[°øˆ“†¡†¡:¢ä–+Ÿª•ã®ù•ã®ùŽË©*:¢ä„2²ˆŠî·‰#¾B‰#¾B„ãÁ¶‚&¼‰#¾B‚&¼„2²ˆu?´êsg¸0là¸ºlà¸ºl²ÀòiÛÃÖgK´ÂeŽ±Tfö­Šfö­ŠkªÚpÑ«<pÑ«<sñ®«u?´êlà¸ºiÛÃÖgK´ÂgK´Âfö­ŠpÑ«<pÑ«<u?´êlà¸ºlà¸ºgK´ÂpÑ«<";
 		-- King Krush
-		[ 32485 ] = "FL†Õ@.†È>c‚þ>c‚þ>ßzDÝtDÝtKçaÞP‰]„P‰]„Q£TZÚIZÚI_ùK=`O!XâUYT@hrP±qoKûwüOvz0P–}\"N\\€Oƒ’MNÒ¦8NÒ¦8Pù§ïRªôRªôOO±I>´I>´I´ÀòG_ÄG_ÄA°Áø>«¼Ì>«¼ÌA½®\\E¼©ÚFL†Õ>c‚þDÝtZÚI`O!XâUYXâUYP±qoMjsÝKûwüP–}\"N\\€NÒ¦8RªôI>´I>´G_Ä>«¼ÌFL†ÕDÝtP‰]„P‰]„ZÚIXâUYKûwüN\\€NÒ¦8NÒ¦8I>´>«¼ÌP‰]„XâUYMjsÝNÒ¦8>«¼ÌE¼©ÚFL†ÕP‰]„MjsÝKûwüNÒ¦8E¼©ÚFL†ÕMjsÝKûwüFL†ÕKûwüE¼©ÚtÃl<w$b©z’g“‚ëg…ãc,‰XdM‰XdMŠkŸˆ“w®ˆ“w®{J{dyõ{dyõvâr tÃl<tÃl<z’g“.iº.iº‚ëg‰XdM‰XdMˆ“w®{dyõ{dyõtÃl<.iº.iº‰XdM{dyõƒÈD„9ËÓ…Ñ‚jÒ@¤Ì„“›Èõ¢{Ëq¥‡ÆÁªkÆ_ªkÆ_¬CÈ	«˜Í¤«˜Í¤¥E×õŸßÚ’ŸßÚ’”÷ÚŸ‘Øx‹çØõ‡8ÛôƒtÖƒtÖnÍBƒÈDjÒ@“›Èõ–¡Ìó¢{ËqªkÆ_«˜Í¤«˜Í¤ŸßÚ’‘Øx‘Øx‹çØõƒtÖƒtÖƒÈD…Ñ‚jÒ@–¡ÌóOÎ}OÎ}¢{Ëq«˜Í¤«˜Í¤‘ØxƒtÖƒtÖ…Ñ‚ˆQÔFˆQÔFjÒ@OÎ}OÎ}«˜Í¤ƒtÖˆQÔFOÎ}ƒtÖ";
+		[ 32485 ] = "J0œC@AA\000A\000A–z…LPdQÄa4VN¸Z¬KPZ¬KP_oL^«QbXeS&Tte`N;hÛF{ÓL„|¥N;~¾N;~¾M‹ƒÃK‹àK‹àLÆ¦8J™½žJ™½žFÜ¼wI¦+I¦+G\
+‹wJ0œA\000LPdQÄa4Z¬KP^«QbZçPƒK‹àJ™½žI¦+Z¬KPZçPƒXeS&K‹àI¦+J0œQÄa4Z¬KPXeS&N;~¾K‹àJ0œQÄa4XeS&N;hÛF{ÓN;~¾J0œA\000QÄa4N;hÛF{ÓJ0œA\000A\000N;hÛF{Ósor×lwvégâvégâz’g“~(m‚k³†€e¡‰Xfs‰Xfs‰m(OyrOyr{dyõyõtÐw´påsovégâ‚k³‰XfsOyrOyryõtÐw´påw´påvégâ~(m~(m‚k³Oyr~(mOyrw´pånÍB„9ËÓ…Ñ‚jÒ@¤Ì„“›ÈõOÎ}¢{Ëq¥»ÉÔ¥»ÉÔ¨^Ì5¨QÏË¨QÏË¥E×õŸßÚ’ŸßÚ’”÷ÚŸ‘Øx‹çØõ‡8ÛôƒtÖƒtÖnÍB…Ñ‚jÒ@“›Èõ–¡ÌóOÎ}¥»ÉÔ¨QÏË¨QÏËŸßÚ’‘Øx‘Øx‹çØõƒtÖƒtÖ…Ñ‚ˆQÔFjÒ@–¡ÌóOÎ}OÎ}¨QÏË‘Øx‘ØxƒtÖˆQÔFˆQÔFjÒ@OÎ}ˆQÔFOÎ}‘Øx";
 		-- Loque'nahak
 		[ 32517 ] = "±‰³³Ö¯N¶§¯;¶§¯;¸è³¸è¸k¸è¸k¶Ü»à³É»¥³É»¥±£¸±‰³±‰³¶§¯;¸è¸k¸è¸k³É»¥±‰³ªk¿\r­ß¾.° Æ8° Æ8«’Í¤¦Ì¸¦Ì¸¥ãÉ#ªk¿\r° Æ8¦Ì¸ªk¿\r‚×è~HÓz~;Ð~;Ð‚uÉ…„LÒñ„LÒñ…8ÖÎ‚×è~;Ð„LÒñ‚×è‘A6S“Ã3n–Ï3n–Ï3n™	6€™	;’™	;’–â?v“M?b“M?b‘[;Ÿ‘A6S‘A6S–Ï3n™	;’™	;’“M?b‘A6SX§MVXÕJJ[˜Fð[˜Fð`\000R]úT¢[˜Fð]úT¢X§MVL¥£ÃOå¤ãR©ÀR©ÀPU¯åKÀ¯AKÀ¯AIÎ¬wL¥£ÃR©ÀKÀ¯AL¥£Ã3×²37_®\\9è°‚9è°‚9†¹05Éºd5Éºd2Þ¹û3×²39è°‚5Éºd3×²3";
 	};
@@ -189,8 +190,7 @@ fµÁub©´2}VµÈ˜†³¢‰D·r„Â·r„Â¼…Â¿H²¿H²¾!œÌ¼‹Ÿ'¼‹Ÿ'¹	µÈ˜†µÈ˜†·r„Â¿H²¿H²¼‹Ÿ'µÈ
 		-- Doomsayer Jurim
 		[ 18686 ] = "]VN‘\\)Gü^.G^.G_—Næ^BTÉ]aA_\000h´^\\nß^\\nß[çnž\\qhŒ\\qhŒZra‰[çT9]VN‘^.G^BTÉ]aA^\\nß\\qhŒ\\qhŒ[çT9]VN‘]VN‘^BTÉ]aA]aA\\qhŒ]VN‘b©>íb¶;¹fÈ<~y	A}c>Ò‚Ð=¸‡191Š03:’g/¤’g/¤’°2‚‹5÷‹5÷ˆ7;¬ƒS@ª}ÙB@yDE2m¿Emm¿EmhÎCgeµ?Ueµ?Ub©>ífÈ<~‡191’g/¤‹5÷ƒS@ª}ÙB@m¿Emeµ?UfÈ<~i @‰‚Ð=¸‡191‹5÷m¿Emeµ?Ui @‰‚Ð=¸‹5÷ƒS@ªm¿Emi @‰nVB@y	A‚Ð=¸ƒS@ªm¿EmnVB@y	Ay	AƒS@ªm¿Em‹ÀStŒ/PA”¨R—XVfžZ^¡ë_iª¬o.¶~´Ö€ë¤Yc{ ½bœ«]œ«]–+YQ“US“US‹ÀSt”¨Rª¬o.´Ö€ë¨Áq[¤Yc{œ«]“US“US”¨R—XVf¥Ö`·ª¬o.¨Áq[¤Yc{“US—XVf¥Ö`·¨Áq[¤Yc{¤Yc{—XVf¡ë_i¡ë_i¥Ö`·¤Yc{";
 		-- Okrek
-		[ 18685 ] = "K^k¬O±fRRˆlPRˆlPNŠuFLúoØRˆlPLúoØK^k¬|Ó-w}\"Þ~ù!ò~ù!ò„•)ï€ÿ4t€ÿ4t~Ò4|Ó-w~ù!ò€ÿ4t|Ó-w”t9—s7l›=à›=à›˜Fm’{=›=à’{=”t9¼žŒ/«‘-©*‘-©*’&«P‘±œ‘±œ”S¶\
-‘½¤¼ž‘-©*‘±œ‘±œ‘½¤¼ž";
+		[ 18685 ] = "L/oùQ‰ieS&líS&líM¸sL/où{Í,‹}Š)è4/Ø4/Øo2©{Í,‹“Ö8œV>Ìš’C©š’C©’G<¿“Ö8Ž5³¼‘·¤”•¦‘ò²×“M¸0uºCŽ5³¼•¦‘ò²×‘ò²×uºCŽ5³¼";
 	};
 	[ 495 ] = { -- The Storm Peaks
 		-- Dirkee
@@ -221,7 +221,7 @@ pòh1ljD…ék)ŠCl¿“÷l¿“÷iD—­a£wfãŽ;fsh1ll¿“÷a£weý•fãŽ;h1ljD…éjD…él¿“÷eý•jD
 	};
 	[ 700 ] = { -- Twilight Highlands
 		-- Julak-Doom
-		[ 50089 ] = ">&µƒÄƒÄ…z&‰XyåŸ“,¶•Ž@•Ž@•ãÜ’¢ ’¢ \"·†zc†zc>ƒÄåŸ•Ž@’¢ †zcƒÄ‰XyŽcVåŸ’¢ ’¢ †zc‰Xy‰XyŽcV’¢ ";
+		[ 50089 ] = "~Å–\000‰#>°*“þæ—»—»’¢ \"·\"·†zc~Å~Å‰#>ŽË0°*—»\"·\"·~ÅŽË0ŽË0°*\"·";
 		-- Karoma
 		[ 50138 ] = "—pÑ™Dmc›wpo›wpo™ks÷—pÑˆ‰ÍŠW†8Œ‹‰áŒ‹‰áŠ…ˆ‰Í|ÙÃ›¿Ø‚Ã9‚Ã9HÇ	|ÙÃ›¤ãšç§_—©ûšÀ©ûšÀ§ržƒ¤ãšç“ê£É–fŸª™7£©™7£©–§§“ê£É‰ÍÄ‡ŒcÀuŽËÄtŽËÄtŒVÈD‰ÍÄ‡";
 		-- Overlord Sunderfury
@@ -236,28 +236,31 @@ pòh1ljD…ék)ŠCl¿“÷l¿“÷iD—­a£wfãŽ;fsh1ll¿“÷a£weý•fãŽ;h1ljD…éjD…él¿“÷eý•jD
 		-- Akma'hat
 		[ 50063 ] = "]IšÔ_¤˜™aÄš™aÄš™a× G_±¢{_±¢{]V h]IšÔaÄš™_±¢{]IšÔ";
 		-- Armagedillo
-		[ 50065 ] = "rþo\\uk=w€o;w€o;u?rÐrþo\\";
+		[ 50065 ] = "qÄk]sÝh*uÜk=uÜk=sÐn5qÄk]";
 		-- Cyrus the Black
-		[ 50064 ] = "•ÂŸ|—ÕœI™ÔŸ\\™ÔŸ\\—â¢{•ÂŸ|¨X±äª=®±¬<±Ä¬<±Äª6´›¨X±ä³•¾Åµ®ºô¸¾¤¸¾¤µðÂ9³•¾Å“MÕ$•2Ñ£—_Õ—_Õ•YØK“MÕ$";
+		[ 50064 ] = "“3œí•E™º—EœÌ—EœÌ•SŸì“3œí¨X¯Uª=¬\"¬<¯4¬<¯4ª6²¨X¯U³•¼5µ®¸e¸¼¸¼µð¿ª³•¼5“MÕ$•2Ñ£—_Õ—_Õ•YØK“MÕ$";
 		-- Madexx
 		[ 50154 ] = "lC+…o\rrnèrnèuf\"y !øy !ø‰0.ž‹Ó4ä‹Ó4äŠÇ;†_A†_AAGr‚<¥r‚<¥n¸6slC+…lC+…rnèy !øy !ø‹Ó4ä†_A†_Ar‚<¥lC+…y !ø†_AlC+…";
 	};
 	[ 467 ] = { -- Zangarmarsh
 		-- Bog Lurker
-		[ 18682 ] = "g$¨üeÂ¥Èe‡ oe‡ oh1™Qlw”9{”€‰‘n†§”Ž†§”Ž‡_š¹„ý¥„ý¥ƒÐ­ž‚¯‰‚¯‰—«¹¤Öl£nkô©¦j¬«Cj¬«Cg$¨üe‡ olw”9{”†§”Ž†§”Ž„ý¥‚¯‰l£nj¬«Ce‡ o†§”Ž‚¯‰¤ÖmVIl£ne‡ o†§”Ž¤Ö~\rŸAp\r™õmVIe‡ o†§”Ž~\rŸAzÇ›p\r™õe‡ olw”9lw”9†§”ŽzÇ›lw”9zÇ›p\r™õÏÿÃZÏƒ¾OÑu¼æÑu¼æ×“ÃMÜÊ¦ÜÊ¦àÖ“àAÜ<àAÜ<ÝæêxØèî\\Øèî\\ÖìÖsâMÔ÷×KÏÿÃZÑu¼æÑu¼æÜÊ¦àAÜ<àAÜ<Øèî\\ÖsâMÖsâMÔ÷×KÑu¼æÑu¼æàAÜ<ÖsâM5µ=ó:74@ª2‚@ª2‚Gï4êJ=7´J=7´K^;K?ØK?ØHRGsDJîDJî<ŸMÌ8M8M: EÝ?EF:A£: EÝ8M8M4{EY5µ=ó@ª2‚J=7´K?ØK?ØDJî8M8M?EFAòB×:A£8M5µ=óK?Ø8MAòB×<˜;~:A£5µ=óK?ØAòB×CM<j<˜;~5µ=ó@ª2‚@ª2‚K?ØCM<j@¾:D<˜;~@ª2‚@ª2‚CM<j@¾:D";
+		[ 18682 ] = "cÝ¢@bä5d™ûd™ûlw”9“•“•„›˜>„µÌ‚¦+œ­~Å¬V~Å¬V\000¥s€Nž¤i^¢i«/f”¬/f”¬/cÝ¢@d™û“•„µÌ‚¦+‚¦+~Å¬V€Nž¤i^¢f”¬/d™û‚¦+€Nž¤åš…lP—i^¢d™û“•‚¦+åš…p\ršClP—d™û“•åš…~\r™~\r™p\ršCd™ûd™û“•~\r™Ò@ÆÖÁÄ‡ÛwÈÛwÈß ÑÝÌÜÙÝÌÜÙÞìÚ‹ì„Ú‹ì„Ú\"Ü(Ú³ÓêÖ$ÌíÓ2ÍìÑnËÑnËÒ@ÆÛwÈÛwÈÝÌÜÙÚ‹ì„Ö$ÌíÑnËÛwÈÛwÈÚ‹ì„Ú³ÓêÙ	Ï|Ö$ÌíÛwÈÛwÈÚ³ÓêÙ	Ï|7$9õ:74@ª2‚@ª2‚Eã3IÔ5ŽIÔ5ŽJŒ<FãI™FãI™DˆLÆ@NNi@NNi8M: EÝ:á@: EÝ8M8M6SF”7$9õ7$9õ@ª2‚IÔ5ŽIÔ5ŽFãI™@NNi@NNi: EÝ?;Gl:á@8M7$9õ@NNi?;GlBD¯<˜;~:á@7$9õIÔ5Ž@NNiBD¯@‰9	<˜;~7$9õIÔ5ŽBD¯Dñ>B@‰9	7$9õIÔ5ŽIÔ5ŽDñ>BD,:áIÔ5ŽD,:á@‰9	";
 		-- Coilfang Emissary
-		[ 18681 ] = "AUy*=²ao>i]5>i]5A\\VDn_!Dn_!FLxE¼{¹E¼{¹CT|cAUy*AUy*>i]5Dn_!Dn_!E¼{¹AUy*—´[ûšJX†£{]„£{]„¦Rb3¨Qi7¨Qi7§7p¤9uÉ¤9uÉ Gtˆ j#æe™Wbñ—“`—“`—´[û£{]„£{]„¨Qi7¤9uÉæe—“`£{]„£{]„¤9uÉ j#£{]„ j#æe²,¸™¶Rµm¹º¶ö¹º¶öºÀ¼<¸™¾¸™¾³t¿'±{¼¥±{¼¥²,¸™¹º¶ö¹º¶ö¸™¾±{¼¥¾¤ÇX½pÅ®¿;Âœ¿;ÂœÁGÂ¯ÀøÇ*¿;ÂœÀøÇ*¾¤ÇX¡×¨k¡¡‚¢¢ž\\¢¢ž\\¤Ö ½¥`¦l¥`¦l¨è¬Ù©²Ý©²Ý¦»µÈÒ¶šÒ¶š›à³mŸÒ®¡×¨k¢¢ž\\¥`¦l¥`¦l©²ÝÒ¶šÒ¶šŸÒ®¡×¨k¡×¨k¥`¦lÒ¶š¹…Ö®¹ÀÐh»ÓÍì»ÓÍì¾HÓ½„×Q½„×Q»)Øû¹…Ö®»ÓÍì½„×Q¹…Ö®µsÇâ´¨Å®·ÂM·ÂM¹…Ãˆ¸ÆK·ÂM¸ÆKµsÇâ";
+		[ 18681 ] = "A‰yÇ?!^ùA\\VA\\VCg]æEãxïEãxïDZ{)A‰yÇA\\VEãxïA‰yÇ˜\\˜š[J¢Ý_\\¢Ý_\\§€i†¥tS¥tS£ˆv8¡&uz¡&uz °q&¢{jq Äe™Wb—“`—“`˜\\˜¢Ý_\\¥tS¡&uz¢{jq Äe—“`¢Ý_\\¢Ý_\\¥tS¢{jq¢Ý_\\¢{jq Äe´·­¶»¶§º˜Ä”º˜Ä”¸ÎÅé²9ºÚº˜Ä”²9ºÚ´·­¿ÞÇõ½ÙÅ_¿ØÂM¿ØÂMÁ©Å%¿ÞÇõO²3¢M¥€¤›¥Ï¤›¥Ï§“±ñ¦´Ž¦´ŽžØµO²3¤›¥Ï¦´ŽO²3¼cÕÂ¹õÒ¼<Ï'¼<Ï'¾UÒg¼cÕÂ";
 		-- Marticar
-		[ 18680 ] = "‰û)z’Æu8+îW€,…Mæ.M<.M<0¤Q‰0!\\/0!\\/.—`b-`¾)m«,s3*	w1ž æŠÀŽ¤ÀŽ¤QŽž‰û‰ûÆu8#œj+îW€.M<0!\\/)m«*	w1%?vYž ÀŽ¤‰û‰û#œj(´_!(´_!+îW€0!\\/(ühÁ)m«%?vY!ƒyrž ‰û(´_!0!\\/-`¾(ühÁ%?vY!ƒyr!ƒyr‰û(´_!(´_!-`¾(ühÁ(´_!(ühÁ!ƒyr]\"]‘b[R–h$P\000s÷P|y^KÍùKùKHS¯’VY’VYUYrŒ˜Zr\000Uru\\qi7]cecndMf®a×hDa×hD]ÅbM]\"]‘]\"]‘h$P\000nÌQ–s÷P|ùK’VY’VYŒ˜Zr\000Uecna×hD]\"]‘]\"]‘nÌQ–s÷P|s÷P|’VY\000Ui7]cecn]\"]‘]\"]‘s÷P|\000U\000Ui7]c]\"]‘¶Ütã°'cF°h^æ°h^æ´ðY™»„[=»„[=½\\`|½\\d¢ÁÞo—ËI€·Îùˆ­Îùˆ­Î\\Œ6É|É|Ä9Œ‘¹û{‹¹û{‹¶Ütã°h^æ°h^æ»„[=½\\d¢ÁÞo—Îùˆ­É|É|¹û{‹°h^æ°h^æ½\\d¢ÁÞo—°h^æÁÞo—É|";
+		[ 18680 ] = "ÜŠJº}óÆu8$n(K]I+îW€+îW€,ÍLí0¤M‹0¤M‹/¸[C+qab+qab&ör@ HxÕW‰Dúà‘·à‘·K²ÜŠJÜŠJÆu8$n$n+îW€0¤M‹0¤M‹+qab HxÕW‰Dà‘·ÜŠJ$n0¤M‹ HxÕ˜€ÑW‰DÜŠJÜŠJ$n HxÕ HxÕ˜€ÑÜŠJquT÷{àK¹!L!LŽÙU9jZÀ}(Qr@[6eSZb©^„bÞf_^Ìfš^Ìfš^\\]BcaS‚!LjZÀ}(Qb©^„^ÌfšcaS‚quT÷!L}(QeSZb©^„caS‚quT÷}(QeSZcaS‚quT÷eSZ¼ÌxD°øg“°h`¾°h`¾µÂYKºJYeºJYe¿i\\V¾.aª´ðe›¿ÑuÌŠÔÌŠÔÉQŽB¼ÌxDºJYe¾.aª¹^Ò´ðe›ÌŠÔ¼ÌxDºJYe¹^Ò¶ö^ó´ðe›¼ÌxD°h`¾°h`¾ºJYe¶ö^óµa½´ðe›°h`¾°h`¾¶ö^óµa½";
 	};
 	[ 496 ] = { -- Zul'Drak
 		-- Gondria
-		[ 33776 ] = "›í—ü ËŸ\r›¬¦ï ÿgü¤µm« -t2 -t2 i¦ ÿgü®ÒÁ °ÊÁ[®¸ÍI®¸ÍI¬pÌžªÍÉ®¸ÍIªÍÉ®ÒÁ Ã•«íË­„ÊŸ²½ÊŸ²½Èr¶yÅý·ÎÅý·ÎÄ+»jÂn¸õÂn¸õÂT­ßÃ•«íÃ•«íÊŸ²½Åý·ÎÅý·ÎÂn¸õÃ•«í´2yk´gƒn°}Š°}Š° yx´2yk";
+		[ 33776 ] = "›í—ü ËŸ\r›¬¦ï ÿgü¤µm« -t2 -t2 i¦ ÿgü®ÒÁ °ÊÁ[®¸ÍI®¸ÍI¬pÌžªÍÉ®¸ÍIªÍÉ®ÒÁ ÇR§$É©ÔÈ“´”È“´”Æš¶+ÄÂ´ÄÂ´Å2©JÇR§$È“´”ÄÂ´ÇR§$´2yk´2}—°}Š°}Š° yx´2yk¿ØdS½¤ao¿Ä^«¿Ä^«Á°ao¿ØdS";
 		-- Griegen
-		[ 32471 ] = ")Î²M,­Å4{­(:J± E¢±G”´%G”´%G»ºçB »B »B&È@;ÊŸ@;ÊŸ5ÝÎª1åËw1åËw1½ÈX4¼Å?<¸¦-I¹*^¶Ü*^¶Ü)Î²M4{­(:J± G”´%B »1åËw4¼Å?7yÇ_<¸¦*^¶Ü4{­(4{­(:J± B »@;ÊŸ1åËw7yÇ_><º’<¸¦4{­(@;ÊŸ7yÇ_<„ÄÉ><º’4{­(B »B »@;ÊŸ<„ÄÉB »<„ÄÉ><º’>ÒŽ(A‰‡lC×†šC×†šGüŒ„Gö‘?'›6>w¡©;Ô£{;Ô£{62¡£5t—5t—7€™k<6˜>?.’½>ÒŽ(C×†šC×†šGö‘DÖ’Ã?'›6;Ô£{5t—?.’½C×†šDÖ’ÃDÖ’Ã?'›65t—<6˜>?.’½DÖ’ÃDÖ’Ã5t—<6˜>!u”¢!N£$ê‹6$ê‹6'¡ŒÌ*’•»*’•»)e˜#°˜	#°˜	!u”¢$ê‹6$ê‹6*’•»#°˜	";
+		[ 32471 ] = "+Ú±þDg±þF€µ@ÑÇ15FÏ·3ÃÊkA|·“,·y+Ú±þ@ÑÇ13ÃÊk=ÌÃ%A|·“+Ú±þF€µF€µ@ÑÇ1=ÌÃ%F€µ=ÌÃ%A|·“8†œ~BÄŠ0E¯Š™E¯Š™F»Žß<<¡£<<¡£9# [8†œ~E¯Š™<<¡£8†œ~$ñ•Ž\" ‘$ê$ê'Â‘T$ñ•Ž•öh˜>dÉšqgÜšqgÜ˜1kJ•öh";
 		-- Terror Spinner
-		[ 32475 ] = "ƒŽVƒaQ-Ž!PŽ!PŽUÖƒŽV˜#bÞ˜r]¿™èY>™èY>Ÿ\rWÈ ½\\Ú ½\\ÚIeF›e›e˜#bÞ™èY>™èY> ½\\Ú›e²þ6·3øº˜6ãº˜6ã»ô;³¼@4¹ÚCÊ¹­PAµ»Q·µ»Q·³mO}´?I´?²œ;)²þ6²þ6º˜6ã¼@4¹ÚCÊµ»Q·´?I´?²þ6¼@4¼@4¹ÚCÊ´?I¼@4´?I´?Í¤Q:ÏƒOóÓðU÷ÓðU÷ÔZrÍób©Íób©Í._ËÍ¤Q:ÓðU÷Íób©Í¤Q:Ã¶cÊÈŒfÈ snÈ snÁÞs×ÁˆgÈ snÁˆgÃ¶cÊ¸Î¦´¹À¡ÊÂê¡ÑÂê¡ÑÃ¶¥8¿–¯b¿–¯b¼Æ¯ß¸Î¦´Âê¡Ñ¿–¯b¸Î¦´";
+		[ 32475 ] = "†8T9†?N¸‹N¸‹N¸‹TM†8T9Ÿì\\‹‘`4›\"\\Ÿ›\"\\ŸiYŸì\\‹µ\
+:·E7ö¹^:’¹^:’¸ÛM}¶sOU¶sOU´?L’µ\
+:¹^:’¶sOUµ\
+:ÎBU9ÔfUmÔYY	ÔYY	Ò3\\IÎ\\\\<ÔYY	Î\\\\<ÎBU9Ã`iáÈŒjÈ³sñÈ³sñÇ1tÃMnìÈ³sñÃMnìÃ`iá¼Iª¿¥ÏÁu©ÔÁu©Ô¾Ò­¸¼Iª";
 		-- Zul'drak Sentinel
-		[ 32447 ] = "/ÅÒ¯1:ÐhIÏòIÏòIµ¡L’µ»L’µ»L‹ÛjHïÛcI×­0ÿØ0/ÅÖÈ/ÅÖÈ/ÅÒ¯IÏòL’µ»HïÛcI×­I×­/ÅÖÈIÏòIÏòL’µ»I×­a£‡âf»ÒhÇ€An—Š)sÃŒÌrÊ‘uw8ž\rzži|¢×|¢×{/ªJx«¿oB³`…2Õý‚:Ú/‚:Ú/g°–eªûeªûe’Ti—8lç”ýi—8e’Te’Ta½Œa£‡âa£‡âhÇ€Ai¦…i¦…n—Š)rÊ‘uw8ž\r|¢×x«¿oB³`‚:Ú/eªûeªûi—8i¥Llç”ýe’Ta£‡âa£‡âi¦…rÊ‘utˆšáw8ž\rx«¿eªûi¥LkÓ¬oƒ•ãlç”ýa£‡âa£‡ârÊ‘utˆšátˆšáx«¿uðªoB³`eªûkÓ¬oƒ•ãa£‡âtˆšáoB³`kÓ¬oH¬‘tê¡øoƒ•ãtˆšáuðªoB³`oH¬‘tê¡øtˆšáuðªuðªoH¬‘t%¤ðuðªt%¤ðtê¡ø";
+		[ 32447 ] = "9^Ò;ÐIÏòIÏòI»wL’»‘L~×_;×“9^Ö+9^Ö+9^ÒIÏòIÏòL’»‘L~×_IÏòL~×_9^Ö+eã¡©eéƒieƒ¢ixŒPoßˆÎr¶Š)r¶Š)sñæt¼•öt¼•ö|¢×{]¦‡pH¶s„ÉÖK‚:Ú/vÂ¡[q–˜#p|‘aik‘œiQ¡£eã¡©eã¡©ieƒ¢ixŒPpH¶s‚:Ú/iÁ´Fik‘œeã¡©ixŒP{]¦‡pH¶siÁ´FoŽÙik‘œixŒP{]¦‡iÁ´FvÂ¡[oŽÙixŒPr¶Š)t¼•ö{]¦‡vÂ¡[p|‘aoŽÙr¶Š)t¼•övÂ¡[p|‘ar¶Š)t¼•öp|‘a";
 	};
 };
