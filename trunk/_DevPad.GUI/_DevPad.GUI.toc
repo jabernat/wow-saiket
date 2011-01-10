@@ -1,6 +1,6 @@
 ## Interface: 40000
-## Title: _|cffCCCC88DevPad|r
-## Notes: Notepad for Lua scripts and mini-addons.
+## Title: _|cffCCCC88DevPad|r.GUI
+## Notes: Script list and editor for _|cffCCCC88DevPad|r.
 ## Author: Saiket
 ## Version: 4.0.3.1
 ## X-Date: 2011-01-08
@@ -13,14 +13,15 @@
 ## X-Curse-Project-ID: devpad
 ## X-Localizations: enUS
 ## X-CompatibleLocales: deDE, enUS, esES, esMX, frFR, koKR, ruRU, zhCN, zhTW
-## SavedVariables: _DevPadOptions
-## OptionalDeps: _Dev, Ace3
-Libs\LibStub\LibStub.lua
-Libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
-
+## X-Embeds: FlyPaper
+## SavedVariables: _DevPadGUIOptions
+## RequiredDeps: _DevPad
+## OptionalDeps: Ace3, FlyPaper
+## LoadOnDemand: 1
 Embeds.xml
 Locales.xml
 
-_DevPad.lua
-# Optional default scripts file
-_DevPad.DefaultScripts.lua
+_DevPad.GUI.lua
+_DevPad.GUI.Dialog.lua
+_DevPad.GUI.List.lua
+_DevPad.GUI.Editor.lua

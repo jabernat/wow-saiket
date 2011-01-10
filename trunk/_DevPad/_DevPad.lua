@@ -9,6 +9,7 @@ _DevPad = me;
 
 me.Frame = CreateFrame( "Frame" );
 me.Callbacks = LibStub( "CallbackHandler-1.0" ):New( me );
+me.ReceiveQueue, me.ReceiveIgnored = {}, {};
 
 me.COMM_PREFIX = "_DP";
 
@@ -336,40 +337,34 @@ do
 end
 
 
---- Fires a callback for each script in Folder.
--- If the callback returns a logically true value, iteration ends.
--- @param Folder  Optional sub-folder to iterate over.
+--- Fires a callback for each script in Object.
+-- @param Callback  Function or method name.
 -- @param ...  Extra args passed after Script to Callback.
--- @return The logically true value returned by the final callback call, if any.
-function me:IterateScripts ( Folder, Callback, ... )
-	if ( not Folder ) then
-		Folder = self.FolderRoot;
-	end
-	for _, Child in ipairs( Folder ) do
-		local Result;
-		if ( Child.Class == "Folder" ) then
-			Result = self:IterateScripts( Child, Callback, ... );
-		elseif ( Child.Class == "Script" ) then
-			Result = Callback( Child, ... );
-		end
-		if ( Result ) then
-			return Result;
+function me:IterateScripts ( Object, Callback, ... )
+	if ( Object.Class == "Script" ) then
+		return ( Object[ Callback ] or Callback )( Object, ... );
+	elseif ( Object.Class == "Folder" ) then
+		for _, Child in ipairs( Object ) do
+			self:IterateScripts( Child, Callback, ... );
 		end
 	end
 end
 do
-	--- Matches scripts by name.
-	-- @see _DevPad:IterateScripts
+	local Matches = {};
+	--- Adds scripts to found list matched by name.
 	local function Callback ( Script, Pattern )
 		if ( Script.Name:match( Pattern ) ) then
-			return Script;
+			Matches[ #Matches + 1 ] = Script;
 		end
 	end
-	--- Finds a Script object by name.
+	--- Finds Script objects by name.
 	-- @param Pattern  Name pattern to match by.
-	-- @return The first matching script object found, or nil if none.
-	function me:FindScript ( Pattern, Folder )
-		return self:IterateScripts( Folder, Callback, Pattern );
+	-- @param Object  Optional object to search in, or FolderRoot if nil.
+	-- @return Each matching script, or nil if none found.
+	function me:FindScripts ( Pattern, Object )
+		wipe( Matches );
+		self:IterateScripts( Object or self.FolderRoot, Callback, Pattern );
+		return unpack( Matches );
 	end
 end
 --- Gets an object by path from the folder root.
@@ -379,26 +374,43 @@ function me:GetAbsObject ( ... )
 end
 
 
---- Receive objects from other players.
-function me:OnCommReceived ( Prefix, Text, Channel, Author )
-	local Success, MessageType, Settings = AceSerializer:Deserialize( Text );
-	if ( Success and MessageType == "Object" and type( Settings ) == "table" ) then
-		local Class = self:GetClass( Settings.Class );
-		if ( Class ) then
-			local Object = Class:New();
-			local Success = pcall( Object.Unpack, Object, Settings );
-			if ( Success ) then
-				Object.Author = Author;
-				-- Sanitize scripts
-				if ( Object.Class == "Script" ) then
-					Object:SetAutoRun( false );
-				elseif ( Object.Class == "Folder" ) then
-					self:IterateScripts( Object,
-						self:GetClass( "Script" ).SetAutoRun, false );
-				end
-				self.Callbacks:Fire( "ObjectReceived", Object, Channel, Author );
-			end
+do
+	local SafeNameReplacements = {
+		[ "|" ] = "||";
+		[ "\n" ] = [[\n]];
+		[ "\r" ] = [[\r]];
+	};
+	local ReopenPrinted = false;
+	--- Receives and validates objects sent from other players.
+	function me:OnCommReceived ( Prefix, Text, Channel, Author )
+		if ( self.ReceiveIgnored[ Author:lower() ] ) then
+			return;
 		end
+		local Success, MessageType, Settings = AceSerializer:Deserialize( Text );
+		if ( not Success or MessageType ~= "Object" or type( Settings ) ~= "table" ) then
+			return;
+		end
+		local Class = self:GetClass( Settings.Class );
+		if ( not Class ) then
+			return;
+		end
+		local Object = Class:New();
+		if ( not pcall( Object.Unpack, Object, Settings ) ) then
+			return;
+		end
+
+		PlaySound( "Glyph_MinorCreate" );
+		local SafeName = Object.Name:gsub( "[|\r\n]", SafeNameReplacements );
+		self.Print( self.L.RECEIVE_MESSAGE_FORMAT:format( Author, SafeName ) );
+		if ( not ReopenPrinted and not ( self.GUI and self.GUI.List:IsVisible() ) ) then
+			ReopenPrinted = true;
+			self.Print( self.L.RECEIVE_MESSAGE_REOPEN, HIGHLIGHT_FONT_COLOR );
+		end
+
+		Object.Channel, Object.Author = Channel, Author;
+		self:IterateScripts( Object, "SetAutoRun", false ); -- Sanitize scripts
+		tinsert( self.ReceiveQueue, Object );
+		self.Callbacks:Fire( "ObjectReceived", Object );
 	end
 end
 --- Load saved variables and run auto-run scripts.
@@ -409,18 +421,12 @@ function me.Frame:ADDON_LOADED ( Event, AddOn )
 
 
 		local Options = _DevPadOptions;
-		if ( Options and Options.List ) then
-			me.List:Unpack( Options.List );
-		end
-		me.Editor:Unpack( ( Options and Options.Editor )
-			or { StickTarget = "List"; StickPoint = "RT"; } );
-
 		local Scripts = ( Options and Options.Scripts ) or me.DefaultScripts;
 		me.DefaultScripts = nil;
 		if ( Scripts ) then
 			me.FolderRoot:Unpack( Scripts );
 		end
-		me:IterateScripts( nil, function ( Script )
+		me:IterateScripts( me.FolderRoot, function ( Script )
 			if ( Script.AutoRun ) then
 				me.SafeCall( Script );
 			end
@@ -435,33 +441,7 @@ end
 function me.Frame:PLAYER_LOGOUT ()
 	_DevPadOptions = {
 		Scripts = me.FolderRoot:Pack();
-		List = me.List:Pack();
-		Editor = me.Editor:Pack();
 	};
-end
-do
-	local Active = IsLoggedIn();
-	--- Keeps the default UI from hiding open dialogs when zoning.
-	function me.Frame:PLAYER_LEAVING_WORLD ()
-		Active = false;
-	end
-	function me.Frame:PLAYER_ENTERING_WORLD ()
-		Active = true;
-	end
-	--- @return True if the dialog was hidden.
-	local function Hide ( self )
-		if ( self:IsShown() ) then
-			self:Hide();
-			return true;
-		end
-	end
-	local Backup = CloseSpecialWindows;
-	--- Hook to hide dialog windows when escape is pressed.
-	-- Used instead of UISpecialFrames to prevent closing when zoning.
-	function CloseSpecialWindows ( ... )
-		return Backup( ... )
-			or Active and ( Hide( me.Editor ) or Hide( me.List ) );
-	end
 end
 --- Global event handler.
 function me.Frame:OnEvent ( Event, ... )
@@ -475,13 +455,20 @@ end
 function me.SlashCommand ( Input )
 	local Pattern = Input:trim();
 	if ( Pattern == "" ) then
-		ToggleFrame( me.List );
+		local Loaded, ErrorReason = LoadAddOn( "_DevPad.GUI" );
+		if ( Loaded ) then
+			ToggleFrame( me.GUI.List );
+		else
+			me.Print( me.L.SLASH_GUIERROR_FORMAT:format(
+				_G[ "ADDON_"..ErrorReason ] ), RED_FONT_COLOR );
+		end
 	else
-		local Script = me:FindScript( Pattern );
+		local Script = me:FindScripts( Pattern );
 		if ( Script ) then
+			me.Print( me.L.SLASH_RUN_FORMAT:format( Script.Name ) );
 			return me.SafeCall( Script );
 		else
-			me.Print( me.L.SLASH_NOTFOUND_FORMAT:format( Pattern ) );
+			me.Print( me.L.SLASH_RUN_MISSING_FORMAT:format( Pattern ), RED_FONT_COLOR );
 		end
 	end
 end
@@ -489,11 +476,10 @@ end
 
 
 
+setmetatable( me, { __call = me.GetAbsObject; } );
 me.FolderRoot = me:GetClass( "Folder" ):New();
 
 me.Frame:SetScript( "OnEvent", me.Frame.OnEvent );
 me.Frame:RegisterEvent( "ADDON_LOADED" );
-me.Frame:RegisterEvent( "PLAYER_ENTERING_WORLD" );
-me.Frame:RegisterEvent( "PLAYER_LEAVING_WORLD" );
 
 SlashCmdList[ "_DEVPAD" ] = me.SlashCommand;
