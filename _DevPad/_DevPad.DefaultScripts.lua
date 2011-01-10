@@ -22,7 +22,7 @@ _DevPad.DefaultScripts = { Class = "Folder"; Name = "ROOT";
 --- Run with Hack enabled to transfer all settings to _DevPad.
 -- Hack books transfer as folders.
 -- NOTE: You must replace script references to Hack yourself!
---   Ex) Hack.Run("Page") > _DevPad:FindScript("Page")()
+--   Ex) Hack.Run("Page") > _DevPad:FindScripts("Page")()
 
 local DB = assert( HackDB, "Hack saved variables not found." );
 local FolderClass, ScriptClass = _DevPad:GetClass( "Folder" ), _DevPad:GetClass( "Script" );

@@ -1,14 +1,14 @@
 --[[****************************************************************************
-  * _DevPad by Saiket                                                          *
-  * _DevPad.Editor.lua - Script text editor frame.                             *
+  * _DevPad.GUI by Saiket                                                      *
+  * _DevPad.GUI.Editor.lua - Script text editor frame.                         *
   ****************************************************************************]]
 
 
-local _DevPad = select( 2, ... );
-local L = _DevPad.L;
+local _DevPad, GUI = _DevPad, select( 2, ... );
+local L = GUI.L;
 
-local me = _DevPad.Dialog:New( "_DevPadEditor" );
-_DevPad.Editor = me;
+local me = GUI.Dialog:New( "_DevPadGUIEditor" );
+GUI.Editor = me;
 
 me.Run = CreateFrame( "Button", nil, me );
 me.Lua = me:NewButton( [[Interface\MacroFrame\MacroFrame-Icon]] );
@@ -31,8 +31,8 @@ me.DefaultWidth, me.DefaultHeight = 500, 500;
 local TextInset = 8; -- If too small, mouse dragging the text selection won't scroll the view easily.
 local TabWidth = 2;
 local AutoIndent = true; -- True to enable auto-indentation for Lua scripts
-if ( _DevPad.IndentationLib ) then
-	local T = _DevPad.IndentationLib.Tokens;
+if ( GUI.IndentationLib ) then
+	local T = GUI.IndentationLib.Tokens;
 	me.SyntaxColors = {};
 	--- Assigns a color to multiple tokens at once.
 	local function Color ( Code, ... )
@@ -68,7 +68,7 @@ if ( _DevPad.IndentationLib ) then
 end
 
 local DejaVuSansMono = [[Interface\AddOns\]]..( ... )..[[\Skin\DejaVuSansMono.ttf]];
-me.Font = CreateFont( "_DevPadEditorFont" );
+me.Font = CreateFont( "_DevPadGUIEditorFont" );
 me.Font.Paths = { -- Font file paths for font cycling button
 	DejaVuSansMono,
 	[[Fonts\FRIZQT__.TTF]],
@@ -107,7 +107,7 @@ function me:SetScriptObject ( Script )
 			self:Hide();
 			self.Edit:ClearFocus();
 		end
-		_DevPad.Callbacks:Fire( "EditorSetScriptObject", Script );
+		GUI.Callbacks:Fire( "EditorSetScriptObject", Script );
 		return true;
 	end
 end
@@ -178,13 +178,13 @@ do
 	end
 	--- Enables or disables syntax highlighting in the edit box.
 	function me:ScriptSetLua ( _, Script )
-		if ( Script == self.Script and _DevPad.IndentationLib ) then
+		if ( Script == self.Script and GUI.IndentationLib ) then
 			if ( Script.Lua ) then
-				_DevPad.IndentationLib.Enable( self.Edit,
+				GUI.IndentationLib.Enable( self.Edit,
 					AutoIndent and TabWidth, me.SyntaxColors );
 				SetVertexColors( self.Lua, 0.4, 0.8, 1 );
 			else
-				_DevPad.IndentationLib.Disable( self.Edit );
+				GUI.IndentationLib.Disable( self.Edit );
 				SetVertexColors( self.Lua, 0.4, 0.4, 0.4 );
 			end
 		end
@@ -406,18 +406,18 @@ end
 --- Focus search edit box.
 function me.Shortcuts:F ()
 	if ( IsControlKeyDown() ) then
-		self:SetFocus( _DevPad.List.SearchEdit );
+		self:SetFocus( GUI.List.SearchEdit );
 	end
 end
 --- Jump to next/previous search result.
 function me.Shortcuts:F3 ()
-	if ( _DevPad.List.Search ) then
+	if ( GUI.List.Search ) then
 		local Cursor, Reverse = me:GetScriptCursorPosition(), IsShiftKeyDown();
 		if ( Reverse and Cursor > 0 ) then
 			Cursor = Cursor - 1;
 		end
 		me:SetScriptHighlight(
-			_DevPad.List:NextMatchWrap( me.Script, Cursor, Reverse ) );
+			GUI.List:NextMatchWrap( me.Script, Cursor, Reverse ) );
 	end
 end
 
@@ -521,7 +521,7 @@ StaticPopupDialogs[ "_DEVPAD_GOTO" ] = {
 
 
 
-_DevPad.Dialog.StickyFrames[ "Editor" ] = me;
+GUI.Dialog.StickyFrames[ "Editor" ] = me;
 me:SetScript( "OnShow", me.OnShow );
 me:SetScript( "OnHide", me.OnHide );
 me.Title:SetJustifyH( "LEFT" );
@@ -540,7 +540,7 @@ local Highlight = Run:GetHighlightTexture();
 Highlight:SetDesaturated( true );
 Highlight:SetVertexColor( 0.2, 0.8, 0.4 );
 Highlight:SetTexCoord( 0.13, 0.87, 0.13, 0.82 );
-Run:SetScript( "OnEnter", _DevPad.Dialog.ControlOnEnter );
+Run:SetScript( "OnEnter", GUI.Dialog.ControlOnEnter );
 Run:SetScript( "OnLeave", GameTooltip_Hide );
 Run:SetScript( "OnClick", Run.OnClick );
 Run.tooltipText = L.SCRIPT_RUN;
@@ -563,7 +563,7 @@ Disabled:SetDesaturated( true );
 AdjustTexture( Disabled, 0.6, 0.6, 0.6 );
 Revert:SetHighlightTexture( [[Interface\BUTTONS\UI-ScrollBar-Button-Overlay]] );
 Revert:GetHighlightTexture():SetVertexColor( 1, 0, 0 );
-Revert:SetScript( "OnEnter", _DevPad.Dialog.ControlOnEnter );
+Revert:SetScript( "OnEnter", GUI.Dialog.ControlOnEnter );
 Revert:SetScript( "OnLeave", GameTooltip_Hide );
 
 local LastButton = me.Close;
@@ -575,7 +575,7 @@ local function SetupTitleButton ( Button, TooltipText, Offset )
 	Button:SetMotionScriptsWhileDisabled( true );
 	Button.tooltipText = TooltipText;
 end
-if ( _DevPad.IndentationLib ) then
+if ( GUI.IndentationLib ) then
 	SetupTitleButton( me.Lua, L.LUA_TOGGLE );
 else
 	me.Lua:Hide();
@@ -627,6 +627,6 @@ me.Shortcuts:SetScript( "OnHide", me.Shortcuts.OnHide );
 me.Shortcuts:EnableKeyboard( false );
 
 ChatEdit_InsertLink = me.ChatEditInsertLink;
-_DevPad.RegisterCallback( me, "ListSetSelection" );
+GUI.RegisterCallback( me, "ListSetSelection" );
 
 me:Unpack( {} ); -- Default position/size and font

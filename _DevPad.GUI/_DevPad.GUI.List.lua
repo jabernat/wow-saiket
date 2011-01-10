@@ -1,14 +1,14 @@
 --[[****************************************************************************
-  * _DevPad by Saiket                                                          *
-  * _DevPad.List.lua - Tree view of folders and scripts.                       *
+  * _DevPad.GUI by Saiket                                                      *
+  * _DevPad.GUI.List.lua - Tree view of folders and scripts.                   *
   ****************************************************************************]]
 
 
-local _DevPad = select( 2, ... );
-local L = _DevPad.L;
+local _DevPad, GUI = _DevPad, select( 2, ... );
+local L = GUI.L;
 
-local me = _DevPad.Dialog:New( "_DevPadList" );
-_DevPad.List = me;
+local me = GUI.Dialog:New( "_DevPadGUIList" );
+GUI.List = me;
 
 me.ScrollChild = CreateFrame( "Frame", nil, me.ScrollFrame );
 
@@ -19,7 +19,7 @@ me.NewFolder = me:NewButton( [[Interface\MINIMAP\TRACKING\Banker]] );
 
 me.Edited = me:CreateTexture( nil, "OVERLAY" );
 me.RenameEdit = CreateFrame( "EditBox" );
-me.SearchEdit = CreateFrame( "EditBox", "_DevPadListSearchEdit", me.Bottom, "InputBoxTemplate" );
+me.SearchEdit = CreateFrame( "EditBox", "_DevPadGUIListSearchEdit", me.Bottom, "InputBoxTemplate" );
 me.SearchEdit.InactiveAlpha = 0.5;
 me.SearchMismatchAlpha = 0.5;
 local SearchFrequency = 0.25; -- Update rate of list item highlighting
@@ -48,10 +48,10 @@ function me:SetSelection ( Object )
 		if ( Object ) then
 			ObjectButtons[ Object ]:LockHighlight();
 		end
-		_DevPad.Callbacks:Fire( "ListSetSelection", Object );
+		GUI.Callbacks:Fire( "ListSetSelection", Object );
 		return true;
 	elseif ( Object ) then -- Fire event anyway to reopen editor if closed
-		_DevPad.Callbacks:Fire( "ListSetSelection", Object );
+		GUI.Callbacks:Fire( "ListSetSelection", Object );
 	end
 end
 --- Shows or hides the renaming UI for an object.
@@ -401,7 +401,7 @@ do
 			Dialog.editBox:SetFocus();
 		end
 	end
-	local Dropdown = CreateFrame( "Frame", "_DevPadListSendDropDown", me.Send, "UIDropDownMenuTemplate" );
+	local Dropdown = CreateFrame( "Frame", "_DevPadGUIListSendDropDown", me.Send, "UIDropDownMenuTemplate" );
 	local Menu = {
 		{ text = PLAYER; func = SendToPlayer; arg1 = "WHISPER"; notCheckable = true; },
 		{ text = PARTY; func = SendBroadcast; arg1 = "PARTY"; notCheckable = true; },
@@ -427,57 +427,38 @@ do
 		Object:SetName( L.RECEIVE_OBJECTNAME_FORMAT:format( Object.Name, Object.Author ) );
 		_DevPad.FolderRoot:Insert( Object );
 	end
-	local MAX_IGNORE = 50;
-	local IgnoredAuthors = {};
+	local Queue, Ignored = _DevPad.ReceiveQueue, _DevPad.ReceiveIgnored;
 	--- Puts the author on the ignore list.
 	function me.Send:ReceiveOnIgnore ( Object )
-		IgnoredAuthors[ Object.Author:lower() ] = true;
-		if ( GetNumIgnores() < MAX_IGNORE ) then
-			AddIgnore( Object.Author );
-		end
+		Ignored[ Object.Author:lower() ] = true;
+		AddIgnore( Object.Author );
 	end
-	local ReceiveQueue = {};
 	--- Prompts the user to receive the next object in the queue.
-	function me.Send:ReceiveConfirmNext ()
-		if ( #ReceiveQueue > 0 and not StaticPopup_Visible( "_DEVPAD_RECEIVE_CONFIRM" ) ) then
-			while ( #ReceiveQueue > 0 ) do
-				local Object = tremove( ReceiveQueue, 1 );
-				if ( not IgnoredAuthors[ Object.Author:lower() ] ) then
-					StaticPopupDialogs[ "_DEVPAD_RECEIVE_CONFIRM" ].text = Object.Class == "Folder"
-						and L.RECEIVE_CONFIRM_FOLDER_FORMAT
-						or L.RECEIVE_CONFIRM_SCRIPT_FORMAT;
-					return StaticPopup_Show( "_DEVPAD_RECEIVE_CONFIRM", Object.Author, Object.Name, Object );
-				end
+	local function ConfirmNext ()
+		if ( #Queue == 0 or StaticPopup_Visible( "_DEVPAD_RECEIVE_CONFIRM" ) ) then
+			return;
+		end
+		while ( #Queue > 0 ) do
+			local Object = tremove( Queue, 1 );
+			if ( not Ignored[ Object.Author:lower() ] ) then
+				StaticPopupDialogs[ "_DEVPAD_RECEIVE_CONFIRM" ].text = Object.Class == "Folder"
+					and L.RECEIVE_CONFIRM_FOLDER_FORMAT
+					or L.RECEIVE_CONFIRM_SCRIPT_FORMAT;
+				return StaticPopup_Show( "_DEVPAD_RECEIVE_CONFIRM",
+					Object.Author, Object.Name, Object );
 			end
 		end
 	end
 	--- Tries to show confirmation prompts until the queue is empty.
 	local function OnUpdate ( self )
-		self:ReceiveConfirmNext();
-		if ( #ReceiveQueue == 0 ) then
+		ConfirmNext();
+		if ( #Queue == 0 ) then
 			self:SetScript( "OnUpdate", nil );
 		end
 	end
-	local SafeNameReplacements = {
-		[ "|" ] = "||";
-		[ "\n" ] = [[\n]];
-		[ "\r" ] = [[\r]];
-	};
-	local ReopenPrinted = false;
 	--- Prompt the user to save received objects.
-	function me:ObjectReceived ( _, Object, Channel, Author )
-		if ( not IgnoredAuthors[ Author:lower() ] ) then
-			PlaySound( "Glyph_MinorCreate" );
-			local SafeName = Object.Name:gsub( "[|\r\n]", SafeNameReplacements );
-			_DevPad.Print( L.RECEIVE_MESSAGE_FORMAT:format( Author, SafeName ) );
-			if ( not ( ReopenPrinted or self:IsVisible() ) ) then
-				ReopenPrinted = true;
-				_DevPad.Print( L.RECEIVE_MESSAGE_REOPEN, HIGHLIGHT_FONT_COLOR );
-			end
-
-			ReceiveQueue[ #ReceiveQueue + 1 ] = Object;
-			self.Send:SetScript( "OnUpdate", OnUpdate );
-		end
+	function me:ObjectReceived ()
+		self.Send:SetScript( "OnUpdate", OnUpdate );
 	end
 end
 --- Deletes the object once confirmed.
@@ -568,18 +549,18 @@ end
 --- Jumps to next/previous search result.
 function me.SearchEdit:OnEnterPressed ()
 	if ( me.Search ) then
-		local Script, Cursor, Reverse = _DevPad.Editor.Script, 0, IsShiftKeyDown();
+		local Script, Cursor, Reverse = GUI.Editor.Script, 0, IsShiftKeyDown();
 		if ( Script ) then
-			Cursor = _DevPad.Editor:GetScriptCursorPosition();
+			Cursor = GUI.Editor:GetScriptCursorPosition();
 			if ( Reverse and Cursor > 0 ) then
 				Cursor = Cursor - 1;
 			end
 		end
 		local ScriptNew, Start, End = me:NextMatchGlobal( Script, Cursor, Reverse );
 		if ( ScriptNew ) then
-			_DevPad.Editor:SetScriptObject( ScriptNew );
+			GUI.Editor:SetScriptObject( ScriptNew );
 		end
-		_DevPad.Editor:SetScriptHighlight( Start, End );
+		GUI.Editor:SetScriptHighlight( Start, End );
 	else
 		return self:ClearFocus();
 	end
@@ -872,14 +853,22 @@ function me:OnHide ()
 	PlaySound( "igSpellBookClose" );
 	StaticPopup_Hide( "_DEVPAD_DELETE_CONFIRM" );
 	StaticPopup_Hide( "_DEVPAD_SEND_PLAYER" );
-	StaticPopup_Hide( "_DEVPAD_RECEIVE_CONFIRM" );
-	return _DevPad.Editor:Hide();
+
+	local Popup = _G[ StaticPopup_Visible( "_DEVPAD_RECEIVE_CONFIRM" ) ];
+	if ( Popup ) then
+		local Object = Popup.data;
+		StaticPopup_Hide( "_DEVPAD_RECEIVE_CONFIRM" );
+		-- Add back into queue to be confirmed later
+		tinsert( _DevPad.ReceiveQueue, 1, Object );
+		self:ObjectReceived();
+	end
+	return GUI.Editor:Hide();
 end
 
 
 
 
-_DevPad.Dialog.StickyFrames[ "List" ] = me;
+GUI.Dialog.StickyFrames[ "List" ] = me;
 me:SetScript( "OnShow", me.OnShow );
 me:SetScript( "OnHide", me.OnHide );
 me.Title:SetText( L.LIST_TITLE );
@@ -991,7 +980,14 @@ _DevPad.RegisterCallback( me, "FolderRemove" );
 _DevPad.RegisterCallback( me, "FolderSetClosed" );
 _DevPad.RegisterCallback( me, "ScriptSetAutoRun" );
 _DevPad.RegisterCallback( me, "ScriptSetText" );
-_DevPad.RegisterCallback( me, "ListSetSelection" );
-_DevPad.RegisterCallback( me, "EditorSetScriptObject" );
+GUI.RegisterCallback( me, "ListSetSelection" );
+GUI.RegisterCallback( me, "EditorSetScriptObject" );
 
 me:Unpack( {} ); -- Default position/size
+
+-- Synchronize with _DevPad
+local Root = _DevPad.FolderRoot;
+for _, Child in ipairs( Root ) do
+	me:FolderInsert( "FolderInsert", Root, Child );
+end
+me:ObjectReceived( "ObjectReceived", nil );

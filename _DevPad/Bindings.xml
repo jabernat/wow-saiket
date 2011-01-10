@@ -1,5 +1,5 @@
 <Bindings>
-	<Binding name="_DEV_PAD_SHOW" header="_DEV_PAD">
-		ToggleFrame( _Dev.Pad.List );
+	<Binding name="_DEVPAD_TOGGLE" header="_DEVPAD">
+		_DevPad.SlashCommand( "" ); -- Toggles GUI List window
 	</Binding>
 </Bindings>

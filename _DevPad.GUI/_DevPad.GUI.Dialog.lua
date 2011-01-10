@@ -1,6 +1,6 @@
 --[[****************************************************************************
-  * _DevPad by Saiket                                                          *
-  * _DevPad.Dialog.lua - Scrollable and resizable frame prototype.             *
+  * _DevPad.GUI by Saiket                                                      *
+  * _DevPad.GUI.Dialog.lua - Scrollable and resizable frame prototype.         *
   ****************************************************************************]]
 
 
