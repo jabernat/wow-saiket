@@ -47,8 +47,8 @@ do
 	--- @return True if Name changed.
 	function ObjectMeta.__index:SetName ( Name )
 		Name = type( Name ) == "string" and Name or "";
-		if ( self.Name ~= Name ) then
-			self.Name = Name;
+		if ( self._Name ~= Name ) then
+			self._Name = Name;
 			me.Callbacks:Fire( "ObjectSetName", self );
 			return true;
 		end
@@ -69,7 +69,7 @@ do
 	end
 	--- @return Index of this object in its parent, or nil if not found.
 	function ObjectMeta.__index:GetIndex ()
-		local Parent = self.Parent;
+		local Parent = self._Parent;
 		if ( Parent ) then
 			for Index = 1, #Parent do
 				if ( Parent[ Index ] == self ) then
@@ -83,9 +83,9 @@ do
 		--- @return List of path name parts pointing to this object.
 		function ObjectMeta.__index:GetPath ()
 			wipe( Parts );
-			while ( self and self.Parent ) do -- Leave the root's name out
-				tinsert( Parts, 1, self.Name );
-				self = self.Parent;
+			while ( self and self._Parent ) do -- Leave the root's name out
+				tinsert( Parts, 1, self._Name );
+				self = self._Parent;
 			end
 			return unpack( Parts );
 		end
@@ -98,12 +98,12 @@ do
 		for Index = 1, select( "#", ... ) do
 			local Name = select( Index, ... );
 			if ( Name == true ) then -- Up/".."
-				Object = Object.Parent;
+				Object = Object._Parent;
 			else
 				Parent, Object = Object;
-				if ( Parent.Class == "Folder" ) then
+				if ( Parent._Class == "Folder" ) then
 					for _, Child in ipairs( Parent ) do
-						if ( Name == Child.Name ) then
+						if ( Name == Child._Name ) then
 							Object = Child;
 							break;
 						end
@@ -118,12 +118,12 @@ do
 	end
 	--- @return True if this object is in a closed folder.
 	function ObjectMeta.__index:IsHidden ()
-		local Parent = self.Parent;
+		local Parent = self._Parent;
 		while ( Parent ) do
-			if ( Parent.Closed ) then
+			if ( Parent._Closed ) then
 				return true;
 			end
-			Parent = Parent.Parent;
+			Parent = Parent._Parent;
 		end
 	end
 
@@ -131,7 +131,7 @@ do
 	--- Registers a new class to a given Name.
 	-- @return Metatable to use for class instances.
 	function RegisterClass ( Name )
-		local Meta = { __index = setmetatable( { Class = Name; }, ObjectMeta ); };
+		local Meta = { __index = setmetatable( { _Class = Name; }, ObjectMeta ); };
 		Classes[ Name ] = Meta;
 		return Meta;
 	end
@@ -149,7 +149,7 @@ do
 	do
 		--- @return Last descendant of Object.
 		local function GetLastDescendant ( Object )
-			while ( Object.Class == "Folder" and #Object > 0 ) do
+			while ( Object._Class == "Folder" and #Object > 0 ) do
 				Object = Object[ #Object ];
 			end
 			return Object;
@@ -158,39 +158,40 @@ do
 		--- Adds a child object to this folder.
 		-- @return True if child moved successfully.
 		function FolderMeta.__index:Insert ( Object, Index )
-			Index = Index or ( self ~= Object.Parent and #self + 1 or #self );
-			if ( ( Object.Parent ~= self or Index ~= Object:GetIndex() ) -- Moved
+			Index = Index or ( self ~= Object._Parent and #self + 1 or #self );
+			if ( ( Object._Parent ~= self or Index ~= Object:GetIndex() ) -- Moved
 				and not ( Object == self
-					or ( Object.Class == "Folder" and Object:Contains( self ) ) ) -- Not circular
+					or ( Object._Class == "Folder" and Object:Contains( self ) ) ) -- Not circular
 			) then
-				if ( Object.Parent ) then
+				if ( Object._Parent ) then
 					FireEvents = false; -- Don't fire a FolderRemoved event before inserts
 					Object.Parent:Remove( Object );
 					FireEvents = true;
 				end
-				Object.Parent = self;
+				Object._Parent = self;
 				tinsert( self, Index, Object );
 
 				-- Doubly-circular linked list of objects in tree
-				Object.Previous = Index == 1 and self
+				Object._Previous = Index == 1 and self
 					or GetLastDescendant( self[ Index - 1 ] );
 				local ObjectLast = GetLastDescendant( Object );
-				ObjectLast.Next = Object.Previous.Next;
-				Object.Previous.Next = Object;
-				ObjectLast.Next.Previous = ObjectLast;
+				ObjectLast._Next = Object._Previous._Next;
+				Object._Previous._Next = Object;
+				ObjectLast._Next._Previous = ObjectLast;
 				me.Callbacks:Fire( "FolderInsert", self, Object, Index );
 				return true;
 			end
 		end
 		--- @return True if child removed successfully.
 		function FolderMeta.__index:Remove ( Object )
-			if ( Object.Parent == self ) then
+			if ( Object._Parent == self ) then
 				local ObjectLast = GetLastDescendant( Object );
-				ObjectLast.Next.Previous = Object.Previous;
-				Object.Previous.Next = ObjectLast.Next;
-				Object.Previous = ObjectLast;
-				ObjectLast.Next = Object;
-				tremove( self, assert( Object:GetIndex(), "Child not found in parent folder." ) ).Parent = nil;
+				ObjectLast._Next._Previous = Object._Previous;
+				Object._Previous._Next = ObjectLast._Next;
+				Object._Previous = ObjectLast;
+				ObjectLast._Next = Object;
+				tremove( self, assert( Object:GetIndex(),
+					"Child not found in parent folder." ) )._Parent = nil;
 				if ( FireEvents ) then
 					me.Callbacks:Fire( "FolderRemove", self, Object );
 				end
@@ -201,28 +202,28 @@ do
 	--- @return True if Closed state changed.
 	function FolderMeta.__index:SetClosed ( Closed )
 		Closed = not not Closed;
-		if ( self.Closed ~= Closed ) then
-			self.Closed = Closed;
+		if ( self._Closed ~= Closed ) then
+			self._Closed = Closed;
 			me.Callbacks:Fire( "FolderSetClosed", self );
 			return true;
 		end
 	end
 	--- @return True if this folder contains Object.
 	function FolderMeta.__index:Contains ( Object )
-		local Parent = Object.Parent;
+		local Parent = Object._Parent;
 		while ( Parent ) do
 			if ( self == Parent ) then
 				return true;
 			end
-			Parent = Parent.Parent;
+			Parent = Parent._Parent;
 		end
 	end
 	--- @return Table containing unique settings for this folder and its children.
 	function FolderMeta.__index:Pack ()
 		local Settings = {
-			Class = self.Class;
-			Name = self.Name;
-			Closed = self.Closed or nil;
+			Class = self._Class;
+			Name = self._Name;
+			Closed = self._Closed or nil;
 		};
 		for Index, Child in ipairs( self ) do
 			Settings[ Index ] = Child:Pack();
@@ -231,7 +232,7 @@ do
 	end
 	--- Synchronizes this folder with values from Folder:Pack.
 	function FolderMeta.__index:Unpack ( Settings )
-		assert( Settings.Class == self.Class, "Unpack class mismatch." );
+		assert( Settings.Class == self._Class, "Unpack class mismatch." );
 		self:SetName( Settings.Name );
 		self:SetClosed( Settings.Closed );
 		-- Remove old children
@@ -252,7 +253,7 @@ do
 	--- @return New Folder instance.
 	function FolderMeta.__index:New ()
 		local Folder = setmetatable( {}, FolderMeta );
-		Folder.Previous, Folder.Next = Folder, Folder;
+		Folder._Previous, Folder._Next = Folder, Folder;
 		Folder:SetName();
 		Folder:SetClosed( false );
 		return Folder;
@@ -266,8 +267,8 @@ do
 	-- @return True if Text changed.
 	function ScriptMeta.__index:SetText ( Text )
 		Text = type( Text ) == "string" and Text or "";
-		if ( self.Text ~= Text ) then
-			self.Text, self.TextChanged = Text, true;
+		if ( self._Text ~= Text ) then
+			self._Text, self._TextChanged = Text, true;
 			me.Callbacks:Fire( "ScriptSetText", self );
 			return true;
 		end
@@ -276,8 +277,8 @@ do
 	-- @return True if AutoRun flag changed.
 	function ScriptMeta.__index:SetAutoRun ( AutoRun )
 		AutoRun = not not AutoRun;
-		if ( self.AutoRun ~= AutoRun ) then
-			self.AutoRun = AutoRun;
+		if ( self._AutoRun ~= AutoRun ) then
+			self._AutoRun = AutoRun;
 			me.Callbacks:Fire( "ScriptSetAutoRun", self );
 			return true;
 		end
@@ -286,8 +287,8 @@ do
 	-- @return True if SyntaxHighlight flag changed.
 	function ScriptMeta.__index:SetLua ( Lua )
 		Lua = not not Lua;
-		if ( self.Lua ~= Lua ) then
-			self.Lua = Lua;
+		if ( self._Lua ~= Lua ) then
+			self._Lua = Lua;
 			me.Callbacks:Fire( "ScriptSetLua", self );
 			return true;
 		end
@@ -296,11 +297,11 @@ do
 	-- @param ...  Arguments to pass to the script.
 	-- @return Any values returned from the script.
 	function ScriptMeta.__index:Run ( ... )
-		if ( self.TextChanged ) then -- Recompile
-			self.Chunk = assert( loadstring( self.Text, self.Name ) );
-			self.TextChanged = nil;
+		if ( self._TextChanged ) then -- Recompile
+			self._Chunk = assert( loadstring( self._Text, self._Name ) );
+			self._TextChanged = nil;
 		end
-		return self:Chunk( ... );
+		return self:_Chunk( ... );
 	end
 	--- Shortcut for Script:Run.
 	function ScriptMeta:__call ( ... )
@@ -309,16 +310,16 @@ do
 	--- @return Table containing unique settings for this script.
 	function ScriptMeta.__index:Pack ()
 		return {
-			Class = self.Class;
-			Name = self.Name;
-			Text = self.Text;
-			AutoRun = self.AutoRun or nil;
-			Lua = self.Lua or nil;
+			Class = self._Class;
+			Name = self._Name;
+			Text = self._Text;
+			AutoRun = self._AutoRun or nil;
+			Lua = self._Lua or nil;
 		};
 	end
 	--- Synchronizes this script with values from Script:Pack.
 	function ScriptMeta.__index:Unpack ( Settings )
-		assert( Settings.Class == self.Class, "Unpack class mismatch." );
+		assert( Settings.Class == self._Class, "Unpack class mismatch." );
 		self:SetName( Settings.Name );
 		self:SetText( Settings.Text );
 		self:SetAutoRun( Settings.AutoRun );
@@ -327,7 +328,7 @@ do
 	--- @return New Script instance.
 	function ScriptMeta.__index:New ()
 		local Script = setmetatable( {}, ScriptMeta );
-		Script.Previous, Script.Next = Script, Script;
+		Script._Previous, Script._Next = Script, Script;
 		Script:SetName();
 		Script:SetText();
 		Script:SetAutoRun( false );
@@ -341,9 +342,9 @@ end
 -- @param Callback  Function or method name.
 -- @param ...  Extra args passed after Script to Callback.
 function me:IterateScripts ( Object, Callback, ... )
-	if ( Object.Class == "Script" ) then
+	if ( Object._Class == "Script" ) then
 		return ( Object[ Callback ] or Callback )( Object, ... );
-	elseif ( Object.Class == "Folder" ) then
+	elseif ( Object._Class == "Folder" ) then
 		for _, Child in ipairs( Object ) do
 			self:IterateScripts( Child, Callback, ... );
 		end
@@ -353,7 +354,7 @@ do
 	local Matches = {};
 	--- Adds scripts to found list matched by name.
 	local function Callback ( Script, Pattern )
-		if ( Script.Name:match( Pattern ) ) then
+		if ( Script._Name:match( Pattern ) ) then
 			Matches[ #Matches + 1 ] = Script;
 		end
 	end
@@ -400,14 +401,14 @@ do
 		end
 
 		PlaySound( "Glyph_MinorCreate" );
-		local SafeName = Object.Name:gsub( "[|\r\n]", SafeNameReplacements );
+		local SafeName = Object._Name:gsub( "[|\r\n]", SafeNameReplacements );
 		self.Print( self.L.RECEIVE_MESSAGE_FORMAT:format( Author, SafeName ) );
 		if ( not ReopenPrinted and not ( self.GUI and self.GUI.List:IsVisible() ) ) then
 			ReopenPrinted = true;
 			self.Print( self.L.RECEIVE_MESSAGE_REOPEN, HIGHLIGHT_FONT_COLOR );
 		end
 
-		Object.Channel, Object.Author = Channel, Author;
+		Object._Channel, Object._Author = Channel, Author;
 		self:IterateScripts( Object, "SetAutoRun", false ); -- Sanitize scripts
 		tinsert( self.ReceiveQueue, Object );
 		self.Callbacks:Fire( "ObjectReceived", Object );
@@ -427,7 +428,7 @@ function me.Frame:ADDON_LOADED ( Event, AddOn )
 			me.FolderRoot:Unpack( Scripts );
 		end
 		me:IterateScripts( me.FolderRoot, function ( Script )
-			if ( Script.AutoRun ) then
+			if ( Script._AutoRun ) then
 				me.SafeCall( Script );
 			end
 		end );
@@ -465,7 +466,7 @@ function me.SlashCommand ( Input )
 	else
 		local Script = me:FindScripts( Pattern );
 		if ( Script ) then
-			me.Print( me.L.SLASH_RUN_FORMAT:format( Script.Name ) );
+			me.Print( me.L.SLASH_RUN_FORMAT:format( Script._Name ) );
 			return me.SafeCall( Script );
 		else
 			me.Print( me.L.SLASH_RUN_MISSING_FORMAT:format( Pattern ), RED_FONT_COLOR );
