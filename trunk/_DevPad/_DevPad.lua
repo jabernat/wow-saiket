@@ -9,7 +9,8 @@ _DevPad = me;
 
 me.Frame = CreateFrame( "Frame" );
 me.Callbacks = LibStub( "CallbackHandler-1.0" ):New( me );
-me.ReceiveQueue, me.ReceiveIgnored = {}, {};
+me.ReceiveQueue = {};
+me.ReceiveIgnored = { [ UnitName( "player" ):lower() ] = true; };
 
 me.COMM_PREFIX = "_DP";
 
