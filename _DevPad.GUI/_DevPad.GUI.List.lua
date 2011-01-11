@@ -70,7 +70,7 @@ function me:SetRenaming ( Object )
 			Edit:SetParent( Button.Visual );
 			Edit:SetAllPoints( Button.Name );
 			Edit:SetFontObject( Button.Name:GetFontObject() );
-			Edit:SetText( Object.Name );
+			Edit:SetText( Object._Name );
 			Edit:Show();
 			Edit:SetFocus();
 		else
@@ -87,7 +87,7 @@ do
 			Offset = Offset - 1;
 			if ( Offset <= 0 ) then
 				local Target = Folder[ Index ];
-				if ( Target.Class == "Folder" and -Offset < 0.5 ) then -- Inside folder
+				if ( Target._Class == "Folder" and -Offset < 0.5 ) then -- Inside folder
 					Target:SetClosed( false );
 					Target:Insert( Object, 1 );
 				else
@@ -95,7 +95,7 @@ do
 				end
 				return;
 			end
-			if ( Child.Class == "Folder" and not Child.Closed ) then
+			if ( Child._Class == "Folder" and not Child._Closed ) then
 				Offset = SetAbsPosition( Object, Child, Offset );
 				if ( not Offset ) then
 					return;
@@ -190,10 +190,10 @@ do
 	local function UpdateFolder ( Folder )
 		local MatchChild;
 		for _, Child in ipairs( Folder or _DevPad.FolderRoot ) do
-			if ( Child.Class == "Folder" ) then
+			if ( Child._Class == "Folder" ) then
 				MatchChild = UpdateFolder( Child ) or MatchChild;
-			elseif ( Child.Class == "Script" ) then
-				local Valid, Match = pcall( strfind, Child.Text, me.Search );
+			elseif ( Child._Class == "Script" ) then
+				local Valid, Match = pcall( strfind, Child._Text, me.Search );
 				Match = Valid and Match ~= nil; -- Valid pattern too
 				MatchChild = MatchChild or Match;
 				ObjectButtons[ Child ].Visual:SetAlpha(
@@ -243,10 +243,10 @@ function me:NextMatch ( Script, Cursor, Reverse )
 		EndCurrent = 0;
 		while ( EndCurrent and EndCurrent <= Cursor ) do
 			Start, End = StartCurrent, EndCurrent;
-			StartCurrent, EndCurrent = Script.Text:find( self.Search, EndCurrent + 1 );
+			StartCurrent, EndCurrent = Script._Text:find( self.Search, EndCurrent + 1 );
 		end
 	else
-		Start, End = Script.Text:find( self.Search, Cursor + 1 );
+		Start, End = Script._Text:find( self.Search, Cursor + 1 );
 	end
 	if ( Start ) then
 		return Start - 1, End;
@@ -257,7 +257,7 @@ end
 function me:NextMatchWrap ( Script, Cursor, Reverse )
 	local Start, End = self:NextMatch( Script, Cursor, Reverse );
 	if ( not Start ) then
-		Cursor = Reverse and #Script.Text or 0;
+		Cursor = Reverse and #Script._Text or 0;
 		Start, End = self:NextMatch( Script, Cursor, Reverse );
 	end
 	return Start, End;
@@ -267,7 +267,7 @@ do
 	local function NextScript ( Start, Direction )
 		local Object = Start;
 		repeat
-			if ( Object.Class == "Script" ) then
+			if ( Object._Class == "Script" ) then
 				return Object;
 			end
 			Object = Object[ Direction ];
@@ -291,7 +291,7 @@ do
 		local First = Script;
 		repeat
 			Script = NextScript( Script[ Direction ], Direction );
-			Start, End = self:NextMatch( Script, Reverse and #Script.Text or 0, Reverse );
+			Start, End = self:NextMatch( Script, Reverse and #Script._Text or 0, Reverse );
 			if ( Start and ( Script ~= First
 				or ( Reverse and Start > Cursor ) -- Wrapped back into rest of start
 				or ( not Reverse and End <= Cursor )
@@ -310,14 +310,14 @@ do
 		if ( not Depth ) then
 			Depth, Count = 0, 0;
 		end
-		if ( not Folder.Closed ) then
+		if ( not Folder._Closed ) then
 			for _, Child in ipairs( Folder ) do
 				Count = Count + 1;
 				local Button = ObjectButtons[ Child ];
 				Button:SetPoint( "TOP", 0, -( Count - 1 ) * ButtonHeight );
 				Button.Visual:SetPoint( "LEFT", IndentSize * Depth, 0 );
 
-				if ( Child.Class == "Folder" ) then
+				if ( Child._Class == "Folder" ) then
 					Count = LayoutFolder( Child, Depth + 1, Count );
 				end
 			end
@@ -355,17 +355,17 @@ do
 	local function SendCallback ( Data, Bytes, BytesTotal )
 		if ( Bytes == BytesTotal ) then
 			_DevPad.Print( L.SEND_COMPLETE_FORMAT:format(
-				Data.Object, Data.Target ), GREEN_FONT_COLOR );
+				Data.Name, Data.Target ), GREEN_FONT_COLOR );
 		end
 	end
 	--- Sends an object over the given channel.
 	-- @param TargetName  Printable name of send target.
 	local function Send ( Object, Channel, Target, TargetName )
-		local Data = { Object = Object.Name; Target = TargetName; };
+		local Data = { Name = Object._Name; Target = TargetName; };
 		local Size = Object:Send( Channel, Target, nil, SendCallback, Data );
 		if ( Size > me.SendNoticeThreshold ) then
 			_DevPad.Print( L.SEND_LARGE_FORMAT:format(
-				Data.Object, Size / 1024, Data.Target ) );
+				Data.Name, Size / 1024, Data.Target ) );
 		end
 	end
 	--- Sends the object to the given channel.
@@ -381,7 +381,7 @@ do
 			return true; -- Keep open
 		elseif ( UnitIsUnit( Name, "player" ) ) then -- Direct copy
 			local Copy = Object:Copy();
-			Copy:SetName( L.COPY_OBJECTNAME_FORMAT:format( Object.Name ) );
+			Copy:SetName( L.COPY_OBJECTNAME_FORMAT:format( Object._Name ) );
 			_DevPad.FolderRoot:Insert( Copy );
 		else
 			Send( Object, "WHISPER", Name, Name );
@@ -424,14 +424,14 @@ end
 do
 	--- Add the received object to the list.
 	function me.Send:ReceiveOnAccept ( Object )
-		Object:SetName( L.RECEIVE_OBJECTNAME_FORMAT:format( Object.Name, Object.Author ) );
+		Object:SetName( L.RECEIVE_OBJECTNAME_FORMAT:format( Object._Name, Object._Author ) );
 		_DevPad.FolderRoot:Insert( Object );
 	end
 	local Queue, Ignored = _DevPad.ReceiveQueue, _DevPad.ReceiveIgnored;
 	--- Puts the author on the ignore list.
 	function me.Send:ReceiveOnIgnore ( Object )
-		Ignored[ Object.Author:lower() ] = true;
-		AddIgnore( Object.Author );
+		Ignored[ Object._Author:lower() ] = true;
+		AddIgnore( Object._Author );
 	end
 	--- Prompts the user to receive the next object in the queue.
 	local function ConfirmNext ()
@@ -440,12 +440,12 @@ do
 		end
 		while ( #Queue > 0 ) do
 			local Object = tremove( Queue, 1 );
-			if ( not Ignored[ Object.Author:lower() ] ) then
-				StaticPopupDialogs[ "_DEVPAD_RECEIVE_CONFIRM" ].text = Object.Class == "Folder"
+			if ( not Ignored[ Object._Author:lower() ] ) then
+				StaticPopupDialogs[ "_DEVPAD_RECEIVE_CONFIRM" ].text = Object._Class == "Folder"
 					and L.RECEIVE_CONFIRM_FOLDER_FORMAT
 					or L.RECEIVE_CONFIRM_SCRIPT_FORMAT;
 				return StaticPopup_Show( "_DEVPAD_RECEIVE_CONFIRM",
-					Object.Author, Object.Name, Object );
+					Object._Author, Object._Name, Object );
 			end
 		end
 	end
@@ -463,8 +463,8 @@ do
 end
 --- Deletes the object once confirmed.
 function me.Delete:OnAccept ( Object )
-	if ( Object.Parent ) then
-		Object.Parent:Remove( Object );
+	if ( Object._Parent ) then
+		Object._Parent:Remove( Object );
 	end
 	-- Note: Don't return anything, or the dialog won't hide afterwards.
 end
@@ -472,12 +472,12 @@ end
 function me.Delete:OnClick ()
 	local Object = me.Selection;
 	if ( IsShiftKeyDown()
-		or ( Object.Class == "Script" and Object.Text == "" )
-		or ( Object.Class == "Folder" and #Object == 0 )
+		or ( Object._Class == "Script" and Object._Text == "" )
+		or ( Object._Class == "Folder" and #Object == 0 )
 	) then
 		return self:OnAccept( Object );
 	else
-		StaticPopup_Show( "_DEVPAD_DELETE_CONFIRM", Object.Name, nil, Object );
+		StaticPopup_Show( "_DEVPAD_DELETE_CONFIRM", Object._Name, nil, Object );
 	end
 end
 do
@@ -581,7 +581,7 @@ end
 --- Updates an object's name text.
 function me:ObjectSetName ( _, Object )
 	if ( ObjectButtons[ Object ] ) then
-		return ObjectButtons[ Object ].Name:SetText( Object.Name );
+		return ObjectButtons[ Object ].Name:SetText( Object._Name );
 	end
 end
 do
@@ -649,8 +649,8 @@ do
 		--- Toggles a folder's closed state when clicked.
 		local function ExpandOnClick ( self )
 			local Folder = self:GetParent():GetParent().Object;
-			PlaySound( Folder.Closed and "igMainMenuOptionCheckBoxOn" or "igMainMenuOptionCheckBoxOff" );
-			Folder:SetClosed( not Folder.Closed );
+			PlaySound( Folder._Closed and "igMainMenuOptionCheckBoxOn" or "igMainMenuOptionCheckBoxOff" );
+			Folder:SetClosed( not Folder._Closed );
 		end
 		--- @return A new folder button.
 		function CreateFolderButton ()
@@ -670,11 +670,11 @@ do
 		--- Toggles autorun for this script.
 		local function AutoRunOnClick ( self )
 			local Object = self:GetParent():GetParent().Object;
-			return Object:SetAutoRun( not Object.AutoRun );
+			return Object:SetAutoRun( not Object._AutoRun );
 		end
 		--- Shows the script's LuaDoc comment as a tooltip.
 		local function ScriptOnEnter ( self )
-			local Comment = ( self.Object.Text:match( "^%-%-%-([^\r\n]+)" ) or "" ):trim();
+			local Comment = ( self.Object._Text:match( "^%-%-%-([^\r\n]+)" ) or "" ):trim();
 			if ( Comment ~= "" ) then
 				GameTooltip:SetOwner( self, "ANCHOR_TOPLEFT" );
 				GameTooltip:SetText( Comment, nil, nil, nil, nil, 1 );
@@ -706,8 +706,8 @@ do
 	local function RecurseChildren ( Folder, Callback, ShownOnly )
 		for Index, Child in ipairs( Folder ) do
 			Callback( Child );
-			if ( Child.Class == "Folder"
-				and not ( ShownOnly and Child.Closed )
+			if ( Child._Class == "Folder"
+				and not ( ShownOnly and Child._Closed )
 			) then
 				RecurseChildren( Child, Callback, ShownOnly );
 			end
@@ -727,17 +727,17 @@ do
 	end
 	--- Assigns a button to a new script or folder.
 	local function ObjectButtonAssign ( Object )
-		local Button, Unused = ObjectButtons[ Object ], UnusedButtons[ Object.Class ];
+		local Button, Unused = ObjectButtons[ Object ], UnusedButtons[ Object._Class ];
 		if ( not Button and Unused ) then -- Known class and not already assigned
 			Button = next( Unused ) or Unused();
 			Unused[ Button ] = nil;
 			ObjectButtons[ Object ], Button.Object = Button, Object;
 
 			me:ObjectSetName( nil, Object );
-			if ( Object.Class == "Script" ) then
+			if ( Object._Class == "Script" ) then
 				me:ScriptSetAutoRun( nil, Object );
 				me:ScriptSetText( nil, Object );
-			elseif ( Object.Class == "Folder" ) then
+			elseif ( Object._Class == "Folder" ) then
 				me:FolderSetClosed( nil, Object );
 			end
 		end
@@ -747,7 +747,7 @@ do
 	function me:FolderInsert ( _, Folder, Object )
 		if ( _DevPad.FolderRoot:Contains( Object ) ) then
 			ObjectButtonAssign( Object );
-			if ( Object.Class == "Folder" ) then -- Also assign child buttons
+			if ( Object._Class == "Folder" ) then -- Also assign child buttons
 				RecurseChildren( Object, ObjectButtonAssign );
 			end
 			self:UpdateSearch();
@@ -768,17 +768,17 @@ do
 			me:EditorSetScriptObject()
 		end
 		ObjectButtons[ Object ], Button.Object = nil;
-		UnusedButtons[ Object.Class ][ Button ] = true;
+		UnusedButtons[ Object._Class ][ Button ] = true;
 	end
 	--- Updates the tree view when an object gets removed from a folder.
 	function me:FolderRemove ( _, Folder, Object )
 		if ( ObjectButtons[ Object ] ) then
 			ObjectButtonRecycle( Object );
-			if ( Object.Class == "Folder" ) then
+			if ( Object._Class == "Folder" ) then
 				RecurseChildren( Object, ObjectButtonRecycle );
 			end
 			self:UpdateSearch();
-			if ( not ( Folder.Closed or Folder:IsHidden() ) ) then
+			if ( not ( Folder._Closed or Folder:IsHidden() ) ) then
 				return self:Update();
 			end
 		end
@@ -793,7 +793,7 @@ do
 	function me:FolderSetClosed ( _, Folder )
 		local Button = ObjectButtons[ Folder ];
 		if ( Button ) then
-			if ( Folder.Closed ) then
+			if ( Folder._Closed ) then
 				SetTexCoords( Button.Expand, 0, 0.5, 0.5, 0.75 );
 			else
 				SetTexCoords( Button.Expand, 0, 0.5, 0.75, 1 );
@@ -812,7 +812,7 @@ function me:ScriptSetAutoRun ( _, Script )
 	if ( ObjectButtons[ Script ] ) then
 		local AutoRun = ObjectButtons[ Script ].AutoRun;
 		local Normal, Pushed = AutoRun:GetNormalTexture(), AutoRun:GetPushedTexture();
-		if ( Script.AutoRun ) then
+		if ( Script._AutoRun ) then
 			Normal:SetDesaturated( false );
 			Pushed:SetDesaturated( false );
 			Normal:SetVertexColor( 0.2, 1, 0.2 );

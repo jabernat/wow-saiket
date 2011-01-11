@@ -91,11 +91,11 @@ function me:SetScriptObject ( Script )
 			self:ObjectSetName( nil, Script );
 			_DevPad.RegisterCallback( self, "ObjectSetName" );
 			_DevPad.RegisterCallback( self, "ScriptSetLua" );
-			if ( Script.Parent ) then
+			if ( Script._Parent ) then
 				_DevPad.RegisterCallback( self, "FolderRemove" );
 			end
 			self.ScrollFrame.Bar:SetValue( 0 );
-			self.Edit:SetText( Script.Text:gsub( "|", "||" ) );
+			self.Edit:SetText( Script._Text:gsub( "|", "||" ) );
 			self:ScriptSetLua( nil, Script );
 			self.Edit:SetCursorPosition( 0 );
 			self.Margin:Update();
@@ -140,7 +140,7 @@ do
 	-- account for pipe characters being escaped.
 	function me:SetScriptHighlight ( Start, End )
 		if ( Start ) then
-			local Text = self.Script.Text;
+			local Text = self.Script._Text;
 			local PipesBefore = CountSubstring( Text, "|", 0, Start );
 			End = End + PipesBefore + CountSubstring( Text, "|", Start, End );
 			Start = Start + PipesBefore;
@@ -160,14 +160,14 @@ end
 
 --- Shows the selected script from the list frame.
 function me:ListSetSelection ( _, Object )
-	if ( Object and Object.Class == "Script" ) then
+	if ( Object and Object._Class == "Script" ) then
 		return self:SetScriptObject( Object );
 	end
 end
 --- Shows the selected script from the list frame.
 function me:ObjectSetName ( _, Object )
 	if ( Object == self.Script ) then
-		self.Title:SetText( Object.Name );
+		self.Title:SetText( Object._Name );
 	end
 end
 do
@@ -179,7 +179,7 @@ do
 	--- Enables or disables syntax highlighting in the edit box.
 	function me:ScriptSetLua ( _, Script )
 		if ( Script == self.Script and GUI.IndentationLib ) then
-			if ( Script.Lua ) then
+			if ( Script._Lua ) then
 				GUI.IndentationLib.Enable( self.Edit,
 					AutoIndent and TabWidth, me.SyntaxColors );
 				SetVertexColors( self.Lua, 0.4, 0.8, 1 );
@@ -193,7 +193,7 @@ end
 --- Hides the editor if the edited script gets removed.
 function me:FolderRemove ( _, _, Object )
 	if ( Object == self.Script
-		or ( Object.Class == "Folder" and Object:Contains( self.Script ) )
+		or ( Object._Class == "Folder" and Object:Contains( self.Script ) )
 	) then
 		self:SetScriptObject();
 	end
@@ -229,11 +229,11 @@ do
 end
 --- Toggles syntax highlighting for this script.
 function me.Lua:OnClick ()
-	return me.Script:SetLua( not me.Script.Lua );
+	return me.Script:SetLua( not me.Script._Lua );
 end
 --- Undoes changes since the player opened this script.
 function me.Revert:OnClick ()
-	return me.Edit:SetText( me.Script.TextOriginal:gsub( "|", "||" ) );
+	return me.Edit:SetText( me.Script._TextOriginal:gsub( "|", "||" ) );
 end
 
 
@@ -355,11 +355,11 @@ do
 	function me.Edit:OnTextChanged ()
 		local Script = me.Script;
 		if ( Script ) then
-			if ( not Script.TextOriginal ) then
-				Script.TextOriginal = Script.Text;
+			if ( not Script._TextOriginal ) then
+				Script._TextOriginal = Script._Text;
 			end
 			Script:SetText( self:GetText():gsub( "||", "|" ) );
-			if ( Script.TextOriginal == Script.Text ) then
+			if ( Script._TextOriginal == Script._Text ) then
 				me.Revert:Disable();
 			else
 				me.Revert:Enable();
