@@ -276,7 +276,7 @@ do
 	--- Gets the position of the next match, cycling through all scripts for a match.
 	-- @see me:NextMatch
 	function me:NextMatchGlobal ( Script, Cursor, Reverse )
-		local Direction = Reverse and "Previous" or "Next";
+		local Direction = Reverse and "_Previous" or "_Next";
 		if ( not Script ) then
 			Script = NextScript( self.Selection or _DevPad.FolderRoot, Direction );
 			if ( not Script ) then -- No scripts in root
@@ -544,6 +544,11 @@ function me.SearchEdit:OnEditFocusLost ()
 	self:HighlightText( 0, 0 );
 	if ( self:GetText() == "" ) then
 		self:SetAlpha( self.InactiveAlpha );
+	end
+	if ( GUI.Editor:IsVisible()
+		and not GetCurrentKeyBoardFocus() -- Didn't switch to another editbox
+	) then
+		GUI.Editor.Edit:SetFocus();
 	end
 end
 --- Jumps to next/previous search result.
