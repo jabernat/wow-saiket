@@ -166,7 +166,7 @@ do
 			) then
 				if ( Object._Parent ) then
 					FireEvents = false; -- Don't fire a FolderRemoved event before inserts
-					Object.Parent:Remove( Object );
+					Object._Parent:Remove( Object );
 					FireEvents = true;
 				end
 				Object._Parent = self;

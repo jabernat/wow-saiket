@@ -485,7 +485,7 @@ do
 	local function InsertObject ( Class )
 		local Object = _DevPad:GetClass( Class ):New();
 		if ( me.Selection ) then -- Add just before selection
-			me.Selection.Parent:Insert( Object, me.Selection:GetIndex() );
+			me.Selection._Parent:Insert( Object, me.Selection:GetIndex() );
 		else -- Default to end of list
 			_DevPad.FolderRoot:Insert( Object );
 		end
