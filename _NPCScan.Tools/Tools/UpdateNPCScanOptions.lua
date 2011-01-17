@@ -19,6 +19,14 @@ The <../_NPCScan.lua> data file will be overwritten.
 
 local OutputFilename = [[../_NPCScan.lua]];
 local LEVEL_MAX = 85; -- Max rare level to query for
+local Locale = "enUS";
+local LocaleSubdomain = ( { -- Subdomain for localized WowHead.com data.
+	deDE = "de";
+	enUS = "www";
+	esES = "es";
+	frFR = "fr";
+	ruRU = "ru";
+} )[ Locale ];
 
 package.cpath = [[.\Libs\?.dll;]]..package.cpath;
 package.path = [[.\Libs\?.lua;]]..package.path;
@@ -52,8 +60,8 @@ do
 	--- Adds query results to list, or recursively subdivides query if results omitted.
 	local function QueryLevelRange ( LevelMin, LevelMax )
 		print( ( "\tQuerying levels %d - %d..." ):format( LevelMin, LevelMax ) );
-		local Path = ( [[http://www.wowhead.com/npcs?filter=cl=4:2;minle=%d;maxle=%d]] ):format(
-			LevelMin, LevelMax );
+		local Path = ( [[http://%s.wowhead.com/npcs?filter=cl=4:2;minle=%d;maxle=%d]] ):format(
+			LocaleSubdomain, LevelMin, LevelMax );
 		local Text, Status = http.request( Path );
 		assertf( Text and Status == 200, "Request failed: Status code %d.", Status );
 
@@ -71,10 +79,10 @@ do
 			assertf( Data.template == "npc" and Data.id == "npcs",
 				"Invalid list template %q or id %q.", Data.template, Data.id );
 			for _, NPC in ipairs( assert( Data.data, "List data not found." ) ) do
-				NPCData[ NPC.id ] = {
-					Name = NPC.name;
-					AreaIDs = ( NPC.location and #NPC.location > 0 and NPC.location ) or nil;
-				};
+				NPCData[ NPC.id ] = { Name = NPC.name; };
+				if ( NPC.location and #NPC.location > 0 ) then
+					NPCData[ NPC.id ].AreaIDs = NPC.location;
+				end
 			end
 		end
 	end
