@@ -456,7 +456,7 @@ do
 
 				local _, X1, Y1, X2, Y2 = GetCurrentMapZone();
 				local Width, Height = X1 - X2, Y1 - Y2;
-				if ( not Width or Width == 0 or Height == 0 ) then
+				if ( Width == 0 or Height == 0 ) then
 					error( "Zone dimensions unavailable for map "..Map.."." );
 				end
 				MapWidths[ Map ], MapHeights[ Map ] = Width, Height;
