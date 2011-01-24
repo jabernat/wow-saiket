@@ -354,8 +354,6 @@ local BYTE_SLASH = strbyte( "/" );
 local BYTE_SPACE = strbyte( " " );
 local BYTE_TAB = strbyte( "\t" );
 local BYTE_TILDE = strbyte( "~" );
-local BYTE_X = strbyte( "X" );
-local BYTE_x = strbyte( "x" );
 
 local Linebreaks = {
 	[ BYTE_CR ] = true;
@@ -392,155 +390,104 @@ local TokenBytes = {
 	[ BYTE_TILDE ] = true;
 };
 
-local function NextNumberExponentPartInt ( Text, Pos )
-	while ( true ) do
-		local Byte = strbyte( Text, Pos );
-		if ( Byte and Byte >= BYTE_0 and Byte <= BYTE_9 ) then
-			Pos = Pos + 1;
-		else
-			return TK_NUMBER, Pos;
-		end
+local strfind = string.find;
+--- Reads the next Lua identifier from its beginning.
+local function NextIdentifier ( Text, Pos )
+	local _, End = strfind( Text, "^[_%a][_%w]*", Pos );
+	if ( End ) then
+		return TK_IDENTIFIER, End + 1;
+	else
+		return TK_UNKNOWN, Pos + 1;
 	end
 end
+
+--- Reads all following decimal digits.
+local function NextNumberDecPart ( Text, Pos )
+	local _, End = strfind( Text, "^%d+", Pos );
+	return TK_NUMBER, End and End + 1 or Pos;
+end
+--- Reads the next scientific e notation exponent beginning after the 'e'.
 local function NextNumberExponentPart ( Text, Pos )
 	local Byte = strbyte( Text, Pos );
 	if ( not Byte ) then
 		return TK_NUMBER, Pos;
 	end
-
 	if ( Byte == BYTE_MINUS ) then
 		-- Handle this case: "1.2e-- comment" with "1.2e" as a number
-		Byte = strbyte( Text, Pos + 1 );
-		if ( Byte == BYTE_MINUS ) then
+		if ( strbyte( Text, Pos + 1 ) == BYTE_MINUS ) then
 			return TK_NUMBER, Pos;
 		end
-		return NextNumberExponentPartInt( Text, Pos + 1 );
+		Pos = Pos + 1;
 	end
-	return NextNumberExponentPartInt( Text, Pos );
+	return NextNumberDecPart( Text, Pos );
 end
+--- Reads the fractional part of a number beginning after the decimal.
 local function NextNumberFractionPart ( Text, Pos )
-	while ( true ) do
-		local Byte = strbyte( Text, Pos );
-		if ( Byte and Byte >= BYTE_0 and Byte <= BYTE_9 ) then
-			Pos = Pos + 1;
-		elseif ( Byte == BYTE_E or Byte == BYTE_e ) then
-			return NextNumberExponentPart( Text, Pos + 1 );
-		else
-			return TK_NUMBER, Pos;
-		end
+	local _, Pos = NextNumberDecPart( Text, Pos );
+	if ( strfind( Text, "^[Ee]", Pos ) ) then
+		return NextNumberExponentPart( Text, Pos + 1 );
+	else
+		return TK_NUMBER, Pos;
 	end
 end
+--- Reads all following hex digits.
 local function NextNumberHexPart ( Text, Pos )
-	local _, End = Text:find( "^%x+", Pos );
+	local _, End = strfind( Text, "^%x+", Pos );
 	return TK_NUMBER, End and End + 1 or Pos;
 end
+--- Reads the next number from its beginning.
 local function NextNumber ( Text, Pos )
-	local Byte, Base = strbyte( Text, Pos, Pos + 1 );
-	if ( Byte == BYTE_0 and ( Base == BYTE_X or Base == BYTE_x ) ) then
+	if ( strfind( Text, "^0[Xx]", Pos ) ) then
 		return NextNumberHexPart( Text, Pos + 2 );
 	end
-	while ( true ) do
-		Byte = strbyte( Text, Pos );
-		if ( Byte and Byte >= BYTE_0 and Byte <= BYTE_9 ) then
-			Pos = Pos + 1;
-		elseif ( Byte == BYTE_PERIOD ) then
-			return NextNumberFractionPart( Text, Pos + 1 );
-		elseif ( Byte == BYTE_E or Byte == BYTE_e ) then
-			return NextNumberExponentPart( Text, Pos + 1 );
-		else
-			return TK_NUMBER, Pos;
-		end
+	local _, Pos = NextNumberDecPart( Text, Pos );
+	local Byte = strbyte( Text, Pos );
+	if ( Byte == BYTE_PERIOD ) then
+		return NextNumberFractionPart( Text, Pos + 1 );
+	elseif ( Byte == BYTE_E or Byte == BYTE_e ) then
+		return NextNumberExponentPart( Text, Pos + 1 );
+	else
+		return TK_NUMBER, Pos;
 	end
 end
 
-local function NextIdentifier ( Text, Pos )
-	while ( true ) do
-		local Byte = strbyte( Text, Pos );
-		if ( not Byte
-			or Linebreaks[ Byte ] or Whitespace[ Byte ] or TokenBytes[ Byte ]
-		) then
-			return TK_IDENTIFIER, Pos;
-		end
-		Pos = Pos + 1;
+--- @return PosNext, EqualsCount if next token is a long string.
+local function NextLongStringStart ( Text, Pos )
+	local Start, End = strfind( Text, "^%[=*%[", Pos );
+	if ( End ) then
+		return End + 1, End - Start - 1;
 	end
 end
-
---- @return True, PosNext, EqualsCount if next token is a long string.
-local function IsNextLongString ( Text, Start )
-	local Byte = strbyte( Text, Start );
-	if ( Byte == BYTE_LEFTBRACKET ) then
-		local Pos = Start + 1;
-		Byte = strbyte( Text, Pos );
-		while ( Byte == BYTE_EQUALS ) do
-			Pos = Pos + 1;
-			Byte = strbyte( Text, Pos );
-		end
-		if ( Byte == BYTE_LEFTBRACKET ) then
-			return true, Pos + 1, ( Pos - 1 ) - Start;
-		end
-	end
-end
+--- Reads the next long string beginning after its opening brackets.
 local function NextLongString ( Text, Pos, EqualsCount )
-	-- Beginning of long string already parsed
-	local EqualsCurrent;
-	while ( true ) do
-		local Byte = strbyte( Text, Pos );
-		if ( not Byte ) then
-			return TK_STRING_LONG, Pos;
-		end
-
-		if ( Byte == BYTE_RIGHTBRACKET ) then
-			if ( not EqualsCurrent ) then
-				EqualsCurrent = 0;
-			elseif ( EqualsCurrent == EqualsCount ) then
-				return TK_STRING_LONG, Pos + 1;
-			else
-				EqualsCurrent = nil;
-			end
-		elseif ( EqualsCurrent and Byte == BYTE_EQUALS ) then
-			EqualsCurrent = EqualsCurrent + 1;
-		else
-			EqualsCurrent = nil;
-		end
-		Pos = Pos + 1;
-	end
+	local _, End = strfind( Text, "]"..( "=" ):rep( EqualsCount ).."]", Pos, true );
+	return TK_STRING_LONG, ( End or #Text ) + 1;
 end
 
+--- Reads the next short or long comment beginning after its dashes.
 local function NextComment ( Text, Pos )
-	-- Beginning of short comment already parsed
-	local IsLong, PosNext, EqualsCount = IsNextLongString( Text, Pos );
-	if ( IsLong ) then
+	local PosNext, EqualsCount = NextLongStringStart( Text, Pos );
+	if ( PosNext ) then
 		local _, PosNext = NextLongString( Text, PosNext, EqualsCount );
 		return TK_COMMENT_LONG, PosNext;
 	end
-
-	-- Short comment, find the first linebreak
-	while ( true ) do
-		local Byte = strbyte( Text, Pos );
-		if ( not Byte or Linebreaks[ Byte ] ) then
-			return TK_COMMENT_SHORT, Pos;
-		end
-		Pos = Pos + 1;
-	end
+	-- Short comment; ends at linebreak
+	local _, End = strfind( Text, "[^\r\n]*", Pos );
+	return TK_COMMENT_SHORT, End + 1;
 end
 
-local function NextString ( Text, Pos, Quote )
-	local Escaped = false;
-	while ( true ) do
-		local Byte = strbyte( Text, Pos );
-		if ( not Byte ) then
-			return TK_STRING, Pos;
-		end
-
-		if ( Escaped ) then
-			Escaped = false;
-		elseif ( Byte == BYTE_BACKSLASH ) then
-			Escaped = true;
-		elseif ( Byte == Quote ) then
+local strchar = string.char;
+--- Reads the next single/double quoted string beginning at its opening quote.
+-- Note: Strings with unescaped newlines aren't properly terminated.
+local function NextString ( Text, Pos, QuoteByte )
+	local Pattern, Start = [[\*]]..strchar( QuoteByte );
+	while ( Pos ) do
+		Start, Pos = strfind( Text, Pattern, Pos + 1 );
+		if ( Pos and ( Pos - Start ) % 2 == 0 ) then -- Not escaped
 			return TK_STRING, Pos + 1;
 		end
-		Pos = Pos + 1;
 	end
+	return TK_STRING, #Text + 1;
 end
 
 --- @return Token type or nil if end of string, position of char after token.
@@ -555,11 +502,8 @@ local function NextToken ( Text, Pos )
 	end
 
 	if ( Whitespace[ Byte ] ) then
-		while ( Whitespace[ Byte ] ) do
-			Pos = Pos + 1;
-			Byte = strbyte( Text, Pos );
-		end
-		return TK_WHITESPACE, Pos;
+		local _, End = strfind( Text, "^[ \t]*", Pos + 1 );
+		return TK_WHITESPACE, End + 1;
 	end
 
 	local Token = TokenBytes[ Byte ];
@@ -569,35 +513,31 @@ local function NextToken ( Text, Pos )
 		end
 
 		if ( Byte == BYTE_SINGLE_QUOTE or Byte == BYTE_DOUBLE_QUOTE ) then
-			return NextString( Text, Pos + 1, Byte );
-		end
+			return NextString( Text, Pos, Byte );
 
-		if ( Byte == BYTE_LEFTBRACKET ) then
-			local IsLongString, PosNext, EqualsCount = IsNextLongString( Text, Pos );
-			if ( IsLongString ) then
+		elseif ( Byte == BYTE_LEFTBRACKET ) then
+			local PosNext, EqualsCount = NextLongStringStart( Text, Pos );
+			if ( PosNext ) then
 				return NextLongString( Text, PosNext, EqualsCount );
 			else
 				return TK_LEFTBRACKET, Pos + 1;
 			end
 		end
 
-		local Byte2 = strbyte( Text, Pos + 1 );
-
 		if ( Byte == BYTE_MINUS ) then
-			if ( Byte2 == BYTE_MINUS ) then
+			if ( strbyte( Text, Pos + 1 ) == BYTE_MINUS ) then
 				return NextComment( Text, Pos + 2 );
 			end
 			return TK_SUBTRACT, Pos + 1;
-		end
 
-		if ( Byte == BYTE_EQUALS ) then
-			if ( Byte2 == BYTE_EQUALS ) then
+		elseif ( Byte == BYTE_EQUALS ) then
+			if ( strbyte( Text, Pos + 1 ) == BYTE_EQUALS ) then
 				return TK_EQUALITY, Pos + 2;
 			end
 			return TK_ASSIGNMENT, Pos + 1;
-		end
 
-		if ( Byte == BYTE_PERIOD ) then
+		elseif ( Byte == BYTE_PERIOD ) then
+			local Byte2 = strbyte( Text, Pos + 1 );
 			if ( Byte2 == BYTE_PERIOD ) then
 				if ( strbyte( Text, Pos + 2 ) == BYTE_PERIOD ) then
 					return TK_VARARG, Pos + 3;
@@ -607,32 +547,30 @@ local function NextToken ( Text, Pos )
 				return NextNumberFractionPart( Text, Pos + 2 );
 			end
 			return TK_PERIOD, Pos + 1;
-		end
 
-		if ( Byte == BYTE_LESSTHAN ) then
-			if ( Byte2 == BYTE_EQUALS ) then
+		elseif ( Byte == BYTE_LESSTHAN ) then
+			if ( strbyte( Text, Pos + 1 ) == BYTE_EQUALS ) then
 				return TK_LTE, Pos + 2;
 			end
 			return TK_LT, Pos + 1;
-		end
 
-		if ( Byte == BYTE_GREATERTHAN ) then
-			if ( Byte2 == BYTE_EQUALS ) then
+		elseif ( Byte == BYTE_GREATERTHAN ) then
+			if ( strbyte( Text, Pos + 1 ) == BYTE_EQUALS ) then
 				return TK_GTE, Pos + 2;
 			end
 			return TK_GT, Pos + 1;
-		end
 
-		if ( Byte == BYTE_TILDE and Byte2 == BYTE_EQUALS ) then
+		elseif ( Byte == BYTE_TILDE
+			and strbyte( Text, Pos + 1 ) == BYTE_EQUALS
+		) then
 			return TK_NOTEQUAL, Pos + 2;
 		end
-
-		return TK_UNKNOWN, Pos + 1;
 	elseif ( Byte >= BYTE_0 and Byte <= BYTE_9 ) then
 		return NextNumber( Text, Pos );
 	else
-		return NextIdentifier( Text, Pos + 1 );
+		return NextIdentifier( Text, Pos );
 	end
+	return TK_UNKNOWN, Pos + 1;
 end
 
 
