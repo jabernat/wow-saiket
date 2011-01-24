@@ -354,6 +354,8 @@ local BYTE_SLASH = strbyte( "/" );
 local BYTE_SPACE = strbyte( " " );
 local BYTE_TAB = strbyte( "\t" );
 local BYTE_TILDE = strbyte( "~" );
+local BYTE_X = strbyte( "X" );
+local BYTE_x = strbyte( "x" );
 
 local Linebreaks = {
 	[ BYTE_CR ] = true;
@@ -428,9 +430,17 @@ local function NextNumberFractionPart ( Text, Pos )
 		end
 	end
 end
+local function NextNumberHexPart ( Text, Pos )
+	local _, End = Text:find( "^%x+", Pos );
+	return TK_NUMBER, End and End + 1 or Pos;
+end
 local function NextNumber ( Text, Pos )
+	local Byte, Base = strbyte( Text, Pos, Pos + 1 );
+	if ( Byte == BYTE_0 and ( Base == BYTE_X or Base == BYTE_x ) ) then
+		return NextNumberHexPart( Text, Pos + 2 );
+	end
 	while ( true ) do
-		local Byte = strbyte( Text, Pos );
+		Byte = strbyte( Text, Pos );
 		if ( Byte and Byte >= BYTE_0 and Byte <= BYTE_9 ) then
 			Pos = Pos + 1;
 		elseif ( Byte == BYTE_PERIOD ) then
@@ -619,7 +629,7 @@ local function NextToken ( Text, Pos )
 
 		return TK_UNKNOWN, Pos + 1;
 	elseif ( Byte >= BYTE_0 and Byte <= BYTE_9 ) then
-		return NextNumber( Text, Pos + 1 );
+		return NextNumber( Text, Pos );
 	else
 		return NextIdentifier( Text, Pos + 1 );
 	end
