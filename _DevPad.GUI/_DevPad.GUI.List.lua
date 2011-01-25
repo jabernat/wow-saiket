@@ -513,22 +513,15 @@ function me.RenameEdit:OnEnterPressed ()
 	return self:ClearFocus();
 end
 do
-	--- Moves the edit box into view after the scrollframe updates its boundaries.
+	--- Waits one frame before moving the view in case the edit box was re-anchored.
 	local function OnUpdate ( self )
 		self:SetScript( "OnUpdate", nil );
-		local Top = self:GetTop();
-		local Offset = me.ScrollChild:GetTop() - Top;
-		if ( Top > me.ScrollFrame:GetTop() ) then
-			me.ScrollFrame.Bar:SetValue( Offset );
-		else
-			local Height = self:GetHeight();
-			if ( Top - Height < me.ScrollFrame:GetBottom() ) then
-				me.ScrollFrame.Bar:SetValue( Offset + Height - me.ScrollFrame:GetHeight() );
-			end
-		end
+		local Top = me.ScrollChild:GetTop() - self:GetTop();
+		local Bottom = Top + self:GetHeight();
+		me.ScrollFrame:SetVerticalScrollToCoord( Top, Bottom );
 	end
-	--- Scrolls the edit box into view.
-	function me.RenameEdit:OnShow ()
+	--- Scrolls the edit box into view while typing.
+	function me.RenameEdit:OnCursorChanged ()
 		return self:SetScript( "OnUpdate", OnUpdate );
 	end
 end
@@ -968,7 +961,7 @@ Rename:SetScript( "OnEnterPressed", Rename.OnEnterPressed );
 Rename:SetScript( "OnEscapePressed", Rename.ClearFocus );
 Rename:SetScript( "OnEditFocusGained", Rename.HighlightText );
 Rename:SetScript( "OnEditFocusLost", Rename.OnEditFocusLost );
-Rename:SetScript( "OnShow", Rename.OnShow );
+Rename:SetScript( "OnCursorChanged", Rename.OnCursorChanged );
 
 -- Highlight for script open in editor
 local Edited = me.Edited;

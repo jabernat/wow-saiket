@@ -315,21 +315,8 @@ do
 			LastX, LastY = CursorX, CursorY;
 			LastWidth, LastHeight = CursorWidth, CursorHeight;
 
-			local ScrollFrame = me.ScrollFrame;
-			if ( ScrollFrame:GetVerticalScrollRange() > 0 ) then
-				CursorY = -CursorY;
-				local CursorBottom = CursorY + CursorHeight + 2 * TextInset;
-
-				local Height = ScrollFrame:GetHeight();
-				local Top = ScrollFrame:GetVerticalScroll();
-				local Bottom = Top + Height;
-
-				if ( CursorY < Top ) then -- Too high
-					ScrollFrame:SetVerticalScroll( CursorY );
-				elseif ( CursorBottom > Bottom ) then -- Too low
-					ScrollFrame:SetVerticalScroll( CursorBottom - Height );
-				end
-			end
+			local Top, Bottom = -CursorY, CursorHeight + 2 * TextInset - CursorY;
+			me.ScrollFrame:SetVerticalScrollToCoord( Top, Bottom );
 		end
 	end
 end
