@@ -23,6 +23,20 @@ function me:ControlOnEnter ()
 		GameTooltip:SetText( self.tooltipText, nil, nil, nil, nil, 1 );
 	end
 end
+--- Brings a range of Y-coords into this ScrollFrame's view.
+function me:SetVerticalScrollToCoord ( TargetTop, TargetBottom )
+	if ( self:GetVerticalScrollRange() > 0 ) then
+		local Height = self:GetHeight();
+		local Top = self:GetVerticalScroll();
+		local Bottom = Top + Height;
+
+		if ( TargetTop < Top ) then -- Too high
+			self:SetVerticalScroll( TargetTop );
+		elseif ( TargetBottom > Bottom ) then -- Too low
+			self:SetVerticalScroll( TargetBottom - Height );
+		end
+	end
+end
 --- @return A new standard button frame.
 function me:NewButton ( Path )
 	local Button = CreateFrame( "Button", nil, self );
@@ -176,7 +190,7 @@ function me:New ( Name )
 		tile = true; tileSize = 32; edgeSize = 32;
 		insets = { left = 7; right = 5; top = 3; bottom = 6; };
 	} );
-	Frame:SetScript( "OnSizeChanged", me.OnSizeChanged );
+	Frame:SetScript( "OnSizeChanged", self.OnSizeChanged );
 	Frame.Pack, Frame.Unpack = self.Pack, self.Unpack;
 	Frame.NewButton = self.NewButton;
 	-- Make dragable
@@ -185,8 +199,8 @@ function me:New ( Name )
 	Frame:SetResizable( true );
 	Frame:SetClampedToScreen( true );
 	Frame:SetDontSavePosition( true );
-	Frame:SetScript( "OnMouseDown", me.OnMouseDown );
-	Frame:SetScript( "OnMouseUp", me.OnMouseUp );
+	Frame:SetScript( "OnMouseDown", self.OnMouseDown );
+	Frame:SetScript( "OnMouseUp", self.OnMouseUp );
 	-- Close button
 	Frame.Close = CreateFrame( "Button", nil, Frame, "UIPanelCloseButton" );
 	Frame.Close:SetPoint( "TOPRIGHT", 4, 4 );
@@ -210,7 +224,7 @@ function me:New ( Name )
 	Window:SetPoint( "TOPLEFT", 6, -24 );
 	Window:SetPoint( "RIGHT", -2, 0 );
 	Window:SetPoint( "BOTTOM", Bottom, "TOP" );
-	Window:SetScript( "OnMouseWheel", me.WindowOnMouseWheel );
+	Window:SetScript( "OnMouseWheel", self.WindowOnMouseWheel );
 	Window:EnableMouseWheel( false );
 
 	local ScrollFrame = CreateFrame( "ScrollFrame", nil, Window );
@@ -218,8 +232,9 @@ function me:New ( Name )
 	ScrollFrame:SetPoint( "TOPLEFT" );
 	ScrollFrame:SetPoint( "BOTTOM" );
 	ScrollFrame:SetPoint( "RIGHT" ); -- Right anchor moved independently by scrollbar
-	ScrollFrame:SetScript( "OnScrollRangeChanged", me.ScrollFrameOnScrollRangeChanged );
-	ScrollFrame:SetScript( "OnVerticalScroll", me.ScrollFrameOnVerticalScroll );
+	ScrollFrame:SetScript( "OnScrollRangeChanged", self.ScrollFrameOnScrollRangeChanged );
+	ScrollFrame:SetScript( "OnVerticalScroll", self.ScrollFrameOnVerticalScroll );
+	ScrollFrame.SetVerticalScrollToCoord = self.SetVerticalScrollToCoord;
 
 	Frame.Background = ScrollFrame:CreateTexture( nil, "BACKGROUND" );
 	Frame.Background:SetAllPoints();
@@ -232,12 +247,12 @@ function me:New ( Name )
 
 	local FrameLevel = Bar:GetFrameLevel();
 	Bar.Dec = CreateFrame( "Button", nil, Bar, "UIPanelScrollUpButtonTemplate" );
-	Bar.Dec:SetScript( "OnClick", me.ScrollButtonOnClick );
+	Bar.Dec:SetScript( "OnClick", self.ScrollButtonOnClick );
 	Bar.Dec:SetPoint( "TOPRIGHT", Window );
 	Bar.Dec:SetFrameLevel( FrameLevel );
 	Bar.Dec.Delta = -1;
 	Bar.Inc = CreateFrame( "Button", nil, Bar, "UIPanelScrollDownButtonTemplate" );
-	Bar.Inc:SetScript( "OnClick", me.ScrollButtonOnClick );
+	Bar.Inc:SetScript( "OnClick", self.ScrollButtonOnClick );
 	Bar.Inc:SetPoint( "BOTTOMRIGHT", Window );
 	Bar.Inc:SetFrameLevel( FrameLevel );
 	Bar.Inc.Delta = 1;
@@ -252,7 +267,7 @@ function me:New ( Name )
 
 	Bar:SetPoint( "TOPRIGHT", Bar.Dec, "BOTTOMRIGHT" );
 	Bar:SetPoint( "BOTTOMLEFT", Bar.Inc, "TOPLEFT" );
-	Bar:SetScript( "OnValueChanged", me.ScrollBarOnValueChanged );
+	Bar:SetScript( "OnValueChanged", self.ScrollBarOnValueChanged );
 
 	-- Resize grip
 	local Resize = CreateFrame( "Button", nil, ScrollFrame );
@@ -262,8 +277,8 @@ function me:New ( Name )
 	Resize:SetHitRectInsets( 8, 8, 8, 8 );
 	Resize:SetNormalTexture( ResizeTexture );
 	Resize:SetHighlightTexture( ResizeTexture );
-	Resize:SetScript( "OnMouseDown", me.ResizeOnMouseDown );
-	Resize:SetScript( "OnMouseUp", me.ResizeOnMouseUp );
+	Resize:SetScript( "OnMouseDown", self.ResizeOnMouseDown );
+	Resize:SetScript( "OnMouseUp", self.ResizeOnMouseUp );
 
 	return Frame;
 end
