@@ -41,6 +41,7 @@ if ( GUI.IndentationLib ) then
 		end
 	end
 	Color( "|cff88bbdd", T.KEYWORD ); -- Reserved words
+	Color( "|cffff6666", T.UNKNOWN );
 	Color( "|cffcc7777", T.CONCAT, T.VARARG,
 		T.ASSIGNMENT, T.PERIOD, T.COMMA, T.SEMICOLON, T.COLON, T.SIZE );
 	Color( "|cffffaa00", T.NUMBER );
