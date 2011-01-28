@@ -99,6 +99,7 @@ end
 --- Updates clamp to allow dragging the frame mostly but not completely offscreen.
 function me:OnSizeChanged ( Width, Height )
 	self:SetClampRectInsets( Width - 32, 32 - Width, 32 - Height, Height - 32 );
+	self:SetClampedToScreen( true );
 end
 --- Adds and adjusts scrollbars when necessary.
 function me:ScrollFrameOnScrollRangeChanged ( XRange, YRange )
@@ -190,15 +191,14 @@ function me:New ( Name )
 		tile = true; tileSize = 32; edgeSize = 32;
 		insets = { left = 7; right = 5; top = 3; bottom = 6; };
 	} );
-	Frame:SetScript( "OnSizeChanged", self.OnSizeChanged );
 	Frame.Pack, Frame.Unpack = self.Pack, self.Unpack;
 	Frame.NewButton = self.NewButton;
 	-- Make dragable
 	Frame:EnableMouse( true );
 	Frame:SetMovable( true );
 	Frame:SetResizable( true );
-	Frame:SetClampedToScreen( true );
 	Frame:SetDontSavePosition( true );
+	Frame:SetScript( "OnSizeChanged", self.OnSizeChanged );
 	Frame:SetScript( "OnMouseDown", self.OnMouseDown );
 	Frame:SetScript( "OnMouseUp", self.OnMouseUp );
 	-- Close button
