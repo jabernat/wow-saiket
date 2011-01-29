@@ -16,7 +16,7 @@
 ## X-Embeds: FlyPaper
 ## SavedVariables: _DevPadGUIOptions
 ## RequiredDeps: _DevPad
-## OptionalDeps: Ace3, FlyPaper
+## OptionalDeps: FlyPaper
 ## LoadOnDemand: 1
 Embeds.xml
 Locales.xml
