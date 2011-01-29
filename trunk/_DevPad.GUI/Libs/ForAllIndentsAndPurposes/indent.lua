@@ -652,38 +652,47 @@ function lib:FormatCode ( TabWidth, ColorTable, CursorOld )
 			PassedIndent = true; -- Passed leading whitespace
 			local Token = strsub( self, Pos, PosNext - 1 );
 
+			local ColorCode;
 			if ( ColorTable ) then -- Add coloring
 				local Color = ColorTable[ Keywords[ Token ] and TK_KEYWORD or Token ]
 					or ColorTable[ TokenType ];
-				if ( ColorLast and not Color ) then -- Stop color
-					Buffer[ #Buffer + 1 ], BufferLen = ColorStop, BufferLen + #ColorStop;
-				elseif Color and Color ~= ColorLast then -- Change color
-					Buffer[ #Buffer + 1 ], BufferLen = Color, BufferLen + #Color;
+				ColorCode = ( ColorLast and not Color and ColorStop ) -- End color
+					or ( Color ~= ColorLast and Color ); -- Change color
+				if ( ColorCode ) then
+					Buffer[ #Buffer + 1 ], BufferLen = ColorCode, BufferLen + #ColorCode;
 				end
 				ColorLast = Color;
 			end
 
 			Buffer[ #Buffer + 1 ], BufferLen = Token, BufferLen + #Token;
 
-			if ( CursorOld and not Cursor and CursorOld < PosNext ) then
+			if ( CursorOld and not Cursor
+				and CursorOld < PosNext - 1 -- Before end of token
+			) then
 				local Offset = PosNext - CursorOld - 1; -- Distance to end of token
 				if ( Offset > #Token ) then -- Cursor was in a previous skipped token
 					Offset = #Token; -- Move to start of current token
 				end
+				-- Note: Cursor must not be directly inside of color codes, i.e.
+				-- |cffxxxxxx_ or _|r, else the cursor can interact with them directly.
+				if ( ColorCode and ColorLast -- Added color start code before token
+					and Offset == #Token -- Cursor at start of token
+				) then
+					Offset = Offset + #ColorCode; -- Move to before color code
+				end
 				Cursor = BufferLen - Offset;
 			end
 
-			if ( TabWidth ) then -- See if this is an indent-modifier
-				local Indent = TokenType == TK_IDENTIFIER
-					and Indents[ Token ] or Indents[ TokenType ];
-				if ( Indent ) then
-					if ( DepthNext > 0 ) then
-						DepthNext = DepthNext + Indent[ 1 ];
-					else
-						Depth = Depth + Indent[ 1 ];
-					end
-					DepthNext = DepthNext + Indent[ 2 ];
+			local Indent = TabWidth and (
+				( TokenType == TK_IDENTIFIER and Indents[ Token ] )
+				or Indents[ TokenType ] );
+			if ( Indent ) then -- Apply token indent-modifier
+				if ( DepthNext > 0 ) then
+					DepthNext = DepthNext + Indent[ 1 ];
+				else
+					Depth = Depth + Indent[ 1 ];
 				end
+				DepthNext = DepthNext + Indent[ 2 ];
 			end
 		end
 
@@ -707,5 +716,5 @@ function lib:FormatCode ( TabWidth, ColorTable, CursorOld )
 			end
 		end
 	end
-	return table.concat( Buffer ), Cursor or 0;
+	return table.concat( Buffer ), Cursor or BufferLen;
 end
