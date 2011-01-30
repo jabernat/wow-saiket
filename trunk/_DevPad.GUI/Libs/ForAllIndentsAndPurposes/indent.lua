@@ -151,9 +151,7 @@ do
 		if ( self.faiap_OnTabPressed ) then
 			self:faiap_OnTabPressed( ... );
 		end
-		if ( Enabled[ self ] ) then
-			return lib.Update( self, true );
-		end
+		return lib.Update( self, true );
 	end
 	--- @return Cached plain text contents.
 	local function GetCodeCached ( self )
@@ -213,7 +211,7 @@ do
 	end
 	--- Updates the code a moment after the user quits typing.
 	local function UpdaterOnFinished ( Updater )
-		return lib.Update( Updater:GetParent() );
+		return lib.Update( Updater.EditBox );
 	end
 
 	local function HookHandler ( self, Handler, Script )
@@ -253,8 +251,10 @@ do
 			self.HighlightText = HighlightText;
 
 			if ( Enabled[ self ] == nil ) then -- Never hooked before
-				local Updater = self:CreateAnimationGroup();
-				Updaters[ self ] = Updater;
+				-- Note: Animation must not be parented to EditBox, or else lots of
+				-- text will cause huge framerate drops after Updater:Play().
+				local Updater = CreateFrame( "Frame", nil, self ):CreateAnimationGroup();
+				Updaters[ self ], Updater.EditBox = Updater, self;
 				Updater:CreateAnimation( "Animation" ):SetDuration( UpdateCooldown );
 				Updater:SetScript( "OnFinished", UpdaterOnFinished );
 				HookHandler( self, "OnTextChanged", OnTextChanged );

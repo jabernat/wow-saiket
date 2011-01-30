@@ -334,9 +334,9 @@ end
 do
 	--- Updates the margin a moment after the user quits typing.
 	local function OnFinished ( Updater )
-		return Updater:GetParent():Update();
+		return me.Margin:Update();
 	end
-	local Updater = me.Margin:CreateAnimationGroup();
+	local Updater = CreateFrame( "Frame", nil, me.Margin ):CreateAnimationGroup();
 	Updater:CreateAnimation( "Animation" ):SetDuration( MarginUpdateFrequency );
 	Updater:SetScript( "OnFinished", OnFinished );
 	--- Updates line numbers and saves text.
