@@ -5,6 +5,7 @@
 
 
 select( 2, ... ).L = setmetatable( {
+	EXAMPLE = "Example Script",
 	IMPORTERS = "Importers",
 	PRINT_FORMAT = "_|cffcccc88DevPad|r: %s",
 	README = "Instruction Manual",
@@ -25,11 +26,11 @@ _DevPad lets you write notes, scripts, and mini addons in-game.  The following s
   * The arrow to the right of each script toggles auto-running it when you log in or reload UI.  Use it to turn a script into a mini addon.
   * Double click any entry to rename it.
   * Multiple entries can have the same name, even within the same folder.
-  * New folders and scripts are created by clicking their respective bag and note icons at the top-right of the list.
+  * New folders and scripts are created by clicking their respective bag and page icons at the top-right of the list.
   * Delete entries by selecting them and using the red cross-out icon in the top-right corner.
   * Send scripts and entire folders to friends by selecting them and clicking the trumpet icon in the top-right corner.
   * Copy an entry by sending it to yourself!
-  * A LuaDoc comment (triple dash) at the start of a script will appear as that script's tooltip.  This readme includes one as an example.
+  * A LuaDoc comment (triple dash) at the very start of a script will appear as that script's tooltip.  This readme includes one as an example.
   * Search script contents using the search bar at the bottom of the list.
 
 ## Editor Window:
