@@ -41,14 +41,23 @@ end
 
 
 do
-	local Active = IsLoggedIn();
-	--- Keeps the default UI from hiding open dialogs when zoning.
-	function me.Frame:PLAYER_LEAVING_WORLD ()
-		Active = false;
-	end
-	function me.Frame:PLAYER_ENTERING_WORLD ()
-		Active = true;
-	end
+	-- Ugly way of catching the escape keybind without also making the dialogs
+	-- close when other windows open/when zoning/etc.
+	local Listener = CreateFrame( "Frame", nil, WorldFrame );
+	Listener:EnableKeyboard( true );
+	Listener:SetPropagateKeyboardInput( true );
+
+	local Allowed;
+	--- Catches the game menu bind just before it fires.
+	Listener:SetScript( "OnKeyDown", function ( self, Key )
+		Allowed = ( me.Editor:IsShown() or me.List:IsShown() )
+			and GetBindingFromClick( Key ) == "TOGGLEGAMEMENU";
+	end );
+	--- Disallows closing the dialogs once the game menu bind is processed.
+	hooksecurefunc( "ToggleGameMenu", function ()
+		Allowed = nil;
+	end );
+
 	--- @return True if the dialog was hidden.
 	local function Hide ( self )
 		if ( self:IsShown() ) then
@@ -58,10 +67,10 @@ do
 	end
 	local Backup = CloseSpecialWindows;
 	--- Hook to hide dialog windows when escape is pressed.
-	-- Used instead of UISpecialFrames to prevent closing when zoning.
+	-- Used instead of UISpecialFrames to close *only* from escape.
 	function CloseSpecialWindows ( ... )
 		return Backup( ... )
-			or Active and ( Hide( me.Editor ) or Hide( me.List ) );
+			or Allowed and ( Hide( me.Editor ) or Hide( me.List ) );
 	end
 end
 
