@@ -569,8 +569,8 @@ else
 	me.Lua:Hide();
 end
 SetupTitleButton( me.FontCycle, L.FONT_CYCLE, 8 );
-SetupTitleButton( me.FontIncrease, L.FONT_DECREASE );
-SetupTitleButton( me.FontDecrease, L.FONT_INCREASE );
+SetupTitleButton( me.FontIncrease, L.FONT_INCREASE );
+SetupTitleButton( me.FontDecrease, L.FONT_DECREASE );
 SetupTitleButton( Revert, L.REVERT, 8 );
 me.Title:SetPoint( "RIGHT", LastButton, "LEFT" );
 
