@@ -27,7 +27,8 @@ select( 2, ... ).L = setmetatable( {
 	SCRIPT_RUN = "Run this script.",
 	SEARCH_DESC = [=[Search scripts' text by Lua pattern.  Escape newlines and backslashes!
 |cff808080(Hold shift for reverse)|r]=],
-	SEND = "Send this script or folder to other _|cffcccc88DevPad|r users.",
+	SEND = [=[Send this script or folder to other _|cffcccc88DevPad|r users.
+|cff808080(Send to yourself to copy)|r]=],
 	SEND_COMPLETE_FORMAT = "Finished sending |cff808080“%s”|r to |cffffffff%s|r.",
 	SEND_LARGE_FORMAT = "Please wait while |cff808080“%s”|r (%.2fkb) is sent to |cffffffff%s|r…",
 	SEND_PLAYER_NAME = "Please enter a character name to send to:";
