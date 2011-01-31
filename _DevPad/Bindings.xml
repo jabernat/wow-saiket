@@ -1,5 +1,0 @@
-<Bindings>
-	<Binding name="_DEVPAD_TOGGLE" header="_DEVPAD">
-		_DevPad.SlashCommand( "" ); -- Toggles GUI List window
-	</Binding>
-</Bindings>
