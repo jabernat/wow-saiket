@@ -327,7 +327,8 @@ do
 	--- Throttles tree repaints to once per frame.
 	local function OnUpdate ( self )
 		self:SetScript( "OnUpdate", nil );
-		return LayoutFolder( _DevPad.FolderRoot );
+		LayoutFolder( _DevPad.FolderRoot )
+		self.ScrollFrame:UpdateScrollChildRect();
 	end
 	--- Request that the list be redrawn before the next frame.
 	function me:Update ()
