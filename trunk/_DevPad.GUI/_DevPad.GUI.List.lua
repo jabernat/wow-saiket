@@ -860,7 +860,9 @@ function me:OnHide ()
 		tinsert( _DevPad.ReceiveQueue, 1, Object );
 		self:ObjectReceived();
 	end
-	return GUI.Editor:Hide();
+	if ( not self:IsShown() ) then -- Explicitly hidden, not obscured by world map
+		return GUI.Editor:Hide();
+	end
 end
 
 

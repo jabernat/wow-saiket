@@ -471,7 +471,9 @@ end
 function me:OnHide ()
 	PlaySound( "igQuestListClose" );
 	StaticPopup_Hide( "_DEVPAD_GOTO" );
-	return self:SetScriptObject();
+	if ( not self:IsShown() ) then -- Explicitly hidden, not obscured by world map
+		return self:SetScriptObject();
+	end
 end
 
 

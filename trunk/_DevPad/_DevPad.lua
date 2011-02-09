@@ -459,7 +459,12 @@ function me.SlashCommand ( Input )
 	if ( Pattern == "" ) then
 		local Loaded, ErrorReason = LoadAddOn( "_DevPad.GUI" );
 		if ( Loaded ) then
-			ToggleFrame( me.GUI.List );
+			local List = me.GUI.List;
+			if ( List:IsVisible() ) then
+				List:Hide();
+			else
+				List:Show();
+			end
 		else
 			me.Print( me.L.SLASH_GUIERROR_FORMAT:format(
 				_G[ "ADDON_"..ErrorReason ] ), RED_FONT_COLOR );
