@@ -15,7 +15,8 @@ select( 2, ... ).L = setmetatable( {
 	FONT_INCREASE = "Increase font size.",
 	GOTO_FORMAT = "Go to line number (between 1 and %d):",
 	LIST_TITLE = "_|cffcccc88DevPad|r",
-	LUA_TOGGLE = "Toggle Lua syntax highlighting for this script.",
+	LUA_TOGGLE = "Toggle Lua syntax highlighting and raw text for this script.",
+	RAW_TOGGLE = "Toggle raw text for this script.",
 	RECEIVE_CONFIRM_SCRIPT_FORMAT = [=[%s has sent you a script called |cff808080“%s”|r.  Add it to your _|cffcccc88DevPad|r?
 |cffff1111WARNING: Inspect all untrustworthy scripts before you run them!|r]=],
 	RECEIVE_CONFIRM_FOLDER_FORMAT = [=[%s has sent you a folder called |cff808080“%s”|r.  Add it and its contents to your _|cffcccc88DevPad|r?
