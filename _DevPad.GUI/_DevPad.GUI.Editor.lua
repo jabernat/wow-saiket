@@ -96,7 +96,7 @@ function me:SetScriptObject ( Script )
 				_DevPad.RegisterCallback( self, "FolderRemove" );
 			end
 			self.ScrollFrame.Bar:SetValue( 0 );
-			self.Edit:SetText( Script._Text:gsub( "|", "||" ) );
+			self.Edit:SetText( me.LuaEnabled and Script._Text:gsub( "|", "||" ) or Script._Text );
 			self:ScriptSetLua( nil, Script );
 			self.Edit:SetCursorPosition( 0 );
 			self.Margin:Update();
@@ -141,11 +141,12 @@ do
 	-- account for pipe characters being escaped.
 	function me:SetScriptHighlight ( Start, End )
 		if ( Start ) then
-			local Text = self.Script._Text;
-			local PipesBefore = CountSubstring( Text, "|", 0, Start );
-			End = End + PipesBefore + CountSubstring( Text, "|", Start, End );
-			Start = Start + PipesBefore;
-
+			if ( self.LuaEnabled ) then
+				local Text = self.Script._Text;
+				local PipesBefore = CountSubstring( Text, "|", 0, Start );
+				End = End + PipesBefore + CountSubstring( Text, "|", Start, End );
+				Start = Start + PipesBefore;
+			end
 			self.Edit.CursorForceUpdate = true; -- Force into view, even if not focused
 			self.Edit:SetCursorPosition( End );
 		end
@@ -154,11 +155,48 @@ do
 	--- @return Cursor position, ignoring extra pipe escape characters.
 	function me:GetScriptCursorPosition ()
 		local Cursor = self.Edit:GetCursorPosition();
-		return Cursor - CountSubstring( self.Edit:GetText(), "||", 0, Cursor );
+		return not self.LuaEnabled and Cursor
+			or Cursor - CountSubstring( self.Edit:GetText(), "||", 0, Cursor );
+	end
+
+
+	--- Sets both button textures' vertex colors.
+	local function SetVertexColors ( self, ... )
+		self:GetNormalTexture():SetVertexColor( ... );
+		self:GetPushedTexture():SetVertexColor( ... );
+	end
+	--- Enables or disables syntax highlighting in the edit box.
+	function me:ScriptSetLua ( _, Script )
+		if ( Script == self.Script ) then
+			local Lib, Edit = GUI.IndentationLib, self.Edit;
+			if ( Script._Lua ) then
+				if ( not self.LuaEnabled ) then
+					self.LuaEnabled = true;
+					SetVertexColors( self.Lua, 0.4, 0.8, 1 );
+
+					-- Escape control codes
+					local Text, Cursor = Edit:GetText(), Edit:GetCursorPosition();
+					Edit:SetText( Text:gsub( "|", "||" ) );
+					Edit:SetCursorPosition( Cursor + CountSubstring( Text, "|", 0, Cursor ) );
+				end
+				if ( Lib ) then -- Force immediate recolor even if already enabled
+					Lib.Enable( Edit, AutoIndent and TabWidth, me.SyntaxColors );
+				end
+			elseif ( self.LuaEnabled ) then
+				self.LuaEnabled = nil;
+				SetVertexColors( self.Lua, 0.4, 0.4, 0.4 );
+
+				-- Disable syntax highlighting and unescape control codes
+				if ( Lib ) then
+					Lib.Disable( Edit );
+				end
+				local Text, Cursor = Edit:GetText(), Edit:GetCursorPosition();
+				Edit:SetText( Text:gsub( "||", "|" ) );
+				Edit:SetCursorPosition( Cursor - CountSubstring( Text, "||", 0, Cursor ) );
+			end
+		end
 	end
 end
-
-
 --- Shows the selected script from the list frame.
 function me:ListSetSelection ( _, Object )
 	if ( Object and Object._Class == "Script" ) then
@@ -169,26 +207,6 @@ end
 function me:ObjectSetName ( _, Object )
 	if ( Object == self.Script ) then
 		self.Title:SetText( Object._Name );
-	end
-end
-do
-	--- Sets both button textures' vertex colors.
-	local function SetVertexColors ( self, ... )
-		self:GetNormalTexture():SetVertexColor( ... );
-		self:GetPushedTexture():SetVertexColor( ... );
-	end
-	--- Enables or disables syntax highlighting in the edit box.
-	function me:ScriptSetLua ( _, Script )
-		if ( Script == self.Script and GUI.IndentationLib ) then
-			if ( Script._Lua ) then
-				GUI.IndentationLib.Enable( self.Edit,
-					AutoIndent and TabWidth, me.SyntaxColors );
-				SetVertexColors( self.Lua, 0.4, 0.8, 1 );
-			else
-				GUI.IndentationLib.Disable( self.Edit );
-				SetVertexColors( self.Lua, 0.4, 0.4, 0.4 );
-			end
-		end
 	end
 end
 --- Hides the editor if the edited script gets removed.
@@ -234,7 +252,9 @@ function me.Lua:OnClick ()
 end
 --- Undoes changes since the player opened this script.
 function me.Revert:OnClick ()
-	return me.Edit:SetText( me.Script._TextOriginal:gsub( "|", "||" ) );
+	local Text = me.Script._TextOriginal;
+	me.Edit:SetText( me.LuaEnabled and Text:gsub( "|", "||" ) or Text );
+	me.Edit:SetCursorPosition( 0 );
 end
 
 
@@ -346,7 +366,8 @@ do
 			if ( not Script._TextOriginal ) then
 				Script._TextOriginal = Script._Text;
 			end
-			Script:SetText( self:GetText():gsub( "||", "|" ) );
+			local Text = self:GetText();
+			Script:SetText( me.LuaEnabled and Text:gsub( "||", "|" ) or Text );
 			if ( Script._TextOriginal == Script._Text ) then
 				me.Revert:Disable();
 			else
@@ -456,7 +477,7 @@ do
 	--- Hook to add clicked links' code to the edit box.
 	function me.ChatEditInsertLink ( Link, ... )
 		if ( Link and me.Edit:HasFocus() ) then
-			me.Edit:Insert( Link:gsub( "|", "||" ) );
+			me.Edit:Insert( me.LuaEnabled and Link:gsub( "|", "||" ) or Link );
 			return true;
 		end
 		return Backup( Link, ... );
@@ -565,11 +586,7 @@ local function SetupTitleButton ( Button, TooltipText, Offset )
 	Button:SetMotionScriptsWhileDisabled( true );
 	Button.tooltipText = TooltipText;
 end
-if ( GUI.IndentationLib ) then
-	SetupTitleButton( me.Lua, L.LUA_TOGGLE );
-else
-	me.Lua:Hide();
-end
+SetupTitleButton( me.Lua, GUI.IndentationLib and L.LUA_TOGGLE or L.RAW_TOGGLE );
 SetupTitleButton( me.FontCycle, L.FONT_CYCLE, 8 );
 SetupTitleButton( me.FontIncrease, L.FONT_INCREASE );
 SetupTitleButton( me.FontDecrease, L.FONT_DECREASE );
