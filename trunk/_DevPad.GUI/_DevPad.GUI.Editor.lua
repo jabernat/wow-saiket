@@ -378,6 +378,47 @@ do
 		Updater:Play();
 	end
 end
+--- Links/opens the clicked link.
+function me.Edit:OnMouseUp ( MouseButton )
+	if ( me.LuaEnabled ) then
+		return;
+	end
+	local Text, Cursor = self:GetText(), self:GetCursorPosition();
+
+	-- Find first unescaped link delimiter
+	local LinkEnd, Start, Code = Cursor;
+	while ( LinkEnd ) do
+		Start, LinkEnd, Code = Text:find( "|+([Hh])", LinkEnd + 1 );
+		if ( LinkEnd and ( LinkEnd - Start ) % 2 == 1 ) then -- Pipes not escaped
+			break;
+		end
+	end
+	if ( Code ~= "h" ) then
+		return; -- Not inside a link
+	end
+
+	-- Find start of link
+	local End, Start, LinkStart = 0;
+	while ( End ) do
+		Start, End = Text:find( "|+H", End + 1 );
+		if ( End ) then
+			if ( End > Cursor ) then
+				break;
+			elseif ( ( End - Start ) % 2 == 1 ) then -- Pipes not escaped
+				LinkStart = Start;
+			end
+		end
+	end
+
+	if ( LinkStart and LinkEnd ) then
+		local Link = Text:sub( LinkStart, LinkEnd );
+		local ChatEdit = ChatEdit_GetActiveWindow();
+		if ( ChatEdit and IsModifiedClick( "CHATLINK" ) ) then
+			ChatEdit:SetFocus();
+		end
+		SetItemRef( Link:match( "^|H(.-)|h" ), Link, MouseButton );
+	end
+end
 --- Start listening for shortcut keys.
 function me.Edit:OnEditFocusGained ()
 	me.Shortcuts:EnableKeyboard( true );
@@ -481,6 +522,19 @@ do
 			return true;
 		end
 		return Backup( Link, ... );
+	end
+end
+do
+	local Backup = ChatEdit_OnEditFocusLost;
+	--- Hook to keep the chat edit box open when focusing the editor.
+	function me:ChatEditOnEditFocusLost ( ... )
+		if ( IsMouseButtonDown() ) then
+			local Focus = GetMouseFocus();
+			if ( Focus == me.Edit or Focus == me.Margin or Focus == me.Focus ) then
+				return; -- Probably clicked the editor to change focus
+			end
+		end
+		return Backup( self, ... );
 	end
 end
 
@@ -625,6 +679,7 @@ Edit:SetScript( "OnEscapePressed", Edit.ClearFocus );
 Edit:SetScript( "OnTabPressed", Edit.OnTabPressed );
 Edit:SetScript( "OnCursorChanged", Edit.OnCursorChanged );
 Edit:SetScript( "OnTextChanged", Edit.OnTextChanged );
+Edit:SetScript( "OnMouseUp", Edit.OnMouseUp );
 -- Enable extra keyboard shortcuts
 Edit:SetScript( "OnEditFocusGained", Edit.OnEditFocusGained );
 Edit:SetScript( "OnEditFocusLost", Edit.OnEditFocusLost );
@@ -634,6 +689,7 @@ me.Shortcuts:SetScript( "OnHide", me.Shortcuts.OnHide );
 me.Shortcuts:EnableKeyboard( false );
 
 ChatEdit_InsertLink = me.ChatEditInsertLink;
+ChatEdit_OnEditFocusLost = me.ChatEditOnEditFocusLost;
 GUI.RegisterCallback( me, "ListSetSelection" );
 
 me:Unpack( {} ); -- Default position/size and font
