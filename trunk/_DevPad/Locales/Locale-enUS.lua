@@ -35,7 +35,8 @@ _DevPad lets you write notes, scripts, and mini addons in-game.  The following s
 
 ## Editor Window:
   * Line numbering is an approximation and can be wrong for wrapped lines!
-  * Optional syntax highlighting courtesy of krka's ForAllIndentsAndPurposes can be turned on per script using the keyboard icon at the top-right of the editor.  This also automatically indents code as you type.
+  * Optional raw text mode, and syntax highlighting courtesy of krka's ForAllIndentsAndPurposes, can be turned on per script using the keyboard icon at the top-right of the editor.  This also automatically indents code as you type.
+  * When not in Lua/raw text mode, you can click hyperlinks in the editor to interact with them.
   * Font and font size controls are also at the top-right of the window.
   * Click a line number to select that entire line (even if the line numbers appear out of alignment).
   * Text is saved as you type.  You can revert to the script's original text (since the start of the session) using the back arrow icon at the top-right.
