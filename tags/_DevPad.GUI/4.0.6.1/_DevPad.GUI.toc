@@ -1,0 +1,27 @@
+## Interface: 40000
+## Title: _|cffCCCC88DevPad|r.GUI
+## Notes: Script list and editor for _|cffCCCC88DevPad|r.
+## Author: Saiket
+## Version: 4.0.6.1
+## X-Date: 2011-02-11
+## X-Category: Development Tools
+## X-License: GPLv3
+## X-Email: saiket.wow@gmail.com
+## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons/DevPad
+## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:DevPad
+## X-WoWI-ID: 19403
+## X-Curse-Project-ID: devpad
+## X-Localizations: enUS
+## X-CompatibleLocales: deDE, enUS, esES, esMX, frFR, koKR, ruRU, zhCN, zhTW
+## X-Embeds: FlyPaper
+## SavedVariables: _DevPadGUIOptions
+## RequiredDeps: _DevPad
+## OptionalDeps: FlyPaper
+## LoadOnDemand: 1
+Embeds.xml
+Locales.xml
+
+_DevPad.GUI.lua
+_DevPad.GUI.Dialog.lua
+_DevPad.GUI.List.lua
+_DevPad.GUI.Editor.lua
