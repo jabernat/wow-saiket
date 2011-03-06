@@ -54,20 +54,6 @@ function me.PingName:OnUpdate ( Elapsed )
 end
 
 
---- Updates the instance difficulty flag and moves zone text to fit.
-function me:DifficultyOnEvent ()
-	if ( self:IsShown() ) then
-		local Texture = _G[ self:GetName().."Texture" ];
-		local MinX, MinY, _, MaxY, MaxX = Texture:GetTexCoord();
-		Texture:SetTexCoord( MinX + 1 / 16, MaxX - 1 / 16, MinY, MaxY );
-
-		MinimapZoneTextButton:SetPoint( "LEFT", self, "RIGHT" );
-	else
-		MinimapZoneTextButton:SetPoint( "LEFT" );
-	end
-end
-
-
 --- Zooms the minimap using the mousewheel.
 function me:OnMouseWheel ( Delta )
 	self:SetZoom( min( max( self:GetZoom() + Delta, 0 ), self:GetZoomLevels() - 1 ) );
@@ -89,7 +75,7 @@ me.Frame:SetScript( "OnEvent", _Underscore.Frame.OnEvent );
 me.Frame:RegisterEvent( "PLAYER_LOGOUT" );
 
 me.PingName:Hide();
-me.PingName:SetAllPoints( Minimap );
+me.PingName:SetAllPoints();
 local Container = CreateFrame( "Frame", nil, me.PingName );
 Container:SetSize( 1, 1 );
 me.PingName:SetScrollChild( Container );
@@ -119,6 +105,12 @@ me.PingName:SetAlpha( 0.75 );
 
 
 
+--- Hides this texture and releases resources.
+local function TextureHide ( self )
+	self:Hide();
+	self:SetTexture();
+end
+
 -- Replace zoom buttons
 Minimap:HookScript( "OnMouseWheel", me.OnMouseWheel );
 Minimap:EnableMouseWheel( true );
@@ -128,62 +120,48 @@ MinimapZoomOut:Hide();
 
 
 -- Move default buttons that sit around the minimap
-local Color = _Underscore.Colors.Foreground;
+local R, G, B, A = unpack( _Underscore.Colors.Foreground );
 
-MinimapBorderTop:Hide();
-MinimapBorderTop:SetTexture();
-MinimapBorder:Hide();
-MinimapBorder:SetTexture();
-MinimapNorthTag:Hide();
-MinimapNorthTag:SetTexture();
+TextureHide( MinimapBorderTop );
+TextureHide( MinimapBorder );
+TextureHide( MinimapNorthTag );
 
 GameTimeFrame:Hide();
 MiniMapWorldMapButton:Hide();
 
-MiniMapTracking:ClearAllPoints();
-MiniMapTracking:SetPoint( "BOTTOMLEFT", Minimap, -1, 0 );
-MiniMapTracking:SetSize( IconSize, IconSize );
-MiniMapTrackingButton:SetAllPoints( MiniMapTracking );
-MiniMapTrackingButtonBorder:Hide();
-MiniMapTrackingButtonBorder:SetTexture();
-MiniMapTrackingBackground:Hide();
-MiniMapTrackingBackground:SetTexture();
-MiniMapTrackingIcon:SetAllPoints( MiniMapTracking );
-MiniMapTrackingIcon:SetVertexColor( unpack( Color ) );
-MiniMapTrackingButtonShine:SetAllPoints();
-_Underscore.SkinButtonIcon( MiniMapTrackingIcon );
-MiniMapTrackingButton:SetScript( "OnMouseUp", nil );
-MiniMapTrackingButton:SetScript( "OnMouseDown", nil );
-
--- Voice chat button
 MiniMapVoiceChatFrame:ClearAllPoints();
 MiniMapVoiceChatFrame:Hide();
 
-MiniMapMailFrame:ClearAllPoints();
+--- Skins this default minimap icon.
+local function SkinButton ( self, Scale, Border, Icon, NoRecolor )
+	self:ClearAllPoints();
+	self:SetSize( Scale * IconSize, Scale * IconSize );
+	TextureHide( Border );
+	Icon:SetAllPoints();
+	_Underscore.SkinButtonIcon( Icon );
+	if ( not NoRecolor ) then
+		Icon:SetVertexColor( R, G, B, A );
+	end
+end
+SkinButton( MiniMapTracking, 1, MiniMapTrackingButtonBorder, MiniMapTrackingIcon );
+MiniMapTracking:SetPoint( "BOTTOMLEFT", Minimap, -1, 0 );
+MiniMapTrackingButton:SetAllPoints();
+TextureHide( MiniMapTrackingBackground );
+MiniMapTrackingButtonShine:SetAllPoints();
+MiniMapTrackingButton:SetScript( "OnMouseUp", nil );
+MiniMapTrackingButton:SetScript( "OnMouseDown", nil );
+
+SkinButton( MiniMapMailFrame, 1, MiniMapMailBorder, MiniMapMailIcon, true );
 MiniMapMailFrame:SetPoint( "BOTTOMRIGHT", Minimap, -1, 0 );
-MiniMapMailFrame:SetSize( IconSize, IconSize );
-MiniMapMailBorder:Hide();
-MiniMapMailBorder:SetTexture();
-MiniMapMailIcon:SetAllPoints( MiniMapMailFrame );
 MiniMapMailIcon:SetTexture( [[Interface\Minimap\Tracking\Mailbox]] ); -- No black background
-_Underscore.SkinButtonIcon( MiniMapMailIcon );
 
-MiniMapBattlefieldFrame:ClearAllPoints();
+SkinButton( MiniMapBattlefieldFrame, 1.5, MiniMapBattlefieldBorder, MiniMapBattlefieldIcon );
 MiniMapBattlefieldFrame:SetPoint( "RIGHT", MiniMapMailFrame, "LEFT" );
-MiniMapBattlefieldFrame:SetSize( IconSize * 1.5, IconSize * 1.5 );
-MiniMapBattlefieldBorder:Hide();
-MiniMapBattlefieldBorder:SetTexture();
-MiniMapBattlefieldIcon:SetAllPoints( MiniMapBattlefieldFrame );
-MiniMapBattlefieldIcon:SetVertexColor( unpack( Color ) );
-BattlegroundShine:SetAllPoints( MiniMapBattlefieldFrame );
+BattlegroundShine:SetAllPoints();
 
-MiniMapLFGFrame:ClearAllPoints();
+SkinButton( MiniMapLFGFrame, 1.75, MiniMapLFGFrameBorder, MiniMapLFGFrameIconTexture );
 MiniMapLFGFrame:SetPoint( "RIGHT", MiniMapBattlefieldFrame, "LEFT" );
-MiniMapLFGFrame:SetSize( IconSize * 1.75, IconSize * 1.75 );
-MiniMapLFGFrameBorder:Hide();
-MiniMapLFGFrameBorder:SetTexture();
-MiniMapLFGFrameIcon:SetAllPoints( MiniMapLFGFrame );
-MiniMapLFGFrameIconTexture:SetVertexColor( unpack( Color ) );
+MiniMapLFGFrameIcon:SetAllPoints();
 
 
 -- Move the zone text inside of the square
@@ -193,18 +171,19 @@ MinimapZoneTextButton:SetPoint( "TOPRIGHT", Minimap, 0, -2 );
 MinimapZoneTextButton:SetPoint( "LEFT", Minimap );
 MinimapZoneTextButton:EnableMouse( false );
 MinimapZoneTextButton:SetAlpha( 0.5 );
-MinimapZoneText:SetAllPoints( MinimapZoneTextButton );
+MinimapZoneText:SetAllPoints();
 MinimapZoneText:SetFontObject( NumberFontNormalSmall );
 
--- Let the dungeon difficulty flag share space with the zone text
-local Frame, Texture = MiniMapInstanceDifficulty, MiniMapInstanceDifficultyTexture;
-Frame:ClearAllPoints();
-Frame:SetPoint( "TOPLEFT", -4, 8 );
-Frame:SetSize( Texture:GetWidth() / 2, Texture:GetHeight() );
-Frame:SetScale( 0.7 );
-Frame:SetAlpha( 0.6 );
-Texture:SetAllPoints();
-Frame:HookScript( "OnEvent", me.DifficultyOnEvent );
+--- Repositions this instance difficulty indicator to fit a square minimap.
+local function SkinDifficulty ( self )
+	self:ClearAllPoints();
+	self:SetPoint( "TOPRIGHT", 4, 4 );
+	self:SetScale( 0.7 );
+	self:SetAlpha( 0.8 );
+	self:EnableMouse( false );
+end
+SkinDifficulty( MiniMapInstanceDifficulty );
+SkinDifficulty( GuildInstanceDifficulty );
 
 
 -- Move and shrink the GM ticket frame
