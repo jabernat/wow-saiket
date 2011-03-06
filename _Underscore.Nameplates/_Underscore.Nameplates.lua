@@ -54,28 +54,42 @@ local LibNameplate;
 
 
 -- Individual plate methods
---- Reposition elements when a nameplate gets reused.
-function me:PlateOnShow ()
-	local Visual = Plates[ self ];
-	me.PlatesVisible[ self ] = Visual;
+do
+	--- Updates some elements one frame after being shown.
+	local function OnUpdate ( self )
+		self:SetScript( "OnUpdate", nil );
 
-	if ( not self:IsMouseOver() ) then -- Note: Fix for bug where highlights get stuck in default UI
-		Visual.Highlight:Hide();
+		local Visual = Plates[ self ];
+		Visual.Level:ClearAllPoints();
+		Visual.Level:SetPoint( "CENTER", Visual.StatusBackground, 0, 1 );
+		if ( not InCombat ) then
+			self:SetSize( PlateWidth, PlateHeight );
+		end
+		me.VisualClassificationUpdate( Visual, true ); -- Force
 	end
-	Visual.Highlight:SetPoint( "TOPLEFT", Visual, -PlateBorder, PlateBorder );
-	Visual.Highlight:SetPoint( "BOTTOMRIGHT", Visual, PlateBorder, -PlateBorder );
-	Visual.Level:ClearAllPoints();
-	Visual.Level:SetPoint( "CENTER", Visual.StatusBackground, 0, 1 );
-	Visual.Name:ClearAllPoints();
-	Visual.Name:SetPoint( "TOPRIGHT", Visual.Health.Right );
-	Visual.Name:SetPoint( "BOTTOMLEFT", Visual.Health.Left, 2, 2 );
-	Visual.ThreatBorder:Hide();
-	Visual.ThreatBorder.Threat = nil; -- Reset threat level cache
-	Visual.Cast:Hide(); -- Note: Fix for cast bars occasionally being shown without any spellcast
+	--- Reposition elements when a nameplate gets reused.
+	function me:PlateOnShow ()
+		local Visual = Plates[ self ];
+		me.PlatesVisible[ self ] = Visual;
 
-	me.VisualClassificationUpdate( Visual, true ); -- Force
-	if ( not InCombat ) then
-		self:SetSize( PlateWidth, PlateHeight );
+		if ( not self:IsMouseOver() ) then -- Note: Fix for bug where highlights get stuck in default UI
+			Visual.Highlight:Hide();
+		end
+		Visual.Highlight:SetPoint( "TOPLEFT", Visual, -PlateBorder, PlateBorder );
+		Visual.Highlight:SetPoint( "BOTTOMRIGHT", Visual, PlateBorder, -PlateBorder );
+		Visual.Name:ClearAllPoints();
+		Visual.Name:SetPoint( "TOPRIGHT", Visual.Health.Right );
+		Visual.Name:SetPoint( "BOTTOMLEFT", Visual.Health.Left, 2, 2 );
+		Visual.ThreatBorder:Hide();
+		Visual.ThreatBorder.Threat = nil; -- Reset threat level cache
+		Visual.Cast:Hide(); -- Note: Fix for cast bars occasionally being shown without any spellcast
+
+		if ( self.OnShowForced ) then -- Already delayed by a frame
+			self.OnShowForced = nil;
+			OnUpdate( self );
+		else
+			self:SetScript( "OnUpdate", OnUpdate );
+		end
 	end
 end
 --- Remove plate from visible list when hidden.
@@ -519,6 +533,7 @@ do
 		Plate:SetScript( "OnShow", me.PlateOnShow );
 		Plate:SetScript( "OnHide", me.PlateOnHide );
 		if ( Plate:IsVisible() ) then
+			Plate.OnShowForced = true; -- Updates all elements without waiting one frame
 			me.PlateOnShow( Plate );
 		end
 	end
