@@ -155,7 +155,7 @@ end
 do
 	--- Hook to add spell icons when shown.
 	local function OnTooltipSetSpell ( self )
-		me.IconSet( self, ( select( 3, GetSpellInfo( ( select( 3, self:GetSpell() ) ) ) ) ) );
+		me.IconSet( self, GetSpellTexture( ( select( 3, self:GetSpell() ) ) ) );
 	end
 	--- Register a tooltip to add spell icons.
 	function me:RegisterSpell ()
