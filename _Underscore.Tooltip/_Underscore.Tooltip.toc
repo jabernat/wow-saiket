@@ -3,7 +3,7 @@
 ## Notes: Skins the default UI's tooltips.
 ## Author: Saiket
 ## Version: 4.0.0.1
-## X-Date: 2010-07-11
+## X-Date: 2011-03-06
 ## X-Category: Frame Modification, Miscellaneous
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
