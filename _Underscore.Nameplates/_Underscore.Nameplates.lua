@@ -82,7 +82,6 @@ do
 		Visual.Name:SetPoint( "BOTTOMLEFT", Visual.Health.Left, 2, 2 );
 		Visual.ThreatBorder:Hide();
 		Visual.ThreatBorder.Threat = nil; -- Reset threat level cache
-		Visual.Cast:Hide(); -- Note: Fix for cast bars occasionally being shown without any spellcast
 
 		if ( self.OnShowForced ) then -- Already delayed by a frame
 			self.OnShowForced = nil;
@@ -366,6 +365,7 @@ do
 		self:UnregisterEvent( "UNIT_SPELLCAST_INTERRUPTIBLE" );
 		self:UnregisterEvent( "UNIT_SPELLCAST_NOT_INTERRUPTIBLE" );
 		self.Uninterruptible = nil;
+		self:Hide(); -- In case parent plate is hidden
 	end
 	--- Updates the interrupt immunity shield if it changes mid-cast.
 	function me:CastOnEvent ( Event, UnitID )
