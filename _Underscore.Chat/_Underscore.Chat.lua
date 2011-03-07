@@ -4,243 +4,192 @@
   ****************************************************************************]]
 
 
-local L = _UnderscoreLocalization.Chat;
-local me = CreateFrame( "Frame" );
+local me = select( 2, ... );
 _Underscore.Chat = me;
 
-
-me.ChatFrames = {};
-me.AddMessageBackups = {};
-local AddMessageFilters = {};
-
+me.Frame = CreateFrame( "Frame" );
 me.MaxLines = 1024;
-me.ScrollBindOverrides = {
-	CAMERAZOOMIN = true;
-	CAMERAZOOMOUT = true;
-};
 
-local IsCameraLookActive = false;
-local IsMouseLookActive = false;
-local IsScrollBound = false;
+local PreserveMaxLines = IsShiftKeyDown();
 
 
 
 
---[[****************************************************************************
-  * Function: _Underscore.Chat.RegisterFilter                                  *
-  ****************************************************************************]]
-function me.RegisterFilter ( Filter )
-	AddMessageFilters[ #AddMessageFilters + 1 ] = Filter;
-end
---[[****************************************************************************
-  * Function: _Underscore.Chat.AddMessage                                      *
-  * Description: Hook to catch links in messages added by the UI and not by    *
-	*   normal chat messages.                                                    *
-  ****************************************************************************]]
 do
-	local type = type;
-	local tostring = tostring;
-	function me:AddMessage ( Text, ... )
-		local Type = type( Text );
-		if ( Type == "number" ) then
-			Text, Type = tostring( Text ), "string";
-		end
-		if ( Type == "string" and Text ~= "" ) then
-			for _, Filter in ipairs( AddMessageFilters ) do
+	local Filters = {};
+	--- @param Filter  Callback that receives a chat message and optionally returns a replacement.
+	function me.RegisterFilter ( Filter )
+		Filters[ #Filters + 1 ] = Filter;
+	end
+	local type, ipairs = type, ipairs;
+	local AddMessageBackups = {};
+	--- Hook to apply filters to all messages printed to chat.
+	local function AddMessage ( self, Text, ... )
+		if ( type( Text ) == "string" and Text ~= "" ) then
+			for _, Filter in ipairs( Filters ) do
 				Text = Filter( Text ) or Text;
 			end
 		end
-		me.AddMessageBackups[ self ]( self, Text, ... );
+		return AddMessageBackups[ self ]( self, Text, ... );
 	end
-end
---[[****************************************************************************
-  * Function: _Underscore.Chat.FilterTimestamp                                 *
-  ****************************************************************************]]
-do
-	local date = date;
-	function me.FilterTimestamp ( Text )
-		if ( not Text:match( L.TIMESTAMP_PATTERN ) ) then
-			-- Avoid putting a full time string into the Lua string table
-			return L.TIMESTAMP_FORMAT:format( date( "%H" ), date( "%M" ), date( "%S" ), Text );
-		end
-	end
-end
-
-
-
-
---[[****************************************************************************
-  * Function: _Underscore.Chat:OnMouseWheel                                    *
-  ****************************************************************************]]
-function me:OnMouseWheel ( Delta )
-	if ( IsModifiedClick( "_UNDERSCORE_CHAT_SCROLLPAGE" ) ) then
-		if ( Delta > 0 ) then
-			self:PageUp();
+	--- Shows the bottom button when not scrolled to the bottom.
+	local function OnMessageScrollChanged ( self )
+		local Bottom = self.buttonFrame.bottomButton;
+		if ( self:AtBottom() ) then
+			Bottom:Hide();
 		else
-			self:PageDown();
+			Bottom:Show();
 		end
-	elseif ( IsModifiedClick( "_UNDERSCORE_CHAT_SCROLLALL" ) ) then
-		if ( Delta > 0 ) then
-			self:ScrollToTop();
-		else
-			self:ScrollToBottom();
+	end
+	--- Scrolls to the bottom of the chat frame.
+	local function BottomOnClick ( self )
+		PlaySound( "igChatScrollDown" );
+		return self:GetParent():ScrollToBottom();
+	end
+	--- Hides the bottom button if at the bottom already.
+	local function BottomOnUpdate ( self )
+		if ( self:GetParent():AtBottom() ) then
+			self:Hide();
 		end
-	elseif ( Delta > 0 ) then -- Only one line
-		self:ScrollUp();
-	else
-		self:ScrollDown();
+	end
+	--- Modifies this chat frame.
+	function me.RegisterFrame ( Frame )
+		Frame:SetClampRectInsets( 0, 0, 0, 0 );
+		Frame:SetMaxResize( 0, 0 ); -- No limit
+		Frame:SetMinResize( 200, 120 );
+		Frame:SetFading( false );
+		Frame:SetScript( "OnMessageScrollChanged", OnMessageScrollChanged );
+		if ( not PreserveMaxLines ) then -- Keep early messages in window if shift is held
+			Frame:SetMaxLines( me.MaxLines );
+		end
+		if ( GetCVarBool( "chatMouseScroll" ) ) then
+			Frame:SetScript( "OnMouseWheel", FloatingChatFrame_OnMouseScroll );
+		end
+		_G[ Frame:GetName().."Tab" ]:SetHitRectInsets( 4, 4, 12, 0 );
+
+		Frame.buttonFrame:Hide();
+		Frame.buttonFrame:SetScript( "OnShow", Frame.buttonFrame.Hide );
+		-- Scroll-to-bottom button
+		local Bottom = Frame.buttonFrame.bottomButton;
+		Bottom:SetParent( Frame );
+		Bottom:Hide();
+		Bottom:SetPoint( "TOPLEFT", Frame, "BOTTOMLEFT", -2, 2 );
+		Bottom:SetPoint( "RIGHT", 2, 0 );
+		Bottom:SetHeight( 8 );
+		Bottom:SetScript( "OnClick", BottomOnClick );
+		Bottom:SetScript( "OnUpdate", BottomOnUpdate );
+		Bottom:SetNormalTexture( nil );
+		Bottom:SetPushedTexture( nil );
+		Bottom:SetDisabledTexture( nil );
+		Bottom:GetHighlightTexture():SetAlpha( 0.5 );
+		local Texture = Bottom:CreateTexture( nil, "BACKGROUND" );
+		Texture:SetAllPoints();
+		local R, G, B = unpack( _Underscore.Colors.Foreground );
+		Texture:SetTexture( R, G, B, 0.25 );
+		Texture:SetGradientAlpha( "VERTICAL", 1, 1, 1, 1, 1, 1, 1, 0 );
+		Texture:SetBlendMode( "ADD" );
+		local Flash = _G[ Bottom:GetName().."Flash" ];
+		Flash:SetTexture( R, G, B, 0.25 );
+		Flash:SetGradientAlpha( "VERTICAL", 1, 1, 1, 1, 1, 1, 1, 0 );
+
+		AddMessageBackups[ Frame ] = Frame.AddMessage;
+		Frame.AddMessage = AddMessage;
 	end
 end
---[[****************************************************************************
-  * Function: _Underscore.Chat.UpdateScrolling                                 *
-  * Description: Enables/disables mouse wheel chat scrolling.                  *
-  ****************************************************************************]]
-function me.UpdateScrolling ()
-	local Enable = not ( IsCameraLookActive or IsMouseLookActive or IsScrollBound );
-
-	for _, ChatFrame in ipairs( me.ChatFrames ) do
-		ChatFrame:EnableMouseWheel( Enable );
-	end
-end
 
 
---[[****************************************************************************
-  * Function: _Underscore.Chat.CameraMoveStart                                 *
-  ****************************************************************************]]
-function me.CameraMoveStart ()
-	IsCameraLookActive = true;
-	me.UpdateScrolling();
-end
---[[****************************************************************************
-  * Function: _Underscore.Chat.CameraMoveStop                                  *
-  ****************************************************************************]]
-function me.CameraMoveStop ()
-	IsCameraLookActive = false;
-	me.UpdateScrolling();
-end
---[[****************************************************************************
-  * Function: _Underscore.Chat:OnUpdate                                        *
-  ****************************************************************************]]
 do
-	local IsMouseLooking = IsMouselooking;
-	function me:OnUpdate ()
-		local NewValue = IsMouseLooking();
-		if ( IsMouseLookActive ~= NewValue ) then
-			IsMouseLookActive = NewValue;
-			me.UpdateScrolling();
-		end
-	end
-end
-
-
---[[****************************************************************************
-  * Function: _Underscore.Chat:MODIFIER_STATE_CHANGED                          *
-  * Description: Disables scrolling when the wheel is bound to something.      *
-  ****************************************************************************]]
-do
-	local IsAltKeyDown = IsAltKeyDown;
-	local IsControlKeyDown = IsControlKeyDown;
-	local IsShiftKeyDown = IsShiftKeyDown;
-	local concat = table.concat;
-	local GetBindingByKey = GetBindingByKey;
-	local wipe = wipe;
-	local KeyParts = {};
-	function me:MODIFIER_STATE_CHANGED ()
-		if ( IsAltKeyDown() ) then
-			KeyParts[ #KeyParts + 1 ] = "ALT";
-		end
-		if ( IsControlKeyDown() ) then
-			KeyParts[ #KeyParts + 1 ] = "CTRL";
-		end
-		if ( IsShiftKeyDown() ) then
-			KeyParts[ #KeyParts + 1 ] = "SHIFT";
-		end
-
-		local Bound = true;
-		KeyParts[ #KeyParts + 1 ] = "MOUSEWHEELUP";
-		local Binding = GetBindingByKey( concat( KeyParts, "-" ) );
-		if ( not Binding or me.ScrollBindOverrides[ Binding ] ) then
-			Bound = false; -- Scrolling allowed
-		else
-			KeyParts[ #KeyParts ] = "MOUSEWHEELDOWN";
-			Binding = GetBindingByKey( concat( KeyParts, "-" ) );
-			if ( not Binding or me.ScrollBindOverrides[ Binding ] ) then
-				Bound = false; -- Scrolling allowed
+	local IsCameraLookActive, IsMouseLookActive = false, false;
+	--- Synchronizes chat scrolling with camera controls.
+	local function UpdateScrolling ()
+		if ( GetCVarBool( "chatMouseScroll" ) ) then
+			local Enable = not ( IsCameraLookActive or IsMouseLookActive );
+			for _, Name in ipairs( CHAT_FRAMES ) do
+				_G[ Name ]:EnableMouseWheel( Enable );
 			end
 		end
-		wipe( KeyParts );
+	end
+	--- Disables scrolling chat while moving the camera.
+	function me.CameraMoveStart ()
+		IsCameraLookActive = true;
+		UpdateScrolling();
+	end
+	--- Re-enables scrolling chat after moving the camera.
+	function me.CameraMoveStop ()
+		IsCameraLookActive = false;
+		UpdateScrolling();
+	end
+	local IsMouselooking = IsMouselooking;
+	--- Disables scrolling chat while mouselooking.
+	function me.Frame:OnUpdate ()
+		local NewValue = IsMouselooking();
+		if ( IsMouseLookActive ~= NewValue ) then
+			IsMouseLookActive = NewValue;
+			UpdateScrolling();
+		end
+	end
+	me.Frame.VARIABLES_LOADED = UpdateScrolling;
+end
+--- Allows modifiers to scroll by page or to top/bottom.
+function me:OnMouseWheel ( Delta )
+	local Up = Delta > 0;
+	if ( IsModifiedClick( "_UNDERSCORE_CHAT_SCROLLPAGE" ) ) then
+		return self[ Up and "PageUp" or "PageDown" ]( self );
+	elseif ( IsModifiedClick( "_UNDERSCORE_CHAT_SCROLLALL" ) ) then
+		return self[ Up and "ScrollToTop" or "ScrollToBottom" ]( self );
+	else
+		return self[ Up and "ScrollUp" or "ScrollDown" ]( self );
+	end
+end
 
-		if ( IsScrollBound ~= Bound ) then
-			IsScrollBound = Bound;
 
-			me.UpdateScrolling();
+do
+	local date = date;
+	--- Adds a timestamp to Text if it doesn't already have one.
+	function me.FilterTimestamp ( Text )
+		if ( not Text:match( me.L.TIMESTAMP_PATTERN ) ) then
+			-- Avoid putting a full time string into the Lua string table
+			return me.L.TIMESTAMP_FORMAT:format( date( "%H" ), date( "%M" ), date( "%S" ), Text );
 		end
 	end
 end
---[[****************************************************************************
-  * Function: _Underscore.Chat:UPDATE_BINDINGS                                 *
-  ****************************************************************************]]
-me.UPDATE_BINDINGS = me.MODIFIER_STATE_CHANGED;
---[[****************************************************************************
-  * Function: _Underscore.Chat:PLAYER_LOGIN                                    *
-  * Description: Defaults chat to guild if you're in one after loading.        *
-  ****************************************************************************]]
-function me:PLAYER_LOGIN ()
-	me.PLAYER_LOGIN = nil;
 
-	local EditBox = DEFAULT_CHAT_FRAME.editBox;
-	if ( EditBox:GetAttribute( "stickyType" ) == "SAY" and IsInGuild() ) then
-		EditBox:SetAttribute( "chatType", "GUILD" );
-		EditBox:SetAttribute( "stickyType", "GUILD" );
-	end
+
+
+
+me.RegisterFilter( me.FilterTimestamp );
+for _, Name in ipairs( CHAT_FRAMES ) do
+	me.RegisterFrame( _G[ Name ] );
 end
-
-
-
-
-me:SetScript( "OnEvent", _Underscore.Frame.OnEvent );
-me:SetScript( "OnUpdate", me.OnUpdate );
-me:RegisterEvent( "MODIFIER_STATE_CHANGED" );
-me:RegisterEvent( "PLAYER_LOGIN" );
-me:RegisterEvent( "UPDATE_BINDINGS" );
-
-
-hooksecurefunc( "CameraOrSelectOrMoveStart", me.CameraMoveStart );
-hooksecurefunc( "CameraOrSelectOrMoveStop", me.CameraMoveStop );
-
-
-local PreserveMaxLines = IsShiftKeyDown();
-for Index = 1, NUM_CHAT_WINDOWS do
-	local ChatFrame = _G[ "ChatFrame"..Index ];
-
-	me.ChatFrames[ Index ] = ChatFrame;
-	ChatFrame:SetScript( "OnMouseWheel", me.OnMouseWheel );
-	ChatFrame:EnableMouseWheel( false );
-	ChatFrame:SetFading( false );
-	if ( not PreserveMaxLines ) then -- Keep early messages in window if shift is held
-		ChatFrame:SetMaxLines( me.MaxLines );
+--- Hooks newly created temporary chat frames.
+setmetatable( CHAT_FRAMES, { __newindex = function ( self, Index, Name )
+	if ( Name ) then
+		return me.RegisterFrame( _G[ Name ] );
 	end
-
-	me.AddMessageBackups[ ChatFrame ] = ChatFrame.AddMessage;
-	ChatFrame.AddMessage = me.AddMessage;
-end
+end; } );
 if ( PreserveMaxLines ) then
 	local Color = RED_FONT_COLOR;
-	DEFAULT_CHAT_FRAME:AddMessage( L.DEBUG_MAXLINES_PRESERVED, Color.r, Color.g, Color.b );
+	DEFAULT_CHAT_FRAME:AddMessage( me.L.MAXLINES_PRESERVED, Color.r, Color.g, Color.b );
 end
 
+FriendsMicroButton:Hide();
+FriendsMicroButton:SetScript( "OnShow", FriendsMicroButton.Hide );
+ChatFrameMenuButton:Hide();
+ChatFrameMenuButton:SetScript( "OnShow", ChatFrameMenuButton.Hide );
+
+me.Frame:SetScript( "OnUpdate", me.Frame.OnUpdate );
+me.Frame:SetScript( "OnEvent", _Underscore.Frame.OnEvent );
+me.Frame:RegisterEvent( "VARIABLES_LOADED" );
+hooksecurefunc( "CameraOrSelectOrMoveStart", me.CameraMoveStart );
+hooksecurefunc( "CameraOrSelectOrMoveStop", me.CameraMoveStop );
+FloatingChatFrame_OnMouseScroll = me.OnMouseWheel;
 
 
-
--- Add timestamps
-me.RegisterFilter( me.FilterTimestamp );
-
--- Add new font sizes to menus for the tiny chat log
+--- Adds NewSize to font size menus.
 local function AddFontHeight ( NewSize )
 	for Index, Size in ipairs( CHAT_FONT_HEIGHTS ) do
 		if ( Size >= NewSize ) then
 			if ( Size ~= NewSize ) then
-				-- Add to the front of the list
 				tinsert( CHAT_FONT_HEIGHTS, Index, NewSize );
 			end
 			break;
@@ -258,5 +207,3 @@ CHAT_TELL_ALERT_TIME = 0;
 ChatTypeInfo.CHANNEL.sticky = 1;
 ChatTypeInfo.YELL.sticky    = 1;
 ChatTypeInfo.OFFICER.sticky = 1;
-
-LoggingChat( true );

@@ -4,8 +4,8 @@
   ****************************************************************************]]
 
 
-_UnderscoreLocalization.Chat = setmetatable( {
-	DEBUG_MAXLINES_PRESERVED = "_|cffcccc88Underscore|r.Chat: Chat frame MaxLines preserved for debugging.";
+select( 2, ... ).L = setmetatable( {
+	MAXLINES_PRESERVED = "_|cffcccc88Underscore|r.Chat: Chat frame MaxLines preserved for debugging.";
 
 	TIMESTAMP_FORMAT = "|cff808080[%02d:%02d:%02d]|r %s"; -- Hour, Minute, Second, Message
 	TIMESTAMP_PATTERN = "^|cff808080%[%d%d:%d%d:%d%d%]|r ";
@@ -14,7 +14,7 @@ _UnderscoreLocalization.Chat = setmetatable( {
 	URLPATH_FORMAT = " |cffffff9a|Hurl:%s%s|h<%1$s%2$s>|h|r "; -- Domain, Path
 
 	RAIDWARNING_FORMAT = "[|cff%02X%02X%02X%s|r]: %s"; -- R, G, B, Author, Message
-}, getmetatable( _UnderscoreLocalization ) );
+}, getmetatable( _Underscore.L ) );
 
 
 -- Chat message formats
@@ -37,10 +37,3 @@ CHAT_MONSTER_PARTY_GET   = CHAT_PARTY_GET;
 CHAT_MONSTER_SAY_GET     = CHAT_SAY_GET;
 CHAT_MONSTER_WHISPER_GET = CHAT_WHISPER_GET;
 CHAT_MONSTER_YELL_GET    = CHAT_YELL_GET;
-
-
--- Player name chat links
-JOINED_PARTY = "|Hplayer:%1$s|h[%1$s]|h joins the party.";
-ERR_JOINED_GROUP_S = JOINED_PARTY;
-LEFT_PARTY = "|Hplayer:%1$s|h[%1$s]|h leaves the party.";
-ERR_LEFT_GROUP_S = LEFT_PARTY;
