@@ -11,6 +11,7 @@
 ## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:DevPad
 ## X-WoWI-ID: 19403
 ## X-Curse-Project-ID: devpad
+## X-Child-Of: _DevPad
 ## X-Localizations: enUS
 ## X-CompatibleLocales: deDE, enUS, esES, esMX, frFR, koKR, ruRU, zhCN, zhTW
 ## X-Embeds: FlyPaper
