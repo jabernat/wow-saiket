@@ -4,9 +4,10 @@
   ****************************************************************************]]
 
 
-local L = _UnderscoreLocalization.Chat;
+local Chat = select( 2, ... );
 local me = {};
-_Underscore.Chat.URLs = me;
+Chat.URLs = me;
+local L = Chat.L;
 
 
 me.Formats = {
@@ -32,18 +33,14 @@ me.Formats = {
 	[[ (%d%d?%d?%.%d%d?%d?%.%d%d?%d?%.%d%d?%d?:?%d*)(/[^][ <>"{}|\^~]*) ?]], -- Path
 	[[ ?<(%d%d?%d?%.%d%d?%d?%.%d%d?%d?%.%d%d?%d?:?%d*)(/[^][ <>"{}|\^~]*)> ?]],
 	[[ (%d%d?%d?%.%d%d?%d?%.%d%d?%d?%.%d%d?%d?:?%d*) ?]], -- No path
-	[[ ?<(%d%d?%d?%.%d%d?%d?%.%d%d?%d?%.%d%d?%d?:?%d*)> ?]]
+	[[ ?<(%d%d?%d?%.%d%d?%d?%.%d%d?%d?%.%d%d?%d?:?%d*)> ?]],
 };
 
 
 
 
---[[****************************************************************************
-  * Function: _Underscore.Chat.URLs.Filter                                     *
-  * Description: Replace links in a chat message with formated versions.       *
-  ****************************************************************************]]
 do
-	local ipairs = ipairs;
+	--- @return Found URL formatted as a hyperlink for gsub.
 	local function GsubReplace ( Domain, Path )
 		-- Note: Prevent elipses from matching the subdomain patterns
 		if ( not Domain:find( "..", 1, true ) ) then
@@ -54,23 +51,19 @@ do
 			end
 		end
 	end
+	local ipairs = ipairs;
+	--- @return Text with all URLs converted to hyperlinks.
 	function me.Filter ( Text )
-		-- Ensure that links at the start of the message are recognized
-		Text = " "..Text;
-
+		Text = " "..Text; -- Allows links at the start to be recognized
 		for _, Format in ipairs( me.Formats ) do
 			if ( Text:match( Format ) ) then
 				Text = Text:gsub( Format, GsubReplace );
 			end
 		end
-
 		return Text:sub( 2 ); -- Remove the added space
 	end
 end
---[[****************************************************************************
-  * Function: _Underscore.Chat.URLs:MessageEventHandler                        *
-  * Description: Catches chat events to replace URLs.                          *
-  ****************************************************************************]]
+--- Formats URLs as links in standard chat events.
 function me:MessageEventHandler ( Event, Message, ... )
 	local NewMessage = me.Filter( Message );
 	if ( NewMessage ~= Message ) then
@@ -79,25 +72,15 @@ function me:MessageEventHandler ( Event, Message, ... )
 end
 
 
---[[****************************************************************************
-  * Function: _Underscore.Chat.URLs.SetItemRef                                 *
-  * Description: Allows the UI to recognize "|Hurl:" as a hyperlink.           *
-  ****************************************************************************]]
 do
 	local Backup = SetItemRef;
+	--- Handles clicking and re-linking URL hyperlinks.
 	function me.SetItemRef ( Link, Text, ... )
-		if ( Link:sub( 1, 4 ) == "url:" ) then
-			if ( IsModifiedClick( "CHATLINK" ) ) then
-				Link = Link:sub( 5 );
-				local EditBox = DEFAULT_CHAT_FRAME.editBox;
-				if ( EditBox:IsShown() ) then
-					EditBox:Insert( Link );
-				else
-					ChatFrame_OpenChat( Link );
-				end
-			end
-		else
+		if ( Link:sub( 1, 4 ) ~= "url:" ) then
 			return Backup( Link, Text, ... );
+		end
+		if ( IsModifiedClick( "CHATLINK" ) ) then
+			ChatEdit_InsertLink( Link:sub( 5 ) );
 		end
 	end
 end
