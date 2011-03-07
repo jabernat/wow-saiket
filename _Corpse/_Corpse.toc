@@ -18,7 +18,7 @@
 ## X-Credits-zhTW: Localization: Sparanoid
 ## Version: 4.0.0.2
 ## X-Date: 2011-01-22
-## X-Category: Tooltips, Interface Enhancements
+## X-Category: Interface Enhancements
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
 ## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons/Corpse

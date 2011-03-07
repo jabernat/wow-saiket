@@ -16,7 +16,7 @@
 ## X-Credits-zhTW: Localization: s8095324, pepper_ep, zhTW
 ## Version: 4.0.3.2
 ## X-Date: 2011-01-06
-## X-Category: Maps
+## X-Category: Map
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
 ## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons/NPCScanOverlay
