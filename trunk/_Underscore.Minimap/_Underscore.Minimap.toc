@@ -9,6 +9,7 @@
 ## X-Email: saiket.wow@gmail.com
 ## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons
 ## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Underscore
+## X-Child-Of: _Underscore
 ## RequiredDeps: _Underscore
 ## OptionalDeps: Carbonite
 _Underscore.Minimap.lua
