@@ -316,8 +316,12 @@ do
 
 			-- Gray out bar if uninterruptable
 			for _, Texture in ipairs( self ) do
-				-- Don't use vertex color if shader isn't supported
 				Texture:SetDesaturated( Uninterruptible );
+				if ( Uninterruptible ) then -- Don't shade the desaturated texture
+					Texture:SetVertexColor( 1, 1, 1 );
+				else -- Use original vertex color
+					Texture:SetVertexColor( unpack( Texture ) );
+				end
 			end
 			if ( Uninterruptible ) then -- Use color when grayed out for contrast
 				self.Name:SetTextColor( unpack( Colors.Normal ) );
@@ -353,7 +357,6 @@ do
 		self:SetPoint( "TOPLEFT", self.Icon, "TOPRIGHT" );
 		self:SetPoint( "BOTTOM", self.Icon, "BOTTOM" );
 		self:SetPoint( "RIGHT", self:GetParent(), CastHeight - PlateHeight, 0 );
-		self:SetStatusBarColor( unpack( Colors.Cast ) );
 
 		self.NoInterrupt:ClearAllPoints();
 		self.NoInterrupt:SetPoint( "CENTER", self.Icon, -1, -2 );
@@ -475,9 +478,11 @@ do
 		Cast:SetScript( "OnHide", me.CastOnHide );
 		Cast:SetScript( "OnEvent", me.CastOnEvent );
 		Cast:SetStatusBarTexture( BarTexture );
-		local BarTexture = Cast:GetStatusBarTexture();
-		BarTexture:SetDrawLayer( "BORDER" );
-		Cast[ #Cast + 1 ] = BarTexture; -- Register for desaturation on uninterruptible
+		local CastTexture = Cast:GetStatusBarTexture();
+		CastTexture:SetDrawLayer( "BORDER" );
+		-- Register for desaturation on uninterruptible
+		Cast[ #Cast + 1 ] = CastTexture;
+		CastTexture[ 1 ], CastTexture[ 2 ], CastTexture[ 3 ] = unpack( Colors.Cast );
 		-- Icon/icon border
 		Cast.Icon:SetParent( Cast );
 		Cast.Icon:ClearAllPoints();
@@ -492,6 +497,7 @@ do
 		IconBorder:SetPoint( "TOPRIGHT", Cast.Icon, Padding, Padding );
 		IconBorder:SetPoint( "BOTTOMLEFT", Cast.Icon, -Padding, -Padding );
 		Cast[ #Cast + 1 ] = IconBorder;
+		IconBorder[ 1 ], IconBorder[ 2 ], IconBorder[ 3 ] = 1, 1, 1;
 		-- Bar border/background
 		local Background = Cast:CreateTexture( nil, "BACKGROUND" );
 		Background:SetAllPoints();
@@ -503,8 +509,8 @@ do
 		BarBorder:SetPoint( "BOTTOMLEFT", -4, -8 );
 		BarBorder:SetTexture( [[Interface\AchievementFrame\UI-Achievement-ProgressBar-Border]] );
 		BarBorder:SetTexCoord( 0, 0.875, 0, 0.75 );
-		BarBorder:SetVertexColor( 1, 0.9, 0.4 ); -- Matches color of icon border
 		Cast[ #Cast + 1 ] = BarBorder;
+		BarBorder[ 1 ], BarBorder[ 2 ], BarBorder[ 3 ] = 1, 0.9, 0.4; -- Matches color of icon border
 		-- Interrupt icon
 		Cast.NoInterrupt:SetParent( Cast );
 		Cast.NoInterrupt:SetTexture( [[Interface\AchievementFrame\UI-Achievement-Shields]] );
