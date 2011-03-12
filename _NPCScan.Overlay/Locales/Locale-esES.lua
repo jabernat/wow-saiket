@@ -46,10 +46,10 @@ Overlay.L = setmetatable( {
 		[ 51079 ] = "Capitán Vientinfecto",
 	}, { __index = Overlay.L.NPCs; } );
 
-	CONFIG_ALPHA = "Alpha",
-	CONFIG_DESC = "Controla en que mapas se mostrara la sobreposicion del camino del NPC. La mayoria de Addons de mapas se controlan con las opciones del mapa del mundo.",
+	CONFIG_ALPHA = "Alfa",
+	CONFIG_DESC = "Controla en qué mapas se mostrará la sobreposición del camino del NPC. La mayoria de addons de mapas se controlan con las opciones del mapa del mundo.",
 	CONFIG_SHOWALL = "Mostrar siempre todos los caminos",
-	CONFIG_SHOWALL_DESC = "Normalmente cuando no estas buscando un NPC, su camino se elimina del mapa, Activa esta opcion para mostrar siempre todos los caminos conocidos",
+	CONFIG_SHOWALL_DESC = "Normalmente cuando no estás buscando un NPC, su camino se elimina del mapa, Activa esta opción para mostrar siempre todos los caminos conocidos.",
 	CONFIG_TITLE = "Sobreposicion",
 	CONFIG_TITLE_STANDALONE = "_|cffCCCC88NPCScan|r.Overlay",
 	MODULE_ALPHAMAP3 = "AddOn AlphaMap3",

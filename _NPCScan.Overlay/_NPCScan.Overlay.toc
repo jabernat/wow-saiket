@@ -6,16 +6,20 @@
 ## Notes-esMX: Añade los caminos de los NPCs a tu mapa.
 ## Notes-frFR: Ajoute les trajets des monstres rares sur votre carte.
 ## Notes-koKR: 지도에 희귀몹의 이동경로를 표시합니다.
+## Notes-ruRU: Добавить границу перемещения НИПа на карту.
+## Notes-zhCN: 在你的地图上新增怪物路径图。
 ## Notes-zhTW: 在你的地圖上新增怪物路徑圖。
 ## Author: Saiket
 ## X-Credits-deDE: Localization: Freydis88
-## X-Credits-esES: Localization: galen2
-## X-Credits-esMX: Localization: galen2
+## X-Credits-esES: Localization: galen2, MazarbulZero
+## X-Credits-esMX: Localization: galen2, MazarbulZero
 ## X-Credits-frFR: Localization: Pettigrow
 ## X-Credits-koKR: Localization: kdw112, yuk6196
+## X-Credits-ruRU: Localization: The_DimoK
+## X-Credits-zhCN: Localization: tss1398383123, zhTW
 ## X-Credits-zhTW: Localization: s8095324, pepper_ep, zhTW
 ## Version: 4.0.3.2
-## X-Date: 2011-01-06
+## X-Date: 2011-03-12
 ## X-Category: Map
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
@@ -23,7 +27,7 @@
 ## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:NPCScan.Overlay
 ## X-WoWI-ID: 14686
 ## X-Curse-Project-ID: npcscan-overlay
-## X-Localizations: deDE, enUS, esES, esMX, frFR, koKR, zhTW
+## X-Localizations: deDE, enUS, esES, esMX, frFR, koKR, ruRU, zhCN, zhTW
 ## X-CompatibleLocales: deDE, enUS, esES, esMX, frFR, koKR, ruRU, zhCN, zhTW
 ## SavedVariables: _NPCScanOverlayOptions
 ## OptionalDeps: Ace3, _NPCScan, AlphaMap3, Carbonite
