@@ -68,7 +68,7 @@ do
 			if ( Lag.UpdateNext <= 0 ) then
 				Lag.UpdateNext = me.LagUpdateRate;
 
-				Lag:SetWidth( min( 1, select( 3, GetNetStats() ) / 1000 / select( 2, self:GetMinMaxValues() ) ) * self:GetWidth() );
+				Lag:SetWidth( min( 1, select( 4, GetNetStats() ) / 1000 / select( 2, self:GetMinMaxValues() ) ) * self:GetWidth() );
 			end
 		end
 	end
