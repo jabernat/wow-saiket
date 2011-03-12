@@ -61,7 +61,7 @@ do
 		if ( self.NextUpdate <= 0 ) then
 			self.NextUpdate = self.UpdateRate;
 
-			local Latency = select( 3, GetNetStats() );
+			local Latency = select( 4, GetNetStats() );
 			local Red = min( max( ( Latency - self.LowLatency ) / self.HighLatency, 0 ), 1 );
 			self.Latency:SetFormattedText( L.STATS_MILLISECOND_FORMAT, Latency );
 			self.Latency:SetTextColor( Red, 1 - Red, 0 );
