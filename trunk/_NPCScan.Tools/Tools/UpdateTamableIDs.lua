@@ -17,6 +17,7 @@ overwrites <../../_NPCScan/_NPCScan.TamableIDs.lua>.
 
 
 local RareMapOverrides = { -- [ NpcID ] = ForcedMapID;
+	[ 5829 ] = true; -- "Snort the Heckler" spawns between Northern and Southern Barrens
 };
 local CreatureTypeBlacklist = { -- Querying WowHead for these results in an empty result
 	[ 59 ] = true; -- Silithid
