@@ -74,30 +74,34 @@ function me.SetRoutesEnabled ( MapFile, NpcID, Enable )
 		end
 	end
 end
---- Validates that the selected NPC's map can be shown.
-function me.Control:OnSelect ( NpcID )
-	if ( me.MapFile ) then
-		-- Re-hide routes for last shown mob
-		me.SetRoutesEnabled( me.MapFile, me.NpcID, false );
-		me:OnMapUpdate( me.MapID );
-		me.MapFile = nil;
+do
+	-- Extract alias MapFiles used by Routes for phased terrain
+	local MapFiles = {}; -- [ MapID ] = MapFile;
+	for _, Data in pairs( Routes.LZName ) do
+		MapFiles[ Data[ 2 ] ] = Data[ 1 ];
 	end
+	--- Validates that the selected NPC's map can be shown.
+	function me.Control:OnSelect ( NpcID )
+		if ( me.MapFile ) then
+			-- Re-hide routes for last shown mob
+			me.SetRoutesEnabled( me.MapFile, me.NpcID, false );
+			me:OnMapUpdate( me.MapID );
+			me.MapFile = nil;
+		end
 
-	me.NpcID, me.MapID = NpcID, Tools.NPCMapIDs[ NpcID ];
-	if ( me.MapID ) then
-		-- Show routes for this mob
-		local MapOld = GetCurrentMapAreaID();
-		SetMapByID( me.MapID );
-		me.MapFile = GetMapInfo();
-		me.SetRoutesEnabled( me.MapFile, me.NpcID, true );
-		SetMapByID( MapOld );
-		me:OnMapUpdate( me.MapID );
+		me.NpcID, me.MapID = NpcID, Tools.NPCMapIDs[ NpcID ];
+		if ( me.MapID ) then
+			-- Show routes for this mob
+			me.MapFile = MapFiles[ me.MapID ];
+			me.SetRoutesEnabled( me.MapFile, me.NpcID, true );
+			me:OnMapUpdate( me.MapID );
 
-		self:Enable();
-		me:Show();
-	else
-		self:Disable();
-		me:Hide();
+			self:Enable();
+			me:Show();
+		else
+			self:Disable();
+			me:Hide();
+		end
 	end
 end
 --- Shows the selected NPC's map.
