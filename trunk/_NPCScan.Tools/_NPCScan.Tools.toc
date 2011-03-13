@@ -19,3 +19,5 @@ _NPCScan.Tools.Config.lua
 
 _NPCScan.Tools.Overlay.lua
 _NPCScan.Tools.Model.lua
+
+_NPCScan.Tools.Routes.lua

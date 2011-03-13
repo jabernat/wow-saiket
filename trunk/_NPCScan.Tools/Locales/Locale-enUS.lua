@@ -17,4 +17,6 @@ select( 2, ... ).L = setmetatable( {
 
 	OVERLAY_TITLE = "_|cffCCCC88NPCScan|r.|cff888888Tools|r";
 	OVERLAY_CONTROL = "Show Map";
+
+	DATASOURCE_FORMAT = "[%d] %s"; -- NpcID, NpcName
 }, getmetatable( _NPCScanLocalization ) );
