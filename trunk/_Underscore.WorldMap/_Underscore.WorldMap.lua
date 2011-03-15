@@ -117,7 +117,7 @@ function me.ScrollHandler:OnMouseWheel ( Delta )
 end
 --- Enables and disables the mousewheel when dungeon levels are available.
 function me.ScrollHandler:WORLD_MAP_UPDATE ()
-	self:EnableMouseWheel( GetNumDungeonMapLevels() > 0 );
+	self:EnableMouseWheel( GetNumDungeonMapLevels() > 1 );
 end
 --- Starts monitoring the map when shown.
 function me.ScrollHandler:OnShow ()
