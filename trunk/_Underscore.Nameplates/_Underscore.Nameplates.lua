@@ -303,11 +303,12 @@ do
 end
 
 do
-	--- Plays the flash animation after the rendering engine has moved the texture in place for certain.
-	-- Otherwise, the animation would play at the texture's previous location.
-	local function UpdateAnimation ( self )
+	--- Repositions the uninterruptibility texture right after being shown.
+	local function OnUpdate ( self )
 		self:SetScript( "OnUpdate", nil );
-		me.Flash.Animation:Play();
+		self.NoInterrupt:ClearAllPoints();
+		self.NoInterrupt:SetPoint( "CENTER", self.Icon, -1, -2 );
+		self.NoInterrupt:SetSize( CastHeight * 3, CastHeight * 3 );
 	end
 	--- Shows or hides the interrupt immunity shield.
 	local function CastOnInterruptibleChanged ( self, Uninterruptible )
@@ -331,15 +332,16 @@ do
 
 			local Flash = me.Flash;
 			Flash:StopAnimating();
-			if ( not Uninterruptible and self:GetParent().Reaction <= 4 ) then -- Not friendly and spell just became interruptible
+			if ( not Uninterruptible and UnitCanAttack( "player", "target" ) ) then
+				-- Not friendly and spell just became interruptible
 				Flash:SetParent( self );
-				Flash:Show();
 				Flash:SetPoint( "CENTER", -CastHeight / 2, 0 ); -- Account for spell icon on left
-				self:SetScript( "OnUpdate", UpdateAnimation );
+				Flash:Show();
+				Flash.Animation:Play();
 			else
 				Flash:Hide();
-				self:SetScript( "OnUpdate", nil ); -- Cancel pending flash
 			end
+			self:SetScript( "OnUpdate", OnUpdate );
 		end
 	end
 	--- Reposition elements and adds spell details when a castbar is shown.
@@ -358,9 +360,6 @@ do
 		self:SetPoint( "BOTTOM", self.Icon, "BOTTOM" );
 		self:SetPoint( "RIGHT", self:GetParent(), CastHeight - PlateHeight, 0 );
 
-		self.NoInterrupt:ClearAllPoints();
-		self.NoInterrupt:SetPoint( "CENTER", self.Icon, -1, -2 );
-		self.NoInterrupt:SetSize( CastHeight * 3, CastHeight * 3 );
 		CastOnInterruptibleChanged( self, Uninterruptible );
 	end
 	--- Unregisters events when a castbar hides.
@@ -520,6 +519,9 @@ do
 		Cast.Name = Cast:CreateFontString( nil, "ARTWORK", me.CastFont:GetName() );
 		Cast.Name:SetPoint( "TOPLEFT", 8, -4 );
 		Cast.Name:SetPoint( "BOTTOMRIGHT", -4, 4 );
+		if ( Cast:IsVisible() ) then
+			me.CastOnShow( Cast );
+		end
 
 
 		-- Misc
