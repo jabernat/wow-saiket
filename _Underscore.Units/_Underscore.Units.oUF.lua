@@ -409,7 +409,7 @@ do
 end
 
 
-local CreateDebuffHighlight; -- Creates a border frame that behaves like a texture for the oUF_DebuffHighlight element.
+local CreateDebuffHighlight;
 if ( IsAddOnLoaded( "oUF_DebuffHighlight" ) ) then
 	--- Mimics the Texture:SetVertexColor method to color all border textures.
 	local function SetVertexColor ( self, ... )
