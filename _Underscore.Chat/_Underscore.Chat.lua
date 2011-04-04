@@ -153,10 +153,18 @@ do
 		end
 	end
 end
+--- Reduces chanel names in chat messages to just their number.
+function me:FilterChannelName ( _, Message, Author, Language, Channel, ... )
+	-- Note: Returned channel string cannot be shorter than actual channel name!
+	-- Instead, abuse the way city names after a dash aren't printed.
+	Channel = Channel:gsub( "^(%d+)%. ", "%1 - " );
+	return false, Message, Author, Language, Channel, ...;
+end
 
 
 
 
+ChatFrame_AddMessageEventFilter( "CHAT_MSG_CHANNEL", me.FilterChannelName );
 me.RegisterFilter( me.FilterTimestamp );
 for _, Name in ipairs( CHAT_FRAMES ) do
 	me.RegisterFrame( _G[ Name ] );
