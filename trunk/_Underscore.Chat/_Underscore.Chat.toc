@@ -1,8 +1,8 @@
-## Interface: 40000
+## Interface: 40100
 ## Title: _|cffCCCC88Underscore|r.Chat
 ## Notes: Skins the default UI's chat frames.
 ## Author: Saiket
-## Version: 4.0.0.1
+## Version: 4.1.0.1
 ## X-Date: 2011-04-03
 ## X-Category: Frame Modification
 ## X-License: GPLv3

@@ -1,4 +1,4 @@
-## Interface: 40000
+## Interface: 40100
 ## Title: GuildBank|cffccccccSearch|r
 ## Notes: Adds a search filter to the guild bank.
 ## Notes-koKR: 길드 금고에 검색 필터를 추가합니다.
@@ -7,8 +7,8 @@
 ## X-Credits-frFR: Localization: Nodd
 ## X-Credits-koKR: Localization: freshworks
 ## X-Credits-zhTW: Localization: jyuny1
-## Version: 4.0.0.1
-## X-Date: 2010-09-17
+## Version: 4.1.0.1
+## X-Date: 2011-03-29
 ## X-Category: Inventory
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com

@@ -1,8 +1,8 @@
-## Interface: 40000
+## Interface: 40100
 ## Title: _|cffCCCC88Underscore|r.HUD
 ## Notes: Adds a light Heads Up Display to the center of the screen.
 ## Author: Saiket
-## Version: 4.0.0.1
+## Version: 4.1.0.1
 ## X-Date: 2011-04-04
 ## X-Category: Frame Modification
 ## X-License: GPLv3
