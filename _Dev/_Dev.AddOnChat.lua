@@ -139,6 +139,7 @@ do
 			Info.keepShownOnClick = true;
 
 			AddChatTypeButton( Info, "GUILD" );
+			AddChatTypeButton( Info, "OFFICER" );
 			AddChatTypeButton( Info, "RAID" );
 			AddChatTypeButton( Info, "PARTY" );
 			AddChatTypeButton( Info, "BATTLEGROUND" );
