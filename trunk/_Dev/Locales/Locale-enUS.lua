@@ -41,6 +41,7 @@ _DevLocalization = setmetatable( {
 		-- Type, Sender, Sender, Prefix, Message
 	ADDONCHAT_TYPES = {
 		[ "GUILD" ]        = CHAT_MSG_GUILD;
+		[ "OFFICER" ]      = CHAT_MSG_OFFICER;
 		[ "RAID" ]         = CHAT_MSG_RAID;
 		[ "PARTY" ]        = CHAT_MSG_PARTY;
 		[ "BATTLEGROUND" ] = CHAT_MSG_BATTLEGROUND;
