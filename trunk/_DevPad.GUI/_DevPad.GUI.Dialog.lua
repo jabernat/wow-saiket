@@ -266,7 +266,8 @@ function me:New ( Name )
 	Background:SetAllPoints();
 
 	Bar:SetPoint( "TOPRIGHT", Bar.Dec, "BOTTOMRIGHT" );
-	Bar:SetPoint( "BOTTOMLEFT", Bar.Inc, "TOPLEFT" );
+	Bar:SetPoint( "BOTTOM", Bar.Inc, "TOP" );
+	Bar:SetWidth( Bar.Inc:GetWidth() );
 	Bar:SetScript( "OnValueChanged", self.ScrollBarOnValueChanged );
 
 	-- Resize grip
