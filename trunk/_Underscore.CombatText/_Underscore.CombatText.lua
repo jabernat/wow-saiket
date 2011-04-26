@@ -65,7 +65,7 @@ do
 	local Mine = COMBATLOG_OBJECT_AFFILIATION_MINE;
 	local band = bit.band;
 	--- Catches heals by or on the player and adds detailed combat text for them.
-	function me.Frame:COMBAT_LOG_EVENT_UNFILTERED ( _, _, Type, _, Caster, CasterFlags, _, Target, TargetFlags, ... )
+	function me.Frame:COMBAT_LOG_EVENT_UNFILTERED ( _, _, Type, _, _, Caster, CasterFlags, _, Target, TargetFlags, ... )
 		if ( Type:match( "_HEAL$" ) and not Type:match( "^ENVIRONMENTAL" ) ) then
 			-- Use flags to include pets'/vehicles' heals
 			local OnMe, ByMe = band( TargetFlags, Mine ) ~= 0, band( CasterFlags, Mine ) ~= 0;
