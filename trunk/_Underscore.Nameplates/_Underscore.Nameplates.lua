@@ -34,7 +34,6 @@ local Colors = _Underscore.Colors;
 
 me.ClassificationUpdateRate = 1;
 
-local TextDimAlpha = 0.6; -- Transparency of name and sometimes level text
 local BarTexture = LibSharedMedia:Fetch( LibSharedMedia.MediaType.STATUSBAR, _Underscore.MediaBar );
 
 local PlateWidth = 128;
@@ -77,9 +76,7 @@ do
 		end
 		Visual.Highlight:SetPoint( "TOPLEFT", Visual, -PlateBorder, PlateBorder );
 		Visual.Highlight:SetPoint( "BOTTOMRIGHT", Visual, PlateBorder, -PlateBorder );
-		Visual.Name:ClearAllPoints();
-		Visual.Name:SetPoint( "TOPRIGHT", Visual.Health.Right );
-		Visual.Name:SetPoint( "BOTTOMLEFT", Visual.Health.Left, 2, 2 );
+		Visual.Name:SetAllPoints();
 		Visual.ThreatBorder:Hide();
 		Visual.ThreatBorder.Threat = nil; -- Reset threat level cache
 
@@ -394,11 +391,11 @@ do
 
 		local Health, Cast = Plate:GetChildren();
 		Visual.Health, Visual.Cast = Health, Cast;
-		local BossIcon, RaidIcon, CastBorder;
+		local BossIcon, RaidIcon, CastTexture, CastBorder;
 		Visual.ThreatGlow, Visual.StatusBackground,
-			CastBorder, Cast.NoInterrupt, Cast.Icon,
 			Visual.Highlight, Visual.Name, Visual.Level,
 			Visual.BossIcon, RaidIcon, Visual.StatusBorder = Plate:GetRegions();
+		CastTexture, CastBorder, Cast.NoInterrupt, Cast.Icon = Cast:GetRegions();
 
 
 		Visual:SetSize( PlateWidth, PlateHeight );
@@ -450,10 +447,7 @@ do
 
 
 		-- Health bar
-		Health:SetParent( Visual );
-		Health:SetFrameLevel( Visual:GetFrameLevel() );
 		Health:SetStatusBarTexture( "" ); -- Keeps the texture region, but keeps its path value set to nil
-		Health:SetAlpha( TextDimAlpha ); -- To fade out the health text parented to it
 		-- Separate filled and empty halves of the statusbar
 		Health.Left = Visual:CreateTexture( nil, "ARTWORK" );
 		Health.Left:SetPoint( "TOPLEFT", Visual.StatusBackground, "TOPRIGHT" );
@@ -467,7 +461,11 @@ do
 		me.HealthOnValueChanged( Health, Health:GetValue() );
 
 		-- Name text
-		Visual.Name:SetParent( Health );
+		local NameContainer = CreateFrame( "Frame", nil, Plate );
+		NameContainer:SetPoint( "TOPRIGHT", Health.Right );
+		NameContainer:SetPoint( "BOTTOMLEFT", Health.Left, 2, 2 );
+		NameContainer:SetAlpha( 0.6 ); -- Prevents default UI from resetting alpha
+		Visual.Name:SetParent( NameContainer );
 		Visual.Name:SetFontObject( me.NameFont );
 
 
@@ -477,13 +475,11 @@ do
 		Cast:SetScript( "OnHide", me.CastOnHide );
 		Cast:SetScript( "OnEvent", me.CastOnEvent );
 		Cast:SetStatusBarTexture( BarTexture );
-		local CastTexture = Cast:GetStatusBarTexture();
 		CastTexture:SetDrawLayer( "BORDER" );
 		-- Register for desaturation on uninterruptible
 		Cast[ #Cast + 1 ] = CastTexture;
 		CastTexture[ 1 ], CastTexture[ 2 ], CastTexture[ 3 ] = unpack( Colors.Cast );
 		-- Icon/icon border
-		Cast.Icon:SetParent( Cast );
 		Cast.Icon:ClearAllPoints();
 		Cast.Icon:SetPoint( "BOTTOMRIGHT", Visual.StatusBackground, "TOPRIGHT", 0, 2 );
 		Cast.Icon:SetSize( CastHeight, CastHeight );
@@ -511,7 +507,6 @@ do
 		Cast[ #Cast + 1 ] = BarBorder;
 		BarBorder[ 1 ], BarBorder[ 2 ], BarBorder[ 3 ] = 1, 0.9, 0.4; -- Matches color of icon border
 		-- Interrupt icon
-		Cast.NoInterrupt:SetParent( Cast );
 		Cast.NoInterrupt:SetTexture( [[Interface\AchievementFrame\UI-Achievement-Shields]] );
 		Cast.NoInterrupt:SetDrawLayer( "BACKGROUND" );
 		Cast.NoInterrupt:SetTexCoord( 1, 0.5, 0, 1 );
@@ -551,9 +546,9 @@ do
 	local function PlatesScan ( ... )
 		for Index = 1, select( "#", ... ) do
 			local Frame = select( Index, ... );
-			if ( not ( Plates[ Frame ] or Frame:GetName() ) ) then
-				local Region = Frame:GetRegions();
-				if ( Region and Region:GetObjectType() == "Texture" and Region:GetTexture() == [[Interface\TargetingFrame\UI-TargetingFrame-Flash]] ) then
+			if ( not Plates[ Frame ] ) then
+				local Name = Frame:GetName();
+				if ( Name and Name:match( "^NamePlate%d+$" ) ) then
 					PlateAdd( Frame );
 				end
 			end
