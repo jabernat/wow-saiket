@@ -11,8 +11,10 @@ _LatencyOptions = {
 
 local AddOnName, me = ...;
 _Latency = me;
-local L = me.L;
 local LibGraph = LibStub( "LibGraph-2.0" );
+
+me.COMM_PREFIX = "_L";
+assert( RegisterAddonMessagePrefix( me.COMM_PREFIX ), "No free comm prefixes available." );
 
 me.Frame = CreateFrame( "Frame", nil, UIParent );
 me.Resize = CreateFrame( "Button", nil, me.Frame );
@@ -23,8 +25,6 @@ me.UpdateRate = 0.5; -- Time between graph/label updates
 me.PingDataAge = 5; -- Time to keep ping time data in the running average
 me.MaxSimultaneousPings = 1; -- Max number of pings that can be sent at once
 
-
-me.Prefix = "_L";
 
 me.PingData = {};
 me.PingCutoff = 0;
@@ -161,7 +161,7 @@ function me.Frame:PLAYER_ENTERING_WORLD ()
 end
 --- Reads round trip ping messages and times them.
 function me.Frame:CHAT_MSG_ADDON ( _, Prefix, Message, Type, Author )
-	if ( Prefix == me.Prefix and Type == "WHISPER" and Author == UnitName( "player" ) ) then
+	if ( Prefix == me.COMM_PREFIX and Type == "WHISPER" and Author == UnitName( "player" ) ) then
 		if ( me.NumPings > 0 ) then
 			me.NumPings = me.NumPings - 1;
 		end
@@ -203,7 +203,7 @@ do
 		if ( LastPing >= me.PingRate ) then
 			LastPing = 0;
 			if ( me.NumPings < me.MaxSimultaneousPings ) then
-				SendAddonMessage( me.Prefix, me.TimeEncode(), "WHISPER", UnitName( "player" ) );
+				SendAddonMessage( me.COMM_PREFIX, me.TimeEncode(), "WHISPER", UnitName( "player" ) );
 				me.NumPings = me.NumPings + 1;
 			end
 		end
@@ -214,7 +214,7 @@ do
 			local Ping = me.GetAveragePing();
 			if ( Ping ) then
 				me.Graph:AddTimeData( Ping * me.UpdateRate );
-				me.Label:SetFormattedText( L.LABEL_FORMAT, Ping );
+				me.Label:SetFormattedText( me.L.LABEL_FORMAT, Ping );
 			end
 
 			local Value = me.Graph:GetValue( me.Graph.XMax );
@@ -237,14 +237,14 @@ function me.Frame:OnHide ()
 	if ( not self:IsShown() ) then -- Was directly hidden (i.e. didn't hide interface)
 		self:SetScript( "OnHide", nil ); -- Only print once
 		self.OnHide = nil;
-		print( L.ONCLOSE_NOTICE );
+		print( me.L.ONCLOSE_NOTICE );
 	end
 end
 
 
 --- Slash command handler to toggle the window or lock it.
 function me.SlashCommand ( Input )
-	if ( Input and Input:trim():lower() == L.LOCK ) then
+	if ( Input and Input:trim():lower() == me.L.LOCK ) then
 		me.ToggleLocked();
 	else
 		me.Toggle();
@@ -278,7 +278,7 @@ me.Close = CreateFrame( "Button", nil, Frame, "UIPanelCloseButton" );
 me.Close:SetPoint( "TOPRIGHT", 4, 4 );
 -- Title
 local Title = Frame:CreateFontString( nil, "ARTWORK", "GameFontHighlight" );
-Title:SetText( L.TITLE );
+Title:SetText( me.L.TITLE );
 Title:SetPoint( "TOPLEFT", Frame, 11, -6 );
 -- Ping label
 me.Label = Frame:CreateFontString( nil, "ARTWORK", "GameFontNormal" );
