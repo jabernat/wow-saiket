@@ -40,7 +40,6 @@ do
 	local MaxLength = 10; -- Wrap groups longer than this
 	local PetGroup = { isPetGroup = true; unitsPerColumn = MaxLength; };
 	GridLayout:AddLayout( Units.L.GRID_LAYOUT_CLASS, {
-		PetGroup,
 		{ groupFilter = "WARRIOR"; unitsPerColumn = MaxLength; },
 		{ groupFilter = "PRIEST"; unitsPerColumn = MaxLength; },
 		{ groupFilter = "DRUID"; unitsPerColumn = MaxLength; },
@@ -51,9 +50,9 @@ do
 		{ groupFilter = "HUNTER"; unitsPerColumn = MaxLength; },
 		{ groupFilter = "ROGUE"; unitsPerColumn = MaxLength; },
 		{ groupFilter = "DEATHKNIGHT"; unitsPerColumn = MaxLength; },
+		PetGroup,
 	} );
 	GridLayout:AddLayout( Units.L.GRID_LAYOUT_GROUP, {
-		PetGroup,
 		{ groupFilter = "1"; },
 		{ groupFilter = "2"; },
 		{ groupFilter = "3"; },
@@ -62,5 +61,6 @@ do
 		{ groupFilter = "6"; },
 		{ groupFilter = "7"; },
 		{ groupFilter = "8"; },
+		PetGroup,
 	} );
 end
