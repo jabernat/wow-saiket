@@ -399,7 +399,7 @@ do
 
 
 		Visual:SetSize( PlateWidth, PlateHeight );
-		Visual:SetPoint( "TOP" );
+		Visual:SetPoint( "BOTTOM" );
 
 
 		-- Border
@@ -594,7 +594,7 @@ do
 					-- Position outline
 					TargetOutline:SetParent( Plate );
 					TargetOutline:SetFrameLevel( Plate:GetFrameLevel() );
-					TargetOutline:SetPoint( "TOP" );
+					TargetOutline:SetPoint( "BOTTOM" );
 					TargetOutline:Show();
 				end
 			else -- Not target
