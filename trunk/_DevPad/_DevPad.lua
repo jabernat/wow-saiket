@@ -299,8 +299,11 @@ do
 	-- @return Any values returned from the script.
 	function ScriptMeta.__index:Run ( ... )
 		if ( self._TextChanged ) then -- Recompile
-			self._Chunk = assert( loadstring( self._Text, self._Name ) );
-			self._TextChanged = nil;
+			local Chunk, ErrorMessage = loadstring( self._Text, self._Name );
+			if ( not Chunk ) then
+				error( ErrorMessage, 0 ); -- 0 keeps _DevPad's name out of the error message
+			end
+			self._Chunk, self._TextChanged = Chunk;
 		end
 		return self:_Chunk( ... );
 	end
