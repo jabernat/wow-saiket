@@ -15,30 +15,36 @@ local IconBorder = 1;
 
 
 
---- Skins a new LDB minimap button.
--- @param ...  Regions of Button.
-local function Skin ( Button, ... )
-	Button:SetSize( IconSize, IconSize );
-	Button:SetFrameStrata( "BACKGROUND" );
-	Button:SetClampedToScreen( true );
-	local Inset = -IconSize / 6; -- 1/6th of button allowed off screen
-	Button:SetClampRectInsets( Inset, Inset, Inset, Inset );
-	Button:SetAlpha( 0.8 );
-	_Underscore.SkinButton( Button, Button.icon );
-	Button.icon:SetAllPoints( Button );
-	Button.icon:SetDrawLayer( "ARTWORK" );
-	Button.icon.SetTexCoord = _Underscore.NilFunction;
-	_Underscore.Backdrop.Create( Button, IconBorder );
+local Skin;
+do
+	local PathBlacklist = {
+		[ [[interface\minimap\minimap-trackingborder]] ] = true;
+		[ [[interface\minimap\ui-minimap-background]] ] = true;
+	};
+	--- Skins a new LDB minimap button.
+	-- @param ...  Regions of Button.
+	function Skin ( Button, ... )
+		Button:SetSize( IconSize, IconSize );
+		Button:SetFrameStrata( "BACKGROUND" );
+		Button:SetClampedToScreen( true );
+		local Inset = -IconSize / 6; -- 1/6th of button allowed off screen
+		Button:SetClampRectInsets( Inset, Inset, Inset, Inset );
+		Button:SetAlpha( 0.8 );
+		_Underscore.SkinButton( Button, Button.icon );
+		Button.icon:SetAllPoints( Button );
+		Button.icon:SetDrawLayer( "ARTWORK" );
+		Button.icon.SetTexCoord = _Underscore.NilFunction;
+		_Underscore.Backdrop.Create( Button, IconBorder );
 
-	-- Hide border
-	for Index = 1, select( "#", ... ) do
-		local Region = select( Index, ... );
-		if ( Region:IsObjectType( "Texture" ) ) then
-			local Path = Region:GetTexture();
-			if ( Path and Path:lower() == [[interface\minimap\minimap-trackingborder]] ) then
-				Region:SetTexture();
-				Region:Hide();
-				break;
+		-- Hide border and background
+		for Index = 1, select( "#", ... ) do
+			local Region = select( Index, ... );
+			if ( Region:IsObjectType( "Texture" ) ) then
+				local Path = Region:GetTexture();
+				if ( Path and PathBlacklist[ Path:lower() ] ) then
+					Region:SetTexture();
+					Region:Hide();
+				end
 			end
 		end
 	end
