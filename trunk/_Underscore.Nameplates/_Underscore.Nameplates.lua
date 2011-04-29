@@ -105,7 +105,7 @@ do
 	--- Updates threat textures to reflect original plates' textures.
 	function me:VisualThreatUpdate ()
 		Threat, ThreatBorder = 0, self.ThreatBorder;
-		if ( self.Reaction <= 4 ) then -- Not friendly
+		if ( self.Reaction and self.Reaction <= 4 ) then -- Not friendly
 			if ( self.ThreatGlow:IsShown() ) then
 				R, G, B = self.ThreatGlow:GetVertexColor();
 				if ( R > 0.99 and B < 0.01 ) then -- Not solid white (uninitialized)
