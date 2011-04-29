@@ -133,7 +133,6 @@ do
 		return true;
 	end
 
-	local GetTime = GetTime;
 	--- Flags the editbox to be reformatted when its contents change.
 	local function OnTextChanged ( self, ... )
 		if ( Enabled[ self ] ) then
