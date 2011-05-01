@@ -688,6 +688,14 @@ me.Shortcuts:SetScript( "OnKeyDown", me.Shortcuts.OnKeyDown );
 me.Shortcuts:SetScript( "OnHide", me.Shortcuts.OnHide );
 me.Shortcuts:EnableKeyboard( false );
 
+-- Cursor line highlight
+local Line, Cursor = Edit:CreateTexture(), select( 5, Edit:GetRegions() );
+Line:SetPoint( "LEFT", Margin.Text, "RIGHT" );
+Line:SetPoint( "RIGHT" );
+Line:SetPoint( "TOP", Cursor );
+Line:SetPoint( "BOTTOM", Cursor );
+Line:SetTexture( 1, 1, 1, 0.05 );
+
 ChatEdit_InsertLink = me.ChatEditInsertLink;
 ChatEdit_OnEditFocusLost = me.ChatEditOnEditFocusLost;
 GUI.RegisterCallback( me, "ListSetSelection" );
