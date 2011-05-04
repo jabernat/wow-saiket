@@ -662,10 +662,6 @@ Text:SetFontObject( me.Font );
 Text:SetPoint( "TOPLEFT", 0, -TextInset );
 Text:SetJustifyV( "TOP" );
 Text:SetJustifyH( "RIGHT" );
-local Gutter = Margin.Gutter;
-Gutter:SetPoint( "TOPLEFT" );
-Gutter:SetPoint( "RIGHT", Text );
-Gutter:SetPoint( "BOTTOM" );
 
 local Edit = me.Edit;
 Edit:SetPoint( "TOPLEFT", Margin, "TOPRIGHT" );
@@ -687,10 +683,14 @@ me.Shortcuts:SetPropagateKeyboardInput( true );
 me.Shortcuts:SetScript( "OnKeyDown", me.Shortcuts.OnKeyDown );
 me.Shortcuts:SetScript( "OnHide", me.Shortcuts.OnHide );
 me.Shortcuts:EnableKeyboard( false );
+local Gutter = Margin.Gutter;
+Gutter:SetPoint( "TOPLEFT" );
+Gutter:SetPoint( "RIGHT", Edit, "LEFT", -4, 0 );
+Gutter:SetPoint( "BOTTOM" );
 
 -- Cursor line highlight
 local Line, Cursor = Edit:CreateTexture(), select( 5, Edit:GetRegions() );
-Line:SetPoint( "LEFT", Margin.Text, "RIGHT" );
+Line:SetPoint( "LEFT", Gutter, "RIGHT" );
 Line:SetPoint( "RIGHT" );
 Line:SetPoint( "TOP", Cursor );
 Line:SetPoint( "BOTTOM", Cursor );
