@@ -489,8 +489,7 @@ function me:MINIMAP_UPDATE_ZOOM ()
 	end
 	IsInside = Minimap:GetZoom() == GetCVar( "minimapInsideZoom" ) + 0;
 	Minimap:SetZoom( Zoom );
-	Radius = nil;
-	UpdateForce = true;
+	UpdateForce, Radius = true;
 
 	-- Update indoor alpha value
 	if ( self.Alpha ) then
@@ -579,6 +578,16 @@ do
 		return Backup( self, IsInside and Alpha * me.InsideAlphaMultiplier or Alpha, ... );
 	end
 end
+--- Reparents this canvas to Frame.
+-- @return True if set successfully.
+function me:SetMinimapFrame ( Frame )
+	if ( self.ScrollFrame and self.ScrollFrame:GetParent() ~= Frame ) then
+		self.ScrollFrame:SetParent( Frame );
+		self.ScrollFrame:SetAllPoints();
+		UpdateForce, Radius = true;
+		return true;
+	end
+end
 
 --- Force a repaint if shown paths change.
 -- @param Map  AreaID that changed, or nil if all zones must update.
@@ -601,20 +610,14 @@ function me:OnDisable ()
 	self:UnregisterEvent( "ZONE_CHANGED_NEW_AREA" );
 end
 do
-	local SetZoomBackup;
 	--- Hook to force a repaint when minimap zoom changes.
 	local function SetZoom ( self, Zoom, ... )
-		if ( me.Loaded and self:GetZoom() ~= Zoom ) then
-			Radius = nil;
-			UpdateForce = true;
-		end
-		return SetZoomBackup( self, Zoom, ... );
+		UpdateForce, Radius = true;
 	end
 	--- Initializes the canvas after its dependencies load.
 	function me:OnLoad ()
-		self.ScrollFrame = CreateFrame( "ScrollFrame", nil, Minimap );
+		self.ScrollFrame = CreateFrame( "ScrollFrame" );
 		self.ScrollFrame:Hide();
-		self.ScrollFrame:SetAllPoints();
 		self.ScrollFrame:SetScrollChild( self );
 
 		self:SetAllPoints();
@@ -622,6 +625,7 @@ do
 		self:SetScript( "OnUpdate", self.OnUpdate );
 		self:SetScript( "OnEvent", Overlay.Modules.OnEvent );
 		self:RegisterEvent( "MINIMAP_UPDATE_ZOOM" );
+		hooksecurefunc( getmetatable( Minimap ).__index, "SetZoom", SetZoom );
 
 		local RangeRing = CreateFrame( "Frame", nil, self.ScrollFrame ); -- [ Quadrant ] = Texture;
 		self.RangeRing = RangeRing;
@@ -643,8 +647,7 @@ do
 			Texture:SetVertexColor( Color.r, Color.g, Color.b );
 		end
 
-		SetZoomBackup = Minimap.SetZoom;
-		Minimap.SetZoom = SetZoom;
+		self:SetMinimapFrame( Minimap );
 	end
 end
 --- Clears all methods and scripts to be garbage collected.
