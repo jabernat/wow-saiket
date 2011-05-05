@@ -690,8 +690,9 @@ Gutter:SetPoint( "BOTTOM" );
 
 -- Cursor line highlight
 local Line, Cursor = Edit:CreateTexture(), select( 5, Edit:GetRegions() );
-Line:SetPoint( "LEFT", Gutter, "RIGHT" );
-Line:SetPoint( "RIGHT" );
+-- Note: Anchoring Line to the editor's sides causes it to flicker when quickly
+-- updating the text.  Setting an absolute width avoids this.
+Line:SetWidth( 1e6 ); -- Big enough to always span editor's width
 Line:SetPoint( "TOP", Cursor );
 Line:SetPoint( "BOTTOM", Cursor );
 Line:SetTexture( 1, 1, 1, 0.05 );
