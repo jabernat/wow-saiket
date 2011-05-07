@@ -426,12 +426,7 @@ function me.Synchronize ( Options )
 	me.Modules.OnSynchronize( Options );
 end
 do
-	local MapNames = {};
-	--- @return Localized zone name for Map or nil if unknown.
-	-- Note that only true continent sub-zones are supported.
-	function me.GetMapName ( Map )
-		return MapNames[ Map ];
-	end
+	me.GetMapName = GetMapNameByID; -- For backwards compatibility with older versions of _NPCScan
 	local MapIDs = {}; -- [ LocalizedZoneName ] = MapID;
 	--- @return Map ID for localized zone name or nil if unknown.
 	-- Note that only true continent sub-zones are supported.
@@ -444,41 +439,23 @@ do
 		return MapWidths[ Map ], MapHeights[ Map ];
 	end
 
-	--- Saves localized map names on a given ContinentID.
-	local function HandleZones ( ContinentID, ... )
-		for ZoneIndex = 1, select( "#", ... ) do
-			SetMapZoom( ContinentID, ZoneIndex );
-
-			local Map = GetCurrentMapAreaID();
-			if ( me.PathData[ Map ] ) then
-				local Name = select( ZoneIndex, ... );
-				MapNames[ Map ], MapIDs[ Name ] = Name, Map;
-
-				local _, X1, Y1, X2, Y2 = GetCurrentMapZone();
-				local Width, Height = X1 - X2, Y1 - Y2;
-				if ( Width == 0 or Height == 0 ) then
-					error( "Zone dimensions unavailable for map "..Map.."." );
-				end
-				MapWidths[ Map ], MapHeights[ Map ] = Width, Height;
-			end
-		end
-	end
 	--- Loads defaults, validates settings, and begins listening for Overlay API messages.
 	function me.Events:ADDON_LOADED ( Event, AddOn )
 		if ( AddOn == AddOnName ) then
 			self[ Event ] = nil;
 			self:UnregisterEvent( Event );
 
-			-- Build a lookup table for localized zone names to map files
-			-- Note: Doesn't support dungeon maps, as their localized names are unavailable in-game
-			for ContinentID = 1, select( "#", GetMapContinents() ) do
-				HandleZones( ContinentID, GetMapZones( ContinentID ) );
-			end
 			-- Build a reverse lookup of NpcIDs to zones, and add them all by default
 			for Map, MapData in pairs( me.PathData ) do
-				if ( not me.GetMapSize( Map ) ) then
+				SetMapByID( Map );
+				local _, X1, Y1, X2, Y2 = GetCurrentMapZone();
+				local Width, Height = X1 - X2, Y1 - Y2;
+				if ( Width == 0 or Height == 0 ) then
 					error( "Zone dimensions unavailable for map "..Map.."." );
 				end
+				MapWidths[ Map ], MapHeights[ Map ] = Width, Height;
+				MapIDs[ GetMapNameByID( Map ) ] = Map;
+
 				for NpcID in pairs( MapData ) do
 					if ( not me.NPCMaps[ NpcID ] ) then
 						me.NPCMaps[ NpcID ] = {};

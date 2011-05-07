@@ -75,11 +75,10 @@ do
 
 		me.EditBox:SetFontObject( me.Table.ElementFont );
 
-		local Overlay = _NPCScan.Overlay;
 		for NpcID, Name in pairs( Tools.NPCNames ) do
 			local MapID = Tools.NPCMapIDs[ NpcID ];
 			me.Table:AddRow( NpcID,
-				tostring( Overlay and Overlay.GetMapName( MapID ) or MapID or "" ),
+				tostring( GetMapNameByID( MapID ) or MapID or "" ),
 				NpcID, Name,
 				tostring( Tools.NPCDisplayIDs[ NpcID ] or "" ) );
 		end
