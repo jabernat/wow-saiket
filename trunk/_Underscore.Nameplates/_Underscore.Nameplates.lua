@@ -619,8 +619,9 @@ end
 function me.Frame:VARIABLES_LOADED ( Event )
 	self[ Event ] = nil;
 
-	SetCVar( "ThreatWarning", 3 );
+	SetCVar( "ThreatWarning", 3 ); -- Always show threat warning glow textures
 	SetCVar( "ShowClassColorInNameplate", 1 );
+	SetCVar( "nameplateOverlapH", 1 ); -- Keep ends of nameplates from overlapping
 end
 --- Resize any new nameplates that couldn't be resized in combat.
 function me.Frame:PLAYER_REGEN_ENABLED ()
