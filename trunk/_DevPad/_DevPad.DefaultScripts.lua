@@ -160,14 +160,14 @@ local function InitializeAddOn ( Name )
   if ( Initializer
     and select( 2, IsAddOnLoaded( Name ) ) -- Returns false if addon is currently loading
   ) then
+    AddOnInitializers[ Name ] = nil;
     if ( type( Initializer ) == "table" ) then
       for _, Script in ipairs( Initializer ) do
-        Script();
+        _DevPad.SafeCall( Script ); -- Don't break execution if one initializer fails
       end
     else
       Initializer();
     end
-    AddOnInitializers[ Name ] = nil;
     return true;
   end
 end
