@@ -231,13 +231,3 @@ KeyRingButton:SetParent( LastBag );
 KeyRingButton:SetWidth( 8 );
 KeyRingButton:GetNormalTexture():SetTexCoord( 0.15, 0.45, 0.1, 0.52 );
 KeyRingButton:Show();
-
--- Add a button for the help window to the main menu
-local Button = CreateFrame( "Button", nil, GameMenuFrame, "MainMenuBarMicroButton" );
-Button:SetPoint( "TOPRIGHT", -50, 28 );
-Button:SetScale( 0.7 );
-Button:SetFrameLevel( Button:GetFrameLevel() + 1 ); -- Raise above other buttons in the menu
-Button:SetScript( "OnClick", ToggleHelpFrame );
-LoadMicroButtonTextures( Button, "Help" );
-Button.tooltipText = HelpMicroButton.tooltipText;
-Button.newbieText = HelpMicroButton.newbieText;
