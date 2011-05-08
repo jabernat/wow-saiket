@@ -23,6 +23,7 @@ me.Margin.Gutter = me.Focus:CreateTexture( nil, "BORDER" );
 me.Margin.Lines = {};
 local MarginUpdateFrequency = 0.2; -- Time to wait after last keypress before updating
 me.Edit = CreateFrame( "EditBox", nil, me.Margin );
+me.Edit.Line = me.Edit:CreateTexture();
 
 me.Shortcuts = CreateFrame( "Frame", nil, me.Edit );
 
@@ -326,6 +327,10 @@ do
 	--- Moves the edit box's view to follow the cursor.
 	function me.Edit:OnCursorChanged ( CursorX, CursorY, CursorWidth, CursorHeight )
 		self.LineHeight = CursorHeight;
+		-- Update line highlight
+		self.Line:SetHeight( CursorHeight );
+		self.Line:SetPoint( "TOP", 0, CursorY - TextInset );
+
 		if ( self.CursorForceUpdate -- Force view to cursor, even if it didn't change
 			or ( self:HasFocus() and ( -- Only move view when cursor *moves*
 				LastX ~= CursorX or LastY ~= CursorY
@@ -689,13 +694,9 @@ Gutter:SetPoint( "RIGHT", Edit, "LEFT", -4, 0 );
 Gutter:SetPoint( "BOTTOM" );
 
 -- Cursor line highlight
-local Line, Cursor = Edit:CreateTexture(), select( 5, Edit:GetRegions() );
--- Note: Anchoring Line to the editor's sides causes it to flicker when quickly
--- updating the text.  Setting an absolute width avoids this.
-Line:SetWidth( 1e6 ); -- Big enough to always span editor's width
-Line:SetPoint( "TOP", Cursor );
-Line:SetPoint( "BOTTOM", Cursor );
-Line:SetTexture( 1, 1, 1, 0.05 );
+Edit.Line:SetPoint( "LEFT", Margin );
+Edit.Line:SetPoint( "RIGHT" );
+Edit.Line:SetTexture( 1, 1, 1, 0.05 );
 
 ChatEdit_InsertLink = me.ChatEditInsertLink;
 ChatEdit_OnEditFocusLost = me.ChatEditOnEditFocusLost;
