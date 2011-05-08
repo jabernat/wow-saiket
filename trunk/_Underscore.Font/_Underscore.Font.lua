@@ -10,6 +10,8 @@ _Underscore.Font = me;
 me.Monospace = CreateFont( "_UnderscoreMonospace" );
 me.MonospaceNumber = CreateFont( "_UnderscoreMonospaceNumber" );
 
+local NUMBER_FONT = [[Fonts\ARIALN.TTF]];
+
 
 
 
@@ -23,13 +25,8 @@ _Underscore.RegisterAddOnInitializer( "_Dev", function ()
 end );
 
 
-local DejaVuSansMono = [[Interface\AddOns\]]..( ... )..[[\Skin\DejaVuSansMono.ttf]];
-
-me.Monospace:SetFont( DejaVuSansMono, 10, "" );
-me.MonospaceNumber:SetFont( DejaVuSansMono, 8, "OUTLINE" );
-
-local LibSharedMedia = LibStub( "LibSharedMedia-3.0" );
-LibSharedMedia:Register( LibSharedMedia.MediaType.FONT, "DejaVu Sans Mono", DejaVuSansMono );
+me.Monospace:SetFont( NUMBER_FONT, 10 );
+me.MonospaceNumber:SetFont( NUMBER_FONT, 8, "OUTLINE" );
 
 
 -- Fix the small number font to use antialiasing
