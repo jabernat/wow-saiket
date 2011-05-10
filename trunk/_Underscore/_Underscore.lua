@@ -101,14 +101,17 @@ do
 		Name = Name:upper(); -- For case insensitive file systems (Windows')
 		local Initializer = AddOnInitializers[ Name ];
 		if ( Initializer and select( 2, IsAddOnLoaded( Name ) ) ) then -- Returns false if addon is currently loading
+			AddOnInitializers[ Name ] = nil;
 			if ( type( Initializer ) == "table" ) then
 				for _, Script in ipairs( Initializer ) do
-					Script();
+					local Success, ErrorMessage = pcall( Script );
+					if ( not Success ) then -- Don't break execution
+						geterrorhandler()( ErrorMessage );
+					end
 				end
 			else
 				Initializer();
 			end
-			AddOnInitializers[ Name ] = nil;
 			return true;
 		end
 	end
