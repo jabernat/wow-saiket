@@ -7,33 +7,31 @@
 local me = select( 2, ... );
 _Underscore.Clock = me;
 
-me.Frame = CreateFrame( "Frame", nil, UIParent );
-me.Text = me.Frame:CreateFontString( nil, "BACKGROUND", "NumberFontNormalSmall" )
+local UPDATE_INTERVAL = 0.2;
 
-me.UpdateRate = 0.2;
+me.Text = UIParent:CreateFontString( nil, "BACKGROUND", "NumberFontNormalSmall" );
+local Updater = me.Text:CreateAnimationGroup();
 
 
 
 
 do
 	local date = date;
-	local NextUpdate = 0;
 	--- Updates the clock text.
-	function me.Frame:OnUpdate ( Elapsed )
-		NextUpdate = NextUpdate - Elapsed;
-		if ( NextUpdate <= 0 ) then
-			NextUpdate = me.UpdateRate;
-
-			-- Avoid putting a full time string into the Lua string table
-			me.Text:SetFormattedText( me.L.TIME_FORMAT, date( "%H" ), date( "%M" ), date( "%S" ) );
-		end
+	function Updater:OnLoop ()
+		-- Avoid putting a full time string into the Lua string table
+		me.Text:SetFormattedText( me.L.TIME_FORMAT, date( "%H" ), date( "%M" ), date( "%S" ) );
 	end
 end
 
 
 
 
-me.Frame:SetScript( "OnUpdate", me.Frame.OnUpdate );
+Updater:CreateAnimation( "Animation" ):SetDuration( UPDATE_INTERVAL );
+Updater:SetLooping( "REPEAT" );
+Updater:SetScript( "OnLoop", Updater.OnLoop );
+Updater:OnLoop();
+Updater:Play();
 
 me.Text:SetPoint( "TOPLEFT", WorldFrame );
 me.Text:SetAlpha( 0.5 );
