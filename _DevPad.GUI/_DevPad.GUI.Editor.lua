@@ -97,7 +97,7 @@ function me:SetScriptObject ( Script )
 				_DevPad.RegisterCallback( self, "FolderRemove" );
 			end
 			self.ScrollFrame.Bar:SetValue( 0 );
-			self.Edit:SetText( me.LuaEnabled and Script._Text:replace( "|", "||" ) or Script._Text );
+			self.Edit:SetText( me.LuaEnabled and Script._Text:gsub( "|", "||" ) or Script._Text );
 			self:ScriptSetLua( nil, Script );
 			self.Edit:SetCursorPosition( 0 );
 			self.Margin:Update();
@@ -177,7 +177,7 @@ do
 
 					-- Escape control codes
 					local Text, Cursor = Edit:GetText(), Edit:GetCursorPosition();
-					Edit:SetText( Text:replace( "|", "||" ) );
+					Edit:SetText( Text:gsub( "|", "||" ) );
 					Edit:SetCursorPosition( Cursor + CountSubstring( Text, "|", 0, Cursor ) );
 				end
 				if ( Lib ) then -- Force immediate recolor even if already enabled
@@ -192,7 +192,7 @@ do
 					Lib.Disable( Edit );
 				end
 				local Text, Cursor = Edit:GetText(), Edit:GetCursorPosition();
-				Edit:SetText( Text:replace( "||", "|" ) );
+				Edit:SetText( Text:gsub( "||", "|" ) );
 				Edit:SetCursorPosition( Cursor - CountSubstring( Text, "||", 0, Cursor ) );
 			end
 		end
@@ -254,7 +254,7 @@ end
 --- Undoes changes since the player opened this script.
 function me.Revert:OnClick ()
 	local Text = me.Script._TextOriginal;
-	me.Edit:SetText( me.LuaEnabled and Text:replace( "|", "||" ) or Text );
+	me.Edit:SetText( me.LuaEnabled and Text:gsub( "|", "||" ) or Text );
 	me.Edit:SetCursorPosition( 0 );
 end
 
@@ -372,7 +372,7 @@ do
 				Script._TextOriginal = Script._Text;
 			end
 			local Text = self:GetText();
-			Script:SetText( me.LuaEnabled and Text:replace( "||", "|" ) or Text );
+			Script:SetText( me.LuaEnabled and Text:gsub( "||", "|" ) or Text );
 			if ( Script._TextOriginal == Script._Text ) then
 				me.Revert:Disable();
 			else
@@ -523,7 +523,7 @@ do
 	--- Hook to add clicked links' code to the edit box.
 	function me.ChatEditInsertLink ( Link, ... )
 		if ( Link and me.Edit:HasFocus() ) then
-			me.Edit:Insert( me.LuaEnabled and Link:replace( "|", "||" ) or Link );
+			me.Edit:Insert( me.LuaEnabled and Link:gsub( "|", "||" ) or Link );
 			return true;
 		end
 		return Backup( Link, ... );
