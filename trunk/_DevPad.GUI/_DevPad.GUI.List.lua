@@ -160,7 +160,7 @@ do
 	function me:SetSearch ( Text )
 		local Search = false;
 		if ( Text ~= "" ) then
-			Search = Text:gsub( "||", "|" ):gsub( [[\(.)]], EscapesGsub );
+			Search = Text:replace( "||", "|" ):gsub( [[\(.)]], EscapesGsub );
 		end
 		if ( self.Search ~= Search ) then
 			self.Search = Search;
