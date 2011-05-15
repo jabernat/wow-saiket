@@ -625,7 +625,7 @@ do
 		self:SetScript( "OnUpdate", self.OnUpdate );
 		self:SetScript( "OnEvent", Overlay.Modules.OnEvent );
 		self:RegisterEvent( "MINIMAP_UPDATE_ZOOM" );
-		hooksecurefunc( getmetatable( Minimap ).__index, "SetZoom", SetZoom );
+		hooksecurefunc( Minimap, "SetZoom", SetZoom );
 
 		local RangeRing = CreateFrame( "Frame", nil, self.ScrollFrame ); -- [ Quadrant ] = Texture;
 		self.RangeRing = RangeRing;
