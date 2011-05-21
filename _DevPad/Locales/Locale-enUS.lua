@@ -4,6 +4,7 @@
   ****************************************************************************]]
 
 
+-- See http://wow.curseforge.com/addons/devpad/localization/enUS/
 select( 2, ... ).L = setmetatable( {
 	EXAMPLE = "Example Script",
 	IMPORTERS = "Importers",
