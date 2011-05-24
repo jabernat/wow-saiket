@@ -88,6 +88,10 @@ end
 function me:OnSizeChanged ()
 	return self:UpdateClip();
 end
+--- Re-draws blobs when the minimap moves, since rendered blobs are static to the screen.
+function me:OnPositionChanged ()
+	return me:Update();
+end
 
 
 
@@ -467,6 +471,13 @@ _MiniBlobs.RegisterCallback( me, "MiniBlobs_Quality" );
 _MiniBlobs.RegisterCallback( me, "MiniBlobs_TypeEnabled" );
 _MiniBlobs.RegisterCallback( me, "MiniBlobs_TypeAlpha" );
 _MiniBlobs.RegisterCallback( me, "MiniBlobs_TypeStyle" );
+
+-- Makeshift "OnPositionChanged" handler
+local BottomLeft = CreateFrame( "Frame", nil, me );
+BottomLeft:SetPoint( "BOTTOMLEFT", nil );
+BottomLeft:SetPoint( "TOPRIGHT", me, "BOTTOMLEFT" );
+BottomLeft:SetScript( "OnSizeChanged", me.OnPositionChanged );
+
 if ( IsLoggedIn() ) then
 	me:PLAYER_LOGIN();
 end
