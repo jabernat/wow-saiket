@@ -30,6 +30,7 @@ select( 2, ... ).L = setmetatable( {
 |cffFF7F3FWARNING!|r  Higher quality settings may drastically reduce performance, depending on the shape and size of your minimap.  Large, non-square minimaps in particular are slowest.]=],
 	QUALITY_HIGH = "Quality",
 	QUALITY_LOW = "Performance",
+	ROTATE_MINIMAP_NOTICE = "_|cffCCCC88MiniBlobs|r: You must disable your |cff808080“Rotate Minimap”|r setting to see minimap blobs.",
 	TITLE = "_|cffCCCC88MiniBlobs|r",
 	TYPE_ALPHA = "Alpha",
 	TYPE_ENABLED_DESC = "Shows or hides these blobs on your minimap.",

@@ -23,6 +23,13 @@ local Minimap = Minimap;
 
 
 
+--- Prints a warning message if "Rotate Minimap" is enabled on login.
+function me:PLAYER_LOGIN ()
+	if ( GetCVarBool( "rotateMinimap" ) ) then
+		local Color = ORANGE_FONT_COLOR;
+		DEFAULT_CHAT_FRAME:AddMessage( _MiniBlobs.L.ROTATE_MINIMAP_NOTICE, Color.r, Color.g, Color.b );
+	end
+end
 --- Removes the blobs in combat since they're protected.
 function me:PLAYER_REGEN_DISABLED ()
 	self:Hide();
@@ -448,6 +455,7 @@ me:SetScript( "OnUpdate", me.OnUpdate );
 me:SetScript( "OnSizeChanged", me.OnSizeChanged );
 me:SetScript( "OnShow", me.OnShow );
 me:SetScript( "OnEvent", _MiniBlobs.Frame.OnEvent );
+me:RegisterEvent( "PLAYER_LOGIN" );
 me:RegisterEvent( "PLAYER_REGEN_ENABLED" );
 me:RegisterEvent( "PLAYER_REGEN_DISABLED" );
 me:RegisterEvent( "WORLD_MAP_UPDATE" );
@@ -459,6 +467,9 @@ _MiniBlobs.RegisterCallback( me, "MiniBlobs_Quality" );
 _MiniBlobs.RegisterCallback( me, "MiniBlobs_TypeEnabled" );
 _MiniBlobs.RegisterCallback( me, "MiniBlobs_TypeAlpha" );
 _MiniBlobs.RegisterCallback( me, "MiniBlobs_TypeStyle" );
+if ( IsLoggedIn() ) then
+	me:PLAYER_LOGIN();
+end
 if ( not InCombatLockdown() ) then
 	me:PLAYER_REGEN_ENABLED(); -- Show
 end
