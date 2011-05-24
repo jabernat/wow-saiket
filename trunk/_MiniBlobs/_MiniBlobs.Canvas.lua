@@ -335,6 +335,7 @@ do
 	local QuestMapUpdateAllQuests = QuestMapUpdateAllQuests;
 	local QuestPOIGetQuestIDByVisibleIndex = QuestPOIGetQuestIDByVisibleIndex;
 
+	local HUGE = math.huge;
 	local ShapeNew, X, Y, DigSiteCount, QuestCount;
 	local BlobData, QuestID, QuestIndex, IsComplete;
 	local _, X1, Y1, X2, Y2, Width, Height;
@@ -381,6 +382,7 @@ do
 			or GetCVarBool( "rotateMinimap" ) -- Can't rotate a blob!
 		) then
 			UpdateForce = nil;
+			LastX, LastY = HUGE, HUGE; -- When we can render blobs again, override distance check
 			return BlobAnchor:Hide();
 		end
 
