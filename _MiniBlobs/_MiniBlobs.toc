@@ -3,7 +3,7 @@
 ## Notes: Puts quest POI regions and archaeology digsites into your minimap.
 ## Author: Saiket
 ## Version: 4.1.0.1
-## X-Date: 2011-05-20
+## X-Date: 2011-05-23
 ## X-Category: Map
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
