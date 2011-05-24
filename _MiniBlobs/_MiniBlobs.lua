@@ -14,7 +14,7 @@ me.Types = {
 	[ "Quests" ] = {};
 };
 me.Styles = { --- Available render options for blobs.
-	-- Blobs default to styles name after their type.
+	-- Blobs default to styles named after their type.
 	[ "Archaeology" ] = {
 		Fill = [[Interface\WorldMap\UI-ArchaeologyBlob-Inside]];
 		Border = [[Interface\WorldMap\UI-ArchaeologyBlob-Outside]];
