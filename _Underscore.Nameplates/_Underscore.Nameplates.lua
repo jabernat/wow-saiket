@@ -41,7 +41,7 @@ local PlateHeight = 16;
 local PlateBorder = 2;
 local CastHeight = 24;
 
-local HealthIsGhost = 20; -- Health values below this are assumed to be ghosts
+local HealthIsGhost = 0.005; -- Health ratios below this are assumed to be ghosts
 local DifficultyLevelDifference = 2; -- Hostile mobs this many levels above the player show prominent difficulty colors
 
 local InCombat = false;
@@ -289,7 +289,7 @@ do
 		local Percent = Health / HealthMax;
 		self.Left:SetWidth( Percent * ( PlateWidth - PlateHeight ) );
 		if ( self.IsHealerMode ) then
-			if ( Health <= HealthIsGhost ) then -- Ghost or close to it
+			if ( Percent <= HealthIsGhost ) then -- Ghost or close to it
 				local C = Colors.disconnected;
 				self.Right:SetVertexColor( C[ 1 ], C[ 2 ], C[ 3 ], 1 );
 			else
