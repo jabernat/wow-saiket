@@ -407,7 +407,8 @@ do
 		{ text = PLAYER; func = SendToPlayer; arg1 = "WHISPER"; notCheckable = true; },
 		{ text = PARTY; func = SendBroadcast; arg1 = "PARTY"; notCheckable = true; },
 		{ text = RAID; func = SendBroadcast; arg1 = "RAID"; notCheckable = true; },
-		{ text = GUILD; func = SendBroadcast; arg1 = "GUILD"; notCheckable = true; }
+		{ text = GUILD; func = SendBroadcast; arg1 = "GUILD"; notCheckable = true; },
+		{ text = OFFICER; func = SendBroadcast; arg1 = "OFFICER"; notCheckable = true; },
 	};
 	--- Opens a dropdown menu with potential script recipients.
 	function me.Send:OnClick ()
@@ -419,6 +420,7 @@ do
 		Menu[ 2 ].disabled = GetNumPartyMembers() == 0;
 		Menu[ 3 ].disabled = GetNumRaidMembers() == 0;
 		Menu[ 4 ].disabled = not IsInGuild();
+		Menu[ 5 ].disabled = not IsInGuild();
 		EasyMenu( Menu, Dropdown, "cursor", nil, nil, "MENU" );
 	end
 end
