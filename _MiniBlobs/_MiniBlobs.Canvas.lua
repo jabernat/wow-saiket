@@ -40,6 +40,7 @@ end
 --- Shows the blobs after combat ends.
 function me:PLAYER_REGEN_ENABLED ()
 	self:SetParent( Minimap );
+	self:SetFrameLevel( Minimap:GetFrameLevel() );
 	self:SetAllPoints();
 	return self:Show();
 end
@@ -471,6 +472,12 @@ _MiniBlobs.RegisterCallback( me, "MiniBlobs_Quality" );
 _MiniBlobs.RegisterCallback( me, "MiniBlobs_TypeEnabled" );
 _MiniBlobs.RegisterCallback( me, "MiniBlobs_TypeAlpha" );
 _MiniBlobs.RegisterCallback( me, "MiniBlobs_TypeStyle" );
+
+-- Raise round minimap border over top of the overlays to hide jagged edges
+local Level = Minimap:GetFrameLevel() + 3; -- Leave room for scrollframes and blobs
+if ( MinimapBackdrop:GetFrameLevel() < Level ) then
+	MinimapBackdrop:SetFrameLevel( Level );
+end
 
 -- Makeshift "OnPositionChanged" handler
 local BottomLeft = CreateFrame( "Frame", nil, me );
