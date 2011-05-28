@@ -130,8 +130,15 @@ Highlight:SetSize( 16, Quality:GetHeight() * 0.4 );
 Highlight:SetPoint( "RIGHT", -2, 0 );
 
 -- Create a section for each blob type
-local FrameLast = Quality;
+local Order = {};
 for Type in pairs( _MiniBlobs.Types ) do
+	Order[ #Order + 1 ] = Type;
+end
+table.sort( Order, function ( Type1, Type2 )
+	return L.Types[ Type1 ] < L.Types[ Type2 ];
+end );
+local FrameLast = Quality;
+for _, Type in ipairs( Order ) do
 	local Container = CreateFrame( "Frame", "$parent"..Type, me, "OptionsBoxTemplate" );
 	me.Types[ Type ], Container.Type = Container, Type;
 
