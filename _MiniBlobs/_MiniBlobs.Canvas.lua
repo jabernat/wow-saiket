@@ -4,7 +4,13 @@
   ****************************************************************************]]
 
 
-local _MiniBlobs, me = select( 2, ... ), CreateFrame( "Frame" );
+local _MiniBlobs = select( 2, ... );
+if ( IsAddOnLoaded( "Carbonite" ) ) then
+	return _MiniBlobs.Print( _MiniBlobs.L.CARBONITE_NOTICE, ORANGE_FONT_COLOR );
+end
+
+
+local me = CreateFrame( "Frame" );
 _MiniBlobs.Canvas = me;
 local BlobAnchor = CreateFrame( "Frame", nil, me );
 me.BlobAnchor = BlobAnchor;
@@ -26,8 +32,7 @@ local Minimap = Minimap;
 --- Prints a warning message if "Rotate Minimap" is enabled on login.
 function me:PLAYER_LOGIN ()
 	if ( GetCVarBool( "rotateMinimap" ) ) then
-		local Color = ORANGE_FONT_COLOR;
-		DEFAULT_CHAT_FRAME:AddMessage( _MiniBlobs.L.ROTATE_MINIMAP_NOTICE, Color.r, Color.g, Color.b );
+		_MiniBlobs.Print( _MiniBlobs.L.ROTATE_MINIMAP_NOTICE, ORANGE_FONT_COLOR );
 	end
 end
 --- Removes the blobs in combat since they're protected.

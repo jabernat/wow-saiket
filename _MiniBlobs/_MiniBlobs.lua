@@ -30,6 +30,15 @@ me.Styles = { --- Available render options for blobs.
 
 
 
+--- Prints a message in the default chat window.
+function me.Print ( Message, Color )
+	if ( not Color ) then
+		Color = NORMAL_FONT_COLOR;
+	end
+	DEFAULT_CHAT_FRAME:AddMessage( me.L.PRINT_FORMAT:format( Message ), Color.r, Color.g, Color.b );
+end
+
+
 --- Global event handler.
 function me.Frame:OnEvent ( Event, ... )
 	if ( self[ Event ] ) then

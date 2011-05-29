@@ -2,8 +2,8 @@
 ## Title: _|cffCCCC88MiniBlobs|r
 ## Notes: Puts quest POI regions and archaeology digsites into your minimap.
 ## Author: Saiket
-## Version: 4.1.0.1
-## X-Date: 2011-05-27
+## Version: 4.1.0.2
+## X-Date: 2011-05-28
 ## X-Category: Map
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
@@ -14,6 +14,7 @@
 ## X-Localizations: enUS
 ## X-CompatibleLocales: deDE, enUS, esES, esMX, frFR, koKR, ruRU, zhCN, zhTW
 ## SavedVariablesPerCharacter: _MiniBlobsOptionsCharacter
+## OptionalDeps: Carbonite
 Libs\LibStub\LibStub.lua
 Libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
 
