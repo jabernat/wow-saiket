@@ -29,6 +29,7 @@ local Minimap = Minimap;
 
 
 
+local TypeEnabledQueue = {};
 --- Prints a warning message if "Rotate Minimap" is enabled on login.
 function me:PLAYER_LOGIN ()
 	if ( GetCVarBool( "rotateMinimap" ) ) then
@@ -47,6 +48,11 @@ function me:PLAYER_REGEN_ENABLED ()
 	self:SetParent( Minimap );
 	self:SetFrameLevel( Minimap:GetFrameLevel() );
 	self:SetAllPoints();
+	-- Run settings changes that happened during combat
+	for Type, Enabled in pairs( TypeEnabledQueue ) do
+		TypeEnabledQueue[ Type ] = nil;
+		self:MiniBlobs_TypeEnabled( nil, Type, Enabled );
+	end
 	return self:Show();
 end
 
@@ -180,10 +186,14 @@ do
 	end
 	--- Creates or hides blob frames when settings change.
 	function me:MiniBlobs_TypeEnabled ( _, Type, Enabled )
-		for _, Column in ipairs( BlobAnchor ) do
-			UpdateTypeEnabled( Column, Type, Enabled );
+		if ( InCombatLockdown() ) then -- Queue to update after combat
+			TypeEnabledQueue[ Type ] = Enabled;
+		else
+			for _, Column in ipairs( BlobAnchor ) do
+				UpdateTypeEnabled( Column, Type, Enabled );
+			end
+			return self:Update();
 		end
-		return self:Update();
 	end
 	--- @return An unused blob column at BlobAnchor[ Index ].
 	function me:GetColumn ( Index )
