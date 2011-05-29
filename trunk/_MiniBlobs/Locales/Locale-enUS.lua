@@ -23,14 +23,16 @@ select( 2, ... ).L = setmetatable( {
 		Quests = "Quests",
 	}, Meta );
 
+	CARBONITE_NOTICE = "You must disable Carbonite to see minimap blobs.",
 	DESC = "Configure the appearance of minimap digsites and quest POIs.",
+	PRINT_FORMAT = "_|cffCCCC88MiniBlobs|r: %s",
 	QUALITY = "Quality",
 	QUALITY_DESC = [=[Adjusts the roundedness of blobs, and the jaggedness of round minimap edges.
 
 |cffFF7F3FWARNING!|r  Higher quality settings may drastically reduce performance, depending on the shape and size of your minimap.  Large, non-square minimaps in particular are slowest.]=],
 	QUALITY_HIGH = "Quality",
 	QUALITY_LOW = "Performance",
-	ROTATE_MINIMAP_NOTICE = "_|cffCCCC88MiniBlobs|r: You must disable your |cff808080“Rotate Minimap”|r setting to see minimap blobs.",
+	ROTATE_MINIMAP_NOTICE = "You must disable your |cff808080“Rotate Minimap”|r setting to see minimap blobs.",
 	TITLE = "_|cffCCCC88MiniBlobs|r",
 	TYPE_ALPHA = "Alpha",
 	TYPE_ENABLED_DESC = "Shows or hides these blobs on your minimap.",
