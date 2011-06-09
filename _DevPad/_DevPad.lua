@@ -473,10 +473,12 @@ function me.SlashCommand ( Input )
 				_G[ "ADDON_"..ErrorReason ] ), RED_FONT_COLOR );
 		end
 	else
-		local Script = me:FindScripts( Pattern );
-		if ( Script ) then
-			me.Print( me.L.SLASH_RUN_FORMAT:format( Script._Name ) );
-			return me.SafeCall( Script );
+		local Script1, Script2 = me:FindScripts( Pattern );
+		if ( Script1 ) then
+			if ( Script2 ) then -- Multiple matches for ambiguous pattern
+				me.Print( me.L.SLASH_RUN_FORMAT:format( Script1._Name ) );
+			end
+			return me.SafeCall( Script1 );
 		else
 			me.Print( me.L.SLASH_RUN_MISSING_FORMAT:format( Pattern ), RED_FONT_COLOR );
 		end
