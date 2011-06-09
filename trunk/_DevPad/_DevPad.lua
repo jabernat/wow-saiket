@@ -476,7 +476,7 @@ function me.SlashCommand ( Input )
 		local Script1, Script2 = me:FindScripts( Pattern );
 		if ( Script1 ) then
 			if ( Script2 ) then -- Multiple matches for ambiguous pattern
-				me.Print( me.L.SLASH_RUN_FORMAT:format( Script1._Name ) );
+				me.Print( me.L.SLASH_RUN_AMBIGUOUS_FORMAT:format( Pattern, Script1._Name ) );
 			end
 			return me.SafeCall( Script1 );
 		else

@@ -56,7 +56,7 @@ _DevPad lets you write notes, scripts, and mini addons in-game.  The following s
 	RECEIVE_MESSAGE_FORMAT = "You have received a script or folder from |cffffffff%s|r called |cff808080“%s”|r.",
 	RECEIVE_MESSAGE_REOPEN = "Open your _|cffcccc88DevPad|r to save or discard it.",
 	SLASH_GUIERROR_FORMAT = "Couldn't load |cff808080“_DevPad.GUI”|r: %s.",
-	SLASH_RUN_FORMAT = "Running script |cff808080“%s”|r.",
+	SLASH_RUN_AMBIGUOUS_FORMAT = "Multiple matches found for |cff808080“%s”|r; Running script |cff808080“%s”|r.",
 	SLASH_RUN_MISSING_FORMAT = "Couldn't find script named |cff808080“%s”|r.",
 }, {
 	__index = function ( self, Key )
