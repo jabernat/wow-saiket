@@ -32,7 +32,7 @@ do
 	function me.AppendNodes ( Nodes, MapName, NodeType, NpcID )
 		assert( NodeType == "Note", "Wrong node type." );
 		NpcID = tonumber( NpcID );
-		local Data = assert( Tools.NPCPointData[NpcID], "Node data missing." );
+		local Data = assert( Tools.NPCPointData[ NpcID ], "Node data missing." );
 
 		for Index = 1, #Data, 4 do
 			local X, X2, Y, Y2 = Data:byte( Index, Index + 3 );
