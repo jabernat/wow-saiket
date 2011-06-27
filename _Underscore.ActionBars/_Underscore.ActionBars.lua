@@ -115,7 +115,7 @@ function me.Frame:PLAYER_LOGIN ()
 			InitializeBar( 6, "1TL" ); -- MultiBarBottomLeft
 
 			-- Right corner
-			InitializeBar( "bags", nil, "BOTTOMRIGHT", 0.9, true ):SetShowKeyring( false ); -- Bags
+			InitializeBar( "bags", nil, "BOTTOMRIGHT", 0.9, true ); -- Bags
 			InitializeBar( 5, "bagsTR" ); -- MultiBarBottomRight
 			InitializeBar( Dominos.Frame:Get( "class" ) or Dominos.ClassBar:New(), "5BL", nil, 0.65, true, 8, 6 ); -- Class bar
 			InitializeBar( 3, "5TR" ):SetColumns( 1 ); -- MultiBarRight
@@ -216,18 +216,7 @@ for Index = 1, NUM_SHAPESHIFT_SLOTS do
 end
 
 -- Bag buttons
-local LastBag = MainMenuBarBackpackButton;
-ActionButtonModify( LastBag, 180 );
+ActionButtonModify( MainMenuBarBackpackButton, 180 );
 for Index = 0, NUM_BAG_SLOTS - 1 do
-	LastBag = _G[ "CharacterBag"..Index.."Slot" ];
-	ActionButtonModify( LastBag, 180 );
+	ActionButtonModify( _G[ "CharacterBag"..Index.."Slot" ], 180 );
 end
-
--- Keyring
-KeyRingButton:ClearAllPoints();
-KeyRingButton:SetPoint( "TOPLEFT", LastBag );
-KeyRingButton:SetPoint( "BOTTOM", LastBag );
-KeyRingButton:SetParent( LastBag );
-KeyRingButton:SetWidth( 8 );
-KeyRingButton:GetNormalTexture():SetTexCoord( 0.15, 0.45, 0.1, 0.52 );
-KeyRingButton:Show();
