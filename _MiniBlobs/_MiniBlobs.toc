@@ -1,4 +1,4 @@
-## Interface: 40100
+## Interface: 40200
 ## Title: _|cffCCCC88MiniBlobs|r
 ## Notes: Puts quest POI regions and archaeology digsites into your minimap.
 ## Notes-frFR: Affiche les points d’intérêt des quêtes et les sites de fouilles archéologiques sur votre minicarte.
