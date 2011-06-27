@@ -1,4 +1,4 @@
-## Interface: 40100
+## Interface: 40200
 ## Title: _|cffCCCC88UTF|r
 ## Notes: Unicode input dialog and text replacement.
 ## Author: Saiket

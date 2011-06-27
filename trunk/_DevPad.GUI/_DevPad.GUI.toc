@@ -1,4 +1,4 @@
-## Interface: 40100
+## Interface: 40200
 ## Title: _|cffCCCC88DevPad|r.GUI
 ## Notes: Script list and editor for _|cffCCCC88DevPad|r.
 ## Author: Saiket

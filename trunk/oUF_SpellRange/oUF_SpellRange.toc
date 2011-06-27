@@ -1,4 +1,4 @@
-## Interface: 40100
+## Interface: 40200
 ## Title: oUF SpellRange
 ## Notes: Range element for oUF that works for non-group members
 ## Author: Saiket

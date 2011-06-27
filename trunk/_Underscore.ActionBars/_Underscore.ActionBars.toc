@@ -1,4 +1,4 @@
-## Interface: 40100
+## Interface: 40200
 ## Title: _|cffCCCC88Underscore|r.ActionBars
 ## Notes: Skins the default action bars.
 ## Author: Saiket

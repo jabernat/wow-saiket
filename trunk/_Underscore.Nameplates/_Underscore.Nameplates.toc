@@ -1,4 +1,4 @@
-## Interface: 40100
+## Interface: 40200
 ## Title: _|cffCCCC88Underscore|r.Nameplates
 ## Notes: Nameplates skinned to match _|cffCCCC88Underscore|r.Units.
 ## Author: Saiket

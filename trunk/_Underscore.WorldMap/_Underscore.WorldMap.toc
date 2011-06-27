@@ -1,4 +1,4 @@
-## Interface: 40100
+## Interface: 40200
 ## Title: _|cffCCCC88Underscore|r.WorldMap
 ## Notes: Adds coordinates to the World Map frame.
 ## Author: Saiket

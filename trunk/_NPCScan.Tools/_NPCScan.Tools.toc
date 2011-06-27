@@ -1,4 +1,4 @@
-## Interface: 40100
+## Interface: 40200
 ## Title: _|cffCCCC88NPCScan|r.|cff888888Tools|r
 ## Notes: Tools to help maintain _|cffCCCC88NPCScan|r and _|cffCCCC88NPCScan|r.Overlay.
 ## Author: Saiket
