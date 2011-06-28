@@ -80,7 +80,7 @@ do
 			me.Table:AddRow( NpcID,
 				tostring( GetMapNameByID( MapID ) or MapID or "" ),
 				NpcID, Name,
-				tostring( Tools.NPCDisplayIDs[ NpcID ] or "" ) );
+				Tools.NPCDisplayIDs[ NpcID ] or 0 );
 		end
 	end
 end
