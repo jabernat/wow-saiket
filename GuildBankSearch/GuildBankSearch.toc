@@ -8,7 +8,7 @@
 ## X-Credits-frFR: Localization: Nodd, contrebasse
 ## X-Credits-koKR: Localization: freshworks
 ## X-Credits-zhTW: Localization: jyuny1
-## Version: 4.1.0.1
+## Version: 4.2.0.1
 ## X-Date: 2011-06-26
 ## X-Category: Inventory
 ## X-License: GPLv3

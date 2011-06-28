@@ -5,7 +5,7 @@
 ## Author: Saiket
 ## X-Credits-frFR: Localization: Arcueild
 ## X-Credits-koKR: Localization: Sayclub
-## Version: 4.1.0.2
+## Version: 4.2.0.1
 ## X-Date: 2011-06-26
 ## X-Category: Map
 ## X-License: GPLv3
