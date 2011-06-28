@@ -2,7 +2,7 @@
 ## Title: _|cffCCCC88DevPad|r
 ## Notes: Notepad for Lua scripts and mini-addons.
 ## Author: Saiket
-## Version: 4.1.0.1
+## Version: 4.2.0.1
 ## X-Date: 2011-06-08
 ## X-Category: Development Tools
 ## X-License: GPLv3

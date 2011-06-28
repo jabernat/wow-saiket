@@ -18,7 +18,7 @@
 ## X-Credits-ruRU: Localization: The_DimoK, Sarymian
 ## X-Credits-zhCN: Localization: tss1398383123, zhTW
 ## X-Credits-zhTW: Localization: s8095324, pepper_ep, zhTW
-## Version: 4.1.0.3
+## Version: 4.2.0.1
 ## X-Date: 2011-06-26
 ## X-Category: Map
 ## X-License: GPLv3
