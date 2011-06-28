@@ -190,7 +190,7 @@ end
 
 -- Write _NPCScanOptionsCharacter data
 print( "Writing _NPCScan options file..." );
-local OutFile = assert( io.open( OutputFilename, "w+" ) );
+local OutFile = assert( io.open( OutputFilename, "w+b" ) );
 assert( OutFile:write( [[
 _NPCScanOptionsCharacter = {
 	Version = "4.0.3.5";
