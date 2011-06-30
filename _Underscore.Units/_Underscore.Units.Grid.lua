@@ -12,10 +12,6 @@ local Units = select( 2, ... );
 
 
 
--- Disable party frames
-oUF:DisableBlizzard( "party" );
-
-
 do
 	--- Adds a backdrop and enables dropdown menus for new Grid unit frames.
 	local function FrameInitialize ( Frame )
