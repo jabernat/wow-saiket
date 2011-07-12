@@ -62,17 +62,31 @@ function me:WORLD_MAP_UPDATE ()
 end
 --- Re-draws archaeology blobs when they get added or removed.
 function me:ARTIFACT_DIG_SITE_UPDATED ()
-	return self:Update();
+	if ( _MiniBlobs:GetTypeEnabled( "Archaeology" ) ) then
+		return self:Update();
+	end
 end
 --- Re-draws quest blobs when they get added or removed.
 function me:QUEST_POI_UPDATE ()
-	return self:Update();
+	if ( _MiniBlobs:GetTypeEnabled( "Quests" ) ) then
+		return self:Update();
+	end
 end
 --- Hides completed quest blobs and updates blobs when objectives change.
 function me:UNIT_QUEST_LOG_CHANGED ( _, UnitID )
-	if ( UnitID == "player" ) then
+	if ( UnitID == "player" and _MiniBlobs:GetTypeEnabled( "Quests" ) ) then
 		return self:Update();
 	end
+end
+do
+	--- Hook to force a repaint when a quest watch is added or removed.
+	local function UpdateQuestsWatched ()
+		if ( _MiniBlobs:GetTypeEnabled( "Quests" ) and _MiniBlobs:GetQuestsWatched() ) then
+			return me:Update();
+		end
+	end
+	hooksecurefunc( "AddQuestWatch", UpdateQuestsWatched );
+	hooksecurefunc( "RemoveQuestWatch", UpdateQuestsWatched );
 end
 --- Force a repaint when the minimap swaps between indoor and outdoor zoom.
 function me:MINIMAP_UPDATE_ZOOM ()
@@ -210,6 +224,12 @@ do
 			end
 		end
 		return Column;
+	end
+end
+--- Shows only watched quests or all quests when settings change.
+function me:MiniBlobs_QuestsWatched ()
+	if ( _MiniBlobs:GetTypeEnabled( "Quests" ) ) then
+		return self:Update();
 	end
 end
 
@@ -359,12 +379,13 @@ do
 	local GetCVarBool = GetCVarBool;
 	local GetPlayerMapPosition = GetPlayerMapPosition;
 	local GetQuestLogTitle = GetQuestLogTitle;
+	local IsQuestWatched = IsQuestWatched;
 	local QuestMapUpdateAllQuests = QuestMapUpdateAllQuests;
 	local QuestPOIGetQuestIDByVisibleIndex = QuestPOIGetQuestIDByVisibleIndex;
 
 	local HUGE = math.huge;
 	local ShapeNew, X, Y, DigSiteCount, QuestCount;
-	local BlobData, QuestID, QuestIndex, IsComplete;
+	local QuestID, QuestIndex, IsComplete;
 	local _, X1, Y1, X2, Y2, Width, Height;
 	local LastX, LastY, YardsX, YardsY;
 	local UpdateNext = 0;
@@ -424,7 +445,7 @@ do
 		-- Cache blob data IDs
 		DigSiteCount, QuestCount = 0, 0;
 		if ( _MiniBlobs:GetTypeEnabled( "Archaeology" ) ) then
-			BlobData = BlobTypeData[ "Archaeology" ];
+			local BlobData = BlobTypeData[ "Archaeology" ];
 			DigSiteCount = ArchaeologyMapUpdateAll();
 			for Index = 1, DigSiteCount do
 				BlobData[ Index ] = ArcheologyGetVisibleBlobID( Index );
@@ -434,13 +455,16 @@ do
 			end
 		end
 		if ( _MiniBlobs:GetTypeEnabled( "Quests" ) ) then
-			BlobData = BlobTypeData[ "Quests" ];
+			local BlobData = BlobTypeData[ "Quests" ];
+			local WatchedOnly = _MiniBlobs:GetQuestsWatched();
 			for Index = 1, QuestMapUpdateAllQuests() do
 				QuestID, QuestIndex = QuestPOIGetQuestIDByVisibleIndex( Index );
-				_, _, _, _, _, _, IsComplete = GetQuestLogTitle( QuestIndex );
-				if ( not IsComplete ) then
-					QuestCount = QuestCount + 1;
-					BlobData[ QuestCount ] = QuestID;
+				if ( not WatchedOnly or IsQuestWatched( QuestIndex ) ) then
+					_, _, _, _, _, _, IsComplete = GetQuestLogTitle( QuestIndex );
+					if ( not IsComplete ) then
+						QuestCount = QuestCount + 1;
+						BlobData[ QuestCount ] = QuestID;
+					end
 				end
 			end
 			for Index = QuestCount + 1, #BlobData do
@@ -487,6 +511,7 @@ _MiniBlobs.RegisterCallback( me, "MiniBlobs_Quality" );
 _MiniBlobs.RegisterCallback( me, "MiniBlobs_TypeEnabled" );
 _MiniBlobs.RegisterCallback( me, "MiniBlobs_TypeAlpha" );
 _MiniBlobs.RegisterCallback( me, "MiniBlobs_TypeStyle" );
+_MiniBlobs.RegisterCallback( me, "MiniBlobs_QuestsWatched" );
 
 -- Raise round minimap border over top of the overlays to hide jagged edges
 local Level = Minimap:GetFrameLevel() + 3; -- Leave room for scrollframes and blobs

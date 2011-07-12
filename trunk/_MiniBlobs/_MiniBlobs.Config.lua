@@ -61,6 +61,12 @@ do
 		end
 	end
 end
+--- Toggles showing only watched quests when this checkbox is clicked.
+function me:QuestsWatchedOnClick ()
+	local Watched = not not self:GetChecked();
+	PlaySound( Watched and "igMainMenuOptionCheckBoxOn" or "igMainMenuOptionCheckBoxOff" );
+	return _MiniBlobs:SetQuestsWatched( Watched );
+end
 
 
 -- Adjust controls to match settings when changed.
@@ -72,9 +78,15 @@ function me:MiniBlobs_TypeEnabled ( _, Type, Enabled )
 	if ( Enabled ) then
 		UIDropDownMenu_EnableDropDown( Container.Style );
 		BlizzardOptionsPanel_Slider_Enable( Container.Alpha );
+		if ( Type == "Quests" ) then
+			BlizzardOptionsPanel_CheckButton_Enable( Container.Watched );
+		end
 	else
 		UIDropDownMenu_DisableDropDown( Container.Style );
 		BlizzardOptionsPanel_Slider_Disable( Container.Alpha );
+		if ( Type == "Quests" ) then
+			BlizzardOptionsPanel_CheckButton_Disable( Container.Watched );
+		end
 	end
 	return Container.Enabled:SetChecked( Enabled );
 end
@@ -83,6 +95,9 @@ function me:MiniBlobs_TypeAlpha ( _, Type, Alpha )
 end
 function me:MiniBlobs_TypeStyle ( _, Type, Style )
 	return UIDropDownMenu_SetText( self.Types[ Type ].Style, L.Styles[ Style ] );
+end
+function me:MiniBlobs_QuestsWatched ( _, Watched )
+	return self.Types[ "Quests" ].Watched:SetChecked( Watched );
 end
 
 
@@ -196,6 +211,21 @@ for _, Type in ipairs( Order ) do
 	Text:SetText( L.TYPE_ALPHA );
 
 	Container:SetHeight( Style:GetHeight() + Alpha:GetHeight() + 28 );
+	if ( Type == "Quests" ) then
+		-- Quest-specific controls
+		local Watched = CreateFrame( "CheckButton", "$parentWatched", Container, "UICheckButtonTemplate" );
+		Container.Watched = Watched;
+		Watched:SetSize( 26, 26 );
+		Watched:SetPoint( "TOPLEFT", Alpha, "BOTTOMLEFT", 0, -2 );
+		Watched:SetScript( "OnClick", me.QuestsWatchedOnClick );
+		Watched:SetScript( "OnEnter", me.ControlOnEnter );
+		Watched:SetScript( "OnLeave", GameTooltip_Hide );
+		local Label = _G[ Watched:GetName().."Text" ];
+		Label:SetText( L.QUESTS_WATCHED );
+		Watched.tooltipText = L.QUESTS_WATCHED_DESC;
+		Watched:SetHitRectInsets( 4, 4 - Label:GetStringWidth(), 4, 4 );
+		Container:SetHeight( Container:GetHeight() + Watched:GetHeight() + 2 );
+	end
 	FrameLast = Container;
 end
 
@@ -204,5 +234,6 @@ _MiniBlobs.RegisterCallback( me, "MiniBlobs_Quality" );
 _MiniBlobs.RegisterCallback( me, "MiniBlobs_TypeEnabled" );
 _MiniBlobs.RegisterCallback( me, "MiniBlobs_TypeAlpha" );
 _MiniBlobs.RegisterCallback( me, "MiniBlobs_TypeStyle" );
+_MiniBlobs.RegisterCallback( me, "MiniBlobs_QuestsWatched" );
 
 InterfaceOptions_AddCategory( me );
