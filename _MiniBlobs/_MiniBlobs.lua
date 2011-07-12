@@ -72,6 +72,7 @@ end
 --- Applies settings from storage.
 function me:Unpack ( Options )
 	self:SetQuality( Options.Quality );
+	self:SetQuestsWatched( Options.QuestsWatched );
 	for Type in pairs( self.Types ) do
 		self:UnpackType( Type, Options[ Type ] or {} );
 	end
@@ -86,7 +87,10 @@ function me:PackType ( Type )
 end
 --- @return A table representing active settings.
 function me:Pack ()
-	local Options = { Quality = self:GetQuality(); };
+	local Options = {
+		Quality = self:GetQuality();
+		QuestsWatched = self:GetQuestsWatched();
+	};
 	for Type in pairs( self.Types ) do
 		Options[ Type ] = self:PackType( Type );
 	end
@@ -137,6 +141,21 @@ end
 --- @return A string identifier for this blob type's style.
 function me:GetTypeStyle ( Type )
 	return self.Types[ Type ].Style;
+end
+
+local QuestsWatched;
+--- Enables or disables showing only tracked quest blobs.
+function me:SetQuestsWatched ( Watched )
+	Watched = not not Watched; -- Default to false if nil
+	if ( QuestsWatched ~= Watched ) then
+		QuestsWatched = Watched;
+		self.Callbacks:Fire( "MiniBlobs_QuestsWatched", Watched );
+		return true;
+	end
+end
+--- @return True if only watched quests are set to show.
+function me:GetQuestsWatched ()
+	return QuestsWatched;
 end
 
 local BlobQuality;
