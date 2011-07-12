@@ -24,7 +24,7 @@ end
 -- @see _Corpse.BuildCorpseTooltip
 function me.GetBattlefieldInfo ( Name )
 	for Index = 1, GetNumBattlefieldScores() do
-		local NameBG, _, _, _, _, Faction, _, Race, Class = GetBattlefieldScore( Index );
+		local NameBG, _, _, _, _, Faction, _, Class = GetBattlefieldScore( Index );
 		NameBG = NameBG:match( "^[^-]+" ); -- Discard server name
 
 		if ( Name == NameBG ) then
