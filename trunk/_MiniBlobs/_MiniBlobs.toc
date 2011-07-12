@@ -2,9 +2,11 @@
 ## Title: _|cffCCCC88MiniBlobs|r
 ## Notes: Puts quest POI regions and archaeology digsites into your minimap.
 ## Notes-frFR: Affiche les points d’intérêt des quêtes et les sites de fouilles archéologiques sur votre minicarte.
+## Notes-zhTW: 放置任務地點還有考古挖掘地點到你的小地圖中
 ## Author: Saiket
 ## X-Credits-frFR: Localization: Arcueild
-## X-Credits-koKR: Localization: Sayclub
+## X-Credits-koKR: Localization: Sayclub, san0713
+## X-Credits-zhTW: Localization: BNSSNB
 ## Version: 4.2.0.2
 ## X-Date: 2011-07-12
 ## X-Category: Map
@@ -14,7 +16,7 @@
 ## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:MiniBlobs
 ## X-WoWI-ID: 19883
 ## X-Curse-Project-ID: miniblobs
-## X-Localizations: enUS, frFR, koKR
+## X-Localizations: enUS, frFR, koKR, zhTW
 ## X-CompatibleLocales: deDE, enUS, esES, esMX, frFR, koKR, ruRU, zhCN, zhTW
 ## SavedVariablesPerCharacter: _MiniBlobsOptionsCharacter
 ## OptionalDeps: Carbonite
