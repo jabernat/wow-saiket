@@ -73,6 +73,7 @@ end
 function me:Unpack ( Options )
 	self:SetQuality( Options.Quality );
 	self:SetQuestsWatched( Options.QuestsWatched );
+	self:SetQuestsSelected( Options.QuestsSelected );
 	for Type in pairs( self.Types ) do
 		self:UnpackType( Type, Options[ Type ] or {} );
 	end
@@ -90,6 +91,7 @@ function me:Pack ()
 	local Options = {
 		Quality = self:GetQuality();
 		QuestsWatched = self:GetQuestsWatched();
+		QuestsSelected = self:GetQuestsSelected();
 	};
 	for Type in pairs( self.Types ) do
 		Options[ Type ] = self:PackType( Type );
@@ -156,6 +158,21 @@ end
 --- @return True if only watched quests are set to show.
 function me:GetQuestsWatched ()
 	return QuestsWatched;
+end
+
+local QuestsSelected;
+--- Enables or disables showing only the selected tracked quest blob.
+function me:SetQuestsSelected ( Selected )
+	Selected = not not Selected; -- Default to false if nil
+	if ( QuestsSelected ~= Selected ) then
+		QuestsSelected = Selected;
+		self.Callbacks:Fire( "MiniBlobs_QuestsSelected", Selected );
+		return true;
+	end
+end
+--- @return True if only the selected watched quest is set to show.
+function me:GetQuestsSelected ()
+	return QuestsSelected;
 end
 
 local BlobQuality;
