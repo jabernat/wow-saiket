@@ -36,8 +36,18 @@ select( 2, ... ).L = setmetatable( {
 		[ 50138 ] = "Karoma",
 		[ 50154 ] = "Madexx",
 		[ 50159 ] = "Sambas",
+		[ 50815 ] = "Skarr",
+		[ 50959 ] = "Karkin",
 		[ 51071 ] = "Captain Florence",
 		[ 51079 ] = "Captain Foulwind",
+		[ 54318 ] = "Ankha",
+		[ 54319 ] = "Magria",
+		[ 54320 ] = "Ban'thalos",
+		[ 54321 ] = "Solix",
+		[ 54322 ] = "Deth'tilac",
+		[ 54323 ] = "Kirix",
+		[ 54324 ] = "Skitterflame",
+		[ 54338 ] = "Anthriss",
 	};
 
 	CONFIG_ALPHA = "Alpha",
