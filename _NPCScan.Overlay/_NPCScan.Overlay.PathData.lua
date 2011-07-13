@@ -21,9 +21,9 @@ OËàUÉ¶âM5ÕR0;97–\
 	};
 	[ 475 ] = { -- Blade's Edge Mountains
 		-- Hemathion
-		[ 18692 ] = "J’¢nM] hO5¢O5¢ST´ÖL»ÚL»ÚHè¹WFRªáFRªáFý¦âJ’¢nJ’¢nO5¢L»ÚL»ÚFRªáJ’¢nIº€ëJûsOØoùOØoùQ°r3P¾|6RTÑUÉ…ŽU÷iU÷iQ‘ÿJŒ…ÉJŒ…ÉIº€ëOØoùP¾|6RTÑU÷iJŒ…ÉOØoùP¾|6P¾|6U÷iJŒ…É";
+		[ 18692 ] = "JÇŸùM]¡£Q|±–Q|±–Pv¹ÀNŠ»<NŠ»<JÀ¸kFRªáFRªáGf¤¼JÇŸùJÇŸùQ|±–NŠ»<NŠ»<FRªáJÇŸùK~uIõp L]m5L]m5R‚u”O±{O\r€åT÷‡´U%‹¹U%‹¹R’MN¿¾Pi‰JÀƒIºbKdxÕK~uL]m5L]m5O±{Næ~\\U%‹¹N¿¾PU‹¬Pi‰IºbKdxÕKdxÕL]m5Næ~\\U%‹¹PU‹¬Pi‰KdxÕNæ~\\O\r€åO\r€åU%‹¹Pi‰O\r€åPi‰KdxÕ";
 		-- Morcrush
-		[ 18690 ] = "˜r7Âœô1–Ÿ3ZŸ3Z ò9lŸ=Æ›ÓA™™C½–A:–A:–>;˜r7Â˜r7ÂŸ3ZŸ=ÆŸ=Æ›ÓA–A:Ÿ=Æ–A:˜r7Â­BÃZ«¬£®OŸ4®OŸ4±-¢²¯Â¢²¯Â¢°Å®­BÃZ®OŸ4²¯Â¢­BÃZ ÿ‰ £ŒV£•‹\"µÖe?¶K¹¸ÁC¸ÁC½Š;~Áñ9 Ç>:7Ì\"E‡ÉáG€¸“MB¸Xf¶ÈiD²½k~«‚©¤ãŽŠ¤ãŽŠ ÿ‰£•‹\"Ç>:7ÉáG€Åã=w¤ãŽŠ£•‹\"¨è€°Áñ9 Ç>:7Åã=w²½k~¤ãŽŠ¨è€°Áñ9 Åã=wÂ=²½k~¨è€°± hyÁñ9 Â=¾ƒ>²¶ÈiD²½k~± hy¸ÁCÁñ9 ¾ƒ>²¶ÈiD± hyµÖe?¸ÁC¾ƒ>²º¬Eð¸“MB¶ÈiDµÖe?¸ÁCº¬Eð¸“MBµÖe?¸ÁC¸“MB";
+		[ 18690 ] = "˜r7Âœô1–Ÿ3ZŸ3Z ò9lŸ=Æ›ÓA™™C½–A:–A:–>;˜r7Â˜r7ÂŸ3ZŸ=ÆŸ=Æ›ÓA–A:Ÿ=Æ–A:˜r7Â­¿[ªÚ¥È­I¢•­I¢•¯ò¤ã²¾U²¾U¯åÁa­¿[­I¢•²¾U­¿[ÀUÖ±Xü­ÒUã­ÒUã­óMæ¯ÑKk¿±9QÅš9èÊÓ@|ÊÓ@|ÊJO¤ÆÎO'±hS@¿òPbÀUÖÊÓ@|ÆÎO'Ç*Bñ±hS@ÀUÖ­ÒUãÊÓ@|Ç*BñÄÜ?±[PU±hS@­ÒUã¿±9QÊÓ@|ÄÜ?±[PU­ÒUã¯ÑKk¿±9QÄÜ?Á@?5½!L]±[PU¯ÑKk»6Fé¿±9QÁ@?5½!L]¯ÑKk»6Fé»6FéÁ@?5½!L]ž!Ø›PŠÍ§§xe­Òw¡³ãfÜ·liû·liû°–}O©’~Š©’~Šž!Ø§§xe­Òw¡·liû©’~Š§§xe­Òw¡©’~Š";
 		-- Speaker Mar'grom
 		[ 18693 ] = "e¼‚ëi=zŒmàxïmàxïoÅ|o4‰­o4‰­lÓ‘nfÕ•zfÕ•zdê“e¼‚ëe¼‚ëmàxïo4‰­o4‰­fÕ•ze¼‚ë\\BëË?¸•‡K•‡K•ðQ4Žæ`vŽæ`vŒI]/’P’ML¹\\Bë•‡K•‡KŽæ`v’P•‡K’P’ML¹¢¢/—¥€,Ó¨¦/(¨¦/(¯@.­—F\
 ­—F\
@@ -68,11 +68,7 @@ n}ƒqoƒ9jõ";
 ½O²øÀA´Ï¸Q¹r»wµ\
 ½O´Ï¸Q";
 		-- Tukemuth
-		[ 32400 ] = "šPRþ(UF–ýj	Iyûœ‹l¿¢&\\­—N±­žW§©QY ©QY ©Nv¬Hš¬Hš°E¼³ÝHK³ÝHK·LŸ·rTZ·rTZµ®X®ù\\C¯rGµ~\\µÖˆ^µÖˆ^­Oªš²t€Þ¬žuª~k~ o£SŠ0 o–´ o–´œ¿ž±˜§Ÿå˜§Ÿå”,™Í–¡‘[”ÉŽ¾–¡‘[”,™Í‘‰7ŠWš¦‡“˜X‡“˜XŽÙ„z“,yx“,yx“n¸“©h7“©h7šPRþ–ýj	­—N±©QY ¬HšµÖˆ^ªš²Z†€²t€Þª~k~¨Ôb× o–´˜§Ÿå–¡‘[”‡‰e”ÉŽ¾”,™Í‘‰7‡“˜X“,yx“,yx“©h7–ýj	¯ÿKx­—N±¬HšµÖˆ^²Z†€²t€Þ o–´–¡‘[™³’½”‡‰e”,™Í‘‰7‘‰7“,yx–ýj	¯ÿKx¬Hš³ÝHK¯rGµÖˆ^²t€Þ o–´™³’½œ‹‘‰–\
-…+”‡‰e‘‰7‘‰7–ýj	–>ph³ŽO'¯ÿKx³ÝHK«ú`ì¯rG²t€Þ o–´œ‹‘‰ž\\—–\
-…+‘‰7–>ph³ŽO'³ÝHK·rTZ«ú`ì²t€Þ¨Ôb× o o–´ž\\—–\
-…+–>ph–âyº³@S,³ŽO'·rTZ®ù\\C«ú`ì¨Ôb× ož\\—óˆ*˜Ôƒ¯–\
-…+–âyº­žW§³@S,·rTZ®ù\\C¨Ôb×¦»`U oóˆ*œC„¢œC„¢˜Ôƒ¯–âyº©QY ­žW§·rTZ·rTZ®ù\\C¦»`UœC„¢–âyº™=|‹©QY ·rTZ¦»`UœC„¢™=|‹Iyû¢&\\©QY ¦»`U oœC„¢Iyû¢&\\¦»`U¤‡` oIyû¢&\\¢&\\¤‡` o";
+		[ 32400 ] = "pN¤‘Sn–ýj	–ýj	š0jxœ‹l¿­—N±­žW§©QY ©QY ©Nv¬Hš¬Hš°E¼³ÝHK³ÝHK·LŸ·rTZ·rTZµ®X®ù\\C¯rGµ~\\µÖˆ^µÖˆ^­Oªš²t€Þ¬žuª~k~ o£SŠ0 o–´ o–´œ¿ž±˜§Ÿå˜§Ÿå”,™Í–¡‘[—8q&—Ev‡–”{”ýŽp–¡‘[”,™Í‘‰7ŠWš¦‡“˜X“,yx“n¸“©h7š6OØ—€KÓ™kGü­—N±©QY ¬HšµÖˆ^ªš²Z†€²t€Þª~k~¨Ôb× o–´˜§Ÿå–¡‘[—8q&–”{“•ƒS“•ƒS”ýŽp”,™Í‘‰7‡“˜X“,yx“,yx“©h7šPRþš6OØ™kGüpN¤¯ÿKx­—N±¬HšµÖˆ^²Z†€²t€Þ o–´–¡‘[™³’½“•ƒS”,™Í‘‰7‘‰7“,yxšPRþšPRþš6OØpN¤¯ÿKx¬Hš³ÝHK¯rGµÖˆ^²t€Þ o–´™³’½œ‹‘‰—8q&“•ƒS‘‰7šPRþpN¤–ýj	³ŽO'¯ÿKx³ÝHK«ú`ì¯rG²t€Þ o–´œ‹‘‰ž\\—‘‰7šPRþ–ýj	³ŽO'³ÝHK·rTZ«ú`ì²t€Þ¨Ôb× o–´ž\\—Ÿ.ˆy—8q&‘‰7–ýj	³@S,³ŽO'·rTZ®ù\\C«ú`ì¨Ôb× o o–´Ÿ.ˆy™ŒoŠ—8q&–ýj	­žW§³@S,·rTZ®ù\\C¨Ôb×¦»`U oŸ.ˆyœàsÃœàsÃ™ŒoŠ–ýj	©QY ­žW§·rTZ·rTZ®ù\\C¦»`U¤‡` oœàsÃœàsÃ–ýj	œ‹l¿©QY ·rTZ¦»`U¤‡`œàsÃœ‹l¿¢&\\©QY ¦»`U¤‡`œ‹l¿¢&\\¢&\\¦»`U¤‡`";
 	};
 	[ 490 ] = { -- Grizzly Hills
 		-- Arcturis
@@ -118,11 +114,40 @@ n}ƒqoƒ9jõ";
 		-- Lady LaLa
 		[ 49913 ] = "bÆö‘NÃ9£þ»à£þ»à¥E½c¤Ý¿ì¤Ý¿ì“¶ÌàÌ/Ì/bÆö£þ»à£þ»à¤Ý¿ìÌ/—e´™D±n›d²Ð›d²Ð›à¶§™Ô¸º™Ô¸º—“·R—e´›d²Ð™Ô¸º—e´";
 	};
+	[ 795 ] = { -- Molten Front
+		-- Anthriss
+		[ 54338 ] = "‰cŠW^«Œ«]žŒ«]ž^ž:b©:b©;fRŒ‘hŒ‘hŠkf‡‰c‰cŒ«]ž:b©:b©Œ‘h‰c";
+		-- Deth'tilac
+		[ 54322 ] = "§®Ò¨Îªd´¼¤¹á›Æ¼B“›¾ª”¾ª”»‹¨Œ¶sµð¶sµð° ½.ª¼æª¼æ§®Ò´¼¤´¼¤¹á›Æ¾ª”¾ª”¶sµðª¼æ´¼¤¾ª”ª¼æ";
+		-- Karkin
+		[ 50959 ] = "]¿\\ô[\"Yr]«Uz]«Uz`[YK]¿\\ô";
+		-- Kirix
+		[ 54323 ] = "E¼˜ÛFUMjŒ/MjŒ/S¼“gKáš¬JD¶»RÊ¿NßÂ@NßÂ@KJÁnG\
+º˜C¹™?B¹º>³g@[¬p=j§l=úßE¼˜ÛMjŒ/Káš¬G†¯ìJD¶»NßÂ@G\
+º˜C¹™>³g@[¬p=úßB½²B½²E¼˜ÛKáš¬G†¯ìNßÂ@G\
+º˜G\
+º˜>³g@[¬p@[¬pB½²Káš¬F€¨kG†¯ìG\
+º˜@[¬pKáš¬GY¢œF€¨kG\
+º˜@[¬pGY¢œF€¨k@[¬p";
+		-- Skarr
+		[ 50815 ] = "^.]˜[’Z^V^V`ËYî^.]˜Rë†§Um‚ˆX†8X†8U”‰ÍRë†§";
+		-- Skitterflame
+		[ 54324 ] = ".\\|¥1:x4{Í4{Í14€:.\\|¥";
+		-- Solix
+		[ 54321 ] = "<”µ :’{¢Ý”ð¢Ý”ð¤?™7¢Ýw¢Ýw AŸßBŠBŠ›à™^<”µ<”µ¢Ý”ð¢Ýw¢ÝwBŠ<”µ";
+	};
 	[ 606 ] = { -- Mount Hyjal
+		-- Ankha
+		[ 54318 ] = "D›„ÐE¯€bJx„9P‰;Xy„•[…Š[…Š^v‡\
+fE‡fE‡k6‰õk\"—k\"—eµŽËZ^Ž¸P|„IÛˆ7D›„Ð[…ŠfE‡k\"—P|„D›„ÐJx„9[…Šk\"—Z^Ž¸P|„Jx„9P‰;[…ŠZ^Ž¸VöˆÎVöˆÎP|„P‰;P‰;[…ŠVöˆÎ";
+		-- Ban'thalos
+		[ 54320 ] = "BÊ™#E¯–ÂHR˜rHR˜rI´ÒH“¢×H“¢×Em¤ÉB@¢œB@¢œ@·óBÊ™#BÊ™#HR˜rH“¢×H“¢×B@¢œBÊ™#";
 		-- Blazewing
 		[ 50057 ] = "kx–lí’{oO’ÊŸ“Ž¡ë§“‡>§“‡>®ƒ„ã°ë‡l°ë‡l±¶‹²¯„£t‘: ª–+œô˜^œô˜^˜Ô–´–Â“t~–Â“t˜Ô–´y—tÉ›CoßžBoßžBlôkx–kx–oO’ÊtŽ—üŸ“Ž§“‡>°ë‡l°ë‡l¯„¨²œô˜^–Â“tŠ~˜Ô–´~O“~O“y—oßžBoßžBkx–tŽ—üŸ“Ž°ë‡l¨²z=“~~O“~O“oßžBtŽ—üŸ“Ž¨²£t‘:~O“tŽ—üw•Žœà•EŸ“Ž£t‘:z=“~O“w•Žœà•E£t‘:œô˜^{cz=“w•Ž™’“Ãœà•Eœô˜^{cw•ŽyD‹q™’“Ãœô˜^Š:‡{cyD‹q‘T‡†™’“ÃŠ:‡yD‹q€Þƒê€Þƒê‘T‡†Š€ÞƒêŠ:‡";
 		-- Garr
 		[ 50056 ] = "cÉg+ËÓhÇÒFhÇÒFfzÖ>cÖÕcÖÕ`¾Óµ`ÑÌŠ`ÑÌŠ\\ô¹Ÿ_Š¸rcÉhÇÒFcÖÕcÖÕ`ÑÌŠ_Š¸rcÉcÖÕ_Š¸r";
+		-- Magria
+		[ 54319 ] = "E…sF%Jî„ÝPÿßXï…8[ûŠ¦[ûŠ¦^ì‡®f»ˆ1f»ˆ1k¬Š™k˜Ž;k˜Ž;f+oZÔ\\Pò„¼JQˆÛE…s[ûŠ¦f»ˆ1k˜Ž;Pò„¼E…sJî„Ý[ûŠ¦k˜Ž;ZÔ\\Pò„¼Jî„ÝPÿß[ûŠ¦ZÔ\\Wl‰rWl‰rPò„¼PÿßPÿß[ûŠ¦Wl‰r";
 		-- Terrorpene
 		[ 50058 ] = "Œc¾\r½‘’¶¾;’¶¾;”?Å’&ÆEŒÑœ…ÉÙ6„gÖ\
 ‚@»í~.º’~;¶§~;¶§‚Ð·üŒc¾’¶¾;’&ÆE°Á:ŒÑœ„gÖ\
