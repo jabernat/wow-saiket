@@ -84,6 +84,12 @@ do
 	hooksecurefunc( "AddQuestWatch", UpdateQuestsWatched );
 	hooksecurefunc( "RemoveQuestWatch", UpdateQuestsWatched );
 end
+--- Hook to force a repaint when a watched quest is selected.
+hooksecurefunc( "SetSuperTrackedQuestID", function ()
+	if ( BlobTypeData[ "Quests" ].Enabled and _MiniBlobs:GetQuestsSelected() ) then
+		return me:Update();
+	end
+end );
 --- Force a repaint when the minimap swaps between indoor and outdoor zoom.
 function me:MINIMAP_UPDATE_ZOOM ()
 	local Zoom;
@@ -391,6 +397,7 @@ do
 	local GetPlayerMapPosition = GetPlayerMapPosition;
 	local GetQuestLogTitle = GetQuestLogTitle;
 	local IsQuestWatched = IsQuestWatched;
+	local GetSuperTrackedQuestID = GetSuperTrackedQuestID;
 	local QuestMapUpdateAllQuests = QuestMapUpdateAllQuests;
 	local QuestPOIGetQuestIDByVisibleIndex = QuestPOIGetQuestIDByVisibleIndex;
 
@@ -468,9 +475,12 @@ do
 		if ( BlobTypeData[ "Quests" ].Enabled ) then
 			local BlobData = BlobTypeData[ "Quests" ];
 			local WatchedOnly = _MiniBlobs:GetQuestsWatched();
+			local SelectedOnly = _MiniBlobs:GetQuestsSelected();
 			for Index = 1, QuestMapUpdateAllQuests() do
 				QuestID, QuestIndex = QuestPOIGetQuestIDByVisibleIndex( Index );
-				if ( not WatchedOnly or IsQuestWatched( QuestIndex ) ) then
+				if ( ( not WatchedOnly or IsQuestWatched( QuestIndex ) )
+					and ( not SelectedOnly or QuestID == GetSuperTrackedQuestID() )
+				) then
 					_, _, _, _, _, _, IsComplete = GetQuestLogTitle( QuestIndex );
 					if ( not IsComplete ) then
 						QuestCount = QuestCount + 1;

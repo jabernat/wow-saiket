@@ -67,6 +67,12 @@ function me:QuestsWatchedOnClick ()
 	PlaySound( Watched and "igMainMenuOptionCheckBoxOn" or "igMainMenuOptionCheckBoxOff" );
 	return _MiniBlobs:SetQuestsWatched( Watched );
 end
+--- Toggles showing only the selected quest when this checkbox is clicked.
+function me:QuestsSelectedOnClick ()
+	local Selected = not not self:GetChecked();
+	PlaySound( Selected and "igMainMenuOptionCheckBoxOn" or "igMainMenuOptionCheckBoxOff" );
+	return _MiniBlobs:SetQuestsSelected( Selected );
+end
 
 
 -- Adjust controls to match settings when changed.
@@ -80,12 +86,14 @@ function me:MiniBlobs_TypeEnabled ( _, Type, Enabled )
 		BlizzardOptionsPanel_Slider_Enable( Container.Alpha );
 		if ( Type == "Quests" ) then
 			BlizzardOptionsPanel_CheckButton_Enable( Container.Watched );
+			BlizzardOptionsPanel_CheckButton_Enable( Container.Selected );
 		end
 	else
 		UIDropDownMenu_DisableDropDown( Container.Style );
 		BlizzardOptionsPanel_Slider_Disable( Container.Alpha );
 		if ( Type == "Quests" ) then
 			BlizzardOptionsPanel_CheckButton_Disable( Container.Watched );
+			BlizzardOptionsPanel_CheckButton_Disable( Container.Selected );
 		end
 	end
 	return Container.Enabled:SetChecked( Enabled );
@@ -98,6 +106,9 @@ function me:MiniBlobs_TypeStyle ( _, Type, Style )
 end
 function me:MiniBlobs_QuestsWatched ( _, Watched )
 	return self.Types[ "Quests" ].Watched:SetChecked( Watched );
+end
+function me:MiniBlobs_QuestsSelected ( _, Selected )
+	return self.Types[ "Quests" ].Selected:SetChecked( Selected );
 end
 
 
@@ -224,7 +235,20 @@ for _, Type in ipairs( Order ) do
 		Label:SetText( L.QUESTS_WATCHED );
 		Watched.tooltipText = L.QUESTS_WATCHED_DESC;
 		Watched:SetHitRectInsets( 4, 4 - Label:GetStringWidth(), 4, 4 );
-		Container:SetHeight( Container:GetHeight() + Watched:GetHeight() + 2 );
+
+		local Selected = CreateFrame( "CheckButton", "$parentSelected", Container, "UICheckButtonTemplate" );
+		Container.Selected = Selected;
+		Selected:SetSize( 26, 26 );
+		Selected:SetPoint( "TOPLEFT", Watched, "BOTTOMLEFT", 0, -2 );
+		Selected:SetScript( "OnClick", me.QuestsSelectedOnClick );
+		Selected:SetScript( "OnEnter", me.ControlOnEnter );
+		Selected:SetScript( "OnLeave", GameTooltip_Hide );
+		local Label = _G[ Selected:GetName().."Text" ];
+		Label:SetText( L.QUESTS_SELECTED );
+		Selected.tooltipText = L.QUESTS_SELECTED_DESC;
+		Selected:SetHitRectInsets( 4, 4 - Label:GetStringWidth(), 4, 4 );
+
+		Container:SetHeight( Container:GetHeight() + Watched:GetHeight() + Selected:GetHeight() + 4 );
 	end
 	FrameLast = Container;
 end
@@ -235,5 +259,6 @@ _MiniBlobs.RegisterCallback( me, "MiniBlobs_TypeEnabled" );
 _MiniBlobs.RegisterCallback( me, "MiniBlobs_TypeAlpha" );
 _MiniBlobs.RegisterCallback( me, "MiniBlobs_TypeStyle" );
 _MiniBlobs.RegisterCallback( me, "MiniBlobs_QuestsWatched" );
+_MiniBlobs.RegisterCallback( me, "MiniBlobs_QuestsSelected" );
 
 InterfaceOptions_AddCategory( me );
