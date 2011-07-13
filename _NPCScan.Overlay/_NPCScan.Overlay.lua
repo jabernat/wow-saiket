@@ -53,6 +53,10 @@ me.Colors = {
 	GREEN_FONT_COLOR,
 	RAID_CLASS_COLORS.DRUID,
 	RAID_CLASS_COLORS.PALADIN,
+	UnitPopupButtons.RAID_TARGET_1.color,
+	UnitPopupButtons.RAID_TARGET_5.color,
+	UnitPopupButtons.RAID_TARGET_6.color,
+	UnitPopupButtons.RAID_TARGET_3.color,
 };
 
 me.DetectionRadius = 100; -- yards
