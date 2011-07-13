@@ -62,26 +62,22 @@ function me:WORLD_MAP_UPDATE ()
 end
 --- Re-draws archaeology blobs when they get added or removed.
 function me:ARTIFACT_DIG_SITE_UPDATED ()
-	if ( _MiniBlobs:GetTypeEnabled( "Archaeology" ) ) then
-		return self:Update();
-	end
+	return self:Update();
 end
 --- Re-draws quest blobs when they get added or removed.
 function me:QUEST_POI_UPDATE ()
-	if ( _MiniBlobs:GetTypeEnabled( "Quests" ) ) then
-		return self:Update();
-	end
+	return self:Update();
 end
 --- Hides completed quest blobs and updates blobs when objectives change.
 function me:UNIT_QUEST_LOG_CHANGED ( _, UnitID )
-	if ( UnitID == "player" and _MiniBlobs:GetTypeEnabled( "Quests" ) ) then
+	if ( UnitID == "player" ) then
 		return self:Update();
 	end
 end
 do
 	--- Hook to force a repaint when a quest watch is added or removed.
 	local function UpdateQuestsWatched ()
-		if ( _MiniBlobs:GetTypeEnabled( "Quests" ) and _MiniBlobs:GetQuestsWatched() ) then
+		if ( BlobTypeData[ "Quests" ].Enabled and _MiniBlobs:GetQuestsWatched() ) then
 			return me:Update();
 		end
 	end
@@ -157,7 +153,7 @@ do
 			end
 			UpdateBlobStyle( Blob, Style );
 		end
-		if ( _MiniBlobs:GetTypeEnabled( Type ) ) then
+		if ( BlobTypeData[ Type ].Enabled ) then
 			return self:Update();
 		end
 	end
@@ -174,7 +170,7 @@ do
 			end
 			UpdateBlobAlpha( Blob, Alpha );
 		end
-		if ( _MiniBlobs:GetTypeEnabled( Type ) ) then
+		if ( BlobTypeData[ Type ].Enabled ) then
 			return self:Update();
 		end
 	end
@@ -198,11 +194,32 @@ do
 			return Blob:Hide();
 		end
 	end
+	--- Handler to setup tracking of this type's blob data.
+	function BlobTypeData.Archaeology.OnEnable ()
+		me:RegisterEvent( "ARTIFACT_DIG_SITE_UPDATED" );
+	end
+	function BlobTypeData.Archaeology.OnDisable ()
+		me:UnregisterEvent( "ARTIFACT_DIG_SITE_UPDATED" );
+	end
+	function BlobTypeData.Quests.OnEnable ()
+		me:RegisterEvent( "QUEST_POI_UPDATE" );
+		me:RegisterEvent( "UNIT_QUEST_LOG_CHANGED" );
+		_MiniBlobs.RegisterCallback( me, "MiniBlobs_QuestsWatched", "Update" );
+		_MiniBlobs.RegisterCallback( me, "MiniBlobs_QuestsSelected", "Update" );
+	end
+	function BlobTypeData.Quests.OnDisable ()
+		me:UnregisterEvent( "QUEST_POI_UPDATE" );
+		me:UnregisterEvent( "UNIT_QUEST_LOG_CHANGED" );
+		_MiniBlobs.UnregisterCallback( me, "MiniBlobs_QuestsWatched" );
+		_MiniBlobs.UnregisterCallback( me, "MiniBlobs_QuestsSelected" );
+	end
 	--- Creates or hides blob frames when settings change.
 	function me:MiniBlobs_TypeEnabled ( _, Type, Enabled )
 		if ( InCombatLockdown() ) then -- Queue to update after combat
 			TypeEnabledQueue[ Type ] = Enabled;
 		else
+			BlobTypeData[ Type ].Enabled = Enabled; -- Keep track of active enabled status separately
+			BlobTypeData[ Type ][ Enabled and "OnEnable" or "OnDisable" ]();
 			for _, Column in ipairs( BlobAnchor ) do
 				UpdateTypeEnabled( Column, Type, Enabled );
 			end
@@ -220,16 +237,10 @@ do
 			Column:SetScrollChild( CreateFrame( "Frame" ) );
 			-- Add enabled blobs
 			for Type in pairs( BlobTypeData ) do
-				UpdateTypeEnabled( Column, Type, _MiniBlobs:GetTypeEnabled( Type ) );
+				UpdateTypeEnabled( Column, Type, BlobTypeData[ Type ].Enabled );
 			end
 		end
 		return Column;
-	end
-end
---- Shows only watched quests or all quests when settings change.
-function me:MiniBlobs_QuestsWatched ()
-	if ( _MiniBlobs:GetTypeEnabled( "Quests" ) ) then
-		return self:Update();
 	end
 end
 
@@ -302,7 +313,7 @@ do
 		if ( BlobAnchor:IsVisible() ) then
 			for Index = 1, BlobAnchor.NumVisible do
 				for Type, TypeData in pairs( BlobTypeData ) do
-					if ( _MiniBlobs:GetTypeEnabled( Type ) ) then
+					if ( BlobTypeData[ Type ].Enabled ) then
 						local Blob = BlobAnchor[ Index ][ Type ];
 						Blob:DrawNone();
 						for Index = 1, #TypeData do
@@ -444,7 +455,7 @@ do
 
 		-- Cache blob data IDs
 		DigSiteCount, QuestCount = 0, 0;
-		if ( _MiniBlobs:GetTypeEnabled( "Archaeology" ) ) then
+		if ( BlobTypeData[ "Archaeology" ].Enabled ) then
 			local BlobData = BlobTypeData[ "Archaeology" ];
 			DigSiteCount = ArchaeologyMapUpdateAll();
 			for Index = 1, DigSiteCount do
@@ -454,7 +465,7 @@ do
 				BlobData[ Index ] = nil;
 			end
 		end
-		if ( _MiniBlobs:GetTypeEnabled( "Quests" ) ) then
+		if ( BlobTypeData[ "Quests" ].Enabled ) then
 			local BlobData = BlobTypeData[ "Quests" ];
 			local WatchedOnly = _MiniBlobs:GetQuestsWatched();
 			for Index = 1, QuestMapUpdateAllQuests() do
@@ -503,15 +514,11 @@ me:RegisterEvent( "PLAYER_LOGIN" );
 me:RegisterEvent( "PLAYER_REGEN_ENABLED" );
 me:RegisterEvent( "PLAYER_REGEN_DISABLED" );
 me:RegisterEvent( "WORLD_MAP_UPDATE" );
-me:RegisterEvent( "ARTIFACT_DIG_SITE_UPDATED" );
-me:RegisterEvent( "QUEST_POI_UPDATE" );
-me:RegisterEvent( "UNIT_QUEST_LOG_CHANGED" );
 me:RegisterEvent( "MINIMAP_UPDATE_ZOOM" );
 _MiniBlobs.RegisterCallback( me, "MiniBlobs_Quality" );
 _MiniBlobs.RegisterCallback( me, "MiniBlobs_TypeEnabled" );
 _MiniBlobs.RegisterCallback( me, "MiniBlobs_TypeAlpha" );
 _MiniBlobs.RegisterCallback( me, "MiniBlobs_TypeStyle" );
-_MiniBlobs.RegisterCallback( me, "MiniBlobs_QuestsWatched" );
 
 -- Raise round minimap border over top of the overlays to hide jagged edges
 local Level = Minimap:GetFrameLevel() + 3; -- Leave room for scrollframes and blobs
