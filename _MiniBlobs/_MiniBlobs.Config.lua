@@ -61,17 +61,23 @@ do
 		end
 	end
 end
---- Toggles showing only watched quests when this checkbox is clicked.
-function me:QuestsWatchedOnClick ()
-	local Watched = not not self:GetChecked();
-	PlaySound( Watched and "igMainMenuOptionCheckBoxOn" or "igMainMenuOptionCheckBoxOff" );
-	return _MiniBlobs:SetQuestsWatched( Watched );
-end
---- Toggles showing only the selected quest when this checkbox is clicked.
-function me:QuestsSelectedOnClick ()
-	local Selected = not not self:GetChecked();
-	PlaySound( Selected and "igMainMenuOptionCheckBoxOn" or "igMainMenuOptionCheckBoxOff" );
-	return _MiniBlobs:SetQuestsSelected( Selected );
+do
+	--- Sets quest filter to the selected menu option.
+	local function OnSelect ( self, Filter )
+		return _MiniBlobs:SetQuestsFilter( Filter );
+	end
+	local Order = { "NONE", "WATCHED", "SELECTED" };
+	--- Shows a dropdown list of available quest filter options.
+	function me:QuestsFilterInitialize ()
+		local FilterActive = _MiniBlobs:GetQuestsFilter();
+		local Info = UIDropDownMenu_CreateInfo();
+		Info.func = OnSelect;
+		for _, Filter in ipairs( Order ) do
+			Info.text, Info.checked = L.QuestsFilters[ Filter ], Filter == FilterActive;
+			Info.arg1 = Filter;
+			UIDropDownMenu_AddButton( Info );
+		end
+	end
 end
 
 
@@ -85,15 +91,13 @@ function me:MiniBlobs_TypeEnabled ( _, Type, Enabled )
 		UIDropDownMenu_EnableDropDown( Container.Style );
 		BlizzardOptionsPanel_Slider_Enable( Container.Alpha );
 		if ( Type == "Quests" ) then
-			BlizzardOptionsPanel_CheckButton_Enable( Container.Watched );
-			BlizzardOptionsPanel_CheckButton_Enable( Container.Selected );
+			UIDropDownMenu_EnableDropDown( Container.Filter );
 		end
 	else
 		UIDropDownMenu_DisableDropDown( Container.Style );
 		BlizzardOptionsPanel_Slider_Disable( Container.Alpha );
 		if ( Type == "Quests" ) then
-			BlizzardOptionsPanel_CheckButton_Disable( Container.Watched );
-			BlizzardOptionsPanel_CheckButton_Disable( Container.Selected );
+			UIDropDownMenu_DisableDropDown( Container.Filter );
 		end
 	end
 	return Container.Enabled:SetChecked( Enabled );
@@ -104,11 +108,8 @@ end
 function me:MiniBlobs_TypeStyle ( _, Type, Style )
 	return UIDropDownMenu_SetText( self.Types[ Type ].Style, L.Styles[ Style ] );
 end
-function me:MiniBlobs_QuestsWatched ( _, Watched )
-	return self.Types[ "Quests" ].Watched:SetChecked( Watched );
-end
-function me:MiniBlobs_QuestsSelected ( _, Selected )
-	return self.Types[ "Quests" ].Selected:SetChecked( Selected );
+function me:MiniBlobs_QuestsFilter ( _, Filter )
+	return UIDropDownMenu_SetText( self.Types[ "Quests" ].Filter, L.QuestsFilters[ Filter ] );
 end
 
 
@@ -224,31 +225,24 @@ for _, Type in ipairs( Order ) do
 	Container:SetHeight( Style:GetHeight() + Alpha:GetHeight() + 28 );
 	if ( Type == "Quests" ) then
 		-- Quest-specific controls
-		local Watched = CreateFrame( "CheckButton", "$parentWatched", Container, "UICheckButtonTemplate" );
-		Container.Watched = Watched;
-		Watched:SetSize( 26, 26 );
-		Watched:SetPoint( "TOPLEFT", Alpha, "BOTTOMLEFT", 0, -2 );
-		Watched:SetScript( "OnClick", me.QuestsWatchedOnClick );
-		Watched:SetScript( "OnEnter", me.ControlOnEnter );
-		Watched:SetScript( "OnLeave", GameTooltip_Hide );
-		local Label = _G[ Watched:GetName().."Text" ];
-		Label:SetText( L.QUESTS_WATCHED );
-		Watched.tooltipText = L.QUESTS_WATCHED_DESC;
-		Watched:SetHitRectInsets( 4, 4 - Label:GetStringWidth(), 4, 4 );
+		local Filter = CreateFrame( "Frame", "$parentFilter", Container, "UIDropDownMenuTemplate" );
+		Container.Filter = Filter;
+		Filter:SetPoint( "TOP", Alpha, "BOTTOM", 0, -18 );
+		Filter:SetPoint( "LEFT", Style );
+		Filter:SetPoint( "RIGHT", Style );
+		UIDropDownMenu_JustifyText( Filter, "LEFT" );
+		UIDropDownMenu_SetAnchor( Filter, 0, 0, "TOPRIGHT", Filter, "BOTTOMRIGHT" );
+		Filter.initialize = me.QuestsFilterInitialize;
+		_G[ Filter:GetName().."Middle" ]:SetPoint( "RIGHT", -16, 0 );
+		Filter:EnableMouse( true );
+		Filter:SetScript( "OnEnter", me.ControlOnEnter );
+		Filter:SetScript( "OnLeave", GameTooltip_Hide );
+		Filter.tooltipText = L.QUESTS_FILTER_DESC;
+		local Label = Filter:CreateFontString( "$parentLabel", "ARTWORK", "GameFontHighlight" );
+		Label:SetPoint( "BOTTOMLEFT", Filter, "TOPLEFT", 18, -1 );
+		Label:SetText( L.QUESTS_FILTER );
 
-		local Selected = CreateFrame( "CheckButton", "$parentSelected", Container, "UICheckButtonTemplate" );
-		Container.Selected = Selected;
-		Selected:SetSize( 26, 26 );
-		Selected:SetPoint( "TOPLEFT", Watched, "BOTTOMLEFT", 0, -2 );
-		Selected:SetScript( "OnClick", me.QuestsSelectedOnClick );
-		Selected:SetScript( "OnEnter", me.ControlOnEnter );
-		Selected:SetScript( "OnLeave", GameTooltip_Hide );
-		local Label = _G[ Selected:GetName().."Text" ];
-		Label:SetText( L.QUESTS_SELECTED );
-		Selected.tooltipText = L.QUESTS_SELECTED_DESC;
-		Selected:SetHitRectInsets( 4, 4 - Label:GetStringWidth(), 4, 4 );
-
-		Container:SetHeight( Container:GetHeight() + Watched:GetHeight() + Selected:GetHeight() + 4 );
+		Container:SetHeight( Container:GetHeight() + Filter:GetHeight() + 18 );
 	end
 	FrameLast = Container;
 end
@@ -258,7 +252,6 @@ _MiniBlobs.RegisterCallback( me, "MiniBlobs_Quality" );
 _MiniBlobs.RegisterCallback( me, "MiniBlobs_TypeEnabled" );
 _MiniBlobs.RegisterCallback( me, "MiniBlobs_TypeAlpha" );
 _MiniBlobs.RegisterCallback( me, "MiniBlobs_TypeStyle" );
-_MiniBlobs.RegisterCallback( me, "MiniBlobs_QuestsWatched" );
-_MiniBlobs.RegisterCallback( me, "MiniBlobs_QuestsSelected" );
+_MiniBlobs.RegisterCallback( me, "MiniBlobs_QuestsFilter" );
 
 InterfaceOptions_AddCategory( me );
