@@ -77,7 +77,7 @@ end
 do
 	--- Hook to force a repaint when a quest watch is added or removed.
 	local function UpdateQuestsWatched ()
-		if ( BlobTypeData[ "Quests" ].Enabled and _MiniBlobs:GetQuestsWatched() ) then
+		if ( BlobTypeData[ "Quests" ].Enabled and _MiniBlobs:GetQuestsFilter() == "WATCHED" ) then
 			return me:Update();
 		end
 	end
@@ -86,7 +86,7 @@ do
 end
 --- Hook to force a repaint when a watched quest is selected.
 hooksecurefunc( "SetSuperTrackedQuestID", function ()
-	if ( BlobTypeData[ "Quests" ].Enabled and _MiniBlobs:GetQuestsSelected() ) then
+	if ( BlobTypeData[ "Quests" ].Enabled and _MiniBlobs:GetQuestsFilter() == "SELECTED" ) then
 		return me:Update();
 	end
 end );
@@ -210,14 +210,12 @@ do
 	function BlobTypeData.Quests.OnEnable ()
 		me:RegisterEvent( "QUEST_POI_UPDATE" );
 		me:RegisterEvent( "UNIT_QUEST_LOG_CHANGED" );
-		_MiniBlobs.RegisterCallback( me, "MiniBlobs_QuestsWatched", "Update" );
-		_MiniBlobs.RegisterCallback( me, "MiniBlobs_QuestsSelected", "Update" );
+		_MiniBlobs.RegisterCallback( me, "MiniBlobs_QuestsFilter", "Update" );
 	end
 	function BlobTypeData.Quests.OnDisable ()
 		me:UnregisterEvent( "QUEST_POI_UPDATE" );
 		me:UnregisterEvent( "UNIT_QUEST_LOG_CHANGED" );
-		_MiniBlobs.UnregisterCallback( me, "MiniBlobs_QuestsWatched" );
-		_MiniBlobs.UnregisterCallback( me, "MiniBlobs_QuestsSelected" );
+		_MiniBlobs.UnregisterCallback( me, "MiniBlobs_QuestsFilter" );
 	end
 	--- Creates or hides blob frames when settings change.
 	function me:MiniBlobs_TypeEnabled ( _, Type, Enabled )
@@ -474,12 +472,12 @@ do
 		end
 		if ( BlobTypeData[ "Quests" ].Enabled ) then
 			local BlobData = BlobTypeData[ "Quests" ];
-			local WatchedOnly = _MiniBlobs:GetQuestsWatched();
-			local SelectedOnly = _MiniBlobs:GetQuestsSelected();
+			local Filter = _MiniBlobs:GetQuestsFilter();
 			for Index = 1, QuestMapUpdateAllQuests() do
 				QuestID, QuestIndex = QuestPOIGetQuestIDByVisibleIndex( Index );
-				if ( ( not WatchedOnly or IsQuestWatched( QuestIndex ) )
-					and ( not SelectedOnly or QuestID == GetSuperTrackedQuestID() )
+				if ( Filter == "NONE"
+					or ( Filter == "WATCHED" and IsQuestWatched( QuestIndex ) )
+					or ( Filter == "SELECTED" and QuestID == GetSuperTrackedQuestID() )
 				) then
 					_, _, _, _, _, _, IsComplete = GetQuestLogTitle( QuestIndex );
 					if ( not IsComplete ) then

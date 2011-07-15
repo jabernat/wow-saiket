@@ -72,8 +72,7 @@ end
 --- Applies settings from storage.
 function me:Unpack ( Options )
 	self:SetQuality( Options.Quality );
-	self:SetQuestsWatched( Options.QuestsWatched );
-	self:SetQuestsSelected( Options.QuestsSelected );
+	self:SetQuestsFilter( Options.QuestsFilter );
 	for Type in pairs( self.Types ) do
 		self:UnpackType( Type, Options[ Type ] or {} );
 	end
@@ -90,8 +89,7 @@ end
 function me:Pack ()
 	local Options = {
 		Quality = self:GetQuality();
-		QuestsWatched = self:GetQuestsWatched();
-		QuestsSelected = self:GetQuestsSelected();
+		QuestsFilter = self:GetQuestsFilter();
 	};
 	for Type in pairs( self.Types ) do
 		Options[ Type ] = self:PackType( Type );
@@ -145,34 +143,28 @@ function me:GetTypeStyle ( Type )
 	return self.Types[ Type ].Style;
 end
 
-local QuestsWatched;
---- Enables or disables showing only tracked quest blobs.
-function me:SetQuestsWatched ( Watched )
-	Watched = not not Watched; -- Default to false if nil
-	if ( QuestsWatched ~= Watched ) then
-		QuestsWatched = Watched;
-		self.Callbacks:Fire( "MiniBlobs_QuestsWatched", Watched );
-		return true;
+do
+	local QuestsFilter;
+	local Values = {
+		NONE = true; -- No filter
+		WATCHED = true; -- Tracked quests only
+		SELECTED = true; -- Selected ("super tracked") quest only
+	};
+	--- Sets which method to filter quest blobs by.
+	-- @param Filter  "NONE", "WATCHED" for tracked quests, or "SELECTED" for super tracked quests.
+	function me:SetQuestsFilter ( Filter )
+		Filter = Filter or "NONE";
+		assert( Values[ Filter ], "Unknown filter type." );
+		if ( QuestsFilter ~= Filter ) then
+			QuestsFilter = Filter;
+			self.Callbacks:Fire( "MiniBlobs_QuestsFilter", Filter );
+			return true;
+		end
 	end
-end
---- @return True if only watched quests are set to show.
-function me:GetQuestsWatched ()
-	return QuestsWatched;
-end
-
-local QuestsSelected;
---- Enables or disables showing only the selected tracked quest blob.
-function me:SetQuestsSelected ( Selected )
-	Selected = not not Selected; -- Default to false if nil
-	if ( QuestsSelected ~= Selected ) then
-		QuestsSelected = Selected;
-		self.Callbacks:Fire( "MiniBlobs_QuestsSelected", Selected );
-		return true;
+	--- @return Current quests filter method.
+	function me:GetQuestsFilter ()
+		return QuestsFilter;
 	end
-end
---- @return True if only the selected watched quest is set to show.
-function me:GetQuestsSelected ()
-	return QuestsSelected;
 end
 
 local BlobQuality;

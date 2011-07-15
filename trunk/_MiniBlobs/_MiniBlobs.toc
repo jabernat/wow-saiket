@@ -8,7 +8,7 @@
 ## X-Credits-koKR: Localization: Sayclub, san0713
 ## X-Credits-zhTW: Localization: BNSSNB
 ## Version: 4.2.0.2
-## X-Date: 2011-07-12
+## X-Date: 2011-07-14
 ## X-Category: Map
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com

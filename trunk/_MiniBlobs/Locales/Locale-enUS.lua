@@ -22,6 +22,11 @@ select( 2, ... ).L = setmetatable( {
 		Archaeology = "Archaeology",
 		Quests = "Quests",
 	}, Meta );
+	QuestsFilters = setmetatable( { -- Names of quest filter methods
+		NONE = "Show all",
+		WATCHED = "Tracked quests only",
+		SELECTED = "Selected quest only",
+	}, Meta );
 
 	CARBONITE_NOTICE = "You must disable Carbonite to see minimap blobs.",
 	DESC = "Configure the appearance of minimap digsites and quest POIs.",
@@ -32,10 +37,11 @@ select( 2, ... ).L = setmetatable( {
 |cffFF7F3FWARNING!|r  Higher quality settings may drastically reduce performance, depending on the shape and size of your minimap.  Large, non-square minimaps in particular are slowest.]=],
 	QUALITY_HIGH = "Quality",
 	QUALITY_LOW = "Performance",
-	QUESTS_SELECTED = "Only show the selected quest",
-	QUESTS_SELECTED_DESC = "If enabed, quests won't show unless you select them by clicking their numbered circles in either Blizzard's Objectives list or the World Map.  This matches how the World Map normally shows quest blobs.",
-	QUESTS_WATCHED = "Only show tracked quests",
-	QUESTS_WATCHED_DESC = "If enabled, quests you aren't tracking with Blizzard's Objectives list will be hidden.",
+	QUESTS_FILTER = "Quest Filter",
+	QUESTS_FILTER_DESC = [=[Filters which quest blobs are shown on your minimap.
+
+• |cff808080“Tracked quests only”|r: Only show quests tracked by Blizzard's Objectives list.
+• |cff808080“Selected quest only”|r: Click a quest's numbered circle in either the Objectives list or the World Map to select and show it.]=],
 	ROTATE_MINIMAP_NOTICE = "You must disable your |cff808080“Rotate Minimap”|r setting to see minimap blobs.",
 	TITLE = "_|cffCCCC88MiniBlobs|r",
 	TYPE_ALPHA = "Alpha",
