@@ -26,47 +26,10 @@ Tooltip.OffsetX, Tooltip.OffsetY = -8, -16;
 
 
 
-do
-	local Colors = _Underscore.Colors.class;
-	local InactiveColor = { 0.5, 0.2, 0.8 };
-	local Top, Bottom, Left, Right = 0.25, 0.5, 7 / 8, 1; -- Row 2, column 8: White template blip
-	--- Adds class color to player blips on the map.
-	function me:UpdateUnit ()
-		local UnitID = self.unit or self.name;
-		local Icon = self.icon;
-
-		local Color;
-		if ( UnitID and UnitIsPlayer( UnitID ) ) then -- Class colored icon
-			if ( PlayerIsPVPInactive( UnitID ) ) then
-				Color = InactiveColor;
-			else
-				local _, Class = UnitClass( UnitID );
-				Color = Colors[ Class ];
-			end
-		end
-
-		if ( Color ) then
-			Icon:SetTexture( [[Interface\Minimap\PartyRaidBlips]] );
-			Icon:SetVertexColor( unpack( Color ) );
-			if ( UnitPlayerOrPetInParty( UnitID ) ) then
-				Icon:SetTexCoord( Left, Right, Top, Bottom );
-			else -- Bottom half contains raid member blips
-				Icon:SetTexCoord( Left, Right, Top + 0.5, Bottom + 0.5 );
-			end
-		else -- Generic blip icon
-			Icon:SetTexture( [[Interface\WorldMap\WorldMapPartyIcon]] );
-			Icon:SetVertexColor( 1, 1, 1 );
-			Icon:SetTexCoord( 0, 1, 0, 1 );
-		end
-	end
-end
-
-
 --- Keeps the black background behind the map hidden.
 function me.DisableBlackout ()
 	WorldMapFrame:EnableMouse( false );
 	--WorldMapFrame:EnableKeyboard( false ); -- Breaks escape keybind
-	BlackoutWorld:Hide();
 end
 
 
@@ -154,7 +117,6 @@ ScrollHandler:SetScript( "OnHide", ScrollHandler.OnHide );
 ScrollHandler:SetScript( "OnEvent", _Underscore.Frame.OnEvent );
 
 
-WorldMapUnit_Update = me.UpdateUnit;
-
+BlackoutWorld:SetTexture();
 hooksecurefunc( "WorldMap_ToggleSizeUp", me.DisableBlackout );
 me.DisableBlackout();
