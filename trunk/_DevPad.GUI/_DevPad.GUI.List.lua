@@ -609,12 +609,16 @@ do
 		do
 			--- Selects a folder or script button when clicked.
 			local function ButtonOnClick ( self )
+				if ( self.Object._Class == "Folder" ) then
+					self.Object:SetClosed( not self.Object._Closed );
+				end
 				if ( me:SetSelection( self.Object ) ) then
 					PlaySound( "igMainMenuOptionCheckBoxOn" );
 				end
 			end
 			--- Starts renaming the object when double clicked.
 			local function ButtonOnDoubleClick ( self )
+				ButtonOnClick( self );
 				return me:SetRenaming( self.Object );
 			end
 			--- Start moving the object on drag.
