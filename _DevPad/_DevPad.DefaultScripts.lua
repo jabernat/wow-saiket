@@ -207,5 +207,93 @@ function lib:IsLoadable ( Name )
 end
 return lib;]=];
 		},
+		{	Class = "Script"; Name = "RegisterForSave"; Lua = true;
+			Text = [=[
+--- Provides an API for scripts to save data between sessions.
+-- @usage local Value = _DevPad( "Libs", "RegisterForSave" )( "VariableName"[, DefaultValue] );
+--   Set new values to _G[ "VariableName" ] and they will be saved on logout.
+local lib = ...;
+if ( lib.Register ) then
+  return lib.Register( ... );
+end
+local AceSerializer = LibStub( "AceSerializer-3.0" );
+
+
+local DATA_NAME = "RegisterForSave Data";
+--- @return The data folder found in the same folder as this lib, or a new one.
+local function GetData ()
+  local Data = lib:GetRelObject( true, DATA_NAME );
+  if ( not Data ) then
+    -- Add data folder just after this library
+    Data = _DevPad:GetClass( "Folder" ):New();
+    lib._Parent:Insert( Data, lib:GetIndex() + 1 );
+    Data:SetName( DATA_NAME );
+    Data:SetClosed( true );
+  end
+  return Data;
+end
+
+
+local Active = {}; --- Active global variable names
+--- Registers a global variable to persist between sessions, and loads its previous value.
+-- If no previous value was saved, the global won't be overwritten.
+-- @param Name  Global variable name to load and save to.
+-- @param ...  Optional default value to initialize to if no previous value is found.
+-- @return Value loaded from history, if any.
+function lib:Register ( Name, ... )
+  assert( type( Name ) == "string", "Name must be a string." );
+  assert( not Active[ Name ], "Name is already registered." );
+  Active[ Name ] = true;
+  local Script = GetData():GetRelObject( Name );
+  if ( Script ) then
+    local Success, Value = AceSerializer:Deserialize( Script._Text );
+    if ( not Success ) then -- Invalid saved data
+      geterrorhandler()( Value );
+      Value = nil; -- Clear global variable
+    end
+    _G[ Name ] = Value;
+    return Value;
+  elseif ( select( "#", ... ) > 0 ) then -- Default provided
+    _G[ Name ] = ...;
+    return ( ... );
+  end
+end
+
+
+do
+  --- Serializes all active saved variables.
+  local function SerializeData ()
+    if ( not next( Active ) ) then
+      return;
+    end
+    local Data = GetData();
+    
+    for Name in pairs( Active ) do
+      -- Serialization failures preserve original data
+      local Success, Text = pcall( AceSerializer.Serialize, AceSerializer, _G[ Name ] );
+      if ( not Success ) then -- Requires a bug grabber with error history to read!
+        geterrorhandler()( Text );
+      else
+        local Script = Data:GetRelObject( Name );
+        if ( not Script ) then
+          Script = _DevPad:GetClass( "Script" ):New();
+          Script:SetName( Name );
+          Script:SetLua( false );
+          Data:Insert( Script );
+        end
+        Script:SetText( Text );
+      end
+    end
+  end
+  local Backup = _DevPad.Frame.PLAYER_LOGOUT;
+  --- Saves variables just before _DevPad does.
+  function _DevPad.Frame:PLAYER_LOGOUT ( ... )
+    pcall( SerializeData ); -- Entire pad is at stake!
+    return Backup( self, ... );
+  end
+end
+
+return lib.Register( ... );]=];
+		},
 	},
 };
