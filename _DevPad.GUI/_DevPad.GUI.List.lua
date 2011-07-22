@@ -156,7 +156,8 @@ do
 			if ( Object ) then
 				local Button = ObjectButtons[ Object ];
 				Button:SetScript( "OnUpdate", OnUpdate );
-				Button:GetHighlightTexture():SetVertexColor( 1, 0, 0 ); -- Blends to orange
+				local Color = ORANGE_FONT_COLOR;
+				Button:GetHighlightTexture():SetVertexColor( Color.r, Color.g, Color.b ); -- Orange
 				self:SetSelection( Object );
 			end
 			return true;
