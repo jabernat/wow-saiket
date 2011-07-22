@@ -80,23 +80,32 @@ function me:SetRenaming ( Object )
 	end
 end
 do
+	local CLOSED_FOLDER_WAIT = 1; -- Seconds before folder will open while dragging
+	local MouseoverObject, MouseoverTime;
 	--- Moves Object Offset places from the top of Folder.
 	-- @return Number of shown objects in Folder if not placed.
-	local function SetAbsPosition( Object, Folder, Offset )
+	local function SetAbsPosition( Object, Folder, Offset, Elapsed )
 		for Index, Child in ipairs( Folder ) do
 			Offset = Offset - 1;
-			if ( Offset <= 0 ) then
-				local Target = Folder[ Index ];
-				if ( Target._Class == "Folder" and -Offset < 0.5 ) then -- Inside folder
-					Target:SetClosed( false );
-					Target:Insert( Object, 1 );
+			if ( Offset <= 0 ) then -- Child at Offset
+				if ( MouseoverObject ~= Child ) then
+					MouseoverObject, MouseoverTime = Child, 0;
+				else
+					MouseoverTime = MouseoverTime + Elapsed;
+				end
+				if ( Child._Class == "Folder" and -Offset < 0.5 ) then -- Over bottom half of folder
+					-- Pause before opening closed folders
+					if ( not Child._Closed or MouseoverTime >= CLOSED_FOLDER_WAIT ) then
+						Child:SetClosed( false );
+						Child:Insert( Object, 1 );
+					end
 				else
 					Folder:Insert( Object, Index );
 				end
 				return;
 			end
 			if ( Child._Class == "Folder" and not Child._Closed ) then
-				Offset = SetAbsPosition( Object, Child, Offset );
+				Offset = SetAbsPosition( Object, Child, Offset, Elapsed );
 				if ( not Offset ) then
 					return;
 				end
@@ -123,8 +132,10 @@ do
 				end
 			end
 		end
-		if ( not self:IsMouseOver( 0, 0, -Huge, Huge ) ) then -- Above or below
-			if ( SetAbsPosition( self.Object, _DevPad.FolderRoot, CursorY / ButtonHeight ) ) then
+		if ( self:IsMouseOver( 0, 0, -Huge, Huge ) ) then -- Over dragged object
+			MouseoverObject, MouseoverTime = nil;
+		else -- Above or below
+			if ( SetAbsPosition( self.Object, _DevPad.FolderRoot, CursorY / ButtonHeight, Elapsed ) ) then
 				-- Below end of tree
 				return _DevPad.FolderRoot:Insert( self.Object );
 			end
@@ -139,6 +150,7 @@ do
 				ObjectButtons[ self.Dragging ]:SetScript( "OnUpdate", nil );
 			end
 			self.Dragging = Object;
+			MouseoverObject, MouseoverTime = nil;
 			if ( Object ) then
 				ObjectButtons[ Object ]:SetScript( "OnUpdate", OnUpdate );
 				self:SetSelection( Object );
