@@ -141,6 +141,7 @@ do
 			end
 		end
 	end
+	local ClosedBackup;
 	--- Stop or start dragging an object within the tree.
 	-- @param Object  Descendant of Root to drag, or nil to stop.
 	-- @return True if drag target changed.
@@ -150,6 +151,9 @@ do
 				local Button = ObjectButtons[ self.Dragging ];
 				Button:SetScript( "OnUpdate", nil );
 				Button:GetHighlightTexture():SetVertexColor( 1, 1, 1 );
+				if ( self.Dragging._Class == "Folder" ) then
+					self.Dragging:SetClosed( ClosedBackup );
+				end
 			end
 			self.Dragging = Object;
 			MouseoverObject, MouseoverTime = nil;
@@ -158,6 +162,10 @@ do
 				Button:SetScript( "OnUpdate", OnUpdate );
 				local Color = ORANGE_FONT_COLOR;
 				Button:GetHighlightTexture():SetVertexColor( Color.r, Color.g, Color.b ); -- Orange
+				if ( Object._Class == "Folder" ) then -- Close while dragging
+					ClosedBackup = Object._Closed;
+					Object:SetClosed( true );
+				end
 				self:SetSelection( Object );
 			end
 			return true;
