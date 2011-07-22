@@ -147,12 +147,16 @@ do
 	function me:SetDragging ( Object )
 		if ( self.Dragging ~= Object ) then
 			if ( self.Dragging ) then
-				ObjectButtons[ self.Dragging ]:SetScript( "OnUpdate", nil );
+				local Button = ObjectButtons[ self.Dragging ];
+				Button:SetScript( "OnUpdate", nil );
+				Button:GetHighlightTexture():SetVertexColor( 1, 1, 1 );
 			end
 			self.Dragging = Object;
 			MouseoverObject, MouseoverTime = nil;
 			if ( Object ) then
-				ObjectButtons[ Object ]:SetScript( "OnUpdate", OnUpdate );
+				local Button = ObjectButtons[ Object ];
+				Button:SetScript( "OnUpdate", OnUpdate );
+				Button:GetHighlightTexture():SetVertexColor( 1, 0, 0 ); -- Blends to orange
 				self:SetSelection( Object );
 			end
 			return true;
