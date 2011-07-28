@@ -88,6 +88,9 @@ me.Margin.Gutter:SetTexture( 0.2, 0.2, 0.2 ); -- Line number background
 --- @return True if script changed.
 function me:SetScriptObject ( Script )
 	if ( self.Script ~= Script ) then
+		if ( self.Script ) then
+			self.Script._CursorPosition = self:GetScriptCursorPosition();
+		end
 		self.Script = Script;
 		if ( Script ) then
 			self:ObjectSetName( nil, Script );
@@ -97,9 +100,9 @@ function me:SetScriptObject ( Script )
 				_DevPad.RegisterCallback( self, "FolderRemove" );
 			end
 			self.ScrollFrame.Bar:SetValue( 0 );
-			self.Edit:SetText( me.LuaEnabled and Script._Text:gsub( "|", "||" ) or Script._Text );
+			self.Edit:SetText( self.LuaEnabled and Script._Text:gsub( "|", "||" ) or Script._Text );
 			self:ScriptSetLua( nil, Script );
-			self.Edit:SetCursorPosition( 0 );
+			self:SetScriptCursorPosition( Script._CursorPosition or 0, true );
 			self.Margin:Update();
 			self:Show();
 		else
@@ -127,6 +130,9 @@ end
 do
 	--- @return Number of Substring found between cursor positions Start and End.
 	local function CountSubstring ( Text, Substring, Start, End )
+		if ( Start >= End ) then
+			return 0;
+		end
 		local Count = 0;
 		Start, End = Start + 1, End - #Substring + 1;
 		while ( true ) do
@@ -137,21 +143,27 @@ do
 			Count, Start = Count + 1, Start + #Substring;
 		end
 	end
-	--- Highlights a substring in the editor and moves the view to it.
-	-- Positions should be relative to script text, not edit box contents, to
-	-- account for pipe characters being escaped.
-	function me:SetScriptHighlight ( Start, End )
-		if ( Start ) then
+	--- Highlights a substring in the editor, accounting for escaped pipes.
+	function me:SetScriptHighlight ( Start, End, ForceUpdate )
+		if ( Start and End ) then
+			local PipesBeforeEnd = self:SetScriptCursorPosition( End, ForceUpdate );
 			if ( self.LuaEnabled ) then
-				local Text = self.Script._Text;
-				local PipesBefore = CountSubstring( Text, "|", 0, Start );
-				End = End + PipesBefore + CountSubstring( Text, "|", Start, End );
-				Start = Start + PipesBefore;
+				Start = Start + PipesBeforeEnd - CountSubstring( self.Script._Text, "|", Start, End );
+				End = End + PipesBeforeEnd;
 			end
-			self.Edit.CursorForceUpdate = true; -- Force into view, even if not focused
-			self.Edit:SetCursorPosition( End );
 		end
 		self.Edit:HighlightText( Start or 0, End or 0 );
+	end
+	--- Moves the cursor to a position in the current script, accounting for escaped pipes.
+	-- @param ForceUpdate  If true, the editbox will scroll to the cursor even if not focused.
+	-- @return Byte offset between requested position and actual position.
+	function me:SetScriptCursorPosition ( Cursor, ForceUpdate )
+		local Offset = self.LuaEnabled and CountSubstring( self.Script._Text, "|", 0, Cursor ) or 0;
+		if ( ForceUpdate ) then
+			self.Edit.CursorForceUpdate = true;
+		end
+		self.Edit:SetCursorPosition( Cursor + Offset );
+		return Offset;
 	end
 	--- @return Cursor position, ignoring extra pipe escape characters.
 	function me:GetScriptCursorPosition ()
@@ -159,8 +171,10 @@ do
 		return not self.LuaEnabled and Cursor
 			or Cursor - CountSubstring( self.Edit:GetText(), "||", 0, Cursor );
 	end
+end
 
 
+do
 	--- Sets both button textures' vertex colors.
 	local function SetVertexColors ( self, ... )
 		self:GetNormalTexture():SetVertexColor( ... );
@@ -171,29 +185,25 @@ do
 		if ( Script == self.Script ) then
 			local Lib, Edit = GUI.IndentationLib, self.Edit;
 			if ( Script._Lua ) then
-				if ( not self.LuaEnabled ) then
-					self.LuaEnabled = true;
+				if ( not self.LuaEnabled ) then -- Escape control codes
 					SetVertexColors( self.Lua, 0.4, 0.8, 1 );
-
-					-- Escape control codes
-					local Text, Cursor = Edit:GetText(), Edit:GetCursorPosition();
-					Edit:SetText( Text:gsub( "|", "||" ) );
-					Edit:SetCursorPosition( Cursor + CountSubstring( Text, "|", 0, Cursor ) );
+					local Cursor = self:GetScriptCursorPosition();
+					self.LuaEnabled = true;
+					self.Edit:SetText( Edit:GetText():gsub( "|", "||" ) );
+					self:SetScriptCursorPosition( Cursor );
 				end
 				if ( Lib ) then -- Force immediate recolor even if already enabled
-					Lib.Enable( Edit, AutoIndent and TabWidth, me.SyntaxColors );
+					Lib.Enable( Edit, AutoIndent and TabWidth, self.SyntaxColors );
 				end
-			elseif ( self.LuaEnabled ) then
-				self.LuaEnabled = nil;
+			elseif ( self.LuaEnabled ) then -- Disable syntax highlighting and unescape control codes
 				SetVertexColors( self.Lua, 0.4, 0.4, 0.4 );
-
-				-- Disable syntax highlighting and unescape control codes
 				if ( Lib ) then
 					Lib.Disable( Edit );
 				end
-				local Text, Cursor = Edit:GetText(), Edit:GetCursorPosition();
-				Edit:SetText( Text:gsub( "||", "|" ) );
-				Edit:SetCursorPosition( Cursor - CountSubstring( Text, "||", 0, Cursor ) );
+				local Cursor = self:GetScriptCursorPosition();
+				self.LuaEnabled = false;
+				self.Edit:SetText( Edit:GetText():gsub( "||", "|" ) );
+				self:SetScriptCursorPosition( Cursor );
 			end
 		end
 	end
@@ -471,8 +481,7 @@ function me.Shortcuts:F3 ()
 		if ( Reverse and Cursor > 0 ) then
 			Cursor = Cursor - 1;
 		end
-		me:SetScriptHighlight(
-			GUI.List:NextMatchWrap( me.Script, Cursor, Reverse ) );
+		me:SetScriptHighlight( GUI.List:NextMatchWrap( me.Script, Cursor, Reverse ) );
 	end
 end
 
