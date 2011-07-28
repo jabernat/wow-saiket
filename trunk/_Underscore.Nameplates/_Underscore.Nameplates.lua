@@ -36,8 +36,8 @@ me.ClassificationUpdateRate = 1;
 
 local BarTexture = LibSharedMedia:Fetch( LibSharedMedia.MediaType.STATUSBAR, _Underscore.MediaBar );
 
-local PlateWidth = 128;
-local PlateHeight = 16;
+local PlateWidth = 96;
+local PlateHeight = 12;
 local PlateBorder = 2;
 local CastHeight = 24;
 
@@ -726,7 +726,7 @@ _Underscore.RegisterAddOnInitializer( AddOnName, me.OnLoad );
 
 
 -- Fonts
-me.NameFont:SetFont( [[Fonts\ARIALN.TTF]], 11, "OUTLINE" );
+me.NameFont:SetFont( [[Fonts\ARIALN.TTF]], 10, "OUTLINE" );
 me.NameFont:SetShadowColor( 0, 0, 0, 0 ); -- Hide shadow
 me.NameFont:SetJustifyV( "MIDDLE" );
 me.NameFont:SetJustifyH( "LEFT" );
