@@ -586,7 +586,7 @@ function me.SearchEdit:OnEnterPressed ()
 		if ( ScriptNew ) then
 			GUI.Editor:SetScriptObject( ScriptNew );
 		end
-		GUI.Editor:SetScriptHighlight( Start, End );
+		GUI.Editor:SetScriptHighlight( Start, End, true );
 	else
 		return self:ClearFocus();
 	end
