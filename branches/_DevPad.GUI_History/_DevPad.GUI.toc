@@ -26,3 +26,4 @@ _DevPad.GUI.lua
 _DevPad.GUI.Dialog.lua
 _DevPad.GUI.List.lua
 _DevPad.GUI.Editor.lua
+_DevPad.GUI.Editor.History.lua
