@@ -36,13 +36,15 @@ function me:EditorSetScriptObject ( _, Script )
 	if ( Script ) then -- Synchronize history to initial state of script
 		self:Compare( Script );
 	end
-	self:UpdateButtons();
+	self:UpdateButtons( Script );
 end
 
 
 --- Enables and disables the undo/redo buttons when appropriate.
-function me:UpdateButtons ()
-	local Script = self.Script;
+function me:UpdateButtons ( Script )
+	if ( Script ~= self.Script ) then -- Not shown in the editor
+		return;
+	end
 	if ( Script and Script._HistoryIndex > 0 ) then
 		self.UndoButton:Enable();
 	else
@@ -136,7 +138,7 @@ do
 		History[ #History + 1 ] = Start; -- Offset for changed range
 		Script._HistoryIndex, Script._HistoryText = #History, Text;
 
-		self:UpdateButtons();
+		self:UpdateButtons( Script );
 	end
 end
 do
@@ -148,7 +150,9 @@ do
 		local Text = ( "" ):join( Prefix, MiddleNew, Suffix );
 		Script._HistoryText = Text; -- Prevent the undo/redo from counting as a new edit
 		Script:SetText( Text );
-		GUI.Editor:SetScriptCursorPosition( Start + #MiddleNew - 1 );
+		if ( me.Script == Script ) then -- Move cursor to just after replaced text
+			GUI.Editor:SetScriptCursorPosition( Start + #MiddleNew - 1 );
+		end
 	end
 	--- Undoes one edit, if available.
 	function me:Undo ( Script )
@@ -159,7 +163,7 @@ do
 
 		local History, Index = Script._History, Script._HistoryIndex;
 		Script._HistoryIndex = Index - 3;
-		self:UpdateButtons();
+		self:UpdateButtons( Script );
 		return ApplyHistory( Script, History[ Index ], History[ Index - 2 ], History[ Index - 1 ] );
 	end
 	--- Redoes one edit, if available.
@@ -171,7 +175,7 @@ do
 
 		local History, Index = Script._History, Script._HistoryIndex + 3;
 		Script._HistoryIndex = Index;
-		self:UpdateButtons();
+		self:UpdateButtons( Script );
 		return ApplyHistory( Script, History[ Index ], History[ Index - 1 ], History[ Index - 2 ] );
 	end
 end
