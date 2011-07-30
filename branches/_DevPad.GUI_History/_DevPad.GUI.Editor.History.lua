@@ -109,7 +109,8 @@ do
 		until ( Min > Max );
 		return Max;
 	end
-	--- Checks the text for changes, and adds a history entry if any are found.
+	--- Checks Script's text for changes, and adds a history entry if any are found.
+	-- @return True if a new history entry was added.
 	function me:Compare ( Script )
 		self.CompareTimer:Stop();
 		local History = Script._History;
@@ -139,6 +140,7 @@ do
 		Script._HistoryIndex, Script._HistoryText = #History, Text;
 
 		self:UpdateButtons( Script );
+		return true;
 	end
 end
 do
@@ -154,7 +156,8 @@ do
 			GUI.Editor:SetScriptCursorPosition( Start + #MiddleNew - 1 );
 		end
 	end
-	--- Undoes one edit, if available.
+	--- Undoes one edit on Script, if available.
+	-- @return True if an edit was undone.
 	function me:Undo ( Script )
 		self:Compare( Script );
 		if ( Script._HistoryIndex == 0 ) then
@@ -164,9 +167,11 @@ do
 		local History, Index = Script._History, Script._HistoryIndex;
 		Script._HistoryIndex = Index - 3;
 		self:UpdateButtons( Script );
-		return ApplyHistory( Script, History[ Index ], History[ Index - 2 ], History[ Index - 1 ] );
+		ApplyHistory( Script, History[ Index ], History[ Index - 2 ], History[ Index - 1 ] );
+		return true;
 	end
-	--- Redoes one edit, if available.
+	--- Redoes one edit on Script, if available.
+	-- @return True if an edit was redone.
 	function me:Redo ( Script )
 		self:Compare( Script );
 		if ( Script._HistoryIndex == #Script._History ) then
@@ -176,7 +181,8 @@ do
 		local History, Index = Script._History, Script._HistoryIndex + 3;
 		Script._HistoryIndex = Index;
 		self:UpdateButtons( Script );
-		return ApplyHistory( Script, History[ Index ], History[ Index - 1 ], History[ Index - 2 ] );
+		ApplyHistory( Script, History[ Index ], History[ Index - 1 ], History[ Index - 2 ] );
+		return true;
 	end
 end
 
