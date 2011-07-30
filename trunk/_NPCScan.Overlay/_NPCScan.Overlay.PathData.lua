@@ -120,7 +120,7 @@ n}ƒqoƒ9jõ";
 		-- Deth'tilac
 		[ 54322 ] = "§®Ò¨Îªd´¼¤¹á›Æ¼B“›¾ª”¾ª”»‹¨Œ¶sµð¶sµð° ½.ª¼æª¼æ§®Ò´¼¤´¼¤¹á›Æ¾ª”¾ª”¶sµðª¼æ´¼¤¾ª”ª¼æ";
 		-- Karkin
-		[ 50959 ] = "]¿\\ô[\"Yr]«Uz]«Uz`[YK]¿\\ô";
+		[ 50959 ] = "]¿\\ô[\"Yr]«Uz]«Uz`[YK]¿\\ôR:…`T¼AWR„ðWR„ðTãˆ†R:…`";
 		-- Kirix
 		[ 54323 ] = "E¼˜ÛFUMjŒ/MjŒ/S¼“gKáš¬JD¶»RÊ¿NßÂ@NßÂ@KJÁnG\
 º˜C¹™?B¹º>³g@[¬p=j§l=úßE¼˜ÛMjŒ/Káš¬G†¯ìJD¶»NßÂ@G\
