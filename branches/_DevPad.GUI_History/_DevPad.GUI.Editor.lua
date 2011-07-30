@@ -184,26 +184,25 @@ do
 	--- Enables or disables syntax highlighting in the edit box.
 	function me:ScriptSetLua ( _, Script )
 		if ( Script == self.Script ) then
-			local Lib, Edit = GUI.IndentationLib, self.Edit;
 			if ( Script._Lua ) then
 				if ( not self.LuaEnabled ) then -- Escape control codes
 					SetVertexColors( self.Lua, 0.4, 0.8, 1 );
 					local Cursor = self:GetScriptCursorPosition();
 					self.LuaEnabled = true;
-					Edit:SetText( Edit:GetText():gsub( "|", "||" ) );
+					self.Edit:SetText( self.Edit:GetText():gsub( "|", "||" ) );
 					self:SetScriptCursorPosition( Cursor );
-				end
-				if ( Lib ) then -- Force immediate recolor even if already enabled
-					Lib.Enable( Edit, AutoIndent and TabWidth, self.SyntaxColors );
+					if ( GUI.IndentationLib ) then
+						GUI.IndentationLib.Enable( self.Edit, AutoIndent and TabWidth, self.SyntaxColors );
+					end
 				end
 			elseif ( self.LuaEnabled ) then -- Disable syntax highlighting and unescape control codes
 				SetVertexColors( self.Lua, 0.4, 0.4, 0.4 );
-				if ( Lib ) then
-					Lib.Disable( Edit );
+				if ( GUI.IndentationLib ) then
+					GUI.IndentationLib.Disable( self.Edit );
 				end
 				local Cursor = self:GetScriptCursorPosition();
 				self.LuaEnabled = false;
-				Edit:SetText( Edit:GetText():gsub( "||", "|" ) );
+				self.Edit:SetText( self.Edit:GetText():gsub( "||", "|" ) );
 				self:SetScriptCursorPosition( Cursor );
 			end
 		end
@@ -227,7 +226,10 @@ function me:ScriptSetText ( _, Script )
 		local Text = self.LuaEnabled and Script._Text:gsub( "|", "||" ) or Script._Text;
 		-- Don't clear syntax highlighting unnecessarily
 		if ( self.Edit:GetText() ~= Text ) then
-			return self.Edit:SetText( Text );
+			self.Edit:SetText( Text );
+			if ( self.LuaEnabled and GUI.IndentationLib ) then -- Immediately recolor
+				GUI.IndentationLib.Update( self.Edit );
+			end
 		end
 	end
 end
