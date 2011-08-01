@@ -11,9 +11,11 @@ GUI.Editor.History = me;
 
 me.UndoButton = CreateFrame( "Button", nil, GUI.Editor );
 me.RedoButton = CreateFrame( "Button", nil, GUI.Editor );
-
 me.CompareTimer = CreateFrame( "Frame", nil, GUI.Editor ):CreateAnimationGroup();
+
 local CompareFrequency = 0.5; -- Time to wait after last keypress before recomparing
+me.MaxEntries = 128; -- Use math.huge for unlimited history, or delete this file to disable history
+local KEYS_PER_ENTRY = 3; -- Number of _History array indices required to store one entry
 
 
 
@@ -137,6 +139,10 @@ do
 		History[ #History + 1 ] = HistoryText:sub( Start, End ); -- Original text at range
 		History[ #History + 1 ] = Text:sub( Start, End ); -- Replacement text at range
 		History[ #History + 1 ] = Start; -- Offset for changed range
+		-- Delete extra history entries over the cap
+		for Index = me.MaxEntries * KEYS_PER_ENTRY + 1, #Script._History do
+			tremove( Script._History, 1 );
+		end
 		Script._HistoryIndex, Script._HistoryText = #History, Text;
 
 		self:UpdateButtons( Script );
@@ -165,7 +171,7 @@ do
 		end
 
 		local History, Index = Script._History, Script._HistoryIndex;
-		Script._HistoryIndex = Index - 3;
+		Script._HistoryIndex = Index - KEYS_PER_ENTRY;
 		self:UpdateButtons( Script );
 		ApplyHistory( Script, History[ Index ], History[ Index - 2 ], History[ Index - 1 ] );
 		return true;
@@ -178,7 +184,7 @@ do
 			return; -- Nothing to redo
 		end
 
-		local History, Index = Script._History, Script._HistoryIndex + 3;
+		local History, Index = Script._History, Script._HistoryIndex + KEYS_PER_ENTRY;
 		Script._HistoryIndex = Index;
 		self:UpdateButtons( Script );
 		ApplyHistory( Script, History[ Index ], History[ Index - 1 ], History[ Index - 2 ] );
