@@ -40,8 +40,10 @@ _DevPad lets you write notes, scripts, and mini addons in-game.  The following s
   * When not in Lua/raw text mode, you can click hyperlinks in the editor to interact with them.
   * Font and font size controls are also at the top-right of the window.
   * Click a line number to select that entire line (even if the line numbers appear out of alignment).
-  * Text is saved as you type.  You can revert to the script's original text (since the start of the session) using the back arrow icon at the top-right.
+  * Text is saved as you type.
+  * Undo and redo changes with the left and right arrow buttons at the top right, or with the keyboard shortcuts below.  Each script remembers its last 128 edits, although this limit can be changed or removed from within `_DevPad.GUI/_DevPad.GUI.Editor.History.lua`.
   * Limited keyboard shortcuts are available:
+    + `Ctrl+Z`/`Ctrl+Shift+Z`: Undo/redo one change.
     + `Ctrl+G`: Go to line number dialog.
     + `Ctrl+F`: Focus the list's search edit box.
     + `F3`/`Shift+F3`: Jump to next/previous search result.
@@ -51,7 +53,7 @@ _DevPad lets you write notes, scripts, and mini addons in-game.  The following s
   * Scripts receive the following arguments: `(ScriptObject, ...)`, where `...` are custom parameters from the caller.
   * Optional returns from the script's main chunk propagate out to the caller.
   * Run other scripts like this: `_DevPad:FindScripts( "NamePattern" )( ... );` or `_DevPad( "Path", "to", "script" )( ... );`
-  * See `_DevPad.lua` for documentation on manipulating scripts and folders programatically.
+  * See `_DevPad/_DevPad.lua` for documentation on manipulating scripts and folders programatically.
 ]=],
 	RECEIVE_MESSAGE_FORMAT = "You have received a script or folder from |cffffffff%s|r called |cff808080“%s”|r.",
 	RECEIVE_MESSAGE_REOPEN = "Open your _|cffcccc88DevPad|r to save or discard it.",
