@@ -192,7 +192,8 @@ do
 					self.Edit:SetText( self.Edit:GetText():gsub( "|", "||" ) );
 					self:SetScriptCursorPosition( Cursor );
 					if ( GUI.IndentationLib ) then
-						GUI.IndentationLib.Enable( self.Edit, AutoIndent and TabWidth, self.SyntaxColors );
+						GUI.IndentationLib.Enable( self.Edit, -- Suppress immediate auto-indent
+							AutoIndent and TabWidth, self.SyntaxColors, true );
 					end
 				end
 			elseif ( self.LuaEnabled ) then -- Disable syntax highlighting and unescape control codes
@@ -228,7 +229,7 @@ function me:ScriptSetText ( _, Script )
 		if ( self.Edit:GetText() ~= Text ) then
 			self.Edit:SetText( Text );
 			if ( self.LuaEnabled and GUI.IndentationLib ) then -- Immediately recolor
-				GUI.IndentationLib.Update( self.Edit );
+				GUI.IndentationLib.Update( self.Edit, false ); -- Suppress auto-indent
 			end
 		end
 	end

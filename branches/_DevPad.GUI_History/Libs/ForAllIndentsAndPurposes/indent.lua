@@ -25,7 +25,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 -- <saiket.wow@gmail.com> for _DevPad.
 --
 -- @usage Apply auto-indentation/syntax highlighting to an editboxe like this:
---   lib.Enable(Editbox, [TabWidth], [ColorTable]);
+--   lib.Enable(Editbox, [TabWidth], [ColorTable], [SuppressIndent]);
 -- If TabWidth or ColorTable are omitted, those featues won't be applied.
 -- ColorTable should map TokenIDs and string Token values to color codes.
 -- @see lib.Tokens
@@ -74,7 +74,8 @@ do
 	local SetTextBackup, GetTextBackup, InsertBackup;
 	local GetCursorPositionBackup, SetCursorPositionBackup, HighlightTextBackup;
 	--- Reapplies formatting to this editbox using settings from when it was enabled.
-	-- @param ForceIndent  Forces auto-indent even if the line count didn't change.
+	-- @param ForceIndent  If true, forces auto-indent even if the line count didn't
+	--   change.  If false, suppress indentation.  If nil, only indent when line count changes.
 	-- @return True if text was changed.
 	function lib:Update ( ForceIndent )
 		if ( not Enabled[ self ] ) then
@@ -88,18 +89,17 @@ do
 		local Code, Cursor = lib.StripColors( Colored,
 			GetCursorPositionBackup( self ) );
 
-		if ( self.faiap_tabWidth ) then
-			-- Reindent if line count changes
-			local NumLines, IndexLast = 0, 0;
-			for Index in Code:gmatch( "[^\r\n]*()" ) do
-				if ( IndexLast ~= Index ) then
-					NumLines, IndexLast = NumLines + 1, Index;
-				end
-			end
-			if ( NumLinesCache[ self ] ~= NumLines ) then
-				NumLinesCache[ self ], ForceIndent = NumLines, true;
+		-- Count lines in text
+		local NumLines, IndexLast = 0, 0;
+		for Index in Code:gmatch( "[^\r\n]*()" ) do
+			if ( IndexLast ~= Index ) then
+				NumLines, IndexLast = NumLines + 1, Index;
 			end
 		end
+		if ( ForceIndent == nil and NumLinesCache[ self ] ~= NumLines ) then
+			ForceIndent = true; -- Reindent if line count changes
+		end
+		NumLinesCache[ self ] = NumLines;
 
 		local ColoredNew, Cursor = lib.FormatCode( Code,
 			ForceIndent and self.faiap_tabWidth, self.faiap_colorTable, Cursor );
@@ -127,7 +127,8 @@ do
 
 		self:SetMaxBytes( self.faiap_maxBytes );
 		self:SetCountInvisibleLetters( self.faiap_countInvisible );
-
+		self.faiap_maxBytes, self.faiap_countInvisible = nil;
+		self.faiap_tabWidth, self.faiap_colorTable = nil;
 		CodeCache[ self ], ColoredCache[ self ] = nil;
 		NumLinesCache[ self ] = nil;
 		return true;
@@ -222,8 +223,9 @@ do
 	-- @param TabWidth  Tab width to indent code by, or nil for no indentation.
 	-- @param ColorTable  Table of tokens and token types to color codes used for
 	--   syntax highlighting, or nil for no syntax highlighting.
+	-- @param SuppressIndent  Don't immediately re-indent text, even with TabWidth enabled.
 	-- @return True if enabled and formatted.
-	function lib:Enable ( TabWidth, ColorTable )
+	function lib:Enable ( TabWidth, ColorTable, SuppressIndent )
 		if ( not SetTextBackup ) then
 			GetTextBackup, SetTextBackup = self.GetText, self.SetText;
 			InsertBackup = self.Insert;
@@ -235,10 +237,7 @@ do
 			return lib.Disable( self );
 		end
 
-		self.faiap_tabWidth, self.faiap_colorTable = TabWidth, ColorTable;
-		if ( Enabled[ self ] ) then
-			ColoredCache[ self ] = nil; -- Force update with new tab width/colors
-		else
+		if ( not Enabled[ self ] ) then
 			self.faiap_maxBytes = self:GetMaxBytes();
 			self.faiap_countInvisible = self:IsCountInvisibleLetters();
 			self:SetMaxBytes( 0 );
@@ -261,8 +260,10 @@ do
 			end
 			Enabled[ self ] = true;
 		end
+		self.faiap_tabWidth, self.faiap_colorTable = TabWidth, ColorTable;
+		ColoredCache[ self ] = nil; -- Force update with new tab width/colors
 
-		return lib.Update( self, true );
+		return lib.Update( self, not SuppressIndent );
 	end
 end
 
