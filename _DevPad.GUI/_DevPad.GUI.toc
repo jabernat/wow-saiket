@@ -2,7 +2,7 @@
 ## Title: _|cffCCCC88DevPad|r.GUI
 ## Notes: Script list and editor for _|cffCCCC88DevPad|r.
 ## Author: Saiket
-## Version: 4.2.0.2
+## Version: 4.2.0.3
 ## X-Date: 2011-08-06
 ## X-Category: Development Tools
 ## X-License: GPLv3
