@@ -22,7 +22,8 @@ select( 2, ... ).L = setmetatable( {
 	RECEIVE_CONFIRM_FOLDER_FORMAT = [=[%s has sent you a folder called |cff808080“%s”|r.  Add it and its contents to your _|cffcccc88DevPad|r?
 |cffff1111WARNING: Inspect all untrustworthy scripts before you run them!|r]=],
 	RECEIVE_OBJECTNAME_FORMAT = "“%s” from %s",
-	REVERT = "Undo all changes made this session.",
+	REDO = [=[Redo
+|cff808080(Ctrl+Shift+Z)|r]=],
 	SCRIPT_NEW = "Create a new script.",
 	SCRIPT_AUTORUN_DESC = "Auto-run at startup.",
 	SCRIPT_RUN = "Run this script.",
@@ -33,4 +34,6 @@ select( 2, ... ).L = setmetatable( {
 	SEND_COMPLETE_FORMAT = "Finished sending |cff808080“%s”|r to |cffffffff%s|r.",
 	SEND_LARGE_FORMAT = "Please wait while |cff808080“%s”|r (%.2fkb) is sent to |cffffffff%s|r…",
 	SEND_PLAYER_NAME = "Please enter a character name to send to:";
+	UNDO = [=[Undo
+|cff808080(Ctrl+Z)|r]=],
 }, getmetatable( _DevPad.L ) );

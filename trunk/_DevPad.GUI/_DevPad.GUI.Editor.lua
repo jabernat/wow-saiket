@@ -15,7 +15,6 @@ me.Lua = me:NewButton( [[Interface\MacroFrame\MacroFrame-Icon]] );
 me.FontCycle = me:NewButton( [[Interface\ICONS\INV_Misc_Note_04]] );
 me.FontDecrease = me:NewButton( [[Interface\Icons\Spell_ChargeNegative]] );
 me.FontIncrease = me:NewButton( [[Interface\Icons\Spell_ChargePositive]] );
-me.Revert = CreateFrame( "Button", nil, me );
 
 me.Focus = CreateFrame( "Frame", nil, me.Window );
 me.Margin = CreateFrame( "Frame", nil, me.ScrollFrame );
@@ -93,20 +92,22 @@ function me:SetScriptObject ( Script )
 		end
 		self.Script = Script;
 		if ( Script ) then
-			self:ObjectSetName( nil, Script );
 			_DevPad.RegisterCallback( self, "ObjectSetName" );
+			_DevPad.RegisterCallback( self, "ScriptSetText" );
 			_DevPad.RegisterCallback( self, "ScriptSetLua" );
 			if ( Script._Parent ) then
 				_DevPad.RegisterCallback( self, "FolderRemove" );
 			end
 			self.ScrollFrame.Bar:SetValue( 0 );
-			self.Edit:SetText( self.LuaEnabled and Script._Text:gsub( "|", "||" ) or Script._Text );
+			self:ObjectSetName( nil, Script );
+			self:ScriptSetText( nil, Script );
 			self:ScriptSetLua( nil, Script );
 			self:SetScriptCursorPosition( Script._CursorPosition or 0, true );
 			self.Margin:Update();
 			self:Show();
 		else
 			_DevPad.UnregisterCallback( self, "ObjectSetName" );
+			_DevPad.UnregisterCallback( self, "ScriptSetText" );
 			_DevPad.UnregisterCallback( self, "ScriptSetLua" );
 			_DevPad.UnregisterCallback( self, "FolderRemove" );
 			self:Hide();
@@ -183,26 +184,26 @@ do
 	--- Enables or disables syntax highlighting in the edit box.
 	function me:ScriptSetLua ( _, Script )
 		if ( Script == self.Script ) then
-			local Lib, Edit = GUI.IndentationLib, self.Edit;
 			if ( Script._Lua ) then
 				if ( not self.LuaEnabled ) then -- Escape control codes
 					SetVertexColors( self.Lua, 0.4, 0.8, 1 );
 					local Cursor = self:GetScriptCursorPosition();
 					self.LuaEnabled = true;
-					self.Edit:SetText( Edit:GetText():gsub( "|", "||" ) );
+					self.Edit:SetText( self.Edit:GetText():gsub( "|", "||" ) );
 					self:SetScriptCursorPosition( Cursor );
-				end
-				if ( Lib ) then -- Force immediate recolor even if already enabled
-					Lib.Enable( Edit, AutoIndent and TabWidth, self.SyntaxColors );
+					if ( GUI.IndentationLib ) then
+						GUI.IndentationLib.Enable( self.Edit, -- Suppress immediate auto-indent
+							AutoIndent and TabWidth, self.SyntaxColors, true );
+					end
 				end
 			elseif ( self.LuaEnabled ) then -- Disable syntax highlighting and unescape control codes
 				SetVertexColors( self.Lua, 0.4, 0.4, 0.4 );
-				if ( Lib ) then
-					Lib.Disable( Edit );
+				if ( GUI.IndentationLib ) then
+					GUI.IndentationLib.Disable( self.Edit );
 				end
 				local Cursor = self:GetScriptCursorPosition();
 				self.LuaEnabled = false;
-				self.Edit:SetText( Edit:GetText():gsub( "||", "|" ) );
+				self.Edit:SetText( self.Edit:GetText():gsub( "||", "|" ) );
 				self:SetScriptCursorPosition( Cursor );
 			end
 		end
@@ -214,10 +215,23 @@ function me:ListSetSelection ( _, Object )
 		return self:SetScriptObject( Object );
 	end
 end
---- Shows the selected script from the list frame.
+--- Updates the script's name on the window title.
 function me:ObjectSetName ( _, Object )
 	if ( Object == self.Script ) then
 		self.Title:SetText( Object._Name );
+	end
+end
+--- Synchronizes editor text with the script object if it gets set externally while editing.
+function me:ScriptSetText ( _, Script )
+	if ( Script == self.Script ) then
+		local Text = self.LuaEnabled and Script._Text:gsub( "|", "||" ) or Script._Text;
+		-- Don't clear syntax highlighting unnecessarily
+		if ( self.Edit:GetText() ~= Text ) then
+			self.Edit:SetText( Text );
+			if ( self.LuaEnabled and GUI.IndentationLib ) then -- Immediately recolor
+				GUI.IndentationLib.Update( self.Edit, false ); -- Suppress auto-indent
+			end
+		end
 	end
 end
 --- Hides the editor if the edited script gets removed.
@@ -260,12 +274,6 @@ end
 --- Toggles syntax highlighting for this script.
 function me.Lua:OnClick ()
 	return me.Script:SetLua( not me.Script._Lua );
-end
---- Undoes changes since the player opened this script.
-function me.Revert:OnClick ()
-	local Text = me.Script._TextOriginal;
-	me.Edit:SetText( me.LuaEnabled and Text:gsub( "|", "||" ) or Text );
-	me.Edit:SetCursorPosition( 0 );
 end
 
 
@@ -378,19 +386,11 @@ do
 	function me.Edit:OnTextChanged ()
 		local Script = me.Script;
 		if ( Script ) then
-			if ( not Script._TextOriginal ) then
-				Script._TextOriginal = Script._Text;
-			end
 			local Text = self:GetText();
 			Script:SetText( me.LuaEnabled and Text:gsub( "||", "|" ) or Text );
-			if ( Script._TextOriginal == Script._Text ) then
-				me.Revert:Disable();
-			else
-				me.Revert:Enable();
-			end
+			Updater:Stop();
+			Updater:Play();
 		end
-		Updater:Stop();
-		Updater:Play();
 	end
 end
 --- Links/opens the clicked link.
@@ -624,27 +624,6 @@ Run:SetScript( "OnLeave", GameTooltip_Hide );
 Run:SetScript( "OnClick", Run.OnClick );
 Run.tooltipText = L.SCRIPT_RUN;
 
---- Flips a revert texture and sets its vertex color.
-local function AdjustTexture ( self, ... )
-	self:SetTexCoord( 1, 0, 0, 1 );
-	self:SetVertexColor( ... );
-end
-local Revert = me.Revert;
-Revert:SetSize( 34, 34 );
-Revert:SetHitRectInsets( 8, 8, 8, 8 );
-Revert:SetNormalTexture( [[Interface\GLUES\CHARACTERCREATE\UI-RotationRight-Big-Up]] );
-AdjustTexture( Revert:GetNormalTexture(), 1, 1, 0 );
-Revert:SetPushedTexture( [[Interface\GLUES\CHARACTERCREATE\UI-RotationRight-Big-Down]] );
-AdjustTexture( Revert:GetPushedTexture(), 1, 1, 0 );
-Revert:SetDisabledTexture( [[Interface\GLUES\CHARACTERCREATE\UI-RotationRight-Big-Up]] );
-local Disabled = Revert:GetDisabledTexture();
-Disabled:SetDesaturated( true );
-AdjustTexture( Disabled, 0.6, 0.6, 0.6 );
-Revert:SetHighlightTexture( [[Interface\BUTTONS\UI-ScrollBar-Button-Overlay]] );
-Revert:GetHighlightTexture():SetVertexColor( 1, 0, 0 );
-Revert:SetScript( "OnEnter", GUI.Dialog.ControlOnEnter );
-Revert:SetScript( "OnLeave", GameTooltip_Hide );
-
 local LastButton = me.Close;
 --- @return A new title button.
 local function SetupTitleButton ( Button, TooltipText, Offset )
@@ -658,7 +637,6 @@ SetupTitleButton( me.Lua, GUI.IndentationLib and L.LUA_TOGGLE or L.RAW_TOGGLE );
 SetupTitleButton( me.FontCycle, L.FONT_CYCLE, 8 );
 SetupTitleButton( me.FontIncrease, L.FONT_INCREASE );
 SetupTitleButton( me.FontDecrease, L.FONT_DECREASE );
-SetupTitleButton( Revert, L.REVERT, 8 );
 me.Title:SetPoint( "RIGHT", LastButton, "LEFT" );
 
 local Focus = me.Focus;
