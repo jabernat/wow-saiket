@@ -36,9 +36,9 @@ me.ClassificationUpdateRate = 1;
 
 local BarTexture = LibSharedMedia:Fetch( LibSharedMedia.MediaType.STATUSBAR, _Underscore.MediaBar );
 
-local PlateWidth = 96;
-local PlateHeight = 12;
-local PlateBorder = 2;
+local PlateWidth = 64;
+local PlateHeight = 6;
+local PlateBorder = 0.5;
 local CastHeight = 24;
 
 local HealthIsGhost = 0.005; -- Health ratios below this are assumed to be ghosts
@@ -726,12 +726,12 @@ _Underscore.RegisterAddOnInitializer( AddOnName, me.OnLoad );
 
 
 -- Fonts
-me.NameFont:SetFont( [[Fonts\ARIALN.TTF]], 10, "OUTLINE" );
+me.NameFont:SetFont( [[Fonts\ARIALN.TTF]], 8, "OUTLINE" );
 me.NameFont:SetShadowColor( 0, 0, 0, 0 ); -- Hide shadow
 me.NameFont:SetJustifyV( "MIDDLE" );
 me.NameFont:SetJustifyH( "LEFT" );
 
-me.LevelFont:SetFont( [[Fonts\ARIALN.TTF]], 9, "OUTLINE" );
+me.LevelFont:SetFont( [[Fonts\ARIALN.TTF]], 6, "OUTLINE" );
 me.LevelFont:SetShadowColor( 0, 0, 0, 1 );
 me.LevelFont:SetShadowOffset( 1.5, -1.5 );
 
