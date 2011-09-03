@@ -38,7 +38,7 @@ local BarTexture = LibSharedMedia:Fetch( LibSharedMedia.MediaType.STATUSBAR, _Un
 
 local PlateWidth = 64;
 local PlateHeight = 6;
-local PlateBorder = 0.5;
+local PlateBorder = 1;
 local CastHeight = 24;
 
 local HealthIsGhost = 0.005; -- Health ratios below this are assumed to be ghosts
@@ -464,7 +464,7 @@ do
 		local NameContainer = CreateFrame( "Frame", nil, Plate );
 		NameContainer:SetPoint( "TOPRIGHT", Health.Right );
 		NameContainer:SetPoint( "BOTTOMLEFT", Health.Left, 2, 2 );
-		NameContainer:SetAlpha( 0.6 ); -- Prevents default UI from resetting alpha
+		NameContainer:SetAlpha( 0.4 ); -- Prevents default UI from resetting alpha
 		Visual.Name:SetParent( NameContainer );
 		Visual.Name:SetFontObject( me.NameFont );
 
