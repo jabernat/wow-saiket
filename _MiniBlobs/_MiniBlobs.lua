@@ -4,16 +4,16 @@
   ****************************************************************************]]
 
 
-local AddOnName, me = ...;
-_MiniBlobs = me;
-me.Frame = CreateFrame( "Frame" );
-me.Callbacks = LibStub( "CallbackHandler-1.0" ):New( me );
+local AddOnName, NS = ...;
+_MiniBlobs = NS;
+NS.Frame = CreateFrame( "Frame" );
+NS.Callbacks = LibStub( "CallbackHandler-1.0" ):New( NS );
 
-me.Types = {
+NS.Types = {
 	[ "Archaeology" ] = {};
 	[ "Quests" ] = {};
 };
-me.Styles = { --- Available render options for blobs.
+NS.Styles = { --- Available render options for blobs.
 	-- Blobs default to styles named after their type.
 	[ "Archaeology" ] = {
 		Fill = [[Interface\WorldMap\UI-ArchaeologyBlob-Inside]];
@@ -31,46 +31,46 @@ me.Styles = { --- Available render options for blobs.
 
 
 --- Prints a message in the default chat window.
-function me.Print ( Message, Color )
+function NS.Print ( Message, Color )
 	if ( not Color ) then
 		Color = NORMAL_FONT_COLOR;
 	end
-	DEFAULT_CHAT_FRAME:AddMessage( me.L.PRINT_FORMAT:format( Message ), Color.r, Color.g, Color.b );
+	DEFAULT_CHAT_FRAME:AddMessage( NS.L.PRINT_FORMAT:format( Message ), Color.r, Color.g, Color.b );
 end
 
 
 --- Global event handler.
-function me.Frame:OnEvent ( Event, ... )
+function NS.Frame:OnEvent ( Event, ... )
 	if ( self[ Event ] ) then
 		return self[ Event ]( self, Event, ... );
 	end
 end
 --- Load saved variables.
-function me.Frame:ADDON_LOADED ( Event, AddOn )
+function NS.Frame:ADDON_LOADED ( Event, AddOn )
 	if ( AddOn == AddOnName ) then
 		self:UnregisterEvent( Event );
 		self[ Event ] = nil;
 
-		me:Unpack( _MiniBlobsOptionsCharacter or {} );
+		NS:Unpack( _MiniBlobsOptionsCharacter or {} );
 		self:RegisterEvent( "PLAYER_LOGOUT" );
 	end
 end
 --- Save settings before exiting.
-function me.Frame:PLAYER_LOGOUT ()
-	_MiniBlobsOptionsCharacter = me:Pack();
+function NS.Frame:PLAYER_LOGOUT ()
+	_MiniBlobsOptionsCharacter = NS:Pack();
 end
 
 
 
 
 --- Unpacks settings for a specific blob type.
-function me:UnpackType ( Type, Options )
+function NS:UnpackType ( Type, Options )
 	self:SetTypeEnabled( Type, Options.Enabled );
 	self:SetTypeAlpha( Type, Options.Alpha );
 	self:SetTypeStyle( Type, Options.Style );
 end
 --- Applies settings from storage.
-function me:Unpack ( Options )
+function NS:Unpack ( Options )
 	self:SetQuality( Options.Quality );
 	self:SetQuestsFilter( Options.QuestsFilter );
 	for Type in pairs( self.Types ) do
@@ -78,7 +78,7 @@ function me:Unpack ( Options )
 	end
 end
 --- @return A table representing this blob type's settings.
-function me:PackType ( Type )
+function NS:PackType ( Type )
 	return {
 		Enabled = self:GetTypeEnabled( Type );
 		Alpha = self:GetTypeAlpha( Type );
@@ -86,7 +86,7 @@ function me:PackType ( Type )
 	};
 end
 --- @return A table representing active settings.
-function me:Pack ()
+function NS:Pack ()
 	local Options = {
 		Quality = self:GetQuality();
 		QuestsFilter = self:GetQuestsFilter();
@@ -99,7 +99,7 @@ end
 
 
 --- Enables or disables the given blob type on the minimap.
-function me:SetTypeEnabled ( Type, Enabled )
+function NS:SetTypeEnabled ( Type, Enabled )
 	Enabled = Enabled == nil or not not Enabled; -- Default to true if nil
 	if ( self.Types[ Type ].Enabled ~= Enabled ) then
 		self.Types[ Type ].Enabled = Enabled;
@@ -108,12 +108,12 @@ function me:SetTypeEnabled ( Type, Enabled )
 	end
 end
 --- @return True if this blob type is enabled.
-function me:GetTypeEnabled ( Type )
+function NS:GetTypeEnabled ( Type )
 	return self.Types[ Type ].Enabled;
 end
 
 --- Sets the background fill alpha for the given blob type.
-function me:SetTypeAlpha ( Type, Alpha )
+function NS:SetTypeAlpha ( Type, Alpha )
 	Alpha = assert( tonumber( Alpha or 0.25 ), "Alpha must be numeric." );
 	Alpha = max( 0, min( 1, Alpha ) );
 	if ( self.Types[ Type ].Alpha ~= Alpha ) then
@@ -123,13 +123,13 @@ function me:SetTypeAlpha ( Type, Alpha )
 	end
 end
 --- @return Alpha value between 0 and 1 for this blob type.
-function me:GetTypeAlpha ( Type )
+function NS:GetTypeAlpha ( Type )
 	return self.Types[ Type ].Alpha;
 end
 
 --- Sets the blob render style for the given blob type.
--- @see me.Styles
-function me:SetTypeStyle ( Type, Style )
+-- @see NS.Styles
+function NS:SetTypeStyle ( Type, Style )
 	Style = Style or Type; -- Default to style named after type
 	assert( self.Styles[ Style ], "Unknown style value." );
 	if ( self.Types[ Type ].Style ~= Style ) then
@@ -139,7 +139,7 @@ function me:SetTypeStyle ( Type, Style )
 	end
 end
 --- @return A string identifier for this blob type's style.
-function me:GetTypeStyle ( Type )
+function NS:GetTypeStyle ( Type )
 	return self.Types[ Type ].Style;
 end
 
@@ -152,7 +152,7 @@ do
 	};
 	--- Sets which method to filter quest blobs by.
 	-- @param Filter  "NONE", "WATCHED" for tracked quests, or "SELECTED" for super tracked quests.
-	function me:SetQuestsFilter ( Filter )
+	function NS:SetQuestsFilter ( Filter )
 		Filter = Filter or "NONE";
 		assert( Values[ Filter ], "Unknown filter type." );
 		if ( QuestsFilter ~= Filter ) then
@@ -162,7 +162,7 @@ do
 		end
 	end
 	--- @return Current quests filter method.
-	function me:GetQuestsFilter ()
+	function NS:GetQuestsFilter ()
 		return QuestsFilter;
 	end
 end
@@ -170,7 +170,7 @@ end
 local BlobQuality;
 --- Adjusts rendering options of all blob types for performance or quality.
 -- @param Quality  Float within [0,1], where 0 is max performance and 1 is max quality.
-function me:SetQuality ( Quality )
+function NS:SetQuality ( Quality )
 	Quality = assert( tonumber( Quality or 0 ), "Quality must be numeric." );
 	Quality = max( 0, min( 1, Quality ) );
 	if ( BlobQuality ~= Quality ) then
@@ -180,12 +180,12 @@ function me:SetQuality ( Quality )
 	end
 end
 --- @return Render quality float value between 0 and 1.
-function me:GetQuality ()
+function NS:GetQuality ()
 	return BlobQuality;
 end
 
 
 
 
-me.Frame:SetScript( "OnEvent", me.Frame.OnEvent );
-me.Frame:RegisterEvent( "ADDON_LOADED" );
+NS.Frame:SetScript( "OnEvent", NS.Frame.OnEvent );
+NS.Frame:RegisterEvent( "ADDON_LOADED" );

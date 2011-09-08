@@ -5,16 +5,16 @@
 
 
 local _Underscore = _Underscore;
-local me = select( 2, ... );
-_Underscore.ActionBars = me;
+local NS = select( 2, ... );
+_Underscore.ActionBars = NS;
 
-me.Frame = CreateFrame( "Frame" );
+NS.Frame = CreateFrame( "Frame" );
 
-me.BackdropBottomLeft = _Underscore.Backdrop.Create( UIParent, false ); -- Flag prevents anchoring to UIParent
-me.BackdropBottomRight = _Underscore.Backdrop.Create( UIParent, false );
-me.BackdropRight = _Underscore.Backdrop.Create( UIParent, false );
+NS.BackdropBottomLeft = _Underscore.Backdrop.Create( UIParent, false ); -- Flag prevents anchoring to UIParent
+NS.BackdropBottomRight = _Underscore.Backdrop.Create( UIParent, false );
+NS.BackdropRight = _Underscore.Backdrop.Create( UIParent, false );
 
-me.DominosProfile = "_Underscore";
+NS.DominosProfile = "_Underscore";
 
 local NumSideButtonsExcluded = 4; -- Action buttons from the top to leave outside of the backdrop
 
@@ -70,18 +70,18 @@ end
 
 
 --- Hook to skin new class buttons as Dominos creates them.
-function me:ClassBarAddButton ( ID )
+function NS:ClassBarAddButton ( ID )
 	ActionButtonModify( _G[ "DominosClassButton"..ID ], 180 );
 end
 --- Positions parts of the UI around bars once they are created.
-function me.Frame:PLAYER_LOGIN ()
+function NS.Frame:PLAYER_LOGIN ()
 	self.PLAYER_LOGIN = nil;
 
 	local OldProfile = Dominos.db:GetCurrentProfile();
-	if ( OldProfile ~= me.DominosProfile ) then
+	if ( OldProfile ~= NS.DominosProfile ) then
 		-- Create _Underscore bar profile if necessary
-		if ( Dominos:MatchProfile( me.DominosProfile ) ) then
-			Dominos:SetProfile( me.DominosProfile );
+		if ( Dominos:MatchProfile( NS.DominosProfile ) ) then
+			Dominos:SetProfile( NS.DominosProfile );
 		else
 			Dominos:ResetProfile();
 			-- Configure new profile
@@ -131,7 +131,7 @@ function me.Frame:PLAYER_LOGIN ()
 			Dominos.Frame:Get( "menu" ):HideFrame();
 			Dominos.Frame:Get( "vehicle" ):HideFrame();
 
-			Dominos:SaveProfile( me.DominosProfile );
+			Dominos:SaveProfile( NS.DominosProfile );
 		end
 	end
 
@@ -142,25 +142,25 @@ function me.Frame:PLAYER_LOGIN ()
 			ActionButtonModify( Button, 180 );
 		end
 	end
-	hooksecurefunc( Dominos.ClassBar, "AddButton", me.ClassBarAddButton );
+	hooksecurefunc( Dominos.ClassBar, "AddButton", NS.ClassBarAddButton );
 
 
 	-- Add backdrops
 	local Padding = _Underscore.Backdrop.Padding;
-	local Backdrop = me.BackdropBottomLeft;
+	local Backdrop = NS.BackdropBottomLeft;
 	Backdrop:SetPoint( "BOTTOMLEFT", Dominos.Frame:Get( 1 ), -Padding, -Padding );
 	Backdrop:SetPoint( "TOPRIGHT", Dominos.Frame:Get( 6 ), Padding, Padding );
 
-	local Backdrop = me.BackdropBottomRight;
+	local Backdrop = NS.BackdropBottomRight;
 	Backdrop:SetPoint( "BOTTOMRIGHT", Dominos.Frame:Get( "bags" ), Padding, -Padding );
 	Backdrop:SetPoint( "TOPLEFT", Dominos.Frame:Get( 5 ), -Padding, Padding );
 
 	-- Hide borders where the right bar connects to the bottom-right one
-	Backdrop[ 1 ]:SetPoint( "RIGHT", me.BackdropRight, "LEFT" );
+	Backdrop[ 1 ]:SetPoint( "RIGHT", NS.BackdropRight, "LEFT" );
 	Backdrop[ 2 ]:Hide();
 
-	local Backdrop = me.BackdropRight;
-	Backdrop:SetPoint( "BOTTOMRIGHT", me.BackdropBottomRight, "TOPRIGHT" );
+	local Backdrop = NS.BackdropRight;
+	Backdrop:SetPoint( "BOTTOMRIGHT", NS.BackdropBottomRight, "TOPRIGHT" );
 	Backdrop:SetPoint( "TOPLEFT", _G[ "MultiBarLeftButton"..( NumSideButtonsExcluded + 1 ) ], -Padding, Padding );
 
 	-- Hide borders on the bottom of the right bar
@@ -198,8 +198,8 @@ end
 
 
 
-me.Frame:SetScript( "OnEvent", _Underscore.Frame.OnEvent );
-me.Frame:RegisterEvent( "PLAYER_LOGIN" );
+NS.Frame:SetScript( "OnEvent", _Underscore.Frame.OnEvent );
+NS.Frame:RegisterEvent( "PLAYER_LOGIN" );
 
 -- Remove icon borders on buttons
 for Index = 1, NUM_MULTIBAR_BUTTONS do

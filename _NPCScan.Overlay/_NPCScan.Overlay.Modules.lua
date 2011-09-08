@@ -5,13 +5,13 @@
 
 
 local AddOnName, Overlay = ...;
-local me = CreateFrame( "Frame" );
-Overlay.Modules = me;
+local NS = CreateFrame( "Frame" );
+Overlay.Modules = NS;
 
 
-me.AlphaDefault = 0.5;
+NS.AlphaDefault = 0.5;
 
-me.List = {};
+NS.List = {};
 local LoadQueue = {};
 
 
@@ -23,7 +23,7 @@ local function GetEnabled ( Options, Name )
 end
 --- @return Alpha from options table.
 local function GetAlpha ( Options, Name )
-	return Options.ModulesAlpha[ Name ] or me.List[ Name ].AlphaDefault or me.AlphaDefault;
+	return Options.ModulesAlpha[ Name ] or NS.List[ Name ].AlphaDefault or NS.AlphaDefault;
 end
 
 
@@ -96,7 +96,7 @@ local function Load ( Module )
 			Module.OnLoad = nil;
 		end
 
-		if ( me.Synchronized and GetEnabled( Overlay.Options, Module.Name ) ) then
+		if ( NS.Synchronized and GetEnabled( Overlay.Options, Module.Name ) ) then
 			Enable( Module );
 		end
 	end
@@ -143,7 +143,7 @@ end
 do
 	--- Calls OnMapUpdate for all enabled modules.
 	local function UpdateModules ( Map )
-		for Name, Module in pairs( me.List ) do
+		for Name, Module in pairs( NS.List ) do
 			if ( Module.Enabled and Module.OnMapUpdate ) then
 				SafeCall( Module.OnMapUpdate, Module, Map );
 			end
@@ -152,7 +152,7 @@ do
 	local UpdateAll, UpdateMaps = false, {};
 	--- Throttles full map updates to once per frame.
 	local function OnUpdate ()
-		me:SetScript( "OnUpdate", nil );
+		NS:SetScript( "OnUpdate", nil );
 
 		if ( UpdateAll ) then
 			UpdateAll = false;
@@ -166,7 +166,7 @@ do
 	end
 	--- Updates a map for all active modules.
 	-- @param Map  MapID to update, or nil to update all maps.
-	function me.UpdateMap ( Map )
+	function NS.UpdateMap ( Map )
 		if ( not UpdateAll ) then
 			if ( Map ) then
 				UpdateMaps[ Map ] = true;
@@ -174,7 +174,7 @@ do
 				UpdateAll = true;
 				wipe( UpdateMaps );
 			end
-			me:SetScript( "OnUpdate", OnUpdate );
+			NS:SetScript( "OnUpdate", OnUpdate );
 		end
 	end
 end
@@ -185,23 +185,23 @@ end
 -- @param Module  Module table containing methods.
 -- @param Label  Name displayed in configuration screen.
 -- @param ParentAddOn  Optional dependency to wait on to load.
-function me.Register ( Name, Module, Label, ParentAddOn )
-	me.List[ Name ] = Module;
+function NS.Register ( Name, Module, Label, ParentAddOn )
+	NS.List[ Name ] = Module;
 	Register( Module, Name, Label, ParentAddOn );
 end
 --- Disables the module for the session and disables its configuration controls.
-function me.Unregister ( Name )
-	Unregister( me.List[ Name ] );
+function NS.Unregister ( Name )
+	Unregister( NS.List[ Name ] );
 end
 
 
 --- Enables a module.
 -- @return True if enabled successfully.
-function me.Enable ( Name )
+function NS.Enable ( Name )
 	if ( not Overlay.Options.Modules[ Name ] ) then
 		Overlay.Options.Modules[ Name ] = true;
 
-		local Module = me.List[ Name ];
+		local Module = NS.List[ Name ];
 		Module.Config:SetEnabled( true );
 		Enable( Module );
 		return true;
@@ -209,11 +209,11 @@ function me.Enable ( Name )
 end
 --- Disables a module.
 -- @return True if disabled successfully.
-function me.Disable ( Name )
+function NS.Disable ( Name )
 	if ( GetEnabled( Overlay.Options, Name ) ) then
 		Overlay.Options.Modules[ Name ] = false;
 
-		local Module = me.List[ Name ];
+		local Module = NS.List[ Name ];
 		Module.Config:SetEnabled( false );
 		Disable( Module );
 		return true;
@@ -221,11 +221,11 @@ function me.Disable ( Name )
 end
 --- Sets the module's alpha setting.
 -- @return True if changed.
-function me.SetAlpha ( Name, Alpha )
+function NS.SetAlpha ( Name, Alpha )
 	if ( Alpha ~= Overlay.Options.ModulesAlpha[ Name ] ) then
 		Overlay.Options.ModulesAlpha[ Name ] = Alpha;
 
-		local Module = me.List[ Name ];
+		local Module = NS.List[ Name ];
 		Module.Config.Alpha:SetValue( Alpha );
 		SetAlpha( Module, Alpha );
 		return true;
@@ -236,7 +236,7 @@ end
 
 
 --- Loads modules that depend on other mods as they load.
-function me:ADDON_LOADED ( _, ParentAddOn )
+function NS:ADDON_LOADED ( _, ParentAddOn )
 	ParentAddOn = ParentAddOn:upper();
 	local Module = LoadQueue[ ParentAddOn ];
 	if ( Module ) then
@@ -248,7 +248,7 @@ function me:ADDON_LOADED ( _, ParentAddOn )
 	end
 end
 --- Common event handler.
-function me:OnEvent ( Event, ... )
+function NS:OnEvent ( Event, ... )
 	if ( self[ Event ] ) then
 		return self[ Event ]( self, Event, ... );
 	end
@@ -256,20 +256,20 @@ end
 do
 	local OptionsExtraDefault = {};
 	--- Synchronizes settings of all modules.
-	function me.OnSynchronize ( Options )
-		me.Synchronized = true;
+	function NS.OnSynchronize ( Options )
+		NS.Synchronized = true;
 		-- Preserve options for missing modules
 		for Name, Enabled in pairs( Options.Modules ) do
-			if ( not me.List[ Name ] ) then
+			if ( not NS.List[ Name ] ) then
 				Overlay.Options.Modules[ Name ] = Enabled;
 				Overlay.Options.ModulesAlpha[ Name ] = Options.ModulesAlpha[ Name ];
 			end
 		end
 
 		-- Synchronize extra module options
-		for Name, Module in pairs( me.List ) do
-			me[ GetEnabled( Options, Name ) and "Enable" or "Disable" ]( Name );
-			me.SetAlpha( Name, GetAlpha( Options, Name ) );
+		for Name, Module in pairs( NS.List ) do
+			NS[ GetEnabled( Options, Name ) and "Enable" or "Disable" ]( Name );
+			NS.SetAlpha( Name, GetAlpha( Options, Name ) );
 
 			if ( Module.OnSynchronize ) then
 				if ( not Overlay.Options.ModulesExtra[ Name ] ) then
@@ -279,7 +279,7 @@ do
 			end
 		end
 		for Name, Extra in pairs( Options.ModulesExtra ) do
-			if ( not me.List[ Name ] ) then
+			if ( not NS.List[ Name ] ) then
 				Overlay.Options.ModulesExtra[ Name ] = CopyTable( Extra );
 			end
 		end
@@ -289,5 +289,5 @@ end
 
 
 
-me:SetScript( "OnEvent", me.OnEvent );
-me:RegisterEvent( "ADDON_LOADED" );
+NS:SetScript( "OnEvent", NS.OnEvent );
+NS:RegisterEvent( "ADDON_LOADED" );

@@ -6,11 +6,11 @@
 
 local _UTF = select( 2, ... );
 local L = _UTF.L;
-local me = CreateFrame( "Frame" );
-_UTF.Customize.TextReplace = me;
+local NS = CreateFrame( "Frame" );
+_UTF.Customize.TextReplace = NS;
 
-me.Key = L.CUSTOMIZE_TEXTREPLACE_FIND;
-me.Value = L.CUSTOMIZE_TEXTREPLACE_REPLACE;
+NS.Key = L.CUSTOMIZE_TEXTREPLACE_FIND;
+NS.Value = L.CUSTOMIZE_TEXTREPLACE_REPLACE;
 
 
 
@@ -28,7 +28,7 @@ end
 
 
 --- Rebuilds the table of entities.
-function me.Update ()
+function NS.Update ()
 	local Table = _UTF.Customize.Table;
 	Table:SetHeader( L.CUSTOMIZE_TEXTREPLACE_INDEX, L.CUSTOMIZE_TEXTREPLACE_FIND, L.CUSTOMIZE_TEXTREPLACE_REPLACE );
 	for Index, Data in ipairs( _UTFOptions.Chat.TextReplacements ) do
@@ -36,15 +36,15 @@ function me.Update ()
 	end
 end
 --- Callback that specifies new edit box text when a table entry is selected.
-function me.OnSelect ( Index )
+function NS.OnSelect ( Index )
 	return unpack( _UTFOptions.Chat.TextReplacements[ Index ], 1, 2 );
 end
 
 
 --- Adds a search pattern and replacement to the data set.
 -- @return True if added successfully.
-function me.Add ( Key, Value )
-	if ( me.CanAdd( Key, Value ) ) then
+function NS.Add ( Key, Value )
+	if ( NS.CanAdd( Key, Value ) ) then
 		local TextReplacements = _UTFOptions.Chat.TextReplacements;
 		local Index = KeyToIndex( Key );
 		local Value = _UTF.ReplaceCharacterReferences( Value );
@@ -58,8 +58,8 @@ function me.Add ( Key, Value )
 end
 --- Removes a text replacement by key from the data set.
 -- @return True if removed successfully.
-function me.Remove ( Key )
-	local Index = me.CanRemove( Key );
+function NS.Remove ( Key )
+	local Index = NS.CanRemove( Key );
 	if ( Index ) then
 		tremove( _UTFOptions.Chat.TextReplacements, Index );
 		return true;
@@ -69,14 +69,14 @@ end
 
 --- Validates that a key is present and can be removed.
 -- @return The unique identifier that can be used to select this removable value in the table.
-function me.CanRemove ( Key )
+function NS.CanRemove ( Key )
 	if ( Key ~= "" ) then
 		return KeyToIndex( Key );
 	end
 end
 --- Validates that a key/value pair can be added.
 -- @return True if the values can be added successfully.
-function me.CanAdd ( Key, Value )
+function NS.CanAdd ( Key, Value )
 	if ( Key ~= "" ) then
 		local Index = KeyToIndex( Key );
 		if ( not Index or _UTFOptions.Chat.TextReplacements[ Index ][ 2 ] ~= Value ) then
@@ -88,4 +88,4 @@ end
 
 
 
-_UTF.Customize.AddPane( me, L.CUSTOMIZE_TEXTREPLACE_TITLE );
+_UTF.Customize.AddPane( NS, L.CUSTOMIZE_TEXTREPLACE_TITLE );

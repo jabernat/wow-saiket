@@ -7,12 +7,12 @@
 
 local Tools = select( 2, ... );
 local L = Tools.L;
-local me = CreateFrame( "Frame" );
-Tools.Config = me;
+local NS = CreateFrame( "Frame" );
+Tools.Config = NS;
 
-me.Controls = CreateFrame( "Frame", nil, me );
-me.TableContainer = CreateFrame( "Frame", nil, me );
-me.EditBox = CreateFrame( "EditBox", "_NPCScanToolsConfigEditBox", nil, "InputBoxTemplate" );
+NS.Controls = CreateFrame( "Frame", nil, NS );
+NS.TableContainer = CreateFrame( "Frame", nil, NS );
+NS.EditBox = CreateFrame( "EditBox", "_NPCScanToolsConfigEditBox", nil, "InputBoxTemplate" );
 
 
 
@@ -28,11 +28,11 @@ do
 		end
 	end
 	--- Adds additional click actions to table rows.
-	function me:TableRowOnClick ( Button )
+	function NS:TableRowOnClick ( Button )
 		if ( Button == "RightButton" ) then -- Select text for copying.
-			me.EditBox:SetElement( GetMouseoverRegion( self:GetRegions() ) );
+			NS.EditBox:SetElement( GetMouseoverRegion( self:GetRegions() ) );
 		else -- Clear selection if row already selected.
-			me.EditBox:SetElement();
+			NS.EditBox:SetElement();
 			local Table = self:GetParent().Table;
 			if ( not Table:SetSelection( self ) ) then
 				Table:SetSelection();
@@ -42,42 +42,42 @@ do
 end
 do
 	local function AddHooks( Row, ... )
-		Row:SetScript( "OnClick", me.TableRowOnClick );
+		Row:SetScript( "OnClick", NS.TableRowOnClick );
 		return Row, ...;
 	end
 	local CreateRowBackup;
 	--- Hooks row methods when a new row is created.
-	function me:TableCreateRow ( ... )
+	function NS:TableCreateRow ( ... )
 		return AddHooks( CreateRowBackup( self, ... ) );
 	end
 	--- Enables context sensitive actions based on which row is selected.
 	local function OnSelect ( self, NpcID, ... )
-		for Index, Control in ipairs( me.Controls ) do
+		for Index, Control in ipairs( NS.Controls ) do
 			if ( Control.OnSelect ) then
 				Control:OnSelect( NpcID, ... );
 			end
 		end
 	end
 	--- Creates the data table and fills it when first shown.
-	function me:OnShow ()
+	function NS:OnShow ()
 		self:SetScript( "OnShow", nil );
-		me.OnShow = nil;
+		NS.OnShow = nil;
 
-		me.Table = LibStub( "LibTextTable-1.1" ).New( nil, me.TableContainer );
-		me.Table:SetAllPoints();
-		me.Table.OnSelect = OnSelect;
+		NS.Table = LibStub( "LibTextTable-1.1" ).New( nil, NS.TableContainer );
+		NS.Table:SetAllPoints();
+		NS.Table.OnSelect = OnSelect;
 
-		me.Table:SetHeader( L.CONFIG_MAPID, L.CONFIG_ID, L.CONFIG_NAME, L.CONFIG_DISPLAYID );
-		me.Table:SetSortHandlers( true, true, true, true );
-		me.Table:SetSortColumn( 1 ); -- Default to MapID
-		CreateRowBackup = me.Table.CreateRow;
-		me.Table.CreateRow = me.TableCreateRow;
+		NS.Table:SetHeader( L.CONFIG_MAPID, L.CONFIG_ID, L.CONFIG_NAME, L.CONFIG_DISPLAYID );
+		NS.Table:SetSortHandlers( true, true, true, true );
+		NS.Table:SetSortColumn( 1 ); -- Default to MapID
+		CreateRowBackup = NS.Table.CreateRow;
+		NS.Table.CreateRow = NS.TableCreateRow;
 
-		me.EditBox:SetFontObject( me.Table.ElementFont );
+		NS.EditBox:SetFontObject( NS.Table.ElementFont );
 
 		for NpcID, Name in pairs( Tools.NPCNames ) do
 			local MapID = Tools.NPCMapIDs[ NpcID ];
-			me.Table:AddRow( NpcID,
+			NS.Table:AddRow( NpcID,
 				tostring( GetMapNameByID( MapID ) or MapID or "" ),
 				NpcID, Name,
 				Tools.NPCDisplayIDs[ NpcID ] or 0 );
@@ -87,7 +87,7 @@ end
 
 
 --- Mimic region Element with this editbox to copy text contents.
-function me.EditBox:SetElement ( Element )
+function NS.EditBox:SetElement ( Element )
 	if ( Element ) then
 		self:SetParent( Element:GetParent() );
 		self:SetAllPoints( Element );
@@ -100,7 +100,7 @@ function me.EditBox:SetElement ( Element )
 	end
 end
 --- Removes the mimic editbox if its target gets hidden.
-function me.EditBox:OnHide ()
+function NS.EditBox:OnHide ()
 	self:ClearFocus();
 	self:SetText( "" );
 	self:Hide(); -- Hide when parent is hidden
@@ -108,7 +108,7 @@ end
 
 
 --- Register context sensitive GUI Control to update when selection changes.
-function me.Controls:Add ( Control )
+function NS.Controls:Add ( Control )
 	Control:SetParent( self );
 	if ( #self == 0 ) then
 		Control:SetPoint( "BOTTOMLEFT" );
@@ -118,7 +118,7 @@ function me.Controls:Add ( Control )
 
 	self[ #self + 1 ] = Control;
 	if ( Control.OnSelect ) then
-		local Selection = me.Table and me.Table:GetSelection();
+		local Selection = NS.Table and NS.Table:GetSelection();
 		if ( Selection ) then
 			Control:OnSelect( Selection:GetData() );
 		else
@@ -130,16 +130,16 @@ end
 
 
 
-me.name = L.CONFIG_TITLE;
-me.parent = _NPCScan.Config.name;
-me:Hide();
-me:SetScript( "OnShow", me.OnShow );
+NS.name = L.CONFIG_TITLE;
+NS.parent = _NPCScan.Config.name;
+NS:Hide();
+NS:SetScript( "OnShow", NS.OnShow );
 
 -- Pane title
-local Title = me:CreateFontString( nil, "ARTWORK", "GameFontNormalLarge" );
+local Title = NS:CreateFontString( nil, "ARTWORK", "GameFontNormalLarge" );
 Title:SetPoint( "TOPLEFT", 16, -16 );
 Title:SetText( L.CONFIG_TITLE );
-local SubText = me:CreateFontString( nil, "ARTWORK", "GameFontHighlightSmall" );
+local SubText = NS:CreateFontString( nil, "ARTWORK", "GameFontHighlightSmall" );
 SubText:SetPoint( "TOPLEFT", Title, "BOTTOMLEFT", 0, -8 );
 SubText:SetPoint( "RIGHT", -32, 0 );
 SubText:SetHeight( 32 );
@@ -149,20 +149,20 @@ SubText:SetText( L.CONFIG_DESC );
 
 
 -- Control panel for selected NPC
-me.Controls:SetPoint( "BOTTOMLEFT", 16, 16 );
-me.Controls:SetPoint( "RIGHT", -16, 0 );
-me.Controls:SetHeight( 24 );
+NS.Controls:SetPoint( "BOTTOMLEFT", 16, 16 );
+NS.Controls:SetPoint( "RIGHT", -16, 0 );
+NS.Controls:SetHeight( 24 );
 
 
 -- Place table
-me.TableContainer:SetPoint( "TOPLEFT", SubText, -2, -28 );
-me.TableContainer:SetPoint( "BOTTOMRIGHT", me.Controls, "TOPRIGHT" );
-me.TableContainer:SetBackdrop( { bgFile = [[Interface\DialogFrame\UI-DialogBox-Background]]; } );
+NS.TableContainer:SetPoint( "TOPLEFT", SubText, -2, -28 );
+NS.TableContainer:SetPoint( "BOTTOMRIGHT", NS.Controls, "TOPRIGHT" );
+NS.TableContainer:SetBackdrop( { bgFile = [[Interface\DialogFrame\UI-DialogBox-Background]]; } );
 
-me.EditBox:Hide();
-me.EditBox:SetScript( "OnHide", me.EditBox.OnHide );
-me.EditBox:SetScript( "OnEnterPressed", me.EditBox.OnHide );
-me.EditBox:SetScript( "OnEscapePressed", me.EditBox.OnHide );
+NS.EditBox:Hide();
+NS.EditBox:SetScript( "OnHide", NS.EditBox.OnHide );
+NS.EditBox:SetScript( "OnEnterPressed", NS.EditBox.OnHide );
+NS.EditBox:SetScript( "OnEscapePressed", NS.EditBox.OnHide );
 
 
-InterfaceOptions_AddCategory( me );
+InterfaceOptions_AddCategory( NS );

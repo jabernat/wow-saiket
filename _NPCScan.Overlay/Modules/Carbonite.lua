@@ -19,14 +19,14 @@ if ( not ( WorldMap and WorldMap.Registered ) ) then
 end
 
 local CarboniteMap = NxMap1.NxM1;
-local me = CreateFrame( "Frame", nil, WorldMap );
-Overlay.Modules.Carbonite = me;
+local NS = CreateFrame( "Frame", nil, WorldMap );
+Overlay.Modules.Carbonite = NS;
 
 
 
 
 --- Repositions the canvas as the Carbonite map moves.
-function me:OnUpdate ()
+function NS:OnUpdate ()
 	CarboniteMap:CZF( CarboniteMap.Con, CarboniteMap.Zon, WorldMap, 1 );
 	WorldMap.RangeRing.Child:SetScale( WorldMap:GetScale() ); -- CarboniteMap:CZF also sets point
 	WorldMap.KeyParent:SetAlpha( NxMap1.NxW.BaF ); -- Obey window's "Fade Out" setting
@@ -36,9 +36,9 @@ end
 
 
 --- Adjusts the canvas when leaving Carbonite mode to view the default WorldMap.
-function me:WorldMapFrameOnShow ()
+function NS:WorldMapFrameOnShow ()
 	if ( WorldMap.Loaded ) then
-		me:Hide(); -- Stop updating with Carbonite
+		NS:Hide(); -- Stop updating with Carbonite
 		WorldMap.Toggle:Show();
 
 		-- Undo Carbonite scaling/fading
@@ -58,9 +58,9 @@ function me:WorldMapFrameOnShow ()
 	end
 end
 --- Adjusts the canvas when entering Carbonite mode.
-function me:WorldMapFrameOnHide ()
+function NS:WorldMapFrameOnHide ()
 	if ( WorldMap.Loaded ) then
-		me:Show(); -- Begin updating with Carbonite
+		NS:Show(); -- Begin updating with Carbonite
 		WorldMap.Toggle:Hide();
 
 		local ScrollFrame = CarboniteMap.TSF;
@@ -80,21 +80,21 @@ end
 
 
 local function OnUnload ()
-	me.OnUpdate = nil;
+	NS.OnUpdate = nil;
 	if ( WorldMap.Loaded ) then
-		me:SetScript( "OnUpdate", nil );
+		NS:SetScript( "OnUpdate", nil );
 	end
 end
 local function OnLoad ()
-	me:SetScript( "OnUpdate", me.OnUpdate );
+	NS:SetScript( "OnUpdate", NS.OnUpdate );
 
 	-- Give the canvas an explicit size so it paints correctly in Carbonite mode
 	WorldMap:SetSize( WorldMapDetailFrame:GetSize() );
 
 	-- Hooks to swap between Carbonite's map mode and the default UI map mode
-	WorldMapFrame:HookScript( "OnShow", me.WorldMapFrameOnShow );
-	WorldMapFrame:HookScript( "OnHide", me.WorldMapFrameOnHide );
-	me[ WorldMapFrame:IsVisible() and "WorldMapFrameOnShow" or "WorldMapFrameOnHide" ]( WorldMapFrame );
+	WorldMapFrame:HookScript( "OnShow", NS.WorldMapFrameOnShow );
+	WorldMapFrame:HookScript( "OnHide", NS.WorldMapFrameOnHide );
+	NS[ WorldMapFrame:IsVisible() and "WorldMapFrameOnShow" or "WorldMapFrameOnHide" ]( WorldMapFrame );
 end
 
 --- Sets a module's handler, or hooks the old one if it exists.

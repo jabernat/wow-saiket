@@ -4,8 +4,8 @@
   ****************************************************************************]]
 
 
-local me = CreateFrame( "Frame", nil, WorldFrame );
-select( 2, ... ).Crosshairs = me;
+local NS = CreateFrame( "Frame", nil, WorldFrame );
+select( 2, ... ).Crosshairs = NS;
 
 
 
@@ -13,14 +13,14 @@ select( 2, ... ).Crosshairs = me;
 do
 	local Backup = Screenshot;
 	--- Hide the crosshairs just before screenshots are taken.
-	function me.Screenshot ( ... )
-		me:Hide();
+	function NS.Screenshot ( ... )
+		NS:Hide();
 		return Backup( ... );
 	end
 end
 
 --- Reshows the crosshairs after a screenshot is taken.
-function me:OnEvent ()
+function NS:OnEvent ()
 	-- SCREENSHOT_SUCCEEDED / SCREENSHOT_FAILED
 	self:Show();
 end
@@ -28,17 +28,17 @@ end
 
 
 
-Screenshot = me.Screenshot;
-me:SetScript( "OnEvent", me.OnEvent );
-me:RegisterEvent( "SCREENSHOT_FAILED" );
-me:RegisterEvent( "SCREENSHOT_SUCCEEDED" );
+Screenshot = NS.Screenshot;
+NS:SetScript( "OnEvent", NS.OnEvent );
+NS:RegisterEvent( "SCREENSHOT_FAILED" );
+NS:RegisterEvent( "SCREENSHOT_SUCCEEDED" );
 
-me:SetFrameStrata( "BACKGROUND" );
-me:SetPoint( "CENTER" );
-me:SetSize( 32, 32 );
-me:SetAlpha( 0.75 );
+NS:SetFrameStrata( "BACKGROUND" );
+NS:SetPoint( "CENTER" );
+NS:SetSize( 32, 32 );
+NS:SetAlpha( 0.75 );
 
-local Texture = me:CreateTexture( nil, "ARTWORK" );
+local Texture = NS:CreateTexture( nil, "ARTWORK" );
 Texture:SetAllPoints();
 Texture:SetTexture( [[Interface\AddOns\]]..( ... )..[[\Skin\Crosshairs]] );
 Texture:SetTexCoord( 1, 0, 1, 0 ); -- Note: For some reason, flipping it makes it sharper

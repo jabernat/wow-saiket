@@ -4,12 +4,12 @@
   ****************************************************************************]]
 
 
-local me = select( 2, ... );
-_Underscore.Bags = me;
+local NS = select( 2, ... );
+_Underscore.Bags = NS;
 
-me.Frame = CreateFrame( "Frame", nil, UIParent );
+NS.Frame = CreateFrame( "Frame", nil, UIParent );
 
-me.ContainerEnv = setmetatable( { -- Global variable overrides without taint
+NS.ContainerEnv = setmetatable( { -- Global variable overrides without taint
 	CONTAINER_OFFSET_X = 0;
 	CONTAINER_OFFSET_Y = 0;
 }, { __index = _G } );
@@ -21,17 +21,17 @@ local BagPadding = 10 / BagScale; -- Distance between action bars and bags
 
 
 --- Allows scaled bags to fill the entire _Underscore.Bags frame.
-function me.ContainerEnv.GetScreenHeight ()
-	return me.Frame:GetHeight();
+function NS.ContainerEnv.GetScreenHeight ()
+	return NS.Frame:GetHeight();
 end
 
 
 do
 	local Backup = updateContainerFrameAnchors;
 	--- Reparents bags before positioning them for scaling.
-	function me.Update ( ... )
+	function NS.Update ( ... )
 		for Index, Name in ipairs( ContainerFrame1.bags ) do
-			_G[ Name ]:SetParent( me.Frame );
+			_G[ Name ]:SetParent( NS.Frame );
 		end
 		return Backup( ... );
 	end
@@ -41,7 +41,7 @@ end
 
 
 --- Scrolls the stack amount using the scrollwheel.
-function me:StackOnMouseWheel ( Delta )
+function NS:StackOnMouseWheel ( Delta )
 	if ( IsModifiedClick( "_UNDERSCORE_BAGS_SCROLLALL" ) ) then
 		self.split = Delta > 0 and self.maxStack or 1;
 		StackSplitText:SetText( self.split );
@@ -54,14 +54,14 @@ end
 
 
 
-me.Frame:SetPoint( "TOPLEFT", _Underscore.TopMargin, "BOTTOMLEFT", BagPadding, -BagPadding );
-me.Frame:SetPoint( "BOTTOMRIGHT", _Underscore.ActionBars.BackdropRight, "BOTTOMLEFT", -BagPadding, BagPadding );
-me.Frame:SetScale( BagScale );
+NS.Frame:SetPoint( "TOPLEFT", _Underscore.TopMargin, "BOTTOMLEFT", BagPadding, -BagPadding );
+NS.Frame:SetPoint( "BOTTOMRIGHT", _Underscore.ActionBars.BackdropRight, "BOTTOMLEFT", -BagPadding, BagPadding );
+NS.Frame:SetScale( BagScale );
 
-setfenv( updateContainerFrameAnchors, me.ContainerEnv );
-updateContainerFrameAnchors = me.Update;
+setfenv( updateContainerFrameAnchors, NS.ContainerEnv );
+updateContainerFrameAnchors = NS.Update;
 
 
 -- Enable scrolling the stack split dialog
 StackSplitFrame:EnableMouseWheel( true );
-StackSplitFrame:SetScript( "OnMouseWheel", me.StackOnMouseWheel );
+StackSplitFrame:SetScript( "OnMouseWheel", NS.StackOnMouseWheel );

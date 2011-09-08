@@ -5,12 +5,12 @@
 
 
 local Chat = select( 2, ... );
-local me = {};
-Chat.URLs = me;
+local NS = {};
+Chat.URLs = NS;
 local L = Chat.L;
 
 
-me.Formats = {
+NS.Formats = {
 	-- Address with domain name
 	[[ (%a[-_%w.]*%.%a%a+)(/[^][ <>"{}|\^~]*) ?]],
 	[[ ?"(%a[-_%w.]*%.%a%a+)(/[^][ <>"{}|\^~]*)" ?]],
@@ -53,9 +53,9 @@ do
 	end
 	local ipairs = ipairs;
 	--- @return Text with all URLs converted to hyperlinks.
-	function me.Filter ( Text )
+	function NS.Filter ( Text )
 		Text = " "..Text; -- Allows links at the start to be recognized
-		for _, Format in ipairs( me.Formats ) do
+		for _, Format in ipairs( NS.Formats ) do
 			if ( Text:match( Format ) ) then
 				Text = Text:gsub( Format, GsubReplace );
 			end
@@ -64,8 +64,8 @@ do
 	end
 end
 --- Formats URLs as links in standard chat events.
-function me:MessageEventHandler ( Event, Message, ... )
-	local NewMessage = me.Filter( Message );
+function NS:MessageEventHandler ( Event, Message, ... )
+	local NewMessage = NS.Filter( Message );
 	if ( NewMessage ~= Message ) then
 		return nil, NewMessage, ...;
 	end
@@ -75,7 +75,7 @@ end
 do
 	local Backup = SetItemRef;
 	--- Handles clicking and re-linking URL hyperlinks.
-	function me.SetItemRef ( Link, Text, ... )
+	function NS.SetItemRef ( Link, Text, ... )
 		if ( Link:sub( 1, 4 ) ~= "url:" ) then
 			return Backup( Link, Text, ... );
 		end
@@ -111,6 +111,6 @@ local ChatTypes = {
 };
 
 for _, Event in ipairs( ChatTypes ) do
-	ChatFrame_AddMessageEventFilter( Event, me.MessageEventHandler );
+	ChatFrame_AddMessageEventFilter( Event, NS.MessageEventHandler );
 end
-SetItemRef = me.SetItemRef;
+SetItemRef = NS.SetItemRef;

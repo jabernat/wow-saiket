@@ -9,67 +9,67 @@ _LatencyOptions = {
 };
 
 
-local AddOnName, me = ...;
-_Latency = me;
+local AddOnName, NS = ...;
+_Latency = NS;
 local LibGraph = LibStub( "LibGraph-2.0" );
 
-me.COMM_PREFIX = "_L";
-assert( RegisterAddonMessagePrefix( me.COMM_PREFIX ), "No free comm prefixes available." );
+NS.COMM_PREFIX = "_L";
+assert( RegisterAddonMessagePrefix( NS.COMM_PREFIX ), "No free comm prefixes available." );
 
-me.Frame = CreateFrame( "Frame", nil, UIParent );
-me.Resize = CreateFrame( "Button", nil, me.Frame );
+NS.Frame = CreateFrame( "Frame", nil, UIParent );
+NS.Resize = CreateFrame( "Button", nil, NS.Frame );
 
 -- Configuration
-me.PingRate = 0.1; -- Minimum time between pings
-me.UpdateRate = 0.5; -- Time between graph/label updates
-me.PingDataAge = 5; -- Time to keep ping time data in the running average
-me.MaxSimultaneousPings = 1; -- Max number of pings that can be sent at once
+NS.PingRate = 0.1; -- Minimum time between pings
+NS.UpdateRate = 0.5; -- Time between graph/label updates
+NS.PingDataAge = 5; -- Time to keep ping time data in the running average
+NS.MaxSimultaneousPings = 1; -- Max number of pings that can be sent at once
 
 
-me.PingData = {};
-me.PingCutoff = 0;
-me.NumPings = 0; -- Number of pings en-route
+NS.PingData = {};
+NS.PingCutoff = 0;
+NS.NumPings = 0; -- Number of pings en-route
 
-me.TopColor = { r = 0.8, g = 0.8, b = 17 / 32 }; -- Gold
-me.BottomColor = { r = 0.4; g = 0.4; b = 0.0; a = 0.4; }; -- Modified based on ping
-me.Padding = 6;
+NS.TopColor = { r = 0.8, g = 0.8, b = 17 / 32 }; -- Gold
+NS.BottomColor = { r = 0.4; g = 0.4; b = 0.0; a = 0.4; }; -- Modified based on ping
+NS.Padding = 6;
 
 
 
 
 --- Toggles the mod window.
 -- @param Enable  True or false to show/hide the window, or nil to toggle.
-function me.Toggle ( Enable )
+function NS.Toggle ( Enable )
 	if ( Enable == nil ) then
-		Enable = not me.Frame:IsShown();
+		Enable = not NS.Frame:IsShown();
 	end
 
 	if ( Enable ) then
-		me.Frame:Show();
+		NS.Frame:Show();
 	else
-		me.Frame:Hide();
+		NS.Frame:Hide();
 	end
 end
 --- Toggles whether the frame is locked or not.
 -- @param Enable  True or false to lock/unlock controls, or nil to toggle.
-function me.ToggleLocked ( Locked )
+function NS.ToggleLocked ( Locked )
 	if ( Locked == nil ) then
 		Locked = not _LatencyOptions.IsLocked;
 	end
 	_LatencyOptions.IsLocked = Locked;
 	local Enable = not Locked;
 
-	me.Frame:EnableMouse( Enable );
-	me.Close:EnableMouse( Enable );
-	me.Close:GetNormalTexture():SetDesaturated( Locked );
-	me.Resize:EnableMouse( Enable );
+	NS.Frame:EnableMouse( Enable );
+	NS.Close:EnableMouse( Enable );
+	NS.Close:GetNormalTexture():SetDesaturated( Locked );
+	NS.Resize:EnableMouse( Enable );
 	if ( Enable ) then
-		me.Close:Enable();
-		me.Resize:Enable();
+		NS.Close:Enable();
+		NS.Resize:Enable();
 	else
-		me.Close:Disable();
-		me.Resize:Disable();
-		me.Frame:StopMovingOrSizing();
+		NS.Close:Disable();
+		NS.Resize:Disable();
+		NS.Frame:StopMovingOrSizing();
 	end
 end
 
@@ -81,7 +81,7 @@ do
 	-- @param String  Encoded time string from _Latency.TimeEncode.
 	-- @return Floating point time relative to GetTime().
 	-- @see _Latency.TimeEncode
-	function me.TimeDecode ( String )
+	function NS.TimeDecode ( String )
 		local FP1, FP2 = String:byte( 1, 2 );
 		local FloatPart = ( lshift( FP1 - 0x80, 7 ) + ( FP2 - 0x80 ) ) / MaxFloatPart;
 
@@ -100,7 +100,7 @@ do
 	--- Encodes the current time to a string.
 	-- Format is "[fH][fL][iL][i2][i3]...[iH]" with (f)loat, (i)nt, (H)igh, (L)ow.
 	-- @return Binary data string with no embedded nulls.
-	function me.TimeEncode ()
+	function NS.TimeEncode ()
 		local Time = GetTime();
 		local IntPart = floor( Time );
 		local FloatPart = floor( ( Time - IntPart ) * MaxFloatPart + 0.5 );
@@ -121,15 +121,15 @@ end
 
 
 --- Returns a running average of the player's ping.
-function me.GetAveragePing ()
-	local MinSendTime = GetTime() - me.PingDataAge;
+function NS.GetAveragePing ()
+	local MinSendTime = GetTime() - NS.PingDataAge;
 	local Count, Total = 0, 0;
-	for SendTime, Latency in pairs( me.PingData ) do
+	for SendTime, Latency in pairs( NS.PingData ) do
 		if ( SendTime + Latency > MinSendTime ) then
 			Count = Count + 1;
 			Total = Total + Latency;
 		else
-			me.PingData[ SendTime ] = nil;
+			NS.PingData[ SendTime ] = nil;
 		end
 	end
 	if ( Count ~= 0 and Total ~= 0 ) then
@@ -139,41 +139,41 @@ end
 
 
 --- Starts resizing the frame.
-function me.Resize:OnMouseDown ()
+function NS.Resize:OnMouseDown ()
 	self:GetParent():StartSizing( "BOTTOMRIGHT" );
 end
 --- Stops resizing the frame.
-function me.Resize:OnMouseUp ()
+function NS.Resize:OnMouseUp ()
 	self:GetParent():StopMovingOrSizing();
 end
 
 
 --- Saves position and size information before logging out.
-function me.Frame:PLAYER_LOGOUT ()
+function NS.Frame:PLAYER_LOGOUT ()
 	local Options, _ = _LatencyOptions;
-	Options.Width, Options.Height = me.Frame:GetSize();
-	Options.Point, _, _, Options.X, Options.Y = me.Frame:GetPoint();
+	Options.Width, Options.Height = NS.Frame:GetSize();
+	Options.Point, _, _, Options.X, Options.Y = NS.Frame:GetPoint();
 end
 --- Prevent pings from before zoning from being read after loading.
-function me.Frame:PLAYER_ENTERING_WORLD ()
-	me.PingCutoff = GetTime();
-	me.NumPings = 0; -- Prevent issue with losing messages when entering/leaving BGs.
+function NS.Frame:PLAYER_ENTERING_WORLD ()
+	NS.PingCutoff = GetTime();
+	NS.NumPings = 0; -- Prevent issue with losing messages when entering/leaving BGs.
 end
 --- Reads round trip ping messages and times them.
-function me.Frame:CHAT_MSG_ADDON ( _, Prefix, Message, Type, Author )
-	if ( Prefix == me.COMM_PREFIX and Type == "WHISPER" and Author == UnitName( "player" ) ) then
-		if ( me.NumPings > 0 ) then
-			me.NumPings = me.NumPings - 1;
+function NS.Frame:CHAT_MSG_ADDON ( _, Prefix, Message, Type, Author )
+	if ( Prefix == NS.COMM_PREFIX and Type == "WHISPER" and Author == UnitName( "player" ) ) then
+		if ( NS.NumPings > 0 ) then
+			NS.NumPings = NS.NumPings - 1;
 		end
 
-		local SendTime = me.TimeDecode( Message );
-		if ( SendTime >= me.PingCutoff ) then
-			me.PingData[ SendTime ] = GetTime() - SendTime;
+		local SendTime = NS.TimeDecode( Message );
+		if ( SendTime >= NS.PingCutoff ) then
+			NS.PingData[ SendTime ] = GetTime() - SendTime;
 		end
 	end
 end
 --- Applies settings when loaded.
-function me.Frame:ADDON_LOADED ( Event, AddOn )
+function NS.Frame:ADDON_LOADED ( Event, AddOn )
 	if ( AddOn == AddOnName ) then
 		self:UnregisterEvent( Event );
 		self[ Event ] = nil;
@@ -182,11 +182,11 @@ function me.Frame:ADDON_LOADED ( Event, AddOn )
 		self:ClearAllPoints();
 		self:SetPoint( Options.Point or "CENTER", nil, Options.Point or "CENTER", Options.X or 0, Options.Y or 0 );
 		self:SetSize( Options.Width or 300, Options.Height or 80 );
-		me.ToggleLocked( Options.IsLocked );
+		NS.ToggleLocked( Options.IsLocked );
 	end
 end
 --- Global event handler.
-function me.Frame:OnEvent ( Event, ... )
+function NS.Frame:OnEvent ( Event, ... )
 	if ( self[ Event ] ) then
 		return self[ Event ]( self, Event, ... );
 	end
@@ -194,60 +194,60 @@ end
 
 
 do
-	local LastPing = me.PingRate;
-	local LastUpdate = me.UpdateRate;
+	local LastPing = NS.PingRate;
+	local LastUpdate = NS.UpdateRate;
 	local min, max = min, max;
 	--- Periodically sends ping messages and updates the graph display.
-	function me.Frame:OnUpdate ( Elapsed )
+	function NS.Frame:OnUpdate ( Elapsed )
 		LastPing = LastPing + Elapsed;
-		if ( LastPing >= me.PingRate ) then
+		if ( LastPing >= NS.PingRate ) then
 			LastPing = 0;
-			if ( me.NumPings < me.MaxSimultaneousPings ) then
-				SendAddonMessage( me.COMM_PREFIX, me.TimeEncode(), "WHISPER", UnitName( "player" ) );
-				me.NumPings = me.NumPings + 1;
+			if ( NS.NumPings < NS.MaxSimultaneousPings ) then
+				SendAddonMessage( NS.COMM_PREFIX, NS.TimeEncode(), "WHISPER", UnitName( "player" ) );
+				NS.NumPings = NS.NumPings + 1;
 			end
 		end
 
 		LastUpdate = LastUpdate + Elapsed;
-		if ( LastUpdate >= me.UpdateRate ) then
+		if ( LastUpdate >= NS.UpdateRate ) then
 			LastUpdate = 0;
-			local Ping = me.GetAveragePing();
+			local Ping = NS.GetAveragePing();
 			if ( Ping ) then
-				me.Graph:AddTimeData( Ping * me.UpdateRate );
-				me.Label:SetFormattedText( me.L.LABEL_FORMAT, Ping );
+				NS.Graph:AddTimeData( Ping * NS.UpdateRate );
+				NS.Label:SetFormattedText( NS.L.LABEL_FORMAT, Ping );
 			end
 
-			local Value = me.Graph:GetValue( me.Graph.XMax );
-			me.BottomColor.r = min( Value / 400, 1 );
-			me.BottomColor.g = min( max( 1 - Value / 150 * 0.4, 0 ), 0.4 );
-			me.Graph:SetBarColors( me.BottomColor, me.TopColor );
+			local Value = NS.Graph:GetValue( NS.Graph.XMax );
+			NS.BottomColor.r = min( Value / 400, 1 );
+			NS.BottomColor.g = min( max( 1 - Value / 150 * 0.4, 0 ), 0.4 );
+			NS.Graph:SetBarColors( NS.BottomColor, NS.TopColor );
 		end
 	end
 end
 
 
 --- Resizes the graph to match the window size.
-function me.Frame:OnSizeChanged ()
+function NS.Frame:OnSizeChanged ()
 	-- Note: LibGraph-2.0 doesn't hook SetSize, so use SetWidth/Height.
-	me.Graph:SetWidth( self:GetWidth() - me.Padding * 2 );
-	me.Graph:SetHeight( self:GetHeight() - me.Padding * 2 - 18 );
+	NS.Graph:SetWidth( self:GetWidth() - NS.Padding * 2 );
+	NS.Graph:SetHeight( self:GetHeight() - NS.Padding * 2 - 18 );
 end
 --- Prints a notice for how to reopen the window.
-function me.Frame:OnHide ()
+function NS.Frame:OnHide ()
 	if ( not self:IsShown() ) then -- Was directly hidden (i.e. didn't hide interface)
 		self:SetScript( "OnHide", nil ); -- Only print once
 		self.OnHide = nil;
-		print( me.L.ONCLOSE_NOTICE );
+		print( NS.L.ONCLOSE_NOTICE );
 	end
 end
 
 
 --- Slash command handler to toggle the window or lock it.
-function me.SlashCommand ( Input )
-	if ( Input and Input:trim():lower() == me.L.LOCK ) then
-		me.ToggleLocked();
+function NS.SlashCommand ( Input )
+	if ( Input and Input:trim():lower() == NS.L.LOCK ) then
+		NS.ToggleLocked();
 	else
-		me.Toggle();
+		NS.Toggle();
 	end
 end
 
@@ -255,7 +255,7 @@ end
 
 
 -- Set up window
-local Frame = me.Frame;
+local Frame = NS.Frame;
 Frame:Hide();
 Frame:SetScale( 0.8 );
 Frame:SetFrameStrata( "MEDIUM" );
@@ -270,26 +270,26 @@ Frame:SetBackdrop( {
 Frame:EnableMouse( true );
 Frame:SetResizable( true );
 Frame:SetClampedToScreen( true );
-Frame:SetClampRectInsets( me.Padding + 2, -me.Padding, -me.Padding - 18, me.Padding );
+Frame:SetClampRectInsets( NS.Padding + 2, -NS.Padding, -NS.Padding - 18, NS.Padding );
 Frame:CreateTitleRegion():SetAllPoints();
 Frame:SetDontSavePosition( true );
 -- Close button
-me.Close = CreateFrame( "Button", nil, Frame, "UIPanelCloseButton" );
-me.Close:SetPoint( "TOPRIGHT", 4, 4 );
+NS.Close = CreateFrame( "Button", nil, Frame, "UIPanelCloseButton" );
+NS.Close:SetPoint( "TOPRIGHT", 4, 4 );
 -- Title
 local Title = Frame:CreateFontString( nil, "ARTWORK", "GameFontHighlight" );
-Title:SetText( me.L.TITLE );
+Title:SetText( NS.L.TITLE );
 Title:SetPoint( "TOPLEFT", Frame, 11, -6 );
 -- Ping label
-me.Label = Frame:CreateFontString( nil, "ARTWORK", "GameFontNormal" );
-me.Label:SetPoint( "LEFT", Title, "RIGHT", 4, 0 );
-me.Label:SetPoint( "RIGHT", me.Close, "LEFT", -4, 0 );
-me.Label:SetJustifyH( "RIGHT" );
+NS.Label = Frame:CreateFontString( nil, "ARTWORK", "GameFontNormal" );
+NS.Label:SetPoint( "LEFT", Title, "RIGHT", 4, 0 );
+NS.Label:SetPoint( "RIGHT", NS.Close, "LEFT", -4, 0 );
+NS.Label:SetJustifyH( "RIGHT" );
 
 -- Graph
 local Graph = LibGraph:CreateGraphRealtime( "_LatencyGraph", Frame, "BOTTOMLEFT", "BOTTOMLEFT",
-	me.Padding + 2, me.Padding, Frame:GetWidth() - me.Padding * 2, Frame:GetHeight() - me.Padding * 2 - 18 );
-me.Graph = Graph;
+	NS.Padding + 2, NS.Padding, Frame:GetWidth() - NS.Padding * 2, Frame:GetHeight() - NS.Padding * 2 - 18 );
+NS.Graph = Graph;
 Graph:SetGridSpacing( 1.0, 100 );
 Graph:SetYMax( 2.0 );
 Graph:SetXAxis( -11, -1 );
@@ -303,7 +303,7 @@ Graph:SetFilterRadius( 2 );
 
 
 -- Resize grip
-local Resize = me.Resize;
+local Resize = NS.Resize;
 Resize:SetSize( 30, 30 );
 Resize:SetPoint( "BOTTOMRIGHT", 6, -4 );
 Resize:SetFrameLevel( Graph:GetFrameLevel() + 2 );
@@ -324,7 +324,7 @@ Frame:RegisterEvent( "ADDON_LOADED" );
 Frame:RegisterEvent( "PLAYER_LOGOUT" );
 
 
-SlashCmdList[ "_LATENCY_TOGGLE" ] = me.SlashCommand;
+SlashCmdList[ "_LATENCY_TOGGLE" ] = NS.SlashCommand;
 -- Un-cache stub slash commands created by AddonLoader
 for Command in GetAddOnMetadata( AddOnName, "X-LoadOn-Slash" ):gmatch( "/[^%s,]+" ) do
 	Command = Command:upper();

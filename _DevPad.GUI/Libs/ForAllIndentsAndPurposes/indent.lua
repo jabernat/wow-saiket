@@ -24,7 +24,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 -- Eric Tetz <erictetz@gmail.com>, and then further modified by Saiket
 -- <saiket.wow@gmail.com> for _DevPad.
 --
--- @usage Apply auto-indentation/syntax highlighting to an editboxe like this:
+-- @usage Apply auto-indentation/syntax highlighting to an editbox like this:
 --   lib.Enable(Editbox, [TabWidth], [ColorTable], [SuppressIndent]);
 -- If TabWidth or ColorTable are omitted, those featues won't be applied.
 -- ColorTable should map TokenIDs and string Token values to color codes.

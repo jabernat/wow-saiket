@@ -4,15 +4,15 @@
   ****************************************************************************]]
 
 
-local AddOnName, me = ...;
-_DevPad = me;
+local AddOnName, NS = ...;
+_DevPad = NS;
 
-me.Frame = CreateFrame( "Frame" );
-me.Callbacks = LibStub( "CallbackHandler-1.0" ):New( me );
-me.ReceiveQueue = {};
-me.ReceiveIgnored = { [ UnitName( "player" ):lower() ] = true; };
+NS.Frame = CreateFrame( "Frame" );
+NS.Callbacks = LibStub( "CallbackHandler-1.0" ):New( NS );
+NS.ReceiveQueue = {};
+NS.ReceiveIgnored = { [ UnitName( "player" ):lower() ] = true; };
 
-me.COMM_PREFIX = "_DP";
+NS.COMM_PREFIX = "_DP";
 
 local AceSerializer, AceComm = LibStub( "AceSerializer-3.0" ), LibStub( "AceComm-3.0" );
 
@@ -20,11 +20,11 @@ local AceSerializer, AceComm = LibStub( "AceSerializer-3.0" ), LibStub( "AceComm
 
 
 --- Prints a message in the default chat window.
-function me.Print ( Message, Color )
+function NS.Print ( Message, Color )
 	if ( not Color ) then
 		Color = NORMAL_FONT_COLOR;
 	end
-	DEFAULT_CHAT_FRAME:AddMessage( me.L.PRINT_FORMAT:format( Message ), Color.r, Color.g, Color.b );
+	DEFAULT_CHAT_FRAME:AddMessage( NS.L.PRINT_FORMAT:format( Message ), Color.r, Color.g, Color.b );
 end
 do
 	--- Raises an error message when pcall fails.
@@ -36,7 +36,7 @@ do
 	end
 	--- Throws a non-breaking error if a call fails.
 	-- @return Success boolean prepended to Script's returns like pcall.
-	function me.SafeCall ( Script, ... )
+	function NS.SafeCall ( Script, ... )
 		return HandleError( pcall( Script, ... ) );
 	end
 end
@@ -50,7 +50,7 @@ do
 		Name = type( Name ) == "string" and Name or "";
 		if ( self._Name ~= Name ) then
 			self._Name = Name;
-			me.Callbacks:Fire( "ObjectSetName", self );
+			NS.Callbacks:Fire( "ObjectSetName", self );
 			return true;
 		end
 	end
@@ -59,7 +59,7 @@ do
 	-- @return Number of bytes being transmitted.
 	function ObjectMeta.__index:Send ( ... )
 		local Data = AceSerializer:Serialize( "Object", self:Pack() );
-		AceComm:SendCommMessage( me.COMM_PREFIX, Data, ... );
+		AceComm:SendCommMessage( NS.COMM_PREFIX, Data, ... );
 		return #Data;
 	end
 	-- @return A copy of this object.
@@ -137,7 +137,7 @@ do
 		return Meta;
 	end
 	--- @return The class' metatable index table if the class exists.
-	function me:GetClass ( Name )
+	function NS:GetClass ( Name )
 		if ( Classes[ Name ] ) then
 			return Classes[ Name ].__index;
 		end
@@ -179,7 +179,7 @@ do
 				ObjectLast._Next = Object._Previous._Next;
 				Object._Previous._Next = Object;
 				ObjectLast._Next._Previous = ObjectLast;
-				me.Callbacks:Fire( "FolderInsert", self, Object, Index );
+				NS.Callbacks:Fire( "FolderInsert", self, Object, Index );
 				return true;
 			end
 		end
@@ -194,7 +194,7 @@ do
 				tremove( self, assert( Object:GetIndex(),
 					"Child not found in parent folder." ) )._Parent = nil;
 				if ( FireEvents ) then
-					me.Callbacks:Fire( "FolderRemove", self, Object );
+					NS.Callbacks:Fire( "FolderRemove", self, Object );
 				end
 				return true;
 			end
@@ -205,7 +205,7 @@ do
 		Closed = not not Closed;
 		if ( self._Closed ~= Closed ) then
 			self._Closed = Closed;
-			me.Callbacks:Fire( "FolderSetClosed", self );
+			NS.Callbacks:Fire( "FolderSetClosed", self );
 			return true;
 		end
 	end
@@ -242,7 +242,7 @@ do
 		end
 		for Index, Child in ipairs( Settings ) do
 			if ( type( Child ) == "table" ) then
-				local Class = me:GetClass( Child.Class );
+				local Class = NS:GetClass( Child.Class );
 				if ( Class ) then
 					local Object = Class:New();
 					self:Insert( Object );
@@ -270,7 +270,7 @@ do
 		Text = type( Text ) == "string" and Text or "";
 		if ( self._Text ~= Text ) then
 			self._Text, self._TextChanged = Text, true;
-			me.Callbacks:Fire( "ScriptSetText", self );
+			NS.Callbacks:Fire( "ScriptSetText", self );
 			return true;
 		end
 	end
@@ -280,7 +280,7 @@ do
 		AutoRun = not not AutoRun;
 		if ( self._AutoRun ~= AutoRun ) then
 			self._AutoRun = AutoRun;
-			me.Callbacks:Fire( "ScriptSetAutoRun", self );
+			NS.Callbacks:Fire( "ScriptSetAutoRun", self );
 			return true;
 		end
 	end
@@ -290,7 +290,7 @@ do
 		Lua = not not Lua;
 		if ( self._Lua ~= Lua ) then
 			self._Lua = Lua;
-			me.Callbacks:Fire( "ScriptSetLua", self );
+			NS.Callbacks:Fire( "ScriptSetLua", self );
 			return true;
 		end
 	end
@@ -345,7 +345,7 @@ end
 --- Fires a callback for each script in Object.
 -- @param Callback  Function or method name.
 -- @param ...  Extra args passed after Script to Callback.
-function me:IterateScripts ( Object, Callback, ... )
+function NS:IterateScripts ( Object, Callback, ... )
 	if ( Object._Class == "Script" ) then
 		return ( Object[ Callback ] or Callback )( Object, ... );
 	elseif ( Object._Class == "Folder" ) then
@@ -366,7 +366,7 @@ do
 	-- @param Pattern  Name pattern to match by.
 	-- @param Object  Optional object to search in, or FolderRoot if nil.
 	-- @return Each matching script, or nil if none found.
-	function me:FindScripts ( Pattern, Object )
+	function NS:FindScripts ( Pattern, Object )
 		wipe( Matches );
 		self:IterateScripts( Object or self.FolderRoot, Callback, Pattern );
 		return unpack( Matches );
@@ -374,7 +374,7 @@ do
 end
 --- Gets an object by path from the folder root.
 -- @see Object:GetRelObject
-function me:GetAbsObject ( ... )
+function NS:GetAbsObject ( ... )
 	return self.FolderRoot:GetRelObject( ... );
 end
 
@@ -387,7 +387,7 @@ do
 	};
 	local ReopenPrinted = false;
 	--- Receives and validates objects sent from other players.
-	function me:OnCommReceived ( Prefix, Text, Channel, Author )
+	function NS:OnCommReceived ( Prefix, Text, Channel, Author )
 		if ( self.ReceiveIgnored[ Author:lower() ] ) then
 			return;
 		end
@@ -419,37 +419,37 @@ do
 	end
 end
 --- Load saved variables and run auto-run scripts.
-function me.Frame:ADDON_LOADED ( Event, AddOn )
+function NS.Frame:ADDON_LOADED ( Event, AddOn )
 	if ( AddOn == AddOnName ) then
 		self:UnregisterEvent( Event );
 		self[ Event ] = nil;
 
 
 		local Options = _DevPadOptions;
-		local Scripts = ( Options and Options.Scripts ) or me.DefaultScripts;
-		me.DefaultScripts = nil;
+		local Scripts = ( Options and Options.Scripts ) or NS.DefaultScripts;
+		NS.DefaultScripts = nil;
 		if ( Scripts ) then
-			me.FolderRoot:Unpack( Scripts );
+			NS.FolderRoot:Unpack( Scripts );
 		end
-		me:IterateScripts( me.FolderRoot, function ( Script )
+		NS:IterateScripts( NS.FolderRoot, function ( Script )
 			if ( Script._AutoRun ) then
-				me.SafeCall( Script );
+				NS.SafeCall( Script );
 			end
 		end );
-		AceComm.RegisterComm( me, me.COMM_PREFIX );
+		AceComm.RegisterComm( NS, NS.COMM_PREFIX );
 		-- Replace settings last in case of errors loading them
 		self:RegisterEvent( "PLAYER_LOGOUT" );
 		--_DevPadOptions = nil; -- GC options
 	end
 end
 --- Save settings before exiting.
-function me.Frame:PLAYER_LOGOUT ()
+function NS.Frame:PLAYER_LOGOUT ()
 	_DevPadOptions = {
-		Scripts = me.FolderRoot:Pack();
+		Scripts = NS.FolderRoot:Pack();
 	};
 end
 --- Global event handler.
-function me.Frame:OnEvent ( Event, ... )
+function NS.Frame:OnEvent ( Event, ... )
 	if ( self[ Event ] ) then
 		return self[ Event ]( self, Event, ... );
 	end
@@ -457,30 +457,30 @@ end
 
 
 --- Slash command handler to run scripts by name pattern.
-function me.SlashCommand ( Input )
+function NS.SlashCommand ( Input )
 	local Pattern = Input:trim();
 	if ( Pattern == "" ) then
 		local Loaded, ErrorReason = LoadAddOn( "_DevPad.GUI" );
 		if ( Loaded ) then
-			local List = me.GUI.List;
+			local List = NS.GUI.List;
 			if ( List:IsVisible() ) then
 				List:Hide();
 			else
 				List:Show();
 			end
 		else
-			me.Print( me.L.SLASH_GUIERROR_FORMAT:format(
+			NS.Print( NS.L.SLASH_GUIERROR_FORMAT:format(
 				_G[ "ADDON_"..ErrorReason ] ), RED_FONT_COLOR );
 		end
 	else
-		local Script1, Script2 = me:FindScripts( Pattern );
+		local Script1, Script2 = NS:FindScripts( Pattern );
 		if ( Script1 ) then
 			if ( Script2 ) then -- Multiple matches for ambiguous pattern
-				me.Print( me.L.SLASH_RUN_AMBIGUOUS_FORMAT:format( Pattern, Script1._Name ) );
+				NS.Print( NS.L.SLASH_RUN_AMBIGUOUS_FORMAT:format( Pattern, Script1._Name ) );
 			end
-			return me.SafeCall( Script1 );
+			return NS.SafeCall( Script1 );
 		else
-			me.Print( me.L.SLASH_RUN_MISSING_FORMAT:format( Pattern ), RED_FONT_COLOR );
+			NS.Print( NS.L.SLASH_RUN_MISSING_FORMAT:format( Pattern ), RED_FONT_COLOR );
 		end
 	end
 end
@@ -488,10 +488,10 @@ end
 
 
 
-setmetatable( me, { __call = me.GetAbsObject; } );
-me.FolderRoot = me:GetClass( "Folder" ):New();
+setmetatable( NS, { __call = NS.GetAbsObject; } );
+NS.FolderRoot = NS:GetClass( "Folder" ):New();
 
-me.Frame:SetScript( "OnEvent", me.Frame.OnEvent );
-me.Frame:RegisterEvent( "ADDON_LOADED" );
+NS.Frame:SetScript( "OnEvent", NS.Frame.OnEvent );
+NS.Frame:RegisterEvent( "ADDON_LOADED" );
 
-SlashCmdList[ "_DEVPAD" ] = me.SlashCommand;
+SlashCmdList[ "_DEVPAD" ] = NS.SlashCommand;

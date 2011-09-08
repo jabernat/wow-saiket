@@ -5,14 +5,14 @@
 
 
 local _Corpse = select( 2, ... );
-local me = {};
-_Corpse.Dungeons = me;
+local NS = {};
+_Corpse.Dungeons = NS;
 
 
 
 
 --- Populates the corpse tooltip for the given player using party member data.
-function me:Update ( Name )
+function NS:Update ( Name )
 	for Index = 1, GetNumPartyMembers() do
 		local UnitID = "party"..Index;
 

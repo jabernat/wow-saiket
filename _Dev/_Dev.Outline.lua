@@ -12,12 +12,12 @@ _DevOptions.Outline = {
 
 local _Dev = _Dev;
 local L = _DevLocalization;
-local me = CreateFrame( "Frame" );
-_Dev.Outline = me;
+local NS = CreateFrame( "Frame" );
+_Dev.Outline = NS;
 
-me.TemplateName = "_DevOutlineTemplate";
-me.UnusedOutlines = {}; -- Pool of unused outline frames
-me.Targets = {}; -- Keys are target frames, values are their outline frames
+NS.TemplateName = "_DevOutlineTemplate";
+NS.UnusedOutlines = {}; -- Pool of unused outline frames
+NS.Targets = {}; -- Keys are target frames, values are their outline frames
 local Colors = { -- Random colors used for outlines
 	GREEN_FONT_COLOR,
 	RAID_CLASS_COLORS.WARLOCK,
@@ -31,8 +31,8 @@ local Colors = { -- Random colors used for outlines
 	RED_FONT_COLOR,
 	GRAY_FONT_COLOR
 };
-me.Colors = Colors;
-me.ColorIndex = 0;
+NS.Colors = Colors;
+NS.ColorIndex = 0;
 
 
 
@@ -42,7 +42,7 @@ me.ColorIndex = 0;
   * Description: Remove existing borders from all frames and retuns the number *
   *   removed.                                                                 *
   ****************************************************************************]]
-function me:RemoveAll ()
+function NS:RemoveAll ()
 	local Count = 0;
 	for Region, OutlineFrame in pairs( self.Targets ) do
 		OutlineFrame:Hide();
@@ -61,7 +61,7 @@ end
   * Description: Attempts to remove existing borders from the given frame and  *
   *   returns true if successful.                                              *
   ****************************************************************************]]
-function me:Remove ( Region )
+function NS:Remove ( Region )
 	local OutlineFrame = self.Targets[ Region ];
 	if ( OutlineFrame ) then
 		OutlineFrame:Hide();
@@ -80,7 +80,7 @@ end
   * Description: Attempts to outline the given frame with a set of transparent *
   *   borders and returns true if successful.                                  *
   ****************************************************************************]]
-function me:Add ( Region )
+function NS:Add ( Region )
 	if ( not self.Targets[ Region ] and _Dev.IsUIObject( Region ) and Region:IsObjectType( "Region" ) ) then
 		local OutlineFrame = next( self.UnusedOutlines ) or CreateFrame( "Frame", nil, self, self.TemplateName );
 
@@ -101,7 +101,7 @@ end
   * Function: _Dev.Outline:OnSetTarget                                         *
   * Description: Called for outlines when they are anchored to a target frame. *
   ****************************************************************************]]
-function me:OnSetTarget ( Target )
+function NS:OnSetTarget ( Target )
 	if ( Target ) then
 		self.NameText:SetText( Target:GetName() );
 	end
@@ -112,7 +112,7 @@ end
   * Function: _Dev.Outline:ArrowOnLoad                                         *
   * Description: Registers the new outline's arrow and initializes it.         *
   ****************************************************************************]]
-function me:ArrowOnLoad ()
+function NS:ArrowOnLoad ()
 	self:SetPosition( 0.0125, 0.0125, 0 );
 	self:GetParent().Arrow = self;
 end
@@ -120,7 +120,7 @@ end
   * Function: _Dev.Outline:ArrowOnHide                                         *
   * Description: Resets the arrow flash animation for next show.               *
   ****************************************************************************]]
-function me:ArrowOnHide ()
+function NS:ArrowOnHide ()
 	self:SetSequenceTime( 0, 0 );
 end
 --[[****************************************************************************
@@ -133,7 +133,7 @@ do
 	local GetScreenWidth = GetScreenWidth;
 	local atan = math.atan; -- Note: Global atan() uses degrees!
 	local Pi = math.pi;
-	function me:OutlineOnUpdate ()
+	function NS:OutlineOnUpdate ()
 		local CenterX2, CenterY2 = self:GetCenter();
 		local Threshold = _DevOptions.Outline.BoundsThreshold;
 		local Scale = UIParent:GetEffectiveScale();
@@ -159,7 +159,7 @@ end
   * Function: _Dev.Outline:OutlineOnLoad                                       *
   * Description: Registers the new outline and initializes it.                 *
   ****************************************************************************]]
-function me:OutlineOnLoad ()
+function NS:OutlineOnLoad ()
 	local Borders = { self:GetRegions() };
 	self.Borders = Borders;
 	-- Remove name text from borders list
@@ -172,8 +172,8 @@ function me:OutlineOnLoad ()
 	end
 	tinsert( Borders, self.Arrow:GetRegions() ); -- Add dot on arrow
 
-	me.ColorIndex = mod( me.ColorIndex, #Colors ) + 1;
-	me.SetColor( self, Colors[ me.ColorIndex ] );
+	NS.ColorIndex = mod( NS.ColorIndex, #Colors ) + 1;
+	NS.SetColor( self, Colors[ NS.ColorIndex ] );
 end
 
 
@@ -183,7 +183,7 @@ end
   * Function: _Dev.Outline:SetColor                                            *
   * Description: Set the color of the outline borders.                         *
   ****************************************************************************]]
-function me:SetColor ( Color )
+function NS:SetColor ( Color )
 	self.Color = Color;
 	for _, Border in ipairs( self.Borders ) do
 		Border:SetVertexColor( Color.r, Color.g, Color.b );
@@ -194,14 +194,14 @@ end
   * Function: _Dev.Outline.Update                                              *
   * Description: Syncs options with actual saved settings.                     *
   ****************************************************************************]]
-function me.Update ()
-	me:SetAlpha( _DevOptions.Outline.BorderAlpha );
+function NS.Update ()
+	NS:SetAlpha( _DevOptions.Outline.BorderAlpha );
 end
 --[[****************************************************************************
   * Function: _Dev.Outline:OnLoad                                              *
   * Description: Loads saved variables.                                        *
   ****************************************************************************]]
-function me:OnLoad ()
+function NS:OnLoad ()
 	self.Update();
 end
 
@@ -212,16 +212,16 @@ end
   * Function: _Dev.Outline.Toggle                                              *
   * Description: Simplified handler that prints status to the chat frame.      *
   ****************************************************************************]]
-function me.Toggle ( Region, DefaultName )
-	if ( me.Targets[ Region ] ) then
-		if ( me:Remove( Region ) ) then
+function NS.Toggle ( Region, DefaultName )
+	if ( NS.Targets[ Region ] ) then
+		if ( NS:Remove( Region ) ) then
 			_Dev.Print( L.OUTLINE_MESSAGE_FORMAT:format( L.OUTLINE_REMOVE_FORMAT:format( Region:GetName() or tostring( DefaultName ) ) ) );
 			return true;
 		end
 	else -- Not already outlined
-		if ( me:Add( Region ) ) then
+		if ( NS:Add( Region ) ) then
 			-- Display the color of the added borders in the message
-			local Color = me.Targets[ Region ].Color;
+			local Color = NS.Targets[ Region ].Color;
 			_Dev.Print( L.OUTLINE_MESSAGE_FORMAT:format( L.OUTLINE_ADD_FORMAT:format(
 				Color.r * 255 + 0.5, Color.g * 255 + 0.5, Color.b * 255 + 0.5,
 				Region:GetName() or tostring( DefaultName ) ) ) );
@@ -240,26 +240,26 @@ end
   * Function: _Dev.Outline.SlashCommand                                        *
   * Description: Slash command chat handler for the _Dev.Outline functions.    *
   ****************************************************************************]]
-function me.SlashCommand ( Input )
+function NS.SlashCommand ( Input )
 	if ( Input and not Input:find( "^%s*$" ) ) then
 		local Success, Region = _Dev.Exec( Input );
 
 		if ( not Success ) then
 			_Dev.Error( L.OUTLINE_MESSAGE_FORMAT:format( Region ) );
 		else
-			me.Toggle( Region, Input );
+			NS.Toggle( Region, Input );
 		end
 	else
-		_Dev.Print( L.OUTLINE_MESSAGE_FORMAT:format( L.OUTLINE_REMOVEALL_FORMAT:format( me:RemoveAll() ) ) );
+		_Dev.Print( L.OUTLINE_MESSAGE_FORMAT:format( L.OUTLINE_REMOVEALL_FORMAT:format( NS:RemoveAll() ) ) );
 	end
 end
 
 
 
 
-me:SetFrameStrata( "TOOLTIP" );
-me.Update();
+NS:SetFrameStrata( "TOOLTIP" );
+NS.Update();
 
-outline = me.Toggle;
+outline = NS.Toggle;
 
-SlashCmdList[ "_DEV_OUTLINE" ] = me.SlashCommand;
+SlashCmdList[ "_DEV_OUTLINE" ] = NS.SlashCommand;

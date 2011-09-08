@@ -7,11 +7,11 @@
 if ( IsAddOnLoaded( "Carbonite" ) ) then
 	return;
 end
-local me = select( 2, ... );
-_Underscore.Minimap = me;
+local NS = select( 2, ... );
+_Underscore.Minimap = NS;
 
-me.Frame = CreateFrame( "Frame" );
-me.PingName = CreateFrame( "ScrollFrame", nil, Minimap );
+NS.Frame = CreateFrame( "Frame" );
+NS.PingName = CreateFrame( "ScrollFrame", nil, Minimap );
 
 local IconSize = 14;
 local MinimapScale = 0.9;
@@ -20,7 +20,7 @@ local MinimapScale = 0.9;
 
 
 --- Hook to broadcast a ping on a square minimap.
-function me:OnMouseUp ()
+function NS:OnMouseUp ()
 	local CursorX, CursorY = GetCursorPosition();
 	local CenterX, CenterY = self:GetCenter();
 	local Scale = self:GetEffectiveScale();
@@ -32,14 +32,14 @@ end
 
 
 --- Displays the name of the player who pinged.
-function me.PingName:MINIMAP_PING ( _, UnitID )
+function NS.PingName:MINIMAP_PING ( _, UnitID )
 	self:Show();
 	self:SetAlpha( 1 );
 	self.Text:SetText( UnitName( UnitID ) );
 	self.Duration = MINIMAPPING_TIMER;
 end
 --- Timer to automatically hide ping text as the blip fades out.
-function me.PingName:OnUpdate ( Elapsed )
+function NS.PingName:OnUpdate ( Elapsed )
 	self.Duration = self.Duration - Elapsed;
 	if ( self.Duration > 0 ) then
 		local X, Y = Minimap:GetPingPosition();
@@ -55,34 +55,34 @@ end
 
 
 --- Zooms the minimap using the mousewheel.
-function me:OnMouseWheel ( Delta )
+function NS:OnMouseWheel ( Delta )
 	self:SetZoom( min( max( self:GetZoom() + Delta, 0 ), self:GetZoomLevels() - 1 ) );
 end
 --- Restore the original minimap shape in case _Underscore was disabled right before a reload UI.
 -- This corrects a bug where the minimap mask stays square in the default UI.
-function me.Frame:PLAYER_LOGOUT ()
+function NS.Frame:PLAYER_LOGOUT ()
 	Minimap:SetMaskTexture( [[Textures\MinimapMask]] );
 end
 --- Lets other addons know that the minimap is square.
-function me.GetMinimapShape ()
+function NS.GetMinimapShape ()
 	return "SQUARE";
 end
 
 
 
 
-me.Frame:SetScript( "OnEvent", _Underscore.Frame.OnEvent );
-me.Frame:RegisterEvent( "PLAYER_LOGOUT" );
+NS.Frame:SetScript( "OnEvent", _Underscore.Frame.OnEvent );
+NS.Frame:RegisterEvent( "PLAYER_LOGOUT" );
 
-me.PingName:Hide();
-me.PingName:SetAllPoints();
-local Container = CreateFrame( "Frame", nil, me.PingName );
+NS.PingName:Hide();
+NS.PingName:SetAllPoints();
+local Container = CreateFrame( "Frame", nil, NS.PingName );
 Container:SetSize( 1, 1 );
-me.PingName:SetScrollChild( Container );
-me.PingName.Text = Container:CreateFontString( nil, "ARTWORK", "NumberFontNormalSmallGray" );
-me.PingName:SetScript( "OnUpdate", me.PingName.OnUpdate );
-me.PingName:SetScript( "OnEvent", _Underscore.Frame.OnEvent );
-me.PingName:RegisterEvent( "MINIMAP_PING" );
+NS.PingName:SetScrollChild( Container );
+NS.PingName.Text = Container:CreateFontString( nil, "ARTWORK", "NumberFontNormalSmallGray" );
+NS.PingName:SetScript( "OnUpdate", NS.PingName.OnUpdate );
+NS.PingName:SetScript( "OnEvent", _Underscore.Frame.OnEvent );
+NS.PingName:RegisterEvent( "MINIMAP_PING" );
 
 MinimapCluster:ClearAllPoints();
 MinimapCluster:SetPoint( "TOPRIGHT", _Underscore.TopMargin, "BOTTOMRIGHT" );
@@ -94,13 +94,13 @@ _Underscore.Backdrop.Create( Minimap );
 
 Minimap:SetAllPoints( MinimapCluster );
 Minimap:SetMaskTexture( [[Interface\Buttons\WHITE8X8]] );
-GetMinimapShape = me.GetMinimapShape;
+GetMinimapShape = NS.GetMinimapShape;
 
 -- Hooks to allow pings on a square minimap
-Minimap_OnClick = me.OnMouseUp;
-Minimap:SetScript( "OnMouseUp", me.OnMouseUp );
+Minimap_OnClick = NS.OnMouseUp;
+Minimap:SetScript( "OnMouseUp", NS.OnMouseUp );
 -- Show name of player who pinged
-me.PingName:SetAlpha( 0.75 );
+NS.PingName:SetAlpha( 0.75 );
 
 
 
@@ -112,7 +112,7 @@ local function TextureHide ( self )
 end
 
 -- Replace zoom buttons
-Minimap:HookScript( "OnMouseWheel", me.OnMouseWheel );
+Minimap:HookScript( "OnMouseWheel", NS.OnMouseWheel );
 Minimap:EnableMouseWheel( true );
 
 MinimapZoomIn:Hide();

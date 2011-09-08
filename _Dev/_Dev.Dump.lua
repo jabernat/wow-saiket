@@ -23,7 +23,7 @@ _DevOptions.Dump = {
 
 local _Dev = _Dev;
 local L = _DevLocalization;
-local me = {
+local NS = {
 	EscapeSequences = {
 		[ "\a" ] = "\\a"; -- Bell
 		[ "\b" ] = "\\b"; -- Backspace
@@ -37,8 +37,8 @@ local me = {
 		[ "|" ]  = "||";
 	};
 };
-_Dev.Dump = me;
-local EscapeSequences = me.EscapeSequences;
+_Dev.Dump = NS;
+local EscapeSequences = NS.EscapeSequences;
 
 local Temp = { -- Private: Lists of known object references
 	[ "table" ] = {};
@@ -57,7 +57,7 @@ local Temp = { -- Private: Lists of known object references
   ****************************************************************************]]
 do
 	local EscapeMode, MaxStrLen, Truncated;
-	function me.EscapeString ( Input )
+	function NS.EscapeString ( Input )
 		EscapeMode = _DevOptions.Dump.EscapeMode;
 		if ( EscapeMode >= 1 ) then
 			MaxStrLen = _DevOptions.Dump.MaxStrLen;
@@ -86,16 +86,16 @@ end
 do
 	local tostring = tostring;
 	local type = type;
-	function me.ToString ( Input )
+	function NS.ToString ( Input )
 		local Type = type( Input );
 		local Count = Temp[ Type ] and Temp[ Type ][ Input ];
 
 		if ( Count ) then -- Table, function, userdata, or thread
 			Input = _Dev.IsUIObject( Input )
-				and L.DUMP_UIOBJECT_FORMAT:format( Count, Input:GetObjectType(), me.ToString( Input:GetName() ) )
+				and L.DUMP_UIOBJECT_FORMAT:format( Count, Input:GetObjectType(), NS.ToString( Input:GetName() ) )
 				or Count;
 		elseif ( Type == "string" ) then
-			Input = me.EscapeString( Input );
+			Input = NS.EscapeString( Input );
 		else -- Numbers and booleans
 			Type = "other";
 			Input = tostring( Input );
@@ -132,7 +132,7 @@ do
 	local select = select;
 	local rawequal = rawequal;
 	local wipe = wipe;
-	function me.Explore ( LValueString, ... )
+	function NS.Explore ( LValueString, ... )
 		local ArgCount = 1;
 		if ( not Depth ) then -- First iteration, initialize
 			Depth = 0;
@@ -157,7 +157,7 @@ do
 				end
 			end
 			if ( ArgCount > 1 ) then
-				_Dev.Print( LValueString.." = ( ... )["..me.ToString( select( "#", ... ) ).."]:" );
+				_Dev.Print( LValueString.." = ( ... )["..NS.ToString( select( "#", ... ) ).."]:" );
 			end
 		end
 
@@ -168,11 +168,11 @@ do
 			-- Only print a nil arg when it's the only arg
 			if ( ArgCount == 1 or not rawequal( Input, nil ) ) then
 				if ( ArgCount > 1 ) then
-					LValueString = "["..me.ToString( Index ).."]";
+					LValueString = "["..NS.ToString( Index ).."]";
 				end
 
 				if ( AddHistory( Input ) and type( Input ) == "table" ) then -- New table
-					local TableString = IndentString..LValueString.." = "..me.ToString( Input );
+					local TableString = IndentString..LValueString.." = "..NS.ToString( Input );
 					if ( next( Input ) == nil ) then -- Empty array
 						_Dev.Print( TableString.." {};" );
 					else -- Display the table's contents
@@ -204,14 +204,14 @@ do
 								end
 								AddHistory( Key );
 
-								me.Explore( "["..me.ToString( Key ).."]", Value );
+								NS.Explore( "["..NS.ToString( Key ).."]", Value );
 							end
 							Depth = Depth - 1;
 							_Dev.Print( IndentString.."};" );
 						end
 					end
 				else
-					_Dev.Print( IndentString..LValueString.." = "..me.ToString( Input )..";" );
+					_Dev.Print( IndentString..LValueString.." = "..NS.ToString( Input )..";" );
 				end
 			end
 		end
@@ -237,7 +237,7 @@ end
 do
 	local function Explore ( Input, Success, ... )
 		if ( Success ) then
-			local ErrorMessage = me.Explore( Input, ... );
+			local ErrorMessage = NS.Explore( Input, ... );
 			if ( ErrorMessage ) then
 				_Dev.Error( L.DUMP_MESSAGE_FORMAT:format( ErrorMessage ) );
 			end
@@ -245,7 +245,7 @@ do
 			_Dev.Error( L.DUMP_MESSAGE_FORMAT:format( ( ... ) ) );
 		end
 	end
-	function me.SlashCommand ( Input )
+	function NS.SlashCommand ( Input )
 		if ( Input and not Input:find( "^%s*$" ) ) then
 			Input = Input:gsub( "||", "|" );
 			Explore( Input, _Dev.Exec( Input ) );
@@ -271,9 +271,9 @@ for Index = 127, 255 do
 end
 
 
-dump = me.Explore;
+dump = NS.Explore;
 
-SlashCmdList[ "_DEV_DUMP" ] = me.SlashCommand;
+SlashCmdList[ "_DEV_DUMP" ] = NS.SlashCommand;
 
 local Forbidden = {
 	[ "PRINT" ] = true;

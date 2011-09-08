@@ -6,13 +6,13 @@
 
 local Overlay = select( 2, ... );
 local Minimap = Minimap;
-local me = CreateFrame( "Frame" );
+local NS = CreateFrame( "Frame" );
 
-me.InsideAlphaMultiplier = 1 / 3;
-me.UpdateDistance = 0.5;
-me.UpdateRateDefault  = 0.04;
-me.UpdateRateRotating = 0.02; -- Faster so that spinning the minimap appears smooth
-local UpdateRate = me.UpdateRateDefault;
+NS.InsideAlphaMultiplier = 1 / 3;
+NS.UpdateDistance = 0.5;
+NS.UpdateRateDefault  = 0.04;
+NS.UpdateRateRotating = 0.02; -- Faster so that spinning the minimap appears smooth
+local UpdateRate = NS.UpdateRateDefault;
 
 local UpdateForce, IsInside, RotateMinimap, Radius, Quadrants;
 
@@ -410,7 +410,7 @@ do
 	local RadiiOutside = { 233 + 1 / 3, 200, 166 + 2 / 3, 133 + 1 / 3, 100, 66 + 2 / 3 };
 	local Cos, Sin = math.cos, math.sin;
 	--- Draws paths on the minimap from a given player position and direction.
-	function me:Paint ( Map, NewX, NewY, NewFacing )
+	function NS:Paint ( Map, NewX, NewY, NewFacing )
 		Overlay.TextureRemoveAll( self );
 
 		Quadrants = MinimapShapes[ GetMinimapShape and GetMinimapShape() ] or MinimapShapes[ "ROUND" ];
@@ -482,7 +482,7 @@ end
 
 
 --- Force a repaint when the minimap swaps between indoor and outdoor zoom.
-function me:MINIMAP_UPDATE_ZOOM ()
+function NS:MINIMAP_UPDATE_ZOOM ()
 	local Zoom = Minimap:GetZoom();
 	if ( GetCVar( "minimapZoom" ) == GetCVar( "minimapInsideZoom" ) ) then -- Indeterminate case
 		Minimap:SetZoom( Zoom > 0 and Zoom - 1 or Zoom + 1 ); -- Any change to make the cvars unequal
@@ -497,7 +497,7 @@ function me:MINIMAP_UPDATE_ZOOM ()
 	end
 end
 --- Force a repaint and cache map size when changing zones.
-function me:ZONE_CHANGED_NEW_AREA ()
+function NS:ZONE_CHANGED_NEW_AREA ()
 	UpdateForce = true;
 	if ( not WorldMapFrame:IsVisible() ) then
 		SetMapToCurrentZone();
@@ -507,7 +507,7 @@ do
 	local GetCurrentMapAreaID = GetCurrentMapAreaID;
 	local MapLast;
 	--- Force a repaint if world map swaps back to the current zone (making player coordinates available).
-	function me:WORLD_MAP_UPDATE ()
+	function NS:WORLD_MAP_UPDATE ()
 		local Map = GetCurrentMapAreaID();
 		if ( MapLast ~= Map ) then -- Changed zones
 			MapLast = Map;
@@ -519,7 +519,7 @@ do
 	end
 end
 --- Force a repaint when minimap gets shown or module gets enabled.
-function me:OnShow ()
+function NS:OnShow ()
 	UpdateForce = true;
 end
 do
@@ -532,7 +532,7 @@ do
 	local LastX, LastY, LastFacing;
 	local Map, X, Y, Facing, Width, Height;
 	--- Throttles repaints based on a timer, and only repaints if the minimap view changes.
-	function me:OnUpdate ( Elapsed )
+	function NS:OnUpdate ( Elapsed )
 		UpdateNext = UpdateNext - Elapsed;
 		if ( UpdateForce or UpdateNext <= 0 ) then
 			UpdateNext = UpdateRate;
@@ -572,15 +572,15 @@ end
 
 
 do
-	local Backup = me.SetAlpha;
+	local Backup = NS.SetAlpha;
 	--- Fades overlay when indoors.
-	function me:SetAlpha ( Alpha, ... )
-		return Backup( self, IsInside and Alpha * me.InsideAlphaMultiplier or Alpha, ... );
+	function NS:SetAlpha ( Alpha, ... )
+		return Backup( self, IsInside and Alpha * NS.InsideAlphaMultiplier or Alpha, ... );
 	end
 end
 --- Reparents this canvas to Frame.
 -- @return True if set successfully.
-function me:SetMinimapFrame ( Frame )
+function NS:SetMinimapFrame ( Frame )
 	if ( self.ScrollFrame and self.ScrollFrame:GetParent() ~= Frame ) then
 		self.ScrollFrame:SetParent( Frame );
 		self.ScrollFrame:SetAllPoints();
@@ -591,19 +591,19 @@ end
 
 --- Force a repaint if shown paths change.
 -- @param Map  AreaID that changed, or nil if all zones must update.
-function me:OnMapUpdate ( Map )
+function NS:OnMapUpdate ( Map )
 	if ( not Map or Map == Overlay.GetMapID( GetRealZoneText() ) ) then
 		UpdateForce = true;
 	end
 end
 --- Shows the canvas when enabled.
-function me:OnEnable ()
+function NS:OnEnable ()
 	self.ScrollFrame:Show();
 	self:RegisterEvent( "WORLD_MAP_UPDATE" );
 	self:RegisterEvent( "ZONE_CHANGED_NEW_AREA" );
 end
 --- Hides the canvas when disabled.
-function me:OnDisable ()
+function NS:OnDisable ()
 	self.ScrollFrame:Hide();
 	Overlay.TextureRemoveAll( self );
 	self:UnregisterEvent( "WORLD_MAP_UPDATE" );
@@ -615,7 +615,7 @@ do
 		UpdateForce, Radius = true;
 	end
 	--- Initializes the canvas after its dependencies load.
-	function me:OnLoad ()
+	function NS:OnLoad ()
 		self.ScrollFrame = CreateFrame( "ScrollFrame" );
 		self.ScrollFrame:Hide();
 		self.ScrollFrame:SetScrollChild( self );
@@ -651,14 +651,14 @@ do
 	end
 end
 --- Clears all methods and scripts to be garbage collected.
-function me:OnUnload ()
+function NS:OnUnload ()
 	self:SetScript( "OnShow", nil );
 	self:SetScript( "OnUpdate", nil );
 	self:SetScript( "OnEvent", nil );
 	self:UnregisterEvent( "MINIMAP_UPDATE_ZOOM" );
 end
 --- Clears most module data to be garbage collected.
-function me:OnUnregister ()
+function NS:OnUnregister ()
 	self.Paint, self.OnShow, self.OnUpdate = nil;
 	self.MINIMAP_UPDATE_ZOOM = nil;
 	self.ZONE_CHANGED_NEW_AREA = nil;
@@ -670,36 +670,36 @@ end
 
 --- Enables the minimap range ring.
 -- @return True if changed.
-function me.RangeRingSetEnabled ( Enable )
+function NS.RangeRingSetEnabled ( Enable )
 	if ( Enable ~= Overlay.Options.ModulesExtra[ "Minimap" ].RangeRing ) then
 		Overlay.Options.ModulesExtra[ "Minimap" ].RangeRing = Enable;
 
-		me.Config.RangeRing:SetChecked( Enable );
+		NS.Config.RangeRing:SetChecked( Enable );
 
 		if ( Enable ) then
 			UpdateForce = true;
-		elseif ( me.Loaded ) then
-			me.RangeRing:Hide();
+		elseif ( NS.Loaded ) then
+			NS.RangeRing:Hide();
 		end
 		return true;
 	end
 end
 --- Synchronizes custom settings to options table.
-function me:OnSynchronize ( OptionsExtra )
+function NS:OnSynchronize ( OptionsExtra )
 	self.RangeRingSetEnabled( OptionsExtra.RangeRing ~= false );
 end
 
 
 
 
-Overlay.Modules.Register( "Minimap", me, Overlay.L.MODULE_MINIMAP );
+Overlay.Modules.Register( "Minimap", NS, Overlay.L.MODULE_MINIMAP );
 
-local Config = me.Config;
+local Config = NS.Config;
 local Checkbox = CreateFrame( "CheckButton", "$parentRangeRing", Config, "InterfaceOptionsCheckButtonTemplate" );
 Config.RangeRing = Checkbox;
 --- Toggles the range ring when clicked.
 function Checkbox.setFunc ( Enable )
-	me.RangeRingSetEnabled( Enable == "1" );
+	NS.RangeRingSetEnabled( Enable == "1" );
 end
 
 Checkbox:SetPoint( "TOPLEFT", Config.Enabled, "BOTTOMLEFT" );

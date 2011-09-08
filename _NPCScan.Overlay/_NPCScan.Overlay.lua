@@ -6,20 +6,20 @@
 
 _NPCScan = _NPCScan or {};
 local _NPCScan = _NPCScan;
-local AddOnName, me = ...;
-_NPCScan.Overlay = me;
+local AddOnName, NS = ...;
+_NPCScan.Overlay = NS;
 
-me.Version = GetAddOnMetadata( AddOnName, "Version" ):match( "^([%d.]+)" );
+NS.Version = GetAddOnMetadata( AddOnName, "Version" ):match( "^([%d.]+)" );
 
-me.Options = {
-	Version = me.Version;
+NS.Options = {
+	Version = NS.Version;
 	Modules = {};
 	ModulesAlpha = {};
 	ModulesExtra = {};
 };
 
-me.OptionsDefault = {
-	Version = me.Version;
+NS.OptionsDefault = {
+	Version = NS.Version;
 	Modules = {};
 	ModulesAlpha = {};
 	ModulesExtra = {};
@@ -27,14 +27,14 @@ me.OptionsDefault = {
 };
 
 
-me.NPCsEnabled = {};
-me.NPCCounts = {}; -- Number of enabled NPCs that use this NPC path
-me.NPCMaps = {}; -- [ NpcID ] = { [ MapID1 ] = (true|{FoundX,FoundY}); ... };
-me.NPCsFoundIgnored = {
+NS.NPCsEnabled = {};
+NS.NPCCounts = {}; -- Number of enabled NPCs that use this NPC path
+NS.NPCMaps = {}; -- [ NpcID ] = { [ MapID1 ] = (true|{FoundX,FoundY}); ... };
+NS.NPCsFoundIgnored = {
 	[ 32487 ] = true; -- Putridus the Ancient
 	[ 50009 ] = true; -- Mobus
 };
-me.NPCAliases = { -- (Key) NPC shows (Value) NPC's path instead
+NS.NPCAliases = { -- (Key) NPC shows (Value) NPC's path instead
 	-- Note: Circular references will lock client!
 	-- Madexx (Brown)
 	[ 51401 ] = 50154; -- Madexx (Red)
@@ -42,12 +42,12 @@ me.NPCAliases = { -- (Key) NPC shows (Value) NPC's path instead
 	[ 51403 ] = 50154; -- Madexx (Black)
 	[ 51404 ] = 50154; -- Madexx (Blue)
 };
-me.Achievements = { -- Achievements whos criteria mobs are all mapped
+NS.Achievements = { -- Achievements whos criteria mobs are all mapped
 	[ 1312 ] = true; -- Bloody Rare (Outlands)
 	[ 2257 ] = true; -- Frostbitten (Northrend)
 };
 
-me.Colors = {
+NS.Colors = {
 	RAID_CLASS_COLORS.SHAMAN,
 	RAID_CLASS_COLORS.DEATHKNIGHT,
 	GREEN_FONT_COLOR,
@@ -59,11 +59,11 @@ me.Colors = {
 	UnitPopupButtons.RAID_TARGET_3.color,
 };
 
-me.DetectionRadius = 100; -- yards
+NS.DetectionRadius = 100; -- yards
 
 local TexturesUnused = CreateFrame( "Frame" );
 
-me.Events = LibStub( "AceEvent-3.0" ):Embed( {} );
+NS.Events = LibStub( "AceEvent-3.0" ):Embed( {} );
 local MESSAGE_REGISTER = "NpcOverlay_RegisterScanner";
 local MESSAGE_ADD = "NpcOverlay_Add";
 local MESSAGE_REMOVE = "NpcOverlay_Remove";
@@ -75,7 +75,7 @@ local MESSAGE_FOUND = "NpcOverlay_Found";
 --- Prepares an unused texture on the given frame.
 -- @param Layer  Draw layer for texture.
 -- @param ...  Color and optional alpha to set texture to.
-function me:TextureCreate ( Layer, R, G, B, A )
+function NS:TextureCreate ( Layer, R, G, B, A )
 	local Texture = #TexturesUnused > 0 and TexturesUnused[ #TexturesUnused ];
 	if ( Texture ) then
 		TexturesUnused[ #TexturesUnused ] = nil;
@@ -131,7 +131,7 @@ do
 	local BorderScale, BorderOffset = 512 / 510, -1 / 512; -- Removes one-pixel transparent border
 	local TrianglePath = [[Interface\AddOns\]]..AddOnName..[[\Skin\Triangle]]
 	--- Draw a triangle texture with vertices at relative coords.  (0,0) is top-left, (1,1) is bottom-right.
-	function me:TextureAdd ( Layer, R, G, B, Ax, Ay, Bx, By, Cx, Cy )
+	function NS:TextureAdd ( Layer, R, G, B, Ax, Ay, Bx, By, Cx, Cy )
 		ABx, ABy, BCx, BCy = Ax - Bx, Ay - By, Bx - Cx, By - Cy;
 		ScaleX = ( BCx * BCx + BCy * BCy ) ^ 0.5;
 		if ( ScaleX == 0 ) then
@@ -146,7 +146,7 @@ do
 
 
 		-- Get a texture
-		local Texture = me.TextureCreate( self, Layer, R, G, B );
+		local Texture = NS.TextureCreate( self, Layer, R, G, B );
 		Texture:SetTexture( TrianglePath );
 
 
@@ -190,7 +190,7 @@ do
 	end
 end
 --- Recycles all textures added to a frame using TextureCreate.
-function me:TextureRemoveAll ()
+function NS:TextureRemoveAll ()
 	for Index = #self, 1, -1 do
 		local Texture = self[ Index ];
 		self[ Index ] = nil;
@@ -206,10 +206,10 @@ do
 	local Ax1, Ax2, Ay1, Ay2, Bx1, Bx2, By1, By2, Cx1, Cx2, Cy1, Cy2;
 	--- Draws the given NPC's path onto a frame.
 	-- @param PathData  Binary path data string.
-	function me:DrawPath ( PathData, Layer, R, G, B )
+	function NS:DrawPath ( PathData, Layer, R, G, B )
 		for Index = 1, #PathData, 12 do
 			Ax1, Ax2, Ay1, Ay2, Bx1, Bx2, By1, By2, Cx1, Cx2, Cy1, Cy2 = PathData:byte( Index, Index + 11 );
-			me.TextureAdd( self, Layer, R, G, B,
+			NS.TextureAdd( self, Layer, R, G, B,
 				( Ax1 * 256 + Ax2 ) / Max, ( Ay1 * 256 + Ay2 ) / Max,
 				( Bx1 * 256 + Bx2 ) / Max, ( By1 * 256 + By2 ) / Max,
 				( Cx1 * 256 + Cx2 ) / Max, ( Cy1 * 256 + Cy2 ) / Max );
@@ -222,20 +222,20 @@ do
 	--- Adds a found NPC's range circle onto a frame.
 	-- @param X..Y  Relative coordinate to center circle on.  (0,0) is top-left, (1,1) is bottom-right.
 	-- @param RadiusX  Radius relative to the frame's width.  That is, 0.5 for a circle as wide as the frame.
-	function me:DrawFound ( X, Y, RadiusX, Layer, R, G, B )
+	function NS:DrawFound ( X, Y, RadiusX, Layer, R, G, B )
 		local Width, Height = self:GetSize();
 
 		X, Y = X * Width, -Y * Height;
 		local Size = RadiusX * 2 * Width;
 
-		local Texture = me.TextureCreate( self, Layer, R, G, B );
+		local Texture = NS.TextureCreate( self, Layer, R, G, B );
 		Texture:SetTexture( [[Interface\Minimap\Ping\ping2]] );
 		Texture:SetTexCoord( 0, 1, 0, 1 );
 		Texture:SetBlendMode( "ADD" );
 		Texture:SetPoint( "CENTER", self, "TOPLEFT", X, Y );
 		Texture:SetSize( Size * RingWidth, Size * RingWidth );
 
-		Texture = me.TextureCreate( self, Layer, R, G, B, 0.5 );
+		Texture = NS.TextureCreate( self, Layer, R, G, B, 0.5 );
 		Texture:SetTexture( [[Textures\SunCenter]] );
 		Texture:SetTexCoord( 0, 1, 0, 1 );
 		Texture:SetBlendMode( "ADD" );
@@ -245,16 +245,16 @@ do
 end
 --- Passes info for all enabled NPCs in a zone to a callback function.
 -- @param Callback  Function( self, PathData, [FoundX], [FoundY], R, G, B, NpcID )
-function me:ApplyZone ( Map, Callback )
-	local MapData = me.PathData[ Map ];
+function NS:ApplyZone ( Map, Callback )
+	local MapData = NS.PathData[ Map ];
 	if ( MapData ) then
 		local ColorIndex = 0;
 
 		for NpcID, PathData in pairs( MapData ) do
 			ColorIndex = ColorIndex + 1;
-			if ( me.Options.ShowAll or me.NPCCounts[ NpcID ] ) then
-				local Color = assert( me.Colors[ ColorIndex ], "Ran out of unique path colors." );
-				local Found, FoundX, FoundY = me.NPCMaps[ NpcID ][ Map ];
+			if ( NS.Options.ShowAll or NS.NPCCounts[ NpcID ] ) then
+				local Color = assert( NS.Colors[ ColorIndex ], "Ran out of unique path colors." );
+				local Found, FoundX, FoundY = NS.NPCMaps[ NpcID ][ Map ];
 				if ( type( Found ) == "table" ) then
 					FoundX, FoundY = unpack( Found );
 				end
@@ -269,15 +269,15 @@ end
 
 --- @return Aliased NPC ID, or original if not aliased.
 local function GetRealNpcID ( NpcID )
-	local AliasID = me.NPCAliases[ NpcID ];
+	local AliasID = NS.NPCAliases[ NpcID ];
 	while ( AliasID ) do
-		NpcID, AliasID = AliasID, me.NPCAliases[ AliasID ];
+		NpcID, AliasID = AliasID, NS.NPCAliases[ AliasID ];
 	end
 	return NpcID;
 end
 --- @return First Map ID that NpcID can be found on or nil if unknown.
-function me.GetNPCMapID ( NpcID )
-	local Maps = me.NPCMaps[ GetRealNpcID( NpcID ) ];
+function NS.GetNPCMapID ( NpcID )
+	local Maps = NS.NPCMaps[ GetRealNpcID( NpcID ) ];
 	if ( Maps ) then
 		return ( next( Maps ) );
 	end
@@ -286,29 +286,29 @@ end
 --- Enables an NPC map overlay by NpcID.
 local function NPCAdd ( NpcID )
 	local AliasID, NpcID = NpcID, GetRealNpcID( NpcID );
-	if ( not me.NPCsEnabled[ AliasID ] and me.NPCMaps[ NpcID ] ) then
-		me.NPCsEnabled[ AliasID ] = true;
+	if ( not NS.NPCsEnabled[ AliasID ] and NS.NPCMaps[ NpcID ] ) then
+		NS.NPCsEnabled[ AliasID ] = true;
 
-		me.NPCCounts[ NpcID ] = ( me.NPCCounts[ NpcID ] or 0 ) + 1;
-		if ( me.NPCCounts[ NpcID ] == 1 and not me.Options.ShowAll ) then
-			for Map in pairs( me.NPCMaps[ NpcID ] ) do
-				me.Modules.UpdateMap( Map );
+		NS.NPCCounts[ NpcID ] = ( NS.NPCCounts[ NpcID ] or 0 ) + 1;
+		if ( NS.NPCCounts[ NpcID ] == 1 and not NS.Options.ShowAll ) then
+			for Map in pairs( NS.NPCMaps[ NpcID ] ) do
+				NS.Modules.UpdateMap( Map );
 			end
 		end
 	end
 end
 --- Disables an NPC map overlay by NpcID.
 local function NPCRemove ( NpcID )
-	if ( me.NPCsEnabled[ NpcID ] ) then
-		me.NPCsEnabled[ NpcID ] = nil;
+	if ( NS.NPCsEnabled[ NpcID ] ) then
+		NS.NPCsEnabled[ NpcID ] = nil;
 
 		NpcID = GetRealNpcID( NpcID );
-		local Count = assert( me.NPCCounts[ NpcID ], "Enabled NPC wasn't active." );
-		me.NPCCounts[ NpcID ] = Count > 1 and Count - 1 or nil;
+		local Count = assert( NS.NPCCounts[ NpcID ], "Enabled NPC wasn't active." );
+		NS.NPCCounts[ NpcID ] = Count > 1 and Count - 1 or nil;
 
-		if ( not ( Count > 1 or me.Options.ShowAll ) ) then
-			for Map in pairs( me.NPCMaps[ NpcID ] ) do
-				me.Modules.UpdateMap( Map );
+		if ( not ( Count > 1 or NS.Options.ShowAll ) ) then
+			for Map in pairs( NS.NPCMaps[ NpcID ] ) do
+				NS.Modules.UpdateMap( Map );
 			end
 		end
 	end
@@ -316,11 +316,11 @@ end
 --- Saves an NPC's last seen position at the player.
 local function NPCFound ( NpcID )
 	NpcID = GetRealNpcID( NpcID );
-	if ( me.NPCMaps[ NpcID ] and not me.NPCsFoundIgnored[ NpcID ] ) then
+	if ( NS.NPCMaps[ NpcID ] and not NS.NPCsFoundIgnored[ NpcID ] ) then
 		local MapOld, MapNew = GetCurrentMapAreaID(), nil;
 		SetMapToCurrentZone();
 		local MapCurrent = GetCurrentMapAreaID();
-		for Map, Found in pairs( me.NPCMaps[ NpcID ] ) do
+		for Map, Found in pairs( NS.NPCMaps[ NpcID ] ) do
 			SetMapByID( Map );
 			local X, Y = GetPlayerMapPosition( "player" );
 			if ( X ~= 0 or Y ~= 0 ) then -- Found on this map
@@ -330,12 +330,12 @@ local function NPCFound ( NpcID )
 
 				if ( type( Found ) ~= "table" ) then
 					Found = {};
-					me.NPCMaps[ NpcID ][ Map ] = Found;
+					NS.NPCMaps[ NpcID ][ Map ] = Found;
 				end
 				Found[ 1 ], Found[ 2 ] = X, Y;
 
-				if ( me.NPCCounts[ NpcID ] ) then
-					me.Modules.UpdateMap( Map );
+				if ( NS.NPCCounts[ NpcID ] ) then
+					NS.Modules.UpdateMap( Map );
 				end
 			end
 		end
@@ -351,13 +351,13 @@ do
 	--- Grants exclusive control of mob path visibility to the first addon that registers.
 	-- @param AddOn  Logically true identifier for the controller addon.  Must be
 	--   used in all subsequent messages.
-	me.Events[ MESSAGE_REGISTER ] = function ( self, Event, AddOn )
+	NS.Events[ MESSAGE_REGISTER ] = function ( self, Event, AddOn )
 		self:UnregisterMessage( Event );
 		self[ Event ] = nil;
 		ScannerAddOn = assert( AddOn, "Registration message must provide an addon identifier." );
 
 		-- Quit showing all by default and let the scanning addon control visibility
-		for NpcID in pairs( me.NPCsEnabled ) do
+		for NpcID in pairs( NS.NPCsEnabled ) do
 			NPCRemove( NpcID );
 		end
 
@@ -367,7 +367,7 @@ do
 	--- Shows a mob's path, if available.
 	-- @param NpcID  Numeric creature ID to add.
 	-- @param AddOn  Identifier used in registration message.
-	me.Events[ MESSAGE_ADD ] = function ( self, _, NpcID, AddOn )
+	NS.Events[ MESSAGE_ADD ] = function ( self, _, NpcID, AddOn )
 		if ( ScannerAddOn and AddOn == ScannerAddOn ) then
 			return NPCAdd( assert( tonumber( NpcID ),
 				"Add message NpcID must be numeric." ) );
@@ -376,7 +376,7 @@ do
 	--- Removes a mob's path if it has already been shown.
 	-- @param NpcID  Numeric creature ID to remove.
 	-- @param AddOn  Identifier used in registration message.
-	me.Events[ MESSAGE_REMOVE ] = function ( self, _, NpcID, AddOn )
+	NS.Events[ MESSAGE_REMOVE ] = function ( self, _, NpcID, AddOn )
 		if ( ScannerAddOn and AddOn == ScannerAddOn ) then
 			return NPCRemove( assert( tonumber( NpcID ),
 				"Remove message NpcID must be numeric." ) );
@@ -385,7 +385,7 @@ do
 	--- Saves an NPC's last seen position at the player.
 	-- Will fail if the current zone doesn't match saved path data.
 	-- @param NpcID  Numeric creature ID that was found.
-	me.Events[ MESSAGE_FOUND ] = function ( self, _, NpcID )
+	NS.Events[ MESSAGE_FOUND ] = function ( self, _, NpcID )
 		return NPCFound( assert( tonumber( NpcID ),
 			"Found message Npc ID must be a number." ) );
 	end;
@@ -396,19 +396,19 @@ end
 
 --- Enables always showing all paths.
 -- @return True if changed.
-function me.SetShowAll ( Enable )
+function NS.SetShowAll ( Enable )
 	Enable = not not Enable;
-	if ( Enable ~= me.Options.ShowAll ) then
-		me.Options.ShowAll = Enable;
+	if ( Enable ~= NS.Options.ShowAll ) then
+		NS.Options.ShowAll = Enable;
 
-		me.Config.ShowAll:SetChecked( Enable );
+		NS.Config.ShowAll:SetChecked( Enable );
 
 		-- Update all affected maps
-		for Map, MapData in pairs( me.PathData ) do
+		for Map, MapData in pairs( NS.PathData ) do
 			-- If a map has a disabled path, it must be redrawn
 			for NpcID in pairs( MapData ) do
-				if ( not me.NPCCounts[ NpcID ] ) then
-					me.Modules.UpdateMap( Map );
+				if ( not NS.NPCCounts[ NpcID ] ) then
+					NS.Modules.UpdateMap( Map );
 					break;
 				end
 			end
@@ -420,37 +420,37 @@ end
 
 
 --- Reloads enabled modules from saved settings.
-function me.Synchronize ( Options )
+function NS.Synchronize ( Options )
 	-- Load defaults if settings omitted
 	if ( not Options ) then
-		Options = me.OptionsDefault;
+		Options = NS.OptionsDefault;
 	end
 
-	me.SetShowAll( Options.ShowAll );
-	me.Modules.OnSynchronize( Options );
+	NS.SetShowAll( Options.ShowAll );
+	NS.Modules.OnSynchronize( Options );
 end
 do
-	me.GetMapName = GetMapNameByID; -- For backwards compatibility with older versions of _NPCScan
+	NS.GetMapName = GetMapNameByID; -- For backwards compatibility with older versions of _NPCScan
 	local MapIDs = {}; -- [ LocalizedZoneName ] = MapID;
 	--- @return Map ID for localized zone name or nil if unknown.
 	-- Note that only true continent sub-zones are supported.
-	function me.GetMapID ( Name )
+	function NS.GetMapID ( Name )
 		return MapIDs[ Name ];
 	end
 	local MapWidths, MapHeights = {}, {};
 	--- @return Width and height of Map in yards or nil if unavailable.
-	function me.GetMapSize ( Map )
+	function NS.GetMapSize ( Map )
 		return MapWidths[ Map ], MapHeights[ Map ];
 	end
 
 	--- Loads defaults, validates settings, and begins listening for Overlay API messages.
-	function me.Events:ADDON_LOADED ( Event, AddOn )
+	function NS.Events:ADDON_LOADED ( Event, AddOn )
 		if ( AddOn == AddOnName ) then
 			self[ Event ] = nil;
 			self:UnregisterEvent( Event );
 
 			-- Build a reverse lookup of NpcIDs to zones, and add them all by default
-			for Map, MapData in pairs( me.PathData ) do
+			for Map, MapData in pairs( NS.PathData ) do
 				SetMapByID( Map );
 				local _, X1, Y1, X2, Y2 = GetCurrentMapZone();
 				local Width, Height = X1 - X2, Y1 - Y2;
@@ -461,20 +461,20 @@ do
 				MapIDs[ GetMapNameByID( Map ) ] = Map;
 
 				for NpcID in pairs( MapData ) do
-					if ( not me.NPCMaps[ NpcID ] ) then
-						me.NPCMaps[ NpcID ] = {};
+					if ( not NS.NPCMaps[ NpcID ] ) then
+						NS.NPCMaps[ NpcID ] = {};
 					end
-					me.NPCMaps[ NpcID ][ Map ] = true;
+					NS.NPCMaps[ NpcID ][ Map ] = true;
 					NPCAdd( NpcID );
 				end
 			end
 
 			local Options = _NPCScanOverlayOptions;
-			_NPCScanOverlayOptions = me.Options;
+			_NPCScanOverlayOptions = NS.Options;
 			if ( Options and not Options.ModulesExtra ) then -- 3.3.5.1: Moved module options to options sub-tables
 				Options.ModulesExtra = {};
 			end
-			me.Synchronize( Options ); -- Loads defaults if nil
+			NS.Synchronize( Options ); -- Loads defaults if nil
 
 			self:RegisterMessage( MESSAGE_REGISTER );
 			self:RegisterMessage( MESSAGE_FOUND );
@@ -485,4 +485,4 @@ end
 
 
 
-me.Events:RegisterEvent( "ADDON_LOADED" );
+NS.Events:RegisterEvent( "ADDON_LOADED" );

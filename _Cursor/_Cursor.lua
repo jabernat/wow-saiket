@@ -14,20 +14,20 @@ _CursorOptionsCharacter = {
 
 
 local L = _CursorLocalization;
-local me = CreateFrame( "Frame", "_Cursor" );
+local NS = CreateFrame( "Frame", "_Cursor" );
 
 local ModelsUnused = {};
-me.ModelsUnused = ModelsUnused;
+NS.ModelsUnused = ModelsUnused;
 local ModelsUsed = {};
-me.ModelsUsed = ModelsUsed;
+NS.ModelsUsed = ModelsUsed;
 
-me.ScaleDefault = 0.01; -- Baseline scaling factor applied before presets and custom scales
+NS.ScaleDefault = 0.01; -- Baseline scaling factor applied before presets and custom scales
 
 
-me.DefaultType, me.DefaultValue = "", "spells\\errorcube"; -- Used when cursor preset not found
+NS.DefaultType, NS.DefaultValue = "", "spells\\errorcube"; -- Used when cursor preset not found
 -- Set strings formatted as follows:
 -- "Name|[Enabled]|Strata|[Type]|Value[|Scale][|Facing][|X][|Y]"
-me.DefaultSets = {
+NS.DefaultSets = {
 	[ L.SETS[ "Energy beam" ] ] = { -- Energy/lightning trail
 		L.CURSORS[ "Layer 1" ].."|1|TOOLTIP|Trail|Electric, blue",
 		L.CURSORS[ "Layer 2" ].."|1|FULLSCREEN_DIALOG|Particle|Fire, blue",
@@ -44,12 +44,12 @@ me.DefaultSets = {
 		L.CURSORS[ "Smoke" ].."|1|BACKGROUND||spells\\sandvortex_state_base",
 	};
 };
-me.DefaultModelSet = L.SETS[ "Energy beam" ];
+NS.DefaultModelSet = L.SETS[ "Energy beam" ];
 
 
 -- Preset strings formatted as follows:
 -- "Path[|Scale][|Facing][|X][|Y]"
-me.Presets = {
+NS.Presets = {
 	[ "Glow" ] = {
 		[ "Burning cloud, blue" ] = "spells\\manafunnel_impact_chest|||4|-6";
 		[ "Burning cloud, green" ] = "spells\\lifetap_state_chest|||4|-6";
@@ -142,10 +142,10 @@ me.Presets = {
 };
 
 
-me.IsCameraMoving = false;
-me.IsMouselooking = false;
-me.IsCinematicPlaying = false;
-me.IsScreenshotSaving = false;
+NS.IsCameraMoving = false;
+NS.IsMouselooking = false;
+NS.IsCinematicPlaying = false;
+NS.IsScreenshotSaving = false;
 
 
 
@@ -154,10 +154,10 @@ me.IsScreenshotSaving = false;
   * Function: _Cursor.GetModel                                                 *
   * Description: Creates a new model frame or returns an unused one.           *
   ****************************************************************************]]
-function me.GetModel ()
+function NS.GetModel ()
 	local Model = next( ModelsUnused );
 	if ( not Model ) then
-		Model = CreateFrame( "Model", nil, me );
+		Model = CreateFrame( "Model", nil, NS );
 		Model:SetAllPoints( nil ); -- Fullscreen
 		Model:Hide();
 		Model:SetLight( 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ); -- Allows trails like warriors' intervene to work
@@ -170,22 +170,22 @@ end
   * Function: _Cursor:ModelEnable                                              *
   * Description: Ties a model to a settings table.                             *
   ****************************************************************************]]
-function me:ModelEnable ( Cursor )
+function NS:ModelEnable ( Cursor )
 	if ( ModelsUsed[ self ] ) then
-		me.ModelDisable( self );
+		NS.ModelDisable( self );
 	end
 
 	ModelsUnused[ self ] = nil;
 	ModelsUsed[ self ] = Cursor;
 
-	me.ModelUpdate( self );
+	NS.ModelUpdate( self );
 	self:Show();
 end
 --[[****************************************************************************
   * Function: _Cursor:ModelDisable                                             *
   * Description: Frees up a model.                                             *
   ****************************************************************************]]
-function me:ModelDisable ()
+function NS:ModelDisable ()
 	if ( ModelsUsed[ self ] ) then
 		self.X = nil;
 		self.Y = nil;
@@ -207,21 +207,21 @@ do
 	local Cursor, Scale, Facing, PresetType;
 	local Path, ScalePreset, FacingPreset, X, Y;
 
-	function me:ModelUpdate ()
+	function NS:ModelUpdate ()
 		Cursor = ModelsUsed[ self ];
 
 		self.X = Cursor.X or 0;
 		self.Y = Cursor.Y or 0;
-		Scale = ( Cursor.Scale or 1.0 ) * me.ScaleDefault;
+		Scale = ( Cursor.Scale or 1.0 ) * NS.ScaleDefault;
 		Facing = Cursor.Facing or 0;
 
 		-- Validate presets
 		if ( #Cursor.Type ~= 0 ) then
-			PresetType = me.Presets[ Cursor.Type ];
+			PresetType = NS.Presets[ Cursor.Type ];
 			if ( not PresetType or not PresetType[ Cursor.Value ] ) then
-				Cursor.Type = me.DefaultType;
-				Cursor.Value = me.DefaultValue;
-				PresetType = me.Presets[ Cursor.Type ];
+				Cursor.Type = NS.DefaultType;
+				Cursor.Value = NS.DefaultValue;
+				PresetType = NS.Presets[ Cursor.Type ];
 			end
 		end
 
@@ -253,7 +253,7 @@ end
   ****************************************************************************]]
 do
 	local Tables = {};
-	function me.LoadSet ( Set )
+	function NS.LoadSet ( Set )
 		local Cursors = _CursorOptionsCharacter.Cursors;
 
 		-- Unload tables
@@ -278,9 +278,9 @@ do
 			Cursors[ Index ] = Cursor;
 		end
 
-		me.Update();
-		if ( me.Options ) then
-			me.Options.Update();
+		NS.Update();
+		if ( NS.Options ) then
+			NS.Options.Update();
 		end
 	end
 end
@@ -288,7 +288,7 @@ end
   * Function: _Cursor.SaveSet                                                  *
   * Description: Packs a set from the current settings.                        *
   ****************************************************************************]]
-function me.SaveSet ( Set )
+function NS.SaveSet ( Set )
 	wipe( Set );
 	-- Pack data
 	for Index, Cursor in ipairs( _CursorOptionsCharacter.Cursors ) do
@@ -308,9 +308,9 @@ do
 		DIALOG = false; FULLSCREEN = false; FULLSCREEN_DIALOG = false; TOOLTIP = false;
 	};
 	local Model, Level;
-	function me.Update ()
+	function NS.Update ()
 		for Model in pairs( ModelsUsed ) do
-			me.ModelDisable( Model );
+			NS.ModelDisable( Model );
 		end
 
 		for Strata in pairs( StrataLevels ) do
@@ -318,8 +318,8 @@ do
 		end
 		for _, Cursor in ipairs( _CursorOptionsCharacter.Cursors ) do
 			if ( Cursor.Enabled ) then
-				Model = me.GetModel();
-				me.ModelEnable( Model, Cursor );
+				Model = NS.GetModel();
+				NS.ModelEnable( Model, Cursor );
 
 				Level = StrataLevels[ Cursor.Strata ] + 1;
 				StrataLevels[ Cursor.Strata ] = Level;
@@ -336,10 +336,10 @@ do
   * Function: _Cursor.BlockAdd                                                 *
   * Description: Adds a condition for hiding the cursor.                       *
   ****************************************************************************]]
-	function me.BlockAdd ( Name )
+	function NS.BlockAdd ( Name )
 		if ( not Blocks[ Name ] ) then
 			Blocks[ Name ] = true;
-			me:Hide();
+			NS:Hide();
 		end
 	end
 --[[****************************************************************************
@@ -347,11 +347,11 @@ do
   * Description: Removes a condition for hiding the cursor.                    *
   ****************************************************************************]]
 	local next = next;
-	function me.BlockRemove ( Name )
+	function NS.BlockRemove ( Name )
 		if ( Blocks[ Name ] ) then
 			Blocks[ Name ] = nil;
 			if ( next( Blocks ) == nil ) then -- No more active blocks
-				me:Show();
+				NS:Show();
 			end
 		end
 	end
@@ -361,54 +361,54 @@ end
 --[[****************************************************************************
   * Function: _Cursor.ScreenshotStart                                          *
   ****************************************************************************]]
-function me.ScreenshotStart ()
-	me.BlockAdd( "Screenshot" );
+function NS.ScreenshotStart ()
+	NS.BlockAdd( "Screenshot" );
 end
 --[[****************************************************************************
   * Function: _Cursor:SCREENSHOT_SUCCEEDED                                     *
   ****************************************************************************]]
-function me:SCREENSHOT_SUCCEEDED ()
-	me.BlockRemove( "Screenshot" );
+function NS:SCREENSHOT_SUCCEEDED ()
+	NS.BlockRemove( "Screenshot" );
 end
 --[[****************************************************************************
   * Function: _Cursor:SCREENSHOT_FAILED                                        *
   ****************************************************************************]]
-me.SCREENSHOT_FAILED = me.SCREENSHOT_SUCCEEDED;
+NS.SCREENSHOT_FAILED = NS.SCREENSHOT_SUCCEEDED;
 --[[****************************************************************************
   * Function: _Cursor:CINEMATIC_START                                          *
   ****************************************************************************]]
-function me:CINEMATIC_START ()
-	me.BlockAdd( "Cinematic" ); -- In-game-engine cinematic, like the new character introduction
+function NS:CINEMATIC_START ()
+	NS.BlockAdd( "Cinematic" ); -- In-game-engine cinematic, like the new character introduction
 end
 --[[****************************************************************************
   * Function: _Cursor:CINEMATIC_STOP                                           *
   ****************************************************************************]]
-function me:CINEMATIC_STOP ()
-	me.BlockRemove( "Cinematic" );
+function NS:CINEMATIC_STOP ()
+	NS.BlockRemove( "Cinematic" );
 end
 --[[****************************************************************************
   * Function: _Cursor.MovieStart                                               *
   ****************************************************************************]]
-function me.MovieStart ()
-	me.BlockAdd( "Movie" ); -- FMV movie sequence, like the Wrathgate cinematic
+function NS.MovieStart ()
+	NS.BlockAdd( "Movie" ); -- FMV movie sequence, like the Wrathgate cinematic
 end
 --[[****************************************************************************
   * Function: _Cursor.MovieStop                                                *
   ****************************************************************************]]
-function me.MovieStop ()
-	me.BlockRemove( "Movie" );
+function NS.MovieStop ()
+	NS.BlockRemove( "Movie" );
 end
 --[[****************************************************************************
   * Function: _Cursor.CameraMoveStart                                          *
   ****************************************************************************]]
-function me.CameraMoveStart ()
-	me.BlockAdd( "Camera" );
+function NS.CameraMoveStart ()
+	NS.BlockAdd( "Camera" );
 end
 --[[****************************************************************************
   * Function: _Cursor.CameraMoveStop                                           *
   ****************************************************************************]]
-function me.CameraMoveStop ()
-	me.BlockRemove( "Camera" );
+function NS.CameraMoveStop ()
+	NS.BlockRemove( "Camera" );
 end
 --[[****************************************************************************
   * Function: _Cursor:MouselookOnUpdate                                        *
@@ -417,11 +417,11 @@ end
   ****************************************************************************]]
 do
 	local IsMouselooking = IsMouselooking;
-	function me:MouselookOnUpdate ()
+	function NS:MouselookOnUpdate ()
 		if ( IsMouselooking() ) then
-			me.BlockAdd( "Mouselook" );
+			NS.BlockAdd( "Mouselook" );
 		else
-			me.BlockRemove( "Mouselook" );
+			NS.BlockRemove( "Mouselook" );
 		end
 	end
 end
@@ -446,20 +446,20 @@ do
 		end
 		return #Version1 - #Version2;
 	end
-	function me:ADDON_LOADED ( _, AddOn )
+	function NS:ADDON_LOADED ( _, AddOn )
 		if ( AddOn:lower() == AddOnName:lower() ) then
-			me:UnregisterEvent( "ADDON_LOADED" );
-			me.ADDON_LOADED = nil;
+			NS:UnregisterEvent( "ADDON_LOADED" );
+			NS.ADDON_LOADED = nil;
 
 			if ( not _CursorOptions ) then
-				_CursorOptions = { Sets = CopyTable( me.DefaultSets ) };
+				_CursorOptions = { Sets = CopyTable( NS.DefaultSets ) };
 			end
 
 			if ( _CursorOptions.Version ~= Version ) then
 				if ( VersionCompare( _CursorOptions.Version, "3.1.0.2" ) < 0 ) then -- 3.1.0.2: Updated the Face Melter preset
 					local Name = L.SETS[ "Face Melter (Warning, bright!)" ];
 					if ( _CursorOptions.Sets[ Name ] ) then
-						_CursorOptions.Sets[ Name ] = CopyTable( me.DefaultSets[ Name ] );
+						_CursorOptions.Sets[ Name ] = CopyTable( NS.DefaultSets[ Name ] );
 					end
 				end
 				_CursorOptions.Version = Version;
@@ -467,11 +467,11 @@ do
 			_CursorOptionsCharacter.Version = Version;
 
 			if ( not _CursorOptionsCharacter.Cursors[ 1 ] ) then
-				me.LoadSet( me.DefaultSets[ me.DefaultModelSet ] );
+				NS.LoadSet( NS.DefaultSets[ NS.DefaultModelSet ] );
 			else
-				me.Update();
-				if ( me.Options ) then
-					me.Options.Update();
+				NS.Update();
+				if ( NS.Options ) then
+					NS.Options.Update();
 				end
 			end
 		end
@@ -483,7 +483,7 @@ end
   ****************************************************************************]]
 do
 	local type = type;
-	function me:OnEvent ( Event, ... )
+	function NS:OnEvent ( Event, ... )
 		if ( type( self[ Event ] ) == "function" ) then
 			self[ Event ]( self, Event, ... );
 		end
@@ -495,7 +495,7 @@ end
   * Function: _Cursor:OnShow                                                   *
   * Description: Resets model animations when shown, to clear old trails.      *
   ****************************************************************************]]
-function me:OnShow ()
+function NS:OnShow ()
 	for Model in pairs( ModelsUsed ) do
 		local Path = Model:GetModel(); -- Returns model table if unset
 		if ( type( Path ) == "string" ) then
@@ -514,7 +514,7 @@ do
 	local Hypotenuse = ( GetScreenWidth() ^ 2 + GetScreenHeight() ^ 2 ) ^ 0.5 * UIParent:GetEffectiveScale();
 	local Scale, X, Y;
 
-	function me:OnUpdate ( Elapsed )
+	function NS:OnUpdate ( Elapsed )
 		X, Y = GetCursorPosition();
 		for Model in pairs( ModelsUsed ) do
 			Model:SetPosition( ( X + Model.X ) / Hypotenuse, ( Y + Model.Y ) / Hypotenuse, 0 );
@@ -525,21 +525,21 @@ end
 
 
 
-me:SetScript( "OnUpdate", me.OnUpdate );
-me:SetScript( "OnEvent", me.OnEvent );
-me:SetScript( "OnShow", me.OnShow );
-me:RegisterEvent( "ADDON_LOADED" );
-me:RegisterEvent( "SCREENSHOT_SUCCEEDED" );
-me:RegisterEvent( "SCREENSHOT_FAILED" );
-me:RegisterEvent( "CINEMATIC_START" );
-me:RegisterEvent( "CINEMATIC_STOP" );
+NS:SetScript( "OnUpdate", NS.OnUpdate );
+NS:SetScript( "OnEvent", NS.OnEvent );
+NS:SetScript( "OnShow", NS.OnShow );
+NS:RegisterEvent( "ADDON_LOADED" );
+NS:RegisterEvent( "SCREENSHOT_SUCCEEDED" );
+NS:RegisterEvent( "SCREENSHOT_FAILED" );
+NS:RegisterEvent( "CINEMATIC_START" );
+NS:RegisterEvent( "CINEMATIC_STOP" );
 
 -- Hide during screenshots
-hooksecurefunc( "Screenshot", me.ScreenshotStart );
+hooksecurefunc( "Screenshot", NS.ScreenshotStart );
 -- Hide while FMV movies play
-MovieFrame:HookScript( "OnShow", me.MovieStart );
-MovieFrame:HookScript( "OnHide", me.MovieStop );
+MovieFrame:HookScript( "OnShow", NS.MovieStart );
+MovieFrame:HookScript( "OnHide", NS.MovieStop );
 -- Hook camera movement to hide cursor effects
-hooksecurefunc( "CameraOrSelectOrMoveStart", me.CameraMoveStart );
-hooksecurefunc( "CameraOrSelectOrMoveStop", me.CameraMoveStop );
-CreateFrame( "Frame" ):SetScript( "OnUpdate", me.MouselookOnUpdate );
+hooksecurefunc( "CameraOrSelectOrMoveStart", NS.CameraMoveStart );
+hooksecurefunc( "CameraOrSelectOrMoveStop", NS.CameraMoveStop );
+CreateFrame( "Frame" ):SetScript( "OnUpdate", NS.MouselookOnUpdate );

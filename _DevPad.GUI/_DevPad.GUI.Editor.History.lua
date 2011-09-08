@@ -6,22 +6,22 @@
 
 local _DevPad, GUI = _DevPad, select( 2, ... );
 
-local me = {};
-GUI.Editor.History = me;
+local NS = {};
+GUI.Editor.History = NS;
 
-me.UndoButton = CreateFrame( "Button", nil, GUI.Editor );
-me.RedoButton = CreateFrame( "Button", nil, GUI.Editor );
-me.CompareTimer = CreateFrame( "Frame", nil, GUI.Editor ):CreateAnimationGroup();
+NS.UndoButton = CreateFrame( "Button", nil, GUI.Editor );
+NS.RedoButton = CreateFrame( "Button", nil, GUI.Editor );
+NS.CompareTimer = CreateFrame( "Frame", nil, GUI.Editor ):CreateAnimationGroup();
 
 local CompareFrequency = 0.5; -- Time to wait after last keypress before recomparing
-me.MaxEntries = 128; -- Use math.huge for unlimited history, or delete this file to disable history
+NS.MaxEntries = 128; -- Use math.huge for unlimited history, or delete this file to disable history
 local KEYS_PER_ENTRY = 3; -- Number of _History array indices required to store one entry
 
 
 
 
 --- Compares script text when it changes.
-function me:ScriptSetText ( _, Script )
+function NS:ScriptSetText ( _, Script )
 	if ( Script == self.Script ) then -- Delay comparisons for scripts being edited
 		self.CompareTimer:Stop();
 		self.CompareTimer:Play();
@@ -30,7 +30,7 @@ function me:ScriptSetText ( _, Script )
 	end
 end
 --- Begins throttling comparisons on scripts being edited.
-function me:EditorSetScriptObject ( _, Script )
+function NS:EditorSetScriptObject ( _, Script )
 	if ( self.Script ) then
 		self:Compare( self.Script ); -- Compare pending edits immediately
 	end
@@ -43,7 +43,7 @@ end
 
 
 --- Enables and disables the undo/redo buttons when appropriate.
-function me:UpdateButtons ( Script )
+function NS:UpdateButtons ( Script )
 	if ( Script ~= self.Script ) then -- Not shown in the editor
 		return;
 	end
@@ -59,26 +59,26 @@ function me:UpdateButtons ( Script )
 	end
 end
 --- Undoes an edit when clicked.
-function me.UndoButton:OnClick ()
+function NS.UndoButton:OnClick ()
 	PlaySound( "igMainMenuOptionCheckBoxOn" );
-	return me:Undo( me.Script );
+	return NS:Undo( NS.Script );
 end
 --- Redoes an edit when clicked.
-function me.RedoButton:OnClick ()
+function NS.RedoButton:OnClick ()
 	PlaySound( "igMainMenuOptionCheckBoxOn" );
-	return me:Redo( me.Script );
+	return NS:Redo( NS.Script );
 end
 --- Undoes/redoes a change to the script with <ctrl+z> and <ctrl+shift+Z>.
 function GUI.Editor.Shortcuts:Z ()
-	if ( me.Script and IsControlKeyDown() ) then
-		return me[ IsShiftKeyDown() and "Redo" or "Undo" ]( me, me.Script );
+	if ( NS.Script and IsControlKeyDown() ) then
+		return NS[ IsShiftKeyDown() and "Redo" or "Undo" ]( NS, NS.Script );
 	end
 end
 
 
 --- Recompares text a moment after the user quits typing.
-function me.CompareTimer:OnFinished ()
-	return me:Compare( me.Script );
+function NS.CompareTimer:OnFinished ()
+	return NS:Compare( NS.Script );
 end
 do
 	local strsub, floor, ceil = string.sub, math.floor, math.ceil;
@@ -113,7 +113,7 @@ do
 	end
 	--- Checks Script's text for changes, and adds a history entry if any are found.
 	-- @return True if a new history entry was added.
-	function me:Compare ( Script )
+	function NS:Compare ( Script )
 		self.CompareTimer:Stop();
 		local History = Script._History;
 		if ( not History ) then
@@ -140,7 +140,7 @@ do
 		History[ #History + 1 ] = Text:sub( Start, End ); -- Replacement text at range
 		History[ #History + 1 ] = Start; -- Offset for changed range
 		-- Delete extra history entries over the cap
-		for Index = me.MaxEntries * KEYS_PER_ENTRY + 1, #Script._History do
+		for Index = NS.MaxEntries * KEYS_PER_ENTRY + 1, #Script._History do
 			tremove( Script._History, 1 );
 		end
 		Script._HistoryIndex, Script._HistoryText = #History, Text;
@@ -158,13 +158,13 @@ do
 		local Text = ( "" ):join( Prefix, MiddleNew, Suffix );
 		Script._HistoryText = Text; -- Prevent the undo/redo from counting as a new edit
 		Script:SetText( Text );
-		if ( me.Script == Script ) then -- Move cursor to just after replaced text
+		if ( NS.Script == Script ) then -- Move cursor to just after replaced text
 			GUI.Editor:SetScriptCursorPosition( Start + #MiddleNew - 1 );
 		end
 	end
 	--- Undoes one edit on Script, if available.
 	-- @return True if an edit was undone.
-	function me:Undo ( Script )
+	function NS:Undo ( Script )
 		self:Compare( Script );
 		if ( Script._HistoryIndex == 0 ) then
 			return; -- Nothing to undo
@@ -178,7 +178,7 @@ do
 	end
 	--- Redoes one edit on Script, if available.
 	-- @return True if an edit was redone.
-	function me:Redo ( Script )
+	function NS:Redo ( Script )
 		self:Compare( Script );
 		if ( Script._HistoryIndex == #Script._History ) then
 			return; -- Nothing to redo
@@ -214,12 +214,12 @@ local function SetupButton ( Button )
 end
 
 -- Title buttons
-local Redo = me.RedoButton;
+local Redo = NS.RedoButton;
 SetupButton( Redo );
 Redo:SetPoint( "RIGHT", GUI.Editor.FontDecrease, "LEFT", -6, 0 );
 Redo.tooltipText = GUI.L.REDO;
 
-local Undo = me.UndoButton;
+local Undo = NS.UndoButton;
 SetupButton( Undo );
 Undo:SetPoint( "RIGHT", Redo, "LEFT", 12, 0 );
 GUI.Editor.Title:SetPoint( "RIGHT", Undo, "LEFT", 6, 0 );
@@ -230,8 +230,8 @@ Undo:GetDisabledTexture():SetTexCoord( 1, 0, 0, 1 );
 Undo.tooltipText = GUI.L.UNDO;
 
 
-me.CompareTimer:CreateAnimation( "Animation" ):SetDuration( CompareFrequency );
-me.CompareTimer:SetScript( "OnFinished", me.CompareTimer.OnFinished );
+NS.CompareTimer:CreateAnimation( "Animation" ):SetDuration( CompareFrequency );
+NS.CompareTimer:SetScript( "OnFinished", NS.CompareTimer.OnFinished );
 
-_DevPad.RegisterCallback( me, "ScriptSetText" );
-GUI.RegisterCallback( me, "EditorSetScriptObject" );
+_DevPad.RegisterCallback( NS, "ScriptSetText" );
+GUI.RegisterCallback( NS, "EditorSetScriptObject" );

@@ -5,20 +5,20 @@
 
 
 local HUD = select( 2, ... );
-local me = CreateFrame( "Frame", nil, UIParent );
-HUD.Flags = me;
+local NS = CreateFrame( "Frame", nil, UIParent );
+HUD.Flags = NS;
 
 local UpdateRate = 0.25;
 
 
 
 
-me:SetFrameStrata( "BACKGROUND" );
-me.Text = me:CreateFontString( nil, "ARTWORK", "GameFontNormalHuge" );
-me.Text:SetPoint( "BOTTOM", AutoFollowStatusText, "TOP" );
+NS:SetFrameStrata( "BACKGROUND" );
+NS.Text = NS:CreateFontString( nil, "ARTWORK", "GameFontNormalHuge" );
+NS.Text:SetPoint( "BOTTOM", AutoFollowStatusText, "TOP" );
 
 
-local Updater = me:CreateAnimationGroup();
+local Updater = NS:CreateAnimationGroup();
 
 local UnitIsAFK, UnitIsDND = UnitIsAFK, UnitIsDND;
 --- Updates AFK/DND state on a timer.
@@ -26,7 +26,7 @@ local UnitIsAFK, UnitIsDND = UnitIsAFK, UnitIsDND;
 -- zoning or logging in for the first time, and PLAYER_ENTERING_WORLD doesn't
 -- catch those cases either.
 function Updater:OnLoop ()
-	me.Text:SetText( ( UnitIsAFK( "player" ) and CHAT_FLAG_AFK )
+	NS.Text:SetText( ( UnitIsAFK( "player" ) and CHAT_FLAG_AFK )
 		or ( UnitIsDND( "player" ) and CHAT_FLAG_DND ) or nil );
 end
 

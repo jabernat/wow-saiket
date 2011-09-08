@@ -4,8 +4,8 @@
   ****************************************************************************]]
 
 
-local me = CreateFrame( "EditBox", "_UnderscoreColorPickerEditBox", ColorPickerFrame, "InputBoxTemplate" );
-select( 2, ... ).ColorPicker = me;
+local NS = CreateFrame( "EditBox", "_UnderscoreColorPickerEditBox", ColorPickerFrame, "InputBoxTemplate" );
+select( 2, ... ).ColorPicker = NS;
 
 
 
@@ -14,7 +14,7 @@ do
 	local rshift = bit.rshift;
 	local band = bit.band;
 	--- Validates hex triplet.
-	function me:OnTextChanged ()
+	function NS:OnTextChanged ()
 		local Text = self:GetText();
 		local Value = tonumber( Text, 16 );
 
@@ -36,8 +36,8 @@ do
 	local lshift = bit.lshift;
 	local floor = floor;
 	--- Sets the hex triplet to match the shown color.
-	function me:OnColorSelect ( R, G, B )
-		me:SetText( ( "%06X" ):format( -- No SetFormattedText for editboxes
+	function NS:OnColorSelect ( R, G, B )
+		NS:SetText( ( "%06X" ):format( -- No SetFormattedText for editboxes
 			lshift( floor( R * 255 + 0.5 ), 16 )
 			+ lshift( floor( G * 255 + 0.5 ), 8 )
 			+ floor( B * 255 + 0.5 )
@@ -52,12 +52,12 @@ end
 ColorPickerCancelButton:SetWidth( 100 );
 ColorPickerOkayButton:SetWidth( 100 );
 
-me:SetPoint( "BOTTOMLEFT", 20, 10 );
-me:SetPoint( "TOPRIGHT", ColorPickerOkayButton, "TOPLEFT", -2, 0 );
-me:SetMaxLetters( 6 );
+NS:SetPoint( "BOTTOMLEFT", 20, 10 );
+NS:SetPoint( "TOPRIGHT", ColorPickerOkayButton, "TOPLEFT", -2, 0 );
+NS:SetMaxLetters( 6 );
 
 
-ColorPickerFrame:HookScript( "OnColorSelect", me.OnColorSelect );
-me:SetScript( "OnHide", me.ClearFocus );
-me:SetScript( "OnEscapePressed", ColorPickerCancelButton:GetScript( "OnClick" ) );
-me:SetScript( "OnTextChanged", me.OnTextChanged );
+ColorPickerFrame:HookScript( "OnColorSelect", NS.OnColorSelect );
+NS:SetScript( "OnHide", NS.ClearFocus );
+NS:SetScript( "OnEscapePressed", ColorPickerCancelButton:GetScript( "OnClick" ) );
+NS:SetScript( "OnTextChanged", NS.OnTextChanged );

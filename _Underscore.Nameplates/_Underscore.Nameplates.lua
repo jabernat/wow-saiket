@@ -6,33 +6,33 @@
 
 local LibSharedMedia = LibStub( "LibSharedMedia-3.0" );
 local _Underscore = _Underscore;
-local AddOnName, me = ...;
-_Underscore.Nameplates = me;
+local AddOnName, NS = ...;
+_Underscore.Nameplates = NS;
 
-me.Frame = CreateFrame( "Frame", nil, WorldFrame );
-me.Version = GetAddOnMetadata( AddOnName, "Version" ):match( "^([%d.]+)" );
+NS.Frame = CreateFrame( "Frame", nil, WorldFrame );
+NS.Version = GetAddOnMetadata( AddOnName, "Version" ):match( "^([%d.]+)" );
 
-me.OptionsCharacter = {
-	Version = me.Version;
+NS.OptionsCharacter = {
+	Version = NS.Version;
 };
-me.OptionsCharacterDefault = {
-	Version = me.Version;
+NS.OptionsCharacterDefault = {
+	Version = NS.Version;
 	TankMode = false;
 };
 
 local Plates = {};
-me.Plates = Plates;
-me.PlatesVisible = {};
-me.TargetOutline = CreateFrame( "Frame" );
-me.TargetUpdater = CreateFrame( "Frame" );
+NS.Plates = Plates;
+NS.PlatesVisible = {};
+NS.TargetOutline = CreateFrame( "Frame" );
+NS.TargetUpdater = CreateFrame( "Frame" );
 
-me.NameFont = CreateFont( "_UnderscoreNameplatesNameFont" );
-me.LevelFont = CreateFont( "_UnderscoreNameplatesLevelFont" );
-me.CastFont = CreateFont( "_UnderscoreNameplatesCastFont" );
+NS.NameFont = CreateFont( "_UnderscoreNameplatesNameFont" );
+NS.LevelFont = CreateFont( "_UnderscoreNameplatesLevelFont" );
+NS.CastFont = CreateFont( "_UnderscoreNameplatesCastFont" );
 
 local Colors = _Underscore.Colors;
 
-me.ClassificationUpdateRate = 1;
+NS.ClassificationUpdateRate = 1;
 
 local BarTexture = LibSharedMedia:Fetch( LibSharedMedia.MediaType.STATUSBAR, _Underscore.MediaBar );
 
@@ -64,12 +64,12 @@ do
 		if ( not InCombat ) then
 			self:SetSize( PlateWidth, PlateHeight );
 		end
-		me.VisualClassificationUpdate( Visual, true ); -- Force
+		NS.VisualClassificationUpdate( Visual, true ); -- Force
 	end
 	--- Reposition elements when a nameplate gets reused.
-	function me:PlateOnShow ()
+	function NS:PlateOnShow ()
 		local Visual = Plates[ self ];
-		me.PlatesVisible[ self ] = Visual;
+		NS.PlatesVisible[ self ] = Visual;
 
 		if ( not self:IsMouseOver() ) then -- Note: Fix for bug where highlights get stuck in default UI
 			Visual.Highlight:Hide();
@@ -89,13 +89,13 @@ do
 	end
 end
 --- Remove plate from visible list when hidden.
-function me:PlateOnHide ()
-	me.PlatesVisible[ self ] = nil;
+function NS:PlateOnHide ()
+	NS.PlatesVisible[ self ] = nil;
 
 	-- Hide target outline if shown
-	if ( HasTarget and me.TargetOutline:GetParent() == self ) then
-		me.TargetOutline:Hide();
-		me.TargetOutline:SetParent( nil );
+	if ( HasTarget and NS.TargetOutline:GetParent() == self ) then
+		NS.TargetOutline:Hide();
+		NS.TargetOutline:SetParent( nil );
 	end
 end
 
@@ -103,7 +103,7 @@ do
 	local Threat, ThreatBorder;
 	local R, G, B;
 	--- Updates threat textures to reflect original plates' textures.
-	function me:VisualThreatUpdate ()
+	function NS:VisualThreatUpdate ()
 		Threat, ThreatBorder = 0, self.ThreatBorder;
 		if ( self.Reaction and self.Reaction <= 4 ) then -- Not friendly
 			if ( self.ThreatGlow:IsShown() ) then
@@ -112,7 +112,7 @@ do
 					Threat = G > 0.5 and 1 or 2;
 				end
 			end
-			if ( me.OptionsCharacter.TankMode ) then -- Invert
+			if ( NS.OptionsCharacter.TankMode ) then -- Invert
 				Threat = 2 - Threat;
 			end
 		end
@@ -187,7 +187,7 @@ do
 	--- Periodically interprets the status bar color for info.
 	-- @param Force  Updates status even if health bar color didn't change.
 	-- @return True if status updated.
-	function me:VisualClassificationUpdate ( Force )
+	function NS:VisualClassificationUpdate ( Force )
 		local Health = self.Health;
 		local R, G, B = Health:GetStatusBarColor();
 		if ( Force or Health[ 1 ] ~= R or Health[ 2 ] ~= G or Health[ 3 ] ~= B ) then -- Reaction/classification changed
@@ -203,7 +203,7 @@ do
 				Left:SetBlendMode( "MOD" );
 				Left:SetVertexColor( 1, 1, 1, 0.5 );
 				Right:SetBlendMode( "ADD" );
-				me.HealthOnValueChanged( Health, Health:GetValue() );
+				NS.HealthOnValueChanged( Health, Health:GetValue() );
 			else
 				Left:SetBlendMode( "ADD" );
 				Left:SetVertexColor( unpack( Colors.reaction[ self.Reaction ] ) );
@@ -284,7 +284,7 @@ do
 			C[ Index + 5 ] * Percent + C[ Index + 2 ] * Inverse, 1;
 	end
 	--- Updates the healer-mode health bar when health changes.
-	function me:HealthOnValueChanged ( Health )
+	function NS:HealthOnValueChanged ( Health )
 		local _, HealthMax = self:GetMinMaxValues();
 		local Percent = Health / HealthMax;
 		self.Left:SetWidth( Percent * ( PlateWidth - PlateHeight ) );
@@ -327,7 +327,7 @@ do
 				self.Name:SetTextColor( 1, 1, 1, 1 ); -- Plain white
 			end
 
-			local Flash = me.Flash;
+			local Flash = NS.Flash;
 			Flash:StopAnimating();
 			if ( not Uninterruptible and UnitCanAttack( "player", "target" ) ) then
 				-- Not friendly and spell just became interruptible
@@ -342,7 +342,7 @@ do
 		end
 	end
 	--- Reposition elements and adds spell details when a castbar is shown.
-	function me:CastOnShow ()
+	function NS:CastOnShow ()
 		self:RegisterEvent( "UNIT_SPELLCAST_INTERRUPTIBLE" );
 		self:RegisterEvent( "UNIT_SPELLCAST_NOT_INTERRUPTIBLE" );
 
@@ -360,14 +360,14 @@ do
 		CastOnInterruptibleChanged( self, Uninterruptible );
 	end
 	--- Unregisters events when a castbar hides.
-	function me:CastOnHide ()
+	function NS:CastOnHide ()
 		self:UnregisterEvent( "UNIT_SPELLCAST_INTERRUPTIBLE" );
 		self:UnregisterEvent( "UNIT_SPELLCAST_NOT_INTERRUPTIBLE" );
 		self.Uninterruptible = nil;
 		self:Hide(); -- In case parent plate is hidden
 	end
 	--- Updates the interrupt immunity shield if it changes mid-cast.
-	function me:CastOnEvent ( Event, UnitID )
+	function NS:CastOnEvent ( Event, UnitID )
 		if ( UnitID == "target" ) then
 			CastOnInterruptibleChanged( self, Event == "UNIT_SPELLCAST_NOT_INTERRUPTIBLE" );
 		end
@@ -435,7 +435,7 @@ do
 
 		-- Level text
 		Visual.Level:SetParent( Visual );
-		Visual.Level:SetFontObject( me.LevelFont );
+		Visual.Level:SetFontObject( NS.LevelFont );
 
 		-- Class icon
 		Visual.ClassIcon = Visual:CreateTexture( nil, "ARTWORK" );
@@ -457,8 +457,8 @@ do
 		Health.Right:SetPoint( "TOPRIGHT" );
 		Health.Right:SetPoint( "BOTTOMLEFT", Health.Left, "BOTTOMRIGHT" );
 		Health.Right:SetTexture( BarTexture );
-		Health:SetScript( "OnValueChanged", me.HealthOnValueChanged );
-		me.HealthOnValueChanged( Health, Health:GetValue() );
+		Health:SetScript( "OnValueChanged", NS.HealthOnValueChanged );
+		NS.HealthOnValueChanged( Health, Health:GetValue() );
 
 		-- Name text
 		local NameContainer = CreateFrame( "Frame", nil, Plate );
@@ -466,14 +466,14 @@ do
 		NameContainer:SetPoint( "BOTTOMLEFT", Health.Left, 2, 2 );
 		NameContainer:SetAlpha( 0.4 ); -- Prevents default UI from resetting alpha
 		Visual.Name:SetParent( NameContainer );
-		Visual.Name:SetFontObject( me.NameFont );
+		Visual.Name:SetFontObject( NS.NameFont );
 
 
 		-- Cast bar
 		Cast:SetParent( Visual );
-		Cast:SetScript( "OnShow", me.CastOnShow );
-		Cast:SetScript( "OnHide", me.CastOnHide );
-		Cast:SetScript( "OnEvent", me.CastOnEvent );
+		Cast:SetScript( "OnShow", NS.CastOnShow );
+		Cast:SetScript( "OnHide", NS.CastOnHide );
+		Cast:SetScript( "OnEvent", NS.CastOnEvent );
 		Cast:SetStatusBarTexture( BarTexture );
 		CastTexture:SetDrawLayer( "BORDER" );
 		-- Register for desaturation on uninterruptible
@@ -511,11 +511,11 @@ do
 		Cast.NoInterrupt:SetDrawLayer( "BACKGROUND" );
 		Cast.NoInterrupt:SetTexCoord( 1, 0.5, 0, 1 );
 		-- Spell name
-		Cast.Name = Cast:CreateFontString( nil, "ARTWORK", me.CastFont:GetName() );
+		Cast.Name = Cast:CreateFontString( nil, "ARTWORK", NS.CastFont:GetName() );
 		Cast.Name:SetPoint( "TOPLEFT", 8, -4 );
 		Cast.Name:SetPoint( "BOTTOMRIGHT", -4, 4 );
 		if ( Cast:IsVisible() ) then
-			me.CastOnShow( Cast );
+			NS.CastOnShow( Cast );
 		end
 
 
@@ -533,11 +533,11 @@ do
 		Visual.ThreatBorder:SetTexture( ThreatBorders );
 
 
-		Plate:SetScript( "OnShow", me.PlateOnShow );
-		Plate:SetScript( "OnHide", me.PlateOnHide );
+		Plate:SetScript( "OnShow", NS.PlateOnShow );
+		Plate:SetScript( "OnHide", NS.PlateOnHide );
 		if ( Plate:IsVisible() ) then
 			Plate.OnShowForced = true; -- Updates all elements without waiting one frame
-			me.PlateOnShow( Plate );
+			NS.PlateOnShow( Plate );
 		end
 	end
 
@@ -559,7 +559,7 @@ do
 	local NextUpdate = 0;
 	local pairs = pairs;
 	--- Periodically scans for new nameplate frames to skin.
-	function me.Frame:OnUpdate ( Elapsed )
+	function NS.Frame:OnUpdate ( Elapsed )
 		-- Check for new nameplates
 		NewChildCount = WorldFrame:GetNumChildren();
 		if ( ChildCount ~= NewChildCount ) then
@@ -570,26 +570,26 @@ do
 
 		NextUpdate = NextUpdate - Elapsed;
 		if ( NextUpdate <= 0 ) then
-			NextUpdate = me.ClassificationUpdateRate;
+			NextUpdate = NS.ClassificationUpdateRate;
 
-			for Plate, Visual in pairs( me.PlatesVisible ) do
-				me.VisualClassificationUpdate( Visual );
+			for Plate, Visual in pairs( NS.PlatesVisible ) do
+				NS.VisualClassificationUpdate( Visual );
 			end
 		end
 
 		if ( InCombat ) then -- Update threat borders
-			for Plate, Visual in pairs( me.PlatesVisible ) do
-				me.VisualThreatUpdate( Visual );
+			for Plate, Visual in pairs( NS.PlatesVisible ) do
+				NS.VisualThreatUpdate( Visual );
 			end
 		end
 	end
 
-	local GetAlpha, SetAlpha = me.Frame.GetAlpha, me.Frame.SetAlpha;
+	local GetAlpha, SetAlpha = NS.Frame.GetAlpha, NS.Frame.SetAlpha;
 	--- Keeps the nameplate's alpha set properly, and updates target.
-	function me.TargetUpdater:OnUpdate ()
-		for Plate in pairs( me.PlatesVisible ) do
+	function NS.TargetUpdater:OnUpdate ()
+		for Plate in pairs( NS.PlatesVisible ) do
 			if ( GetAlpha( Plate ) == 1 ) then -- Current target
-				local TargetOutline = me.TargetOutline;
+				local TargetOutline = NS.TargetOutline;
 				if ( TargetOutline:GetParent() ~= Plate ) then -- Not already positioned
 					-- Position outline
 					TargetOutline:SetParent( Plate );
@@ -608,7 +608,7 @@ end
 
 
 --- Checks for embeded LibNameplate installs after each mod loads.
-function me.Frame:ADDON_LOADED ( Event )
+function NS.Frame:ADDON_LOADED ( Event )
 	local Lib = LibStub( "LibNameplate-1.0", true );
 	if ( Lib ) then
 		LibNameplate = Lib;
@@ -616,7 +616,7 @@ function me.Frame:ADDON_LOADED ( Event )
 	end
 end
 --- Sets CVars to allow threat and class info.
-function me.Frame:VARIABLES_LOADED ( Event )
+function NS.Frame:VARIABLES_LOADED ( Event )
 	self[ Event ] = nil;
 
 	SetCVar( "ThreatWarning", 3 ); -- Always show threat warning glow textures
@@ -624,34 +624,34 @@ function me.Frame:VARIABLES_LOADED ( Event )
 	SetCVar( "nameplateOverlapH", 1 ); -- Keep ends of nameplates from overlapping
 end
 --- Resize any new nameplates that couldn't be resized in combat.
-function me.Frame:PLAYER_REGEN_ENABLED ()
+function NS.Frame:PLAYER_REGEN_ENABLED ()
 	InCombat = false;
 
 	for Plate, Visual in pairs( Plates ) do
 		Plate:SetSize( PlateWidth, PlateHeight );
 	end
 
-	for Plate, Visual in pairs( me.PlatesVisible ) do
+	for Plate, Visual in pairs( NS.PlatesVisible ) do
 		Visual.ThreatBorder:Hide();
 		Visual.ThreatBorder.Threat = nil; -- Reset threat level cache
 	end
 end
 --- Caches combat status when entering a fight.
-function me.Frame:PLAYER_REGEN_DISABLED ()
+function NS.Frame:PLAYER_REGEN_DISABLED ()
 	InCombat = true;
 end
 --- Manages the target outline frame when changing targets.
-function me.Frame:PLAYER_TARGET_CHANGED ()
+function NS.Frame:PLAYER_TARGET_CHANGED ()
 	if ( HasTarget ) then -- Clear previous target indicator
-		me.TargetOutline:Hide();
-		me.TargetOutline:SetParent( nil );
+		NS.TargetOutline:Hide();
+		NS.TargetOutline:SetParent( nil );
 	end
 	HasTarget = UnitExists( "target" );
 
 	if ( HasTarget ) then
-		me.TargetUpdater:Show();
+		NS.TargetUpdater:Show();
 	else
-		me.TargetUpdater:Hide();
+		NS.TargetUpdater:Hide();
 	end
 end
 
@@ -660,24 +660,24 @@ end
 
 --- Inverts threat display mode for tanks.
 -- @return True if setting changed.
-function me.SetTankMode ( Enable )
-	if ( me.OptionsCharacter.TankMode ~= Enable ) then
-		me.OptionsCharacter.TankMode = Enable;
+function NS.SetTankMode ( Enable )
+	if ( NS.OptionsCharacter.TankMode ~= Enable ) then
+		NS.OptionsCharacter.TankMode = Enable;
 		return true;
 	end
 end
 --- Slash command to set tank threat mode.
-function me.SlashCommand ( Input )
+function NS.SlashCommand ( Input )
 	local Enable = tonumber( SecureCmdOptionParse( Input ) ); -- 1 to enable, 0 to disable
 	if ( Enable ) then
 		Enable = Enable == 1;
 	else
-		Enable = not me.OptionsCharacter.TankMode;
+		Enable = not NS.OptionsCharacter.TankMode;
 	end
 
-	if ( me.SetTankMode( Enable ) ) then
+	if ( NS.SetTankMode( Enable ) ) then
 		local Color = Enable and GREEN_FONT_COLOR or NORMAL_FONT_COLOR;
-		DEFAULT_CHAT_FRAME:AddMessage( me.L.TANKMODE_FORMAT:format( me.L[ Enable and "ENABLED" or "DISABLED" ] ),
+		DEFAULT_CHAT_FRAME:AddMessage( NS.L.TANKMODE_FORMAT:format( NS.L[ Enable and "ENABLED" or "DISABLED" ] ),
 			Color.r, Color.g, Color.b );
 	end
 end
@@ -686,32 +686,32 @@ end
 
 
 --- Loads an options table, or the defaults.
-function me.Synchronize ( OptionsCharacter )
+function NS.Synchronize ( OptionsCharacter )
 	-- Load defaults if settings omitted
 	if ( not OptionsCharacter ) then
-		OptionsCharacter = me.OptionsCharacterDefault;
+		OptionsCharacter = NS.OptionsCharacterDefault;
 	end
 
-	me.SetTankMode( OptionsCharacter.TankMode );
+	NS.SetTankMode( OptionsCharacter.TankMode );
 end
 --- Loads defaults and validates settings.
-function me.OnLoad ()
-	me.OnLoad = nil;
+function NS.OnLoad ()
+	NS.OnLoad = nil;
 
 	local OptionsCharacter = _UnderscoreNameplatesOptionsCharacter;
-	_UnderscoreNameplatesOptionsCharacter = me.OptionsCharacter;
+	_UnderscoreNameplatesOptionsCharacter = NS.OptionsCharacter;
 
 	if ( OptionsCharacter ) then
-		OptionsCharacter.Version = me.Version;
+		OptionsCharacter.Version = NS.Version;
 	end
 
-	me.Synchronize( OptionsCharacter ); -- Loads defaults if nil
+	NS.Synchronize( OptionsCharacter ); -- Loads defaults if nil
 end
 
 
 
 
-local Frame = me.Frame;
+local Frame = NS.Frame;
 Frame:SetScript( "OnEvent", _Underscore.Frame.OnEvent );
 Frame:SetScript( "OnUpdate", Frame.OnUpdate );
 Frame:RegisterEvent( "ADDON_LOADED" );
@@ -722,44 +722,44 @@ end
 Frame:RegisterEvent( "PLAYER_REGEN_DISABLED" );
 Frame:RegisterEvent( "PLAYER_REGEN_ENABLED" );
 Frame:RegisterEvent( "PLAYER_TARGET_CHANGED" );
-_Underscore.RegisterAddOnInitializer( AddOnName, me.OnLoad );
+_Underscore.RegisterAddOnInitializer( AddOnName, NS.OnLoad );
 
 
 -- Fonts
-me.NameFont:SetFont( [[Fonts\ARIALN.TTF]], 8, "OUTLINE" );
-me.NameFont:SetShadowColor( 0, 0, 0, 0 ); -- Hide shadow
-me.NameFont:SetJustifyV( "MIDDLE" );
-me.NameFont:SetJustifyH( "LEFT" );
+NS.NameFont:SetFont( [[Fonts\ARIALN.TTF]], 8, "OUTLINE" );
+NS.NameFont:SetShadowColor( 0, 0, 0, 0 ); -- Hide shadow
+NS.NameFont:SetJustifyV( "MIDDLE" );
+NS.NameFont:SetJustifyH( "LEFT" );
 
-me.LevelFont:SetFont( [[Fonts\ARIALN.TTF]], 6, "OUTLINE" );
-me.LevelFont:SetShadowColor( 0, 0, 0, 1 );
-me.LevelFont:SetShadowOffset( 1.5, -1.5 );
+NS.LevelFont:SetFont( [[Fonts\ARIALN.TTF]], 6, "OUTLINE" );
+NS.LevelFont:SetShadowColor( 0, 0, 0, 1 );
+NS.LevelFont:SetShadowOffset( 1.5, -1.5 );
 
-me.CastFont:SetFont( [[Fonts\ARIALN.TTF]], 14, "OUTLINE" );
-me.CastFont:SetJustifyV( "MIDDLE" );
-me.CastFont:SetJustifyH( "LEFT" );
+NS.CastFont:SetFont( [[Fonts\ARIALN.TTF]], 14, "OUTLINE" );
+NS.CastFont:SetJustifyV( "MIDDLE" );
+NS.CastFont:SetJustifyH( "LEFT" );
 
 
 -- Target outline
-me.TargetOutline:SetSize( PlateWidth, PlateHeight );
-local Outline = me.TargetOutline:CreateTexture( nil, "BORDER" );
+NS.TargetOutline:SetSize( PlateWidth, PlateHeight );
+local Outline = NS.TargetOutline:CreateTexture( nil, "BORDER" );
 Outline:SetTexture( 1, 1, 1 );
 Outline:SetPoint( "TOPRIGHT", PlateBorder, PlateBorder );
 Outline:SetPoint( "BOTTOMLEFT", -PlateBorder, -PlateBorder );
-local Mask = me.TargetOutline:CreateTexture( nil, "ARTWORK" );
+local Mask = NS.TargetOutline:CreateTexture( nil, "ARTWORK" );
 Mask:SetTexture( 0, 0, 0 );
 Mask:SetAllPoints();
 
 -- Target outline updater
-me.TargetUpdater:Hide();
-me.TargetUpdater:SetScript( "OnUpdate", me.TargetUpdater.OnUpdate );
+NS.TargetUpdater:Hide();
+NS.TargetUpdater:SetScript( "OnUpdate", NS.TargetUpdater.OnUpdate );
 -- Higher frame stratas execute OnUpdates later
-me.TargetUpdater:SetFrameStrata( "TOOLTIP" );
+NS.TargetUpdater:SetFrameStrata( "TOOLTIP" );
 
 
 -- Interrupt flash
-local Flash = me.Frame:CreateTexture( nil, "OVERLAY" );
-me.Flash = Flash;
+local Flash = NS.Frame:CreateTexture( nil, "OVERLAY" );
+NS.Flash = Flash;
 Flash:SetSize( 400 / 300 * ( PlateWidth + 2 * ( CastHeight - PlateHeight ) ), 171 / 70 * CastHeight );
 Flash:SetTexture( [[Interface\AchievementFrame\UI-Achievement-Alert-Glow]] );
 Flash:SetBlendMode( "ADD" );
@@ -776,4 +776,4 @@ FadeOut:SetChange( -1.0 );
 FadeOut:SetDuration( 0.3 );
 
 
-SlashCmdList[ "_UNDERSCORE_NAMEPLATES" ] = me.SlashCommand;
+SlashCmdList[ "_UNDERSCORE_NAMEPLATES" ] = NS.SlashCommand;

@@ -12,18 +12,18 @@ _DevOptions.Stats = {
 
 local _Dev = _Dev;
 local L = _DevLocalization;
-local me = CreateFrame( "Frame", nil, UIParent );
-_Dev.Stats = me;
+local NS = CreateFrame( "Frame", nil, UIParent );
+_Dev.Stats = NS;
 
-me.Framerate = me:CreateFontString( nil, "ARTWORK", "_DevFont" );
-me.Memory    = me:CreateFontString( nil, "ARTWORK", "_DevFont" );
-me.Latency   = me:CreateFontString( nil, "ARTWORK", "_DevFont" );
+NS.Framerate = NS:CreateFontString( nil, "ARTWORK", "_DevFont" );
+NS.Memory    = NS:CreateFontString( nil, "ARTWORK", "_DevFont" );
+NS.Latency   = NS:CreateFontString( nil, "ARTWORK", "_DevFont" );
 
-me.UpdateRate = 0.2;
-me.NextUpdate = 0;
+NS.UpdateRate = 0.2;
+NS.NextUpdate = 0;
 
-me.LowLatency  =  50;
-me.HighLatency = 450;
+NS.LowLatency  =  50;
+NS.HighLatency = 450;
 
 
 
@@ -32,16 +32,16 @@ me.HighLatency = 450;
   * Function: _Dev.Stats.ToggleFramerate                                       *
   * Description: Hides or shows the stats display.                             *
   ****************************************************************************]]
-function me.ToggleFramerate ( Enable )
+function NS.ToggleFramerate ( Enable )
 	if ( Enable == nil ) then
 		Enable = not _DevOptions.Stats.Enabled;
 	end
 	_DevOptions.Stats.Enabled = Enable;
 
 	if ( Enable ) then
-		me:Show();
+		NS:Show();
 	else
-		me:Hide();
+		NS:Hide();
 	end
 end
 
@@ -56,7 +56,7 @@ do
 	local gcinfo = gcinfo;
 	local select = select;
 	local min, max = min, max;
-	function me:OnUpdate ( Elapsed )
+	function NS:OnUpdate ( Elapsed )
 		self.NextUpdate = self.NextUpdate - Elapsed;
 		if ( self.NextUpdate <= 0 ) then
 			self.NextUpdate = self.UpdateRate;
@@ -74,25 +74,25 @@ end
   * Function: _Dev.Stats:OnLoad                                                *
   * Description: Reload user settings.                                         *
   ****************************************************************************]]
-function me:OnLoad ()
+function NS:OnLoad ()
 	ToggleFramerate( _DevOptions.Stats.Enabled );
 end
 
 
 
 
-me:SetSize( 1, 1 );
-me:SetPoint( "TOPLEFT" );
-me:SetFrameStrata( "BACKGROUND" );
-me:SetAlpha( 0.5 );
+NS:SetSize( 1, 1 );
+NS:SetPoint( "TOPLEFT" );
+NS:SetFrameStrata( "BACKGROUND" );
+NS:SetAlpha( 0.5 );
 
-me.Framerate:SetPoint( "TOPLEFT" );
-me.Framerate:SetTextColor( NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b );
-me.Latency:SetPoint( "LEFT", me.Framerate, "RIGHT" );
-me.Memory:SetPoint( "LEFT", me.Latency, "RIGHT" );
+NS.Framerate:SetPoint( "TOPLEFT" );
+NS.Framerate:SetTextColor( NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b );
+NS.Latency:SetPoint( "LEFT", NS.Framerate, "RIGHT" );
+NS.Memory:SetPoint( "LEFT", NS.Latency, "RIGHT" );
 
-me:SetScript( "OnUpdate", me.OnUpdate );
+NS:SetScript( "OnUpdate", NS.OnUpdate );
 
 -- Hook original framerate function
-ToggleFramerate = me.ToggleFramerate;
+ToggleFramerate = NS.ToggleFramerate;
 ToggleFramerate( _DevOptions.Stats.Enabled );

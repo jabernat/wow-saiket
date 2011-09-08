@@ -4,17 +4,17 @@
   ****************************************************************************]]
 
 
-local AddOnName, me = ...;
-Juggler = me;
-me.Button = CreateFrame( "Button", "JugglerButton", nil, "SecureActionButtonTemplate,ActionButtonTemplate" );
-me.Bar = CreateFrame( "StatusBar", nil, me.Button );
-me.Timer = CreateFrame( "Frame", nil, me.Bar );
-me.Machine = me.NewStateMachine();
+local AddOnName, NS = ...;
+Juggler = NS;
+NS.Button = CreateFrame( "Button", "JugglerButton", nil, "SecureActionButtonTemplate,ActionButtonTemplate" );
+NS.Bar = CreateFrame( "StatusBar", nil, NS.Button );
+NS.Timer = CreateFrame( "Frame", nil, NS.Bar );
+NS.Machine = NS.NewStateMachine();
 
 
-me.Item = "item:34599"; -- Juggling Torch
-me.CriteriaID = 6937; -- Torch Juggler: Juggle 40 torches in 15 seconds in Dalaran.
-me.Bindings = { -- Spammable bindings to override while active
+NS.Item = "item:34599"; -- Juggling Torch
+NS.CriteriaID = 6937; -- Torch Juggler: Juggle 40 torches in 15 seconds in Dalaran.
+NS.Bindings = { -- Spammable bindings to override while active
 	"MOUSEWHEELUP",
 	"MOUSEWHEELDOWN",
 };
@@ -25,56 +25,56 @@ me.Bindings = { -- Spammable bindings to override while active
 --- Print a message to the default chat frame in a given color.
 -- @param Message  Message to print.
 -- @param Color  Color table to use for the message, or nil to use the normal font color.
-function me.Print ( Message, Color )
+function NS.Print ( Message, Color )
 	if ( not Color ) then
 		Color = NORMAL_FONT_COLOR;
 	end
-	DEFAULT_CHAT_FRAME:AddMessage( me.L.PRINT_FORMAT:format( Message ), Color.r, Color.g, Color.b );
+	DEFAULT_CHAT_FRAME:AddMessage( NS.L.PRINT_FORMAT:format( Message ), Color.r, Color.g, Color.b );
 end
 
 
 
 
 --- State to use an item and begin spell-targetting.
-local Use = me.Machine:NewState();
-me.Machine.Use = Use;
+local Use = NS.Machine:NewState();
+NS.Machine.Use = Use;
 --- Overrides bindings to click the item button.
 function Use:OnActivate ()
-	for _, Binding in ipairs( me.Bindings ) do
-		SetOverrideBindingClick( me.Button, nil, Binding, me.Button:GetName() );
+	for _, Binding in ipairs( NS.Bindings ) do
+		SetOverrideBindingClick( NS.Button, nil, Binding, NS.Button:GetName() );
 	end
-	me.Button:Enable();
+	NS.Button:Enable();
 end
 --- Clears binding overrides.
 function Use:OnDeactivate ()
-	me.Button:Disable();
-	ClearOverrideBindings( me.Button );
+	NS.Button:Disable();
+	ClearOverrideBindings( NS.Button );
 end
 
 
 --- State to target the cursor's active spell on the ground.
-local Target = me.Machine:NewState();
-me.Machine.Target = Target;
+local Target = NS.Machine:NewState();
+NS.Machine.Target = Target;
 --- Overrides bindings to right-click the game world.
 function Target:OnActivate ()
-	for _, Binding in ipairs( me.Bindings ) do
-		SetOverrideBinding( me.Button, nil, Binding, "CAMERAORSELECTORMOVE" );
+	for _, Binding in ipairs( NS.Bindings ) do
+		SetOverrideBinding( NS.Button, nil, Binding, "CAMERAORSELECTORMOVE" );
 	end
 end
 -- Clears binding overrides.
 function Target:OnDeactivate ()
-	ClearOverrideBindings( me.Button );
+	ClearOverrideBindings( NS.Button );
 end
 
 
 --- Begins spell targetting immediately after using the item.
-function me.Button:PostClick ()
+function NS.Button:PostClick ()
 	if ( Use:IsActive() ) then -- Just used item
 		Target:Activate();
 	end
 end
 --- Re-enables the item button after the last cast has been targetted.
-function me.CameraOrSelectOrMoveStop ()
+function NS.CameraOrSelectOrMoveStop ()
 	if ( Target:IsActive() ) then -- Just targetted item
 		Use:Activate();
 	end
@@ -84,12 +84,12 @@ end
 
 
 --- Updates the timer display.
-function me.Timer:OnUpdate ( Elapsed )
+function NS.Timer:OnUpdate ( Elapsed )
 	self.Remaining = self.Remaining - Elapsed;
 	if ( self.Remaining <= 0 ) then
 		self:Hide();
 	else
-		self.Label:SetFormattedText( me.L.TIMER_FORMAT, self.Remaining );
+		self.Label:SetFormattedText( NS.L.TIMER_FORMAT, self.Remaining );
 		local Percent = self.Remaining / self.Duration;
 		local R, G;
 		if ( Percent > 0.5 ) then
@@ -101,7 +101,7 @@ function me.Timer:OnUpdate ( Elapsed )
 	end
 end
 --- Updates the timer display.
-function me.Timer:SetTime ( Elapsed, Duration )
+function NS.Timer:SetTime ( Elapsed, Duration )
 	local Remaining = Duration - Elapsed;
 	if ( not self:IsShown()
 		or abs( self.Remaining - Remaining ) > 1 -- Timer changed
@@ -119,99 +119,99 @@ do
 	local function OnUpdate ( self )
 		self:SetScript( "OnUpdate", nil );
 
-		local _, _, Completed, Quantity, MaxQuantity, _, _, _, String = GetAchievementCriteriaInfo( me.CriteriaID );
+		local _, _, Completed, Quantity, MaxQuantity, _, _, _, String = GetAchievementCriteriaInfo( NS.CriteriaID );
 		self:SetMinMaxValues( 0, MaxQuantity );
 		self:SetValue( Quantity );
 		if ( not Completed ) then
 			self.Label:SetText( String );
 			self:SetStatusBarColor( 0.6, 0.6, 0 );
 		else
-			self.Label:SetText( me.L.BAR_DONE );
+			self.Label:SetText( NS.L.BAR_DONE );
 			self:SetStatusBarColor( 0, 0.6, 0 );
 
-			me.Timer:Hide();
-			me.Timer:SetAlpha( 0 ); -- In case tracked timer fires later
-			me.Button:UnregisterEvent( "CRITERIA_UPDATE" );
-			me.Button:UnregisterEvent( "TRACKED_ACHIEVEMENT_UPDATE" );
+			NS.Timer:Hide();
+			NS.Timer:SetAlpha( 0 ); -- In case tracked timer fires later
+			NS.Button:UnregisterEvent( "CRITERIA_UPDATE" );
+			NS.Button:UnregisterEvent( "TRACKED_ACHIEVEMENT_UPDATE" );
 		end
 	end
-	function me.Bar:Update ()
+	function NS.Bar:Update ()
 		self:SetScript( "OnUpdate", OnUpdate );
 	end
 end
 
 
 --- Displays a tooltip with instructions.
-function me.Button:OnEnter ()
+function NS.Button:OnEnter ()
 	GameTooltip:SetOwner( self, "ANCHOR_TOPLEFT" );
-	GameTooltip:SetText( me.L.BUTTON_DESC, nil, nil, nil, nil, 1 );
+	GameTooltip:SetText( NS.L.BUTTON_DESC, nil, nil, nil, nil, 1 );
 end
 --- Enables and resets the state machine.
-function me.Button:OnShow ()
-	me.Print( me.L.ENABLED, GREEN_FONT_COLOR );
-	me.Button:RegisterEvent( "BAG_UPDATE" );
-	me.Button:RegisterEvent( "CRITERIA_UPDATE" );
-	me.Button:RegisterEvent( "TRACKED_ACHIEVEMENT_UPDATE" );
-	me.Button:BAG_UPDATE(); -- Update immediately
-	me.Button:CRITERIA_UPDATE();
+function NS.Button:OnShow ()
+	NS.Print( NS.L.ENABLED, GREEN_FONT_COLOR );
+	NS.Button:RegisterEvent( "BAG_UPDATE" );
+	NS.Button:RegisterEvent( "CRITERIA_UPDATE" );
+	NS.Button:RegisterEvent( "TRACKED_ACHIEVEMENT_UPDATE" );
+	NS.Button:BAG_UPDATE(); -- Update immediately
+	NS.Button:CRITERIA_UPDATE();
 	Use:Activate();
 end
 --- Disables the state machine to quit spamming items.
-function me.Button:OnHide ()
-	me.Machine:SetActiveState( nil );
-	me.Timer:Hide();
-	me.Button:UnregisterEvent( "BAG_UPDATE" );
-	me.Button:UnregisterEvent( "CRITERIA_UPDATE" );
-	me.Button:UnregisterEvent( "TRACKED_ACHIEVEMENT_UPDATE" );
-	me.Print( me.L.DISABLED );
+function NS.Button:OnHide ()
+	NS.Machine:SetActiveState( nil );
+	NS.Timer:Hide();
+	NS.Button:UnregisterEvent( "BAG_UPDATE" );
+	NS.Button:UnregisterEvent( "CRITERIA_UPDATE" );
+	NS.Button:UnregisterEvent( "TRACKED_ACHIEVEMENT_UPDATE" );
+	NS.Print( NS.L.DISABLED );
 end
 --- Hides and disables itself when entering combat.
-function me.Button:PLAYER_REGEN_DISABLED ()
+function NS.Button:PLAYER_REGEN_DISABLED ()
 	self:Hide();
 end
 --- Updates the progress bar's text when criteria update.
-function me.Button:CRITERIA_UPDATE ()
-	me.Bar:Update();
+function NS.Button:CRITERIA_UPDATE ()
+	NS.Bar:Update();
 end
 --- Updates the progress bar's text when criteria update.
-function me.Button:TRACKED_ACHIEVEMENT_UPDATE ( _, _, CriteriaID, Elapsed, Duration )
-	if ( CriteriaID == me.CriteriaID and Elapsed and Duration ) then
+function NS.Button:TRACKED_ACHIEVEMENT_UPDATE ( _, _, CriteriaID, Elapsed, Duration )
+	if ( CriteriaID == NS.CriteriaID and Elapsed and Duration ) then
 		if ( Elapsed >= Duration ) then -- Failed
-			me.Timer:Hide();
+			NS.Timer:Hide();
 		else
-			me.Timer:SetTime( Elapsed, Duration );
+			NS.Timer:SetTime( Elapsed, Duration );
 		end
 	end
 end
 do
 	local GetItemCount = GetItemCount;
 	--- Updates item count when bag contents change.
-	function me.Button:BAG_UPDATE ()
-		self.Count:SetText( GetItemCount( me.Item ) );
+	function NS.Button:BAG_UPDATE ()
+		self.Count:SetText( GetItemCount( NS.Item ) );
 	end
 end
 --- Global event handler.
-function me.Button:OnEvent ( Event, ... )
+function NS.Button:OnEvent ( Event, ... )
 	if ( self[ Event ] ) then
 		return self[ Event ]( self, Event, ... );
 	end
 end
 
 --- Slash command to open or close the button.
-function me.SlashCommand ()
+function NS.SlashCommand ()
 	if ( InCombatLockdown() ) then
-		me.Print( me.L.ERROR_COMBAT, RED_FONT_COLOR );
-	elseif ( me.Button:IsShown() ) then
-		me.Button:Hide();
+		NS.Print( NS.L.ERROR_COMBAT, RED_FONT_COLOR );
+	elseif ( NS.Button:IsShown() ) then
+		NS.Button:Hide();
 	else
-		me.Button:Show();
+		NS.Button:Show();
 	end
 end
 
 
 
 
-local Button = me.Button;
+local Button = NS.Button;
 tinsert( UISpecialFrames, Button:GetName() ); -- Allow escape to close it
 Button:Hide();
 Button:Disable();
@@ -223,7 +223,7 @@ Button:SetUserPlaced( true );
 Button:SetPoint( "CENTER" );
 
 local Name = Button:GetName();
-_G[ Name.."Icon" ]:SetTexture( GetItemIcon( me.Item ) or [[Interface\Icons\INV_Misc_QuestionMark]] );
+_G[ Name.."Icon" ]:SetTexture( GetItemIcon( NS.Item ) or [[Interface\Icons\INV_Misc_QuestionMark]] );
 Button.Count = _G[ Name.."Count" ];
 
 local Background = Button:CreateTexture( nil, "BACKGROUND" );
@@ -242,7 +242,7 @@ Close:SetPoint( "TOPRIGHT", Background, 4, 4 );
 Close:SetScale( 0.8 );
 Close:SetHitRectInsets( 8, 8, 8, 8 );
 
-local Bar = me.Bar;
+local Bar = NS.Bar;
 Bar:SetPoint( "BOTTOMLEFT", Background, 4, 4 );
 Bar:SetPoint( "RIGHT", Background, -4, 0 );
 Bar:SetPoint( "TOP", Background, "CENTER" );
@@ -271,7 +271,7 @@ Bar.Label:SetPoint( "TOPLEFT", 4, 0 );
 Bar.Label:SetPoint( "BOTTOMRIGHT", -4, 0 );
 Bar.Label:SetJustifyH( "RIGHT" );
 
-local Timer = me.Timer;
+local Timer = NS.Timer;
 Timer:Hide();
 Timer:SetAllPoints( Bar );
 Timer:SetScript( "OnUpdate", Timer.OnUpdate );
@@ -284,16 +284,16 @@ local Title = Button:CreateFontString( nil, "ARTWORK", "NumberFontNormalSmall" )
 Title:SetPoint( "TOPLEFT", Background );
 Title:SetPoint( "RIGHT", Close, "LEFT", 8, 0 );
 Title:SetPoint( "BOTTOM", Bar, "TOP" );
-Title:SetText( me.L.BUTTON_TITLE );
+Title:SetText( NS.L.BUTTON_TITLE );
 
 
 
 
 Button:SetAttribute( "type", "item" );
-Button:SetAttribute( "item", me.Item );
+Button:SetAttribute( "item", NS.Item );
 
 Button:SetScript( "PostClick", Button.PostClick );
-hooksecurefunc( "CameraOrSelectOrMoveStop", me.CameraOrSelectOrMoveStop );
+hooksecurefunc( "CameraOrSelectOrMoveStop", NS.CameraOrSelectOrMoveStop );
 
 Button:SetScript( "OnEnter", Button.OnEnter );
 Button:SetScript( "OnLeave", GameTooltip_Hide );
@@ -303,4 +303,4 @@ Button:SetScript( "OnEvent", Button.OnEvent );
 Button:RegisterEvent( "PLAYER_REGEN_DISABLED" );
 
 
-SlashCmdList[ "JUGGLER" ] = me.SlashCommand;
+SlashCmdList[ "JUGGLER" ] = NS.SlashCommand;

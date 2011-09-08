@@ -9,18 +9,18 @@
 _UTFOptions = {};
 
 
-local me = select( 2, ... );
-_UTF = me;
+local NS = select( 2, ... );
+_UTF = NS;
 
-me.Min = 0;
-me.Max = 0x10FFFF;
+NS.Min = 0;
+NS.Max = 0x10FFFF;
 
 
 
 
 --- @return True if Int is a valid codepoint.
-function me.IsValidCodepoint ( Int )
-	return me.Min <= Int and Int <= me.Max
+function NS.IsValidCodepoint ( Int )
+	return NS.Min <= Int and Int <= NS.Max
 		and not ( 0xD800 <= Int and Int <= 0xDFFF ); -- Invalid range
 end
 do
@@ -30,8 +30,8 @@ do
 	--- Converts a Unicode codepoint to a UTF-8 string.
 	-- @param Int  Integer codepoint.
 	-- @return 1-4 byte string representing the character, or nil if out of range.
-	function me.IntToUTF ( Int )
-		if ( me.IsValidCodepoint( Int ) ) then
+	function NS.IntToUTF ( Int )
+		if ( NS.IsValidCodepoint( Int ) ) then
 			if ( Int < 128 ) then -- 1-byte
 				return strchar( Int );
 			else
@@ -60,7 +60,7 @@ do
 	-- @param String  String to read a UTF-8 character from.
 	-- @param Index  Optional start position to read from in the string.
 	-- @return The character's codepoint and byte length, or nil if an invalid UTF-8 sequence.
-	function me.UTFToInt ( String, Index )
+	function NS.UTFToInt ( String, Index )
 		local B1, B2, B3, B4 = String:byte( Index, ( Index or 1 ) + 3 );
 		if ( B1 ) then
 			if ( B1 < 0x80 ) then
@@ -119,7 +119,7 @@ do
 
 		if ( #Flags == 0 ) then -- Character entity
 			CodePoint = _UTFOptions.CharacterEntities[ Name ]
-				or me.CharacterEntities[ Name ];
+				or NS.CharacterEntities[ Name ];
 		elseif ( Flags == "#" ) then -- Decimal
 			-- Prevent tonumber from interpreting implied hex ("0xAA") or exponents ("1e3")
 			if ( Name:match( "^%d+$" ) ) then
@@ -132,7 +132,7 @@ do
 		end
 
 		if ( CodePoint ) then
-			local Char = me.IntToUTF( CodePoint );
+			local Char = NS.IntToUTF( CodePoint );
 			if ( Char and CursorPosition ) then
 				if ( CursorPosition >= End - 1 ) then
 					CursorDelta = CursorDelta - ( End - Start ) + #Char; -- Shift left to account for removed reference
@@ -147,7 +147,7 @@ do
 	-- @param Text  String to replace entities in.
 	-- @param OldCursorPosition  Optional current cursor position.  If set, calculates new position after replacements.
 	-- @return String with entities replaced by UTF-8 sequences, and the updated cursor position if OldCursorPosition was set.
-	function me.ReplaceCharacterReferences ( Text, OldCursorPosition )
+	function NS.ReplaceCharacterReferences ( Text, OldCursorPosition )
 		CursorPosition, CursorDelta = OldCursorPosition, 0;
 		return Text:gsub( "()&(#?[Xx]?)(%w+);()", GsubReplace ),
 			CursorPosition and ( CursorPosition + CursorDelta );

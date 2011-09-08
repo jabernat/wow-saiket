@@ -6,16 +6,16 @@
 
 local _Dev = _Dev;
 local L = _DevLocalization;
-local me = CreateFrame( "Frame" );
-_Dev.Frames = me;
+local NS = CreateFrame( "Frame" );
+_Dev.Frames = NS;
 
-me.Enabled = false;
-me.Interactive = false;
+NS.Enabled = false;
+NS.Interactive = false;
 
-local Primary = CreateFrame( "Frame", nil, me, "_DevBorderTemplate" );
-me.Primary = Primary;
-local Auxiliary = CreateFrame( "Frame", nil, me, "_DevBorderTemplate" );
-me.Auxiliary = Auxiliary;
+local Primary = CreateFrame( "Frame", nil, NS, "_DevBorderTemplate" );
+NS.Primary = Primary;
+local Auxiliary = CreateFrame( "Frame", nil, NS, "_DevBorderTemplate" );
+NS.Auxiliary = Auxiliary;
 
 
 
@@ -24,7 +24,7 @@ me.Auxiliary = Auxiliary;
   * Function: _Dev.Frames.ToString                                             *
   * Description: Creates a string representation of a UIObject.                *
   ****************************************************************************]]
-function me.ToString ( UIObject )
+function NS.ToString ( UIObject )
 	return UIObject
 		and L.FRAMES_UIOBJECT_FORMAT:format( UIObject:GetObjectType(), _Dev.Dump.ToString( UIObject:GetName() ) )
 		or _Dev.Dump.ToString( nil );
@@ -33,15 +33,15 @@ end
   * Function: _Dev.Frames.GetTarget                                            *
   * Description: Returns the active target frame, primary or auxiliary.        *
   ****************************************************************************]]
-function me.GetTarget ()
+function NS.GetTarget ()
 	return Auxiliary.Target or Primary.Target;
 end
 --[[****************************************************************************
   * Function: _Dev.Frames.GetMouseFocus                                        *
   * Description: Gets the mouse focus, and never the outline frame.            *
   ****************************************************************************]]
-function me.GetMouseFocus ()
-	if ( me.Interactive and Primary.Target ) then
+function NS.GetMouseFocus ()
+	if ( NS.Interactive and Primary.Target ) then
 		return Primary.Target;
 	else
 		local Target = GetMouseFocus();
@@ -89,7 +89,7 @@ end
   * Description: Handles various clicks on the primary frame.                  *
   ****************************************************************************]]
 function Primary:OnMouseUp ( Button )
-	local Target = me.GetTarget();
+	local Target = NS.GetTarget();
 
 	if ( IsModifiedClick( "_DEV_FRAMES_OUTLINE" ) ) then
 		-- Outline frame
@@ -97,7 +97,7 @@ function Primary:OnMouseUp ( Button )
 	end
 	if ( IsModifiedClick( "_DEV_FRAMES_NAME" ) ) then
 		-- Print brief summary to chat
-		_Dev.Print( L.FRAMES_MESSAGE_FORMAT:format( L.FRAMES_BRIEF_FORMAT:format( me.ToString( Target ), me.ToString( Target:GetParent() ) ) ) );
+		_Dev.Print( L.FRAMES_MESSAGE_FORMAT:format( L.FRAMES_BRIEF_FORMAT:format( NS.ToString( Target ), NS.ToString( Target:GetParent() ) ) ) );
 	end
 	if ( IsModifiedClick( "_DEV_FRAMES_DUMP" ) ) then
 		-- Dump frame in full
@@ -112,8 +112,8 @@ end
   * Function: _Dev.Frames:OnUpdate                                             *
   * Description: Searches for a new focus frame every update.                  *
   ****************************************************************************]]
-function me:OnUpdate ()
-	Primary:SetTarget( me.GetMouseFocus() );
+function NS:OnUpdate ()
+	Primary:SetTarget( NS.GetMouseFocus() );
 end
 
 
@@ -121,9 +121,9 @@ end
   * Function: _Dev.Frames.SetInteractive                                       *
   * Description: Sets whether or not the outline is in interactive mode.       *
   ****************************************************************************]]
-function me.SetInteractive ( Enable )
-	if ( me.Interactive ~= Enable ) then
-		me.Interactive = Enable;
+function NS.SetInteractive ( Enable )
+	if ( NS.Interactive ~= Enable ) then
+		NS.Interactive = Enable;
 		Primary:EnableMouse( Enable );
 		return true;
 	end
@@ -132,10 +132,10 @@ end
   * Function: _Dev.Frames.Enable                                               *
   * Description: Enables the mouse focus module.                               *
   ****************************************************************************]]
-function me.Enable ()
-	if ( not me.Enabled ) then
-		me.Enabled = true;
-		me:Show();
+function NS.Enable ()
+	if ( not NS.Enabled ) then
+		NS.Enabled = true;
+		NS:Show();
 
 		return true;
 	end
@@ -144,11 +144,11 @@ end
   * Function: _Dev.Frames.Disable                                              *
   * Description: Disables the mouse focus module and hides all outlines.       *
   ****************************************************************************]]
-function me.Disable ()
-	if ( me.Enabled ) then
-		me.Enabled = false;
+function NS.Disable ()
+	if ( NS.Enabled ) then
+		NS.Enabled = false;
 		Primary:ClearTarget();
-		me:Hide();
+		NS:Hide();
 
 		return true;
 	end
@@ -159,17 +159,17 @@ end
   * Function: _Dev.Frames.Toggle                                               *
   * Description: Toggles enabled or disabled status, and prints any details.   *
   ****************************************************************************]]
-function me.Toggle ( Enable )
+function NS.Toggle ( Enable )
 	if ( Enable == nil ) then
-		Enable = not me.Enabled;
+		Enable = not NS.Enabled;
 	end
 
 	if ( Enable ) then
-		if ( me.Enable() ) then
+		if ( NS.Enable() ) then
 			_Dev.Print( L.FRAMES_MESSAGE_FORMAT:format( L.FRAMES_ENABLED ) );
 		end
 	else
-		if ( me.Disable() ) then
+		if ( NS.Disable() ) then
 			_Dev.Print( L.FRAMES_MESSAGE_FORMAT:format( L.FRAMES_DISABLED ) );
 		end
 	end
@@ -178,15 +178,15 @@ end
   * Function: _Dev.Frames.ToggleSlashCommand                                   *
   * Description: Slash command chat handler for _Dev.Frames.Toggle.            *
   ****************************************************************************]]
-function me.ToggleSlashCommand ()
-	me.Toggle();
+function NS.ToggleSlashCommand ()
+	NS.Toggle();
 end
 
 
 
 
-me:Hide();
-me:SetScript( "OnUpdate", me.OnUpdate );
+NS:Hide();
+NS:SetScript( "OnUpdate", NS.OnUpdate );
 
 Primary:SetScript( "OnMouseUp", Primary.OnMouseUp );
 Primary:EnableMouse( false ); -- Enabled by SetScript
@@ -197,4 +197,4 @@ for _, Region in ipairs( { Primary:GetRegions() } ) do
 	Region:SetVertexColor( L.COLOR.r, L.COLOR.g, L.COLOR.b );
 end
 
-SlashCmdList[ "_DEV_FRAMESTOGGLE" ] = me.ToggleSlashCommand;
+SlashCmdList[ "_DEV_FRAMESTOGGLE" ] = NS.ToggleSlashCommand;

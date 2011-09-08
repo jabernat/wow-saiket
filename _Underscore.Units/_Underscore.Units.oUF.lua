@@ -6,14 +6,14 @@
 
 local Units = select( 2, ... );
 local L = Units.L;
-local me = {};
-Units.oUF = me;
+local NS = {};
+Units.oUF = NS;
 
-me.FontNormal = CreateFont( "_UnderscoreUnitsOUFFontNormal" );
-me.FontTiny = CreateFont( "_UnderscoreUnitsOUFFontTiny" );
-me.FontMicro = CreateFont( "_UnderscoreUnitsOUFFontMicro" );
+NS.FontNormal = CreateFont( "_UnderscoreUnitsOUFFontNormal" );
+NS.FontTiny = CreateFont( "_UnderscoreUnitsOUFFontTiny" );
+NS.FontMicro = CreateFont( "_UnderscoreUnitsOUFFontMicro" );
 
-me.StyleMeta = {};
+NS.StyleMeta = {};
 
 local Colors = _Underscore.Colors;
 setmetatable( Colors, { __index = oUF.colors; } );
@@ -21,7 +21,7 @@ setmetatable( Colors.power, { __index = oUF.colors.power; } );
 Colors.class = oUF.colors.class;
 
 --- Common range alpha properties shared by Range/SpellRange elements.
-me.Range = {
+NS.Range = {
 	insideAlpha = 1.0;
 	outsideAlpha = 0.4;
 };
@@ -30,7 +30,7 @@ me.Range = {
 
 
 --- Raises and shows all auras when moused over.
-function me:OnEnter ()
+function NS:OnEnter ()
 	if ( self.AuraMouseover ) then
 		self.AuraMouseover:Show(); -- Show unfiltered auras
 	end
@@ -52,7 +52,7 @@ do
 	end
 	local FeignDeath = GetSpellInfo( 28728 );
 	--- Sets health bar text and color when health changes.
-	function me:HealthPostUpdate ( UnitID, Health, HealthMax )
+	function NS:HealthPostUpdate ( UnitID, Health, HealthMax )
 		if ( UnitIsGhost( UnitID ) ) then
 			self:SetValue( 0 );
 			SetDead( self, L.GHOST );
@@ -67,7 +67,7 @@ do
 	end
 end
 --- Sets power bar text and color when power changes.
-function me:PowerPostUpdate ( UnitID, Power, PowerMax )
+function NS:PowerPostUpdate ( UnitID, Power, PowerMax )
 	local IsDead = UnitIsDeadOrGhost( UnitID );
 	if ( IsDead ) then
 		self:SetValue( 0 );
@@ -84,7 +84,7 @@ end
 
 
 --- Replaces the golden "?" model used for unknown units with a gray "?".
-function me:PortraitPostUpdate ()
+function NS:PortraitPostUpdate ()
 	local Model = self:GetModel();
 	if ( type( Model ) == "string" and Model:lower() == [[interface\buttons\talktomequestionmark.m2]] ) then
 		self:SetModel( [[Interface\Buttons\TalkToMeQuestion_Grey.mdx]] );
@@ -101,20 +101,20 @@ do
 		end
 	end
 	--- Keeps all auras visible while mousing over the unit and its auras.
-	function me:AuraMouseoverOnUpdate ()
+	function NS:AuraMouseoverOnUpdate ()
 		if ( not self:IsMouseOver() ) then
 			self:Hide();
 		end
 	end
 	--- Shows all auras when mousing over buff area.
-	function me:AuraMouseoverOnShow ()
+	function NS:AuraMouseoverOnShow ()
 		local Frame = self:GetParent();
 		AuraShowAll( Frame.Buffs, true );
 		AuraShowAll( Frame.Debuffs, true );
 		Frame.Buffs:ForceUpdate(); -- Refilter buffs and debuffs
 	end
 	--- Refilters auras once mouse leaves buff area.
-	function me:AuraMouseoverOnHide ()
+	function NS:AuraMouseoverOnHide ()
 		local Frame = self:GetParent();
 		AuraShowAll( Frame.Buffs, nil );
 		AuraShowAll( Frame.Debuffs, nil );
@@ -123,7 +123,7 @@ do
 end
 
 --- Adjusts buff/debuff icons when they're created.
-function me:AuraPostCreateIcon ( Frame )
+function NS:AuraPostCreateIcon ( Frame )
 	_Underscore.SkinButtonIcon( Frame.icon );
 	Frame.cd:SetReverse( true );
 	Frame.cd:SetDrawEdge( true ); -- Adds a line along the cooldown's edge
@@ -133,7 +133,7 @@ function me:AuraPostCreateIcon ( Frame )
 	Frame.count:SetPoint( "BOTTOMLEFT" );
 end
 --- Resizes the buffs frame to fit all icons.
-function me:AuraPreSetPosition ()
+function NS:AuraPreSetPosition ()
 	local Visible = self.visibleBuffs or self.visibleDebuffs;
 	local IconsPerRow = max( 1, floor( self:GetWidth() / self.size + 0.5 ) );
 	local Height = self.size * ceil( Visible / IconsPerRow );
@@ -143,7 +143,7 @@ do
 	local GetCVarBool = GetCVarBool;
 	local UnitCanAttack = UnitCanAttack;
 	--- Switches buff filter based on unit hostility.
-	function me:BuffPreUpdate ( UnitID )
+	function NS:BuffPreUpdate ( UnitID )
 		self.BuffConsolidate = GetCVarBool( "consolidateBuffs" );
 		self.Hostile = UnitCanAttack( "player", UnitID );
 
@@ -157,7 +157,7 @@ do
 		end
 	end
 	--- Switches debuff filter based on unit hostility.
-	function me:DebuffPreUpdate ( UnitID )
+	function NS:DebuffPreUpdate ( UnitID )
 		if ( self.ShowAll ) then
 			self.filter = "HARMFUL";
 		elseif ( GetCVarBool( "showCastableDebuffs" ) and ( UnitCanAttack( "player", UnitID ) or UnitCanAttack( "pet", UnitID ) ) ) then
@@ -172,7 +172,7 @@ end
 do
 	local select = select;
 	--- Hides consolidated buffs unless moused-over.
-	function me:BuffCustomFilter ( UnitID, _, ... )
+	function NS:BuffCustomFilter ( UnitID, _, ... )
 		if ( not self.Hostile and self.BuffConsolidate and not self.ShowAll ) then
 			local Caster, _, ShouldConsolidate = select( 8, ... );
 			local IsMine = Caster == "player" or Caster == "pet" or Caster == "vehicle";
@@ -185,12 +185,12 @@ end
 
 
 --- Recolors the reputation bar on update.
-function me:ReputationPostUpdate ( _, _, StandingID )
+function NS:ReputationPostUpdate ( _, _, StandingID )
 	self:SetStatusBarColor( unpack( Colors.reaction[ StandingID ] ) );
 end
 
 --- Adjusts the rested experience bar segment.
-function me:ExperiencePostUpdate ( UnitID, Value, ValueMax )
+function NS:ExperiencePostUpdate ( UnitID, Value, ValueMax )
 	local RestedExperience = GetXPExhaustion();
 	if ( RestedExperience ) then
 		self.RestTexture:SetPoint( "RIGHT", self, "LEFT", self:GetWidth() * min( 1, ( Value + RestedExperience ) / ValueMax ), 0 );
@@ -200,8 +200,8 @@ function me:ExperiencePostUpdate ( UnitID, Value, ValueMax )
 	end
 end
 --- Updates the rested experience segment's size with the bar.
-function me:ExperienceOnSizeChanged ()
-	me.ExperiencePostUpdate( self, self.__owner.unit, self:GetValue(), ( select( 2, self:GetMinMaxValues() ) ) );
+function NS:ExperienceOnSizeChanged ()
+	NS.ExperiencePostUpdate( self, self.__owner.unit, self:GetValue(), ( select( 2, self:GetMinMaxValues() ) ) );
 end
 
 
@@ -211,7 +211,7 @@ do
 		rare = "rare"; rareelite = "rare";
 	};
 	--- Shows the rare/elite border for appropriate mobs.
-	function me:ClassificationUpdate ( Event, UnitID )
+	function NS:ClassificationUpdate ( Event, UnitID )
 		if ( not Event or UnitIsUnit( UnitID, self.unit ) ) then
 			local Type = Classifications[ UnitClassification( self.unit ) ];
 			local Texture = self.Classification;
@@ -232,7 +232,7 @@ end
 do
 	local Plus = { worldboss = true; elite = true; rareelite = true; };
 	--- Tag that displays level/classification or group # in raid.
-	function me.TagClassification ( UnitID )
+	function NS.TagClassification ( UnitID )
 		local RaidID = GetNumRaidMembers();
 		if ( UnitID == "player" and RaidID > 0 ) then
 			return L.OUF_GROUP_FORMAT:format( ( select( 3, GetRaidRosterInfo( RaidID ) ) ) );
@@ -246,7 +246,7 @@ do
 	end
 end
 --- Colored name with server name if different from player's.
-function me.TagName ( UnitID, Override )
+function NS.TagName ( UnitID, Override )
 	local Name, Server = UnitName( Override or UnitID );
 
 	local Color;
@@ -261,10 +261,10 @@ function me.TagName ( UnitID, Override )
 	return L.OUF_NAME_FORMAT:format( Hex( Color ), ( Server and Server ~= "" ) and Name.."-"..Server or Name );
 end
 
-oUF.Tags[ "_UnderscoreUnitsClassification" ] = me.TagClassification;
+oUF.Tags[ "_UnderscoreUnitsClassification" ] = NS.TagClassification;
 oUF.TagEvents[ "_UnderscoreUnitsClassification" ] = "RAID_ROSTER_UPDATE "..oUF.TagEvents[ "smartlevel" ];
 
-oUF.Tags[ "_UnderscoreUnitsName" ] = me.TagName;
+oUF.Tags[ "_UnderscoreUnitsName" ] = NS.TagName;
 oUF.TagEvents[ "_UnderscoreUnitsName" ] = "UNIT_NAME_UPDATE UNIT_FACTION";
 
 
@@ -353,8 +353,8 @@ local function CreateAuras ( Frame, Style )
 	Auras.initialAnchor = "TOPLEFT";
 	Auras[ "growth-y" ] = "DOWN";
 	Auras.size = Style.AuraSize;
-	Auras.PostCreateIcon = me.AuraPostCreateIcon;
-	Auras.PreSetPosition = me.AuraPreSetPosition;
+	Auras.PostCreateIcon = NS.AuraPostCreateIcon;
+	Auras.PreSetPosition = NS.AuraPreSetPosition;
 	return Auras;
 end
 
@@ -460,12 +460,12 @@ end
 -- @param Style  Properties table.
 -- @param Frame  Unit frame to add to.
 -- @param UnitID  Unit this frame represents.
-function me.StyleMeta.__call ( Style, Frame, UnitID )
+function NS.StyleMeta.__call ( Style, Frame, UnitID )
 	Frame.colors = Colors;
 	Frame:SetAttribute( "toggleForVehicle", false );
 
 	Frame:SetSize( Style.Width, Style.Height );
-	Frame:SetScript( "OnEnter", me.OnEnter );
+	Frame:SetScript( "OnEnter", NS.OnEnter );
 	Frame:SetScript( "OnLeave", UnitFrame_OnLeave );
 
 	-- Enable the right-click menu
@@ -492,7 +492,7 @@ function me.StyleMeta.__call ( Style, Frame, UnitID )
 		Portrait:SetPoint( "BOTTOM" );
 		Portrait:SetPoint( Side );
 		Portrait:SetWidth( Style.Height );
-		Portrait.PostUpdate = me.PortraitPostUpdate;
+		Portrait.PostUpdate = NS.PortraitPostUpdate;
 		BarWidth = BarWidth - Style.Height;
 
 		local Classification = Portrait:CreateTexture( nil, "OVERLAY" );
@@ -503,8 +503,8 @@ function me.StyleMeta.__call ( Style, Frame, UnitID )
 		Classification:SetTexture( [[Interface\AchievementFrame\UI-Achievement-IconFrame]] );
 		Classification:SetTexCoord( 0, 0.5625, 0, 0.5625 );
 		Classification:SetAlpha( 0.8 );
-		tinsert( Frame.__elements, me.ClassificationUpdate );
-		Frame:RegisterEvent( "UNIT_CLASSIFICATION_CHANGED", me.ClassificationUpdate );
+		tinsert( Frame.__elements, NS.ClassificationUpdate );
+		Frame:RegisterEvent( "UNIT_CLASSIFICATION_CHANGED", NS.ClassificationUpdate );
 
 		local RaidIcon = Portrait:CreateTexture( nil, "OVERLAY" );
 		local Size = Style.Height / 2;
@@ -570,7 +570,7 @@ function me.StyleMeta.__call ( Style, Frame, UnitID )
 		maxOverflow = math.huge;
 	};
 
-	Health.PostUpdate = me.HealthPostUpdate;
+	Health.PostUpdate = NS.HealthPostUpdate;
 
 
 	-- Power bar
@@ -590,7 +590,7 @@ function me.StyleMeta.__call ( Style, Frame, UnitID )
 		Power.TextLength = Style.PowerText;
 	end
 
-	Power.PostUpdate = me.PowerPostUpdate;
+	Power.PostUpdate = NS.PowerPostUpdate;
 
 
 	-- Casting/rep/exp bar
@@ -604,8 +604,8 @@ function me.StyleMeta.__call ( Style, Frame, UnitID )
 		if ( IsAddOnLoaded( "oUF_Experience" ) and UnitLevel( "player" ) ~= MAX_PLAYER_LEVEL and not IsXPUserDisabled() ) then
 			Frame.Experience = Progress;
 			Progress:SetStatusBarColor( unpack( Colors.Experience ) );
-			Progress.PostUpdate = me.ExperiencePostUpdate;
-			Progress:SetScript( "OnSizeChanged", me.ExperienceOnSizeChanged );
+			Progress.PostUpdate = NS.ExperiencePostUpdate;
+			Progress:SetScript( "OnSizeChanged", NS.ExperienceOnSizeChanged );
 			Progress:Show();
 			local Rest = Progress:CreateTexture( nil, "ARTWORK" );
 			Progress.RestTexture = Rest;
@@ -616,7 +616,7 @@ function me.StyleMeta.__call ( Style, Frame, UnitID )
 			Rest:Hide();
 		elseif ( IsAddOnLoaded( "oUF_Reputation" ) ) then
 			Frame.Reputation = Progress;
-			Progress.PostUpdate = me.ReputationPostUpdate;
+			Progress.PostUpdate = NS.ReputationPostUpdate;
 		end
 	elseif ( UnitID == "pet" ) then
 		if ( IsAddOnLoaded( "oUF_Experience" ) and select( 2, UnitClass( "player" ) ) == "HUNTER" ) then
@@ -630,12 +630,12 @@ function me.StyleMeta.__call ( Style, Frame, UnitID )
 
 		local Time;
 		if ( Style.CastTime ) then
-			Time = Progress:CreateFontString( nil, "OVERLAY", me.FontMicro:GetName() );
+			Time = Progress:CreateFontString( nil, "OVERLAY", NS.FontMicro:GetName() );
 			Progress.Time = Time;
 			Time:SetPoint( "BOTTOMRIGHT", -6, 0 );
 		end
 
-		local Text = Progress:CreateFontString( nil, "OVERLAY", me.FontMicro:GetName() );
+		local Text = Progress:CreateFontString( nil, "OVERLAY", NS.FontMicro:GetName() );
 		Progress.Text = Text;
 		Text:SetPoint( "BOTTOMLEFT", 2, 0 );
 		if ( Time ) then
@@ -661,7 +661,7 @@ function me.StyleMeta.__call ( Style, Frame, UnitID )
 
 
 	-- Info string
-	local Info = Health:CreateFontString( nil, "OVERLAY", me.FontTiny:GetName() );
+	local Info = Health:CreateFontString( nil, "OVERLAY", NS.FontTiny:GetName() );
 	Frame.Info = Info;
 	Info:SetPoint( "BOTTOM", 0, 2 );
 	Info:SetPoint( "TOPLEFT", Name, "BOTTOMLEFT" );
@@ -677,14 +677,14 @@ function me.StyleMeta.__call ( Style, Frame, UnitID )
 		-- Buffs
 		Buffs:SetPoint( "TOPLEFT", Backdrop, "BOTTOMLEFT" );
 		Buffs:SetPoint( "RIGHT", Backdrop );
-		Buffs.PreUpdate = me.BuffPreUpdate;
-		Buffs.CustomFilter = me.BuffCustomFilter;
+		Buffs.PreUpdate = NS.BuffPreUpdate;
+		Buffs.CustomFilter = NS.BuffCustomFilter;
 
 		-- Debuffs
 		Debuffs:SetPoint( "TOPLEFT", Buffs, "BOTTOMLEFT" );
 		Debuffs:SetPoint( "RIGHT", Backdrop );
 		Debuffs.showDebuffType = true;
-		Debuffs.PreUpdate = me.DebuffPreUpdate;
+		Debuffs.PreUpdate = NS.DebuffPreUpdate;
 
 		-- Mouseover handler
 		local AuraMouseover = CreateFrame( "Frame", nil, Frame );
@@ -692,9 +692,9 @@ function me.StyleMeta.__call ( Style, Frame, UnitID )
 		AuraMouseover:Hide();
 		AuraMouseover:SetPoint( "TOPLEFT", -8, 0 ); -- Allow some leeway on the sides and bottom
 		AuraMouseover:SetPoint( "BOTTOMRIGHT", Debuffs, "BOTTOMRIGHT", 8, -8 );
-		AuraMouseover:SetScript( "OnUpdate", me.AuraMouseoverOnUpdate );
-		AuraMouseover:SetScript( "OnShow", me.AuraMouseoverOnShow );
-		AuraMouseover:SetScript( "OnHide", me.AuraMouseoverOnHide );
+		AuraMouseover:SetScript( "OnUpdate", NS.AuraMouseoverOnUpdate );
+		AuraMouseover:SetScript( "OnShow", NS.AuraMouseoverOnShow );
+		AuraMouseover:SetScript( "OnHide", NS.AuraMouseoverOnHide );
 	end
 
 	-- Debuff highlight
@@ -705,7 +705,7 @@ function me.StyleMeta.__call ( Style, Frame, UnitID )
 	end
 
 	-- Range fading
-	Frame[ IsAddOnLoaded( "oUF_SpellRange" ) and "SpellRange" or "Range" ] = me.Range;
+	Frame[ IsAddOnLoaded( "oUF_SpellRange" ) and "SpellRange" or "Range" ] = NS.Range;
 
 
 	-- Icons
@@ -725,20 +725,20 @@ end
 
 
 
-me.FontNormal:SetFont( [[Fonts\ARIALN.TTF]], 10, "OUTLINE" );
-me.FontTiny:SetFont( [[Fonts\ARIALN.TTF]], 8, "OUTLINE" );
-me.FontMicro:SetFont( [[Fonts\ARIALN.TTF]], 6 );
+NS.FontNormal:SetFont( [[Fonts\ARIALN.TTF]], 10, "OUTLINE" );
+NS.FontTiny:SetFont( [[Fonts\ARIALN.TTF]], 8, "OUTLINE" );
+NS.FontMicro:SetFont( [[Fonts\ARIALN.TTF]], 6 );
 
 -- Defaults
-me.StyleMeta.__index = {
+NS.StyleMeta.__index = {
 	Width = 130;
 	Height = 50;
 
 	PortraitSide = "RIGHT"; -- "LEFT"/"RIGHT"/false
 	HealthText = "Small"; -- "Full"/"Small"/"Tiny"
 	PowerText  = "Small"; -- Same as Health
-	NameFont = me.FontNormal;
-	BarTextFont = me.FontTiny;
+	NameFont = NS.FontNormal;
+	BarTextFont = NS.FontTiny;
 	CastTime = true;
 	AuraSize = 15;
 	Auras = true;
@@ -750,54 +750,54 @@ me.StyleMeta.__index = {
 
 oUF:RegisterStyle( "_UnderscoreUnits", setmetatable( {
 	Width = 160;
-}, me.StyleMeta ) );
+}, NS.StyleMeta ) );
 oUF:RegisterStyle( "_UnderscoreUnitsSelf", setmetatable( {
 	PortraitSide = false;
 	HealthText = "Full";
 	PowerText  = "Full";
 	CastTime = false;
 	DebuffHighlight = "ALL";
-}, me.StyleMeta ) );
+}, NS.StyleMeta ) );
 oUF:RegisterStyle( "_UnderscoreUnitsSmall", setmetatable( {
 	PortraitSide = "LEFT";
 	HealthText = "Tiny";
-	NameFont = me.FontTiny;
+	NameFont = NS.FontTiny;
 	CastTime = false;
 	AuraSize = 10;
-}, me.StyleMeta ) );
+}, NS.StyleMeta ) );
 
 
 -- Top row
 oUF:SetActiveStyle( "_UnderscoreUnitsSelf" );
-me.Player = oUF:Spawn( "player", "_UnderscoreUnitsPlayer" );
-me.Player:SetPoint( "TOPLEFT", _Underscore.TopMargin, "BOTTOMLEFT" );
+NS.Player = oUF:Spawn( "player", "_UnderscoreUnitsPlayer" );
+NS.Player:SetPoint( "TOPLEFT", _Underscore.TopMargin, "BOTTOMLEFT" );
 
 oUF:SetActiveStyle( "_UnderscoreUnits" );
-me.Target = oUF:Spawn( "target", "_UnderscoreUnitsTarget" );
-me.Target:SetPoint( "TOPLEFT", me.Player, "TOPRIGHT", 28, 0 );
+NS.Target = oUF:Spawn( "target", "_UnderscoreUnitsTarget" );
+NS.Target:SetPoint( "TOPLEFT", NS.Player, "TOPRIGHT", 28, 0 );
 
 oUF:SetActiveStyle( "_UnderscoreUnitsSmall" );
-me.TargetTarget = oUF:Spawn( "targettarget", "_UnderscoreUnitsTargetTarget" );
-me.TargetTarget:SetPoint( "TOPLEFT", me.Target, "TOPRIGHT", 2 * _Underscore.Backdrop.Padding, 0 );
+NS.TargetTarget = oUF:Spawn( "targettarget", "_UnderscoreUnitsTargetTarget" );
+NS.TargetTarget:SetPoint( "TOPLEFT", NS.Target, "TOPRIGHT", 2 * _Underscore.Backdrop.Padding, 0 );
 
 
 -- Bottom row
 oUF:SetActiveStyle( "_UnderscoreUnitsSmall" );
-me.Pet = oUF:Spawn( "pet", "_UnderscoreUnitsPet" );
-me.Pet:SetPoint( "TOPLEFT", me.Player, "BOTTOMLEFT", 0, -56 );
+NS.Pet = oUF:Spawn( "pet", "_UnderscoreUnitsPet" );
+NS.Pet:SetPoint( "TOPLEFT", NS.Player, "BOTTOMLEFT", 0, -56 );
 
 oUF:SetActiveStyle( "_UnderscoreUnits" );
-me.Focus = oUF:Spawn( "focus", "_UnderscoreUnitsFocus" );
-me.Focus:SetPoint( "LEFT", me.Target );
-me.Focus:SetPoint( "TOP", me.Pet );
+NS.Focus = oUF:Spawn( "focus", "_UnderscoreUnitsFocus" );
+NS.Focus:SetPoint( "LEFT", NS.Target );
+NS.Focus:SetPoint( "TOP", NS.Pet );
 
 oUF:SetActiveStyle( "_UnderscoreUnitsSmall" );
-me.FocusTarget = oUF:Spawn( "focustarget", "_UnderscoreUnitsFocusTarget" );
-me.FocusTarget:SetPoint( "LEFT", me.TargetTarget );
-me.FocusTarget:SetPoint( "TOP", me.Pet );
+NS.FocusTarget = oUF:Spawn( "focustarget", "_UnderscoreUnitsFocusTarget" );
+NS.FocusTarget:SetPoint( "LEFT", NS.TargetTarget );
+NS.FocusTarget:SetPoint( "TOP", NS.Pet );
 
 
 if ( not _Underscore.IsAddOnLoadable( "_Underscore.Units.Arena" ) ) then
 	-- Garbage collect initialization code
-	me.StyleMeta.__call = nil;
+	NS.StyleMeta.__call = nil;
 end

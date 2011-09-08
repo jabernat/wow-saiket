@@ -6,10 +6,10 @@
 
 local Overlay = select( 2, ... );
 local L = Overlay.L;
-local me = Overlay.Modules.WorldMapTemplate.Embed( CreateFrame( "Frame", nil, WorldMapDetailFrame ) );
+local NS = Overlay.Modules.WorldMapTemplate.Embed( CreateFrame( "Frame", nil, WorldMapDetailFrame ) );
 
-me.KeyMinScale = 0.5; -- Minimum effective scale to render the key at
-me.KeyMaxSize = 1 / 3; -- If the key takes up more than this fraction of the canvas, hide it
+NS.KeyMinScale = 0.5; -- Minimum effective scale to render the key at
+NS.KeyMaxSize = 1 / 3; -- If the key takes up more than this fraction of the canvas, hide it
 
 
 
@@ -18,7 +18,7 @@ do
 	local Points = { "BOTTOMLEFT", "BOTTOMRIGHT", "TOPRIGHT" };
 	local Point = 0;
 	--- Moves the key to a different corner if it gets in the way of the mouse.
-	function me:KeyOnEnter ()
+	function NS:KeyOnEnter ()
 		self:ClearAllPoints();
 		self:SetPoint( Points[ Point % #Points + 1 ] );
 		Point = Point + 1;
@@ -43,7 +43,7 @@ do
 			Line:Show();
 		end
 
-		Line:SetText( L.MODULE_WORLDMAP_KEY_FORMAT:format( me.AchievementNPCNames[ NpcID ] or L.NPCs[ NpcID ] or NpcID ) );
+		Line:SetText( L.MODULE_WORLDMAP_KEY_FORMAT:format( NS.AchievementNPCNames[ NpcID ] or L.NPCs[ NpcID ] or NpcID ) );
 		Line:SetTextColor( R, G, B );
 
 		Width = max( Width, Line:GetStringWidth() );
@@ -51,7 +51,7 @@ do
 	end
 	--- Fills the key in when repainting a zone.
 	-- @param Map  AreaID to add names for.
-	function me:KeyPaint ( Map )
+	function NS:KeyPaint ( Map )
 		Width, Height = 0, 0;
 		Count = 0;
 
@@ -63,71 +63,71 @@ do
 		self:SetSize( Width + 32, Height + 32 );
 		self:Show();
 		if ( not self.Container:IsShown() ) then -- Previously too large; OnSizeChanged won't fire
-			me.KeyOnSizeChanged( self ); -- Force size validation
+			NS.KeyOnSizeChanged( self ); -- Force size validation
 		end
 	end
 end
 --- Hides the key if it covers too much of the canvas.
-function me:KeyValidateSize ()
+function NS:KeyValidateSize ()
 	local WindowWidth, WindowHeight = self.KeyParent:GetSize();
 	local Scale, Width, Height = self:GetScale(), self:GetSize();
-	if ( Width * Scale > WindowWidth * me.KeyMaxSize or Height * Scale > WindowHeight * me.KeyMaxSize ) then
+	if ( Width * Scale > WindowWidth * NS.KeyMaxSize or Height * Scale > WindowHeight * NS.KeyMaxSize ) then
 		self.Container:Hide(); -- KeyParent must remain visible so OnSizeChanged still fires
 	else
 		self.Container:Show();
 	end
 end
 --- Clamps key scale and validates key size when the canvas resizes.
-function me:KeyParentOnSizeChanged ()
-	self.Key:SetScale( max( 1, me.KeyMinScale / self:GetEffectiveScale() ) );
-	me.KeyValidateSize( self.Key );
+function NS:KeyParentOnSizeChanged ()
+	self.Key:SetScale( max( 1, NS.KeyMinScale / self:GetEffectiveScale() ) );
+	NS.KeyValidateSize( self.Key );
 end
 --- Validates key size when its contents change.
-function me:KeyOnSizeChanged ()
-	me.KeyValidateSize( self );
+function NS:KeyOnSizeChanged ()
+	NS.KeyValidateSize( self );
 end
 
 --- Centers the range ring around Target frame.
-function me.RangeRingSetTarget ( Target )
-	me.RangeRing.Target:SetParent( Target );
-	me.RangeRing.Child:ClearAllPoints();
-	me.RangeRing.Child:SetPoint( "CENTER", Target );
+function NS.RangeRingSetTarget ( Target )
+	NS.RangeRing.Target:SetParent( Target );
+	NS.RangeRing.Child:ClearAllPoints();
+	NS.RangeRing.Child:SetPoint( "CENTER", Target );
 end
 --- Shows the range ring when its target is shown.
-function me:RangeRingTargetOnShow ()
-	me.RangeRing.Child:Show();
+function NS:RangeRingTargetOnShow ()
+	NS.RangeRing.Child:Show();
 end
 --- Hides the range ring when its target is hidden.
-function me:RangeRingTargetOnHide ()
-	me.RangeRing.Child:Hide();
+function NS:RangeRingTargetOnHide ()
+	NS.RangeRing.Child:Hide();
 end
 --- Shows and resizes the range ring when repainting a zone.
 -- @param Map  AreaID to resize to.
-function me:RangeRingPaint ( Map )
+function NS:RangeRingPaint ( Map )
 	if ( Overlay.Options.ModulesExtra[ "WorldMap" ].RangeRing ) then
-		local Size = ( Overlay.DetectionRadius * 2 ) / Overlay.GetMapSize( Map ) * me:GetWidth();
+		local Size = ( Overlay.DetectionRadius * 2 ) / Overlay.GetMapSize( Map ) * NS:GetWidth();
 		self.Child:SetSize( Size, Size );
 		self:Show();
 	end
 end
 
 --- Shows a *world map* tooltip similar to the quest objective toggle button.
-function me:ToggleOnEnter ()
+function NS:ToggleOnEnter ()
 	WorldMapTooltip:SetOwner( self, "ANCHOR_TOPLEFT" );
 	WorldMapTooltip:SetText( L.MODULE_WORLDMAP_TOGGLE_DESC, nil, nil, nil, nil, 1 );
 end
 --- Hides the *world map* tooltip.
-function me:ToggleOnLeave ()
+function NS:ToggleOnLeave ()
 	WorldMapTooltip:Hide();
 end
 --- Toggles the module like a checkbox.
-function me:ToggleOnClick ()
+function NS:ToggleOnClick ()
 	local Enable = self:GetChecked();
 	PlaySound( Enable and "igMainMenuOptionCheckBoxOn" or "igMainMenuOptionCheckBoxOff" );
 	Overlay.Modules[ Enable and "Enable" or "Disable" ]( "WorldMap" );
 end
 --- Adjusts the toggle button's display when changing state.
-function me:ToggleSetChecked ()
+function NS:ToggleSetChecked ()
 	local Enable = self:GetChecked();
 	self.Normal:SetDesaturated( not Enable );
 	self.Border:SetDesaturated( not Enable );
@@ -160,7 +160,7 @@ local function MapHasNPCs ( Map )
 	end
 end
 --- Updates the key when repainting the zone.
-function me:Paint ( Map, ... )
+function NS:Paint ( Map, ... )
 	if ( MapHasNPCs( Map ) ) then
 		self.KeyPaint( self.KeyParent.Key, Map );
 		self.RangeRingPaint( self.RangeRing, Map );
@@ -171,25 +171,25 @@ function me:Paint ( Map, ... )
 	return self.super.Paint( self, Map, ... );
 end
 
-function me:OnEnable ( ... )
+function NS:OnEnable ( ... )
 	self.Toggle:SetChecked( true );
 	self.KeyParent:Show();
 	return self.super.OnEnable( self, ... );
 end
-function me:OnDisable ( ... )
+function NS:OnDisable ( ... )
 	self.Toggle:SetChecked( false );
 	self.KeyParent:Hide();
 	self.RangeRing:Hide();
 	return self.super.OnDisable( self, ... );
 end
 --- Adds a custom key frame to the world map template.
-function me:OnLoad ( ... )
+function NS:OnLoad ( ... )
 	-- Add key frame to map
 	local KeyParent = CreateFrame( "Frame", nil, WorldMapButton );
 	self.KeyParent = KeyParent;
 	KeyParent:Hide();
 	KeyParent:SetAllPoints();
-	KeyParent:SetScript( "OnSizeChanged", me.KeyParentOnSizeChanged );
+	KeyParent:SetScript( "OnSizeChanged", NS.KeyParentOnSizeChanged );
 
 	local KeyContainer = CreateFrame( "Frame", nil, KeyParent );
 	KeyContainer:SetAllPoints();
@@ -198,7 +198,7 @@ function me:OnLoad ( ... )
 	KeyParent.Key = Key;
 	Key.KeyParent, Key.Container = KeyParent, KeyContainer;
 	Key:SetScript( "OnEnter", self.KeyOnEnter );
-	Key:SetScript( "OnSizeChanged", me.KeyOnSizeChanged );
+	Key:SetScript( "OnSizeChanged", NS.KeyOnSizeChanged );
 	self.KeyOnEnter( Key ); -- Initialize starting point
 	Key:EnableMouse( true );
 	Key:SetBackdrop( { edgeFile = [[Interface\AchievementFrame\UI-Achievement-WoodBorder]]; edgeSize = 48; } );
@@ -229,8 +229,8 @@ function me:OnLoad ( ... )
 
 	local RangeRingTarget = CreateFrame( "Frame" );
 	RangeRing.Target = RangeRingTarget;
-	RangeRingTarget:SetScript( "OnShow", me.RangeRingTargetOnShow );
-	RangeRingTarget:SetScript( "OnHide", me.RangeRingTargetOnHide );
+	RangeRingTarget:SetScript( "OnShow", NS.RangeRingTargetOnShow );
+	RangeRingTarget:SetScript( "OnHide", NS.RangeRingTargetOnHide );
 
 	local RangeRingChild = CreateFrame( "Frame", nil, RangeRing );
 	RangeRing.Child = RangeRingChild;
@@ -243,17 +243,17 @@ function me:OnLoad ( ... )
 	Texture:SetBlendMode( "ADD" );
 	Texture:SetVertexColor( Color.r, Color.g, Color.b );
 
-	me.RangeRingSetTarget( PlayerArrowEffectFrame );
+	NS.RangeRingSetTarget( PlayerArrowEffectFrame );
 
 
 	-- Add toggle button
 	local Toggle = CreateFrame( "CheckButton", nil, WorldMapButton );
 	self.Toggle = Toggle;
 	Toggle:SetPoint( "TOPLEFT" );
-	hooksecurefunc( Toggle, "SetChecked", me.ToggleSetChecked );
-	Toggle:SetScript( "OnClick", me.ToggleOnClick );
-	Toggle:SetScript( "OnEnter", me.ToggleOnEnter );
-	Toggle:SetScript( "OnLeave", me.ToggleOnLeave );
+	hooksecurefunc( Toggle, "SetChecked", NS.ToggleSetChecked );
+	Toggle:SetScript( "OnClick", NS.ToggleOnClick );
+	Toggle:SetScript( "OnEnter", NS.ToggleOnEnter );
+	Toggle:SetScript( "OnLeave", NS.ToggleOnLeave );
 	local Normal = Toggle:CreateTexture();
 	Toggle.Normal = Normal;
 	Normal:SetTexture( [[Interface\AchievementFrame\UI-Achievement-Category-Background]] );
@@ -306,7 +306,7 @@ function me:OnLoad ( ... )
 
 	return self.super.OnLoad( self, ... );
 end
-function me:OnUnload ( ... )
+function NS:OnUnload ( ... )
 	self.Toggle:Hide();
 	self.Toggle.SetChecked = nil;
 	self.Toggle:SetScript( "OnClick", nil );
@@ -324,38 +324,38 @@ end
 
 --- Enables the WorldMap range ring.
 -- @return True if changed.
-function me.RangeRingSetEnabled ( Enable )
+function NS.RangeRingSetEnabled ( Enable )
 	if ( Enable ~= Overlay.Options.ModulesExtra[ "WorldMap" ].RangeRing ) then
 		Overlay.Options.ModulesExtra[ "WorldMap" ].RangeRing = Enable;
 
-		me.Config.RangeRing:SetChecked( Enable );
+		NS.Config.RangeRing:SetChecked( Enable );
 
-		if ( me.Loaded ) then
+		if ( NS.Loaded ) then
 			if ( Enable ) then
-				me:OnMapUpdate();
+				NS:OnMapUpdate();
 			else
-				me.RangeRing:Hide();
+				NS.RangeRing:Hide();
 			end
 		end
 		return true;
 	end
 end
 --- Synchronizes custom settings to options table.
-function me:OnSynchronize ( OptionsExtra )
+function NS:OnSynchronize ( OptionsExtra )
 	self.RangeRingSetEnabled( OptionsExtra.RangeRing ~= false );
 end
 
 
 
 
-Overlay.Modules.Register( "WorldMap", me, L.MODULE_WORLDMAP );
+Overlay.Modules.Register( "WorldMap", NS, L.MODULE_WORLDMAP );
 
-local Config = me.Config;
+local Config = NS.Config;
 local Checkbox = CreateFrame( "CheckButton", "$parentRangeRing", Config, "InterfaceOptionsCheckButtonTemplate" );
 Config.RangeRing = Checkbox;
 --- Toggles the range ring when clicked.
 function Checkbox.setFunc ( Enable )
-	me.RangeRingSetEnabled( Enable == "1" );
+	NS.RangeRingSetEnabled( Enable == "1" );
 end
 
 Checkbox:SetPoint( "TOPLEFT", Config.Enabled, "BOTTOMLEFT" );

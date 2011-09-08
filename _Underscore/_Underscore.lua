@@ -4,12 +4,12 @@
   ****************************************************************************]]
 
 
-local AddOnName, me = ...;
-_Underscore = me;
+local AddOnName, NS = ...;
+_Underscore = NS;
 
-me.Frame = CreateFrame( "Frame" );
+NS.Frame = CreateFrame( "Frame" );
 
-me.Colors = {
+NS.Colors = {
 	HealthSmooth = {
 		1.0, 0.0, 0.0, --   0%
 		0.6, 0.6, 0.0, --  50%
@@ -41,42 +41,42 @@ me.Colors = {
 		[ 8 ] = { 0.1, 0.6, 0.2 }; -- Exalted
 	};
 };
-me.Colors.power.RUNIC_POWER = me.Colors.power.RAGE;
-me.Colors.power.FUEL = me.Colors.power.ENERGY;
+NS.Colors.power.RUNIC_POWER = NS.Colors.power.RAGE;
+NS.Colors.power.FUEL = NS.Colors.power.ENERGY;
 for Class, Color in pairs( RAID_CLASS_COLORS ) do
-	me.Colors.class[ Class ] = { Color.r, Color.g, Color.b };
+	NS.Colors.class[ Class ] = { Color.r, Color.g, Color.b };
 end
-me.Colors.reaction[ 2 ] = me.Colors.reaction[ 1 ];
+NS.Colors.reaction[ 2 ] = NS.Colors.reaction[ 1 ];
 for Index = 5, 7 do
-	me.Colors.reaction[ Index ] = me.Colors.reaction[ 8 ];
+	NS.Colors.reaction[ Index ] = NS.Colors.reaction[ 8 ];
 end
-me.Colors.Experience = me.Colors.reaction[ 8 ];
+NS.Colors.Experience = NS.Colors.reaction[ 8 ];
 
 
-me.TopMargin = CreateFrame( "Frame", nil, UIParent );
-me.BottomPane = CreateFrame( "Frame", nil, UIParent );
+NS.TopMargin = CreateFrame( "Frame", nil, UIParent );
+NS.BottomPane = CreateFrame( "Frame", nil, UIParent );
 
-me.MediaBar = "_Underscore"; -- Name of LibSharedMedia entry
-me.ButtonNormalTexture = [[Interface\AddOns\]]..AddOnName..[[\Skin\ButtonNormalTexture]];
+NS.MediaBar = "_Underscore"; -- Name of LibSharedMedia entry
+NS.ButtonNormalTexture = [[Interface\AddOns\]]..AddOnName..[[\Skin\ButtonNormalTexture]];
 
 
 
 
 --- Recycled generic function placeholder.
-function me.NilFunction () end
+function NS.NilFunction () end
 
 --- Hides the border graphic from an action button-like icon.
-function me:SkinButtonIcon ()
+function NS:SkinButtonIcon ()
 	self:SetTexCoord( 0.08, 0.92, 0.08, 0.92 );
 end
 --- Skins a standard action button and its textures.
-function me:SkinButton ( IconTexture, NormalTexture )
-	me.SkinButtonIcon( IconTexture );
+function NS:SkinButton ( IconTexture, NormalTexture )
+	NS.SkinButtonIcon( IconTexture );
 	-- Add gloss normal texture
 	if ( NormalTexture ) then
-		NormalTexture:SetTexture( me.ButtonNormalTexture );
+		NormalTexture:SetTexture( NS.ButtonNormalTexture );
 	elseif ( self ) then
-		self:SetNormalTexture( me.ButtonNormalTexture );
+		self:SetNormalTexture( NS.ButtonNormalTexture );
 		NormalTexture = self:GetNormalTexture();
 	end
 	if ( NormalTexture ) then
@@ -91,13 +91,13 @@ end
 do
 	local AddOnInitializers = {};
 	--- @return True if an addon can possibly load this session.
-	function me.IsAddOnLoadable ( Name )
+	function NS.IsAddOnLoadable ( Name )
 		local Loadable, Reason = select( 5, GetAddOnInfo( Name ) );
 		return Loadable or ( Reason == "DISABLED" and IsAddOnLoadOnDemand( Name ) ); -- Loadable or can become loadable
 	end
 	--- Runs the given addon's initializer if it loaded.
 	-- @return True if initializer was run.
-	function me.InitializeAddOn ( Name )
+	function NS.InitializeAddOn ( Name )
 		Name = Name:upper(); -- For case insensitive file systems (Windows')
 		local Initializer = AddOnInitializers[ Name ];
 		if ( Initializer and select( 2, IsAddOnLoaded( Name ) ) ) then -- Returns false if addon is currently loading
@@ -117,8 +117,8 @@ do
 	end
 	--- Register a function to run when an addon loads.
 	-- @return True if loaded immediately.
-	function me.RegisterAddOnInitializer ( Name, Initializer )
-		if ( me.IsAddOnLoadable( Name ) ) then
+	function NS.RegisterAddOnInitializer ( Name, Initializer )
+		if ( NS.IsAddOnLoadable( Name ) ) then
 			Name = Name:upper();
 			local OldInitializer = AddOnInitializers[ Name ];
 			if ( OldInitializer ) then -- Put multiple initializers in a table
@@ -130,12 +130,12 @@ do
 				AddOnInitializers[ Name ] = Initializer;
 			end
 
-			return me.InitializeAddOn( Name );
+			return NS.InitializeAddOn( Name );
 		end
 	end
 	--- Attempts to run initializers for any loaded addon.
-	function me.Frame:ADDON_LOADED ( _, AddOn )
-		me.InitializeAddOn( AddOn );
+	function NS.Frame:ADDON_LOADED ( _, AddOn )
+		NS.InitializeAddOn( AddOn );
 	end
 end
 
@@ -144,24 +144,24 @@ do
 	local LockedButtons = {};
 	local Locked;
 	--- Registers a button to only accept mouse clicks when the lock modifier is held.
-	function me.AddLockedButton ( Button )
+	function NS.AddLockedButton ( Button )
 		LockedButtons[ Button ] = true;
 		local Enable = Locked;
-		me.RunProtectedFunction( function ()
+		NS.RunProtectedFunction( function ()
 			Button:EnableMouse( Enable );
 		end, Button:IsProtected() );
 	end
-	--- Unlocks a button locked by me.AddLockedButton.
-	function me.RemoveLockedButton ( Button )
+	--- Unlocks a button locked by NS.AddLockedButton.
+	function NS.RemoveLockedButton ( Button )
 		if ( LockedButtons[ Button ] ) then
 			LockedButtons[ Button ] = nil;
-			me.RunProtectedFunction( function ()
+			NS.RunProtectedFunction( function ()
 				Button:EnableMouse( true );
 			end, Button:IsProtected() );
 		end
 	end
 	--- Locks and unlocks buttons when the lock modifier is pressed.
-	function me.Frame:MODIFIER_STATE_CHANGED ()
+	function NS.Frame:MODIFIER_STATE_CHANGED ()
 		local Enable = IsModifiedClick( "_UNDERSCORE_LOCK_BUTTONS" );
 		if ( Locked ~= Enable ) then
 			Locked = Enable;
@@ -173,7 +173,7 @@ do
 					break;
 				end
 			end
-			me.RunProtectedFunction( function ()
+			NS.RunProtectedFunction( function ()
 				for Button in pairs( LockedButtons ) do
 					Button:EnableMouse( Enable );
 					if ( not Enable ) then
@@ -185,7 +185,7 @@ do
 		end
 	end
 	--- Rechecks the lock modifier when bindings change or load.
-	me.Frame.UPDATE_BINDINGS = me.Frame.MODIFIER_STATE_CHANGED;
+	NS.Frame.UPDATE_BINDINGS = NS.Frame.MODIFIER_STATE_CHANGED;
 end
 
 
@@ -193,7 +193,7 @@ do
 	local InCombat = false;
 	local ProtectedFunctionQueue = {};
 	--- Runs an function, or stores it until after combat ends if it calls protected functions.
-	function me.RunProtectedFunction ( Function, Protected )
+	function NS.RunProtectedFunction ( Function, Protected )
 		if ( InCombat and Protected ) then -- Store for later
 			ProtectedFunctionQueue[ #ProtectedFunctionQueue + 1 ] = Function;
 		else
@@ -201,11 +201,11 @@ do
 		end
 	end
 	--- Stops protected functions from running after entering combat.
-	function me.Frame:PLAYER_REGEN_DISABLED ()
+	function NS.Frame:PLAYER_REGEN_DISABLED ()
 		InCombat = true;
 	end
 	--- Runs all queued protected functions after leaving combat.
-	function me.Frame:PLAYER_REGEN_ENABLED ()
+	function NS.Frame:PLAYER_REGEN_ENABLED ()
 		InCombat = false;
 
 		for Index = 1, #ProtectedFunctionQueue do
@@ -219,20 +219,20 @@ end
 do
 	local PositionManagers = {};
 	--- Hook to run all position managers.
-	function me.PositionManagerUpdate ()
+	function NS.PositionManagerUpdate ()
 		for _, Function in ipairs( PositionManagers ) do
 			Function();
 		end
 	end
 	--- Hooks the secure UIParent_ManageFramePositions delegate.
-	function me.RegisterPositionManager ( Function )
+	function NS.RegisterPositionManager ( Function )
 		PositionManagers[ #PositionManagers + 1 ] = Function;
 	end
 end
 
 
 --- Global event handler.
-function me.Frame:OnEvent ( Event, ... )
+function NS.Frame:OnEvent ( Event, ... )
 	if ( self[ Event ] ) then
 		return self[ Event ]( self, Event, ... );
 	end
@@ -241,7 +241,7 @@ end
 
 
 
-local Frame = me.Frame;
+local Frame = NS.Frame;
 Frame:SetScript( "OnEvent", Frame.OnEvent );
 Frame:RegisterEvent( "ADDON_LOADED" );
 Frame:RegisterEvent( "PLAYER_REGEN_ENABLED" );
@@ -250,14 +250,14 @@ Frame:RegisterEvent( "MODIFIER_STATE_CHANGED" );
 Frame:RegisterEvent( "UPDATE_BINDINGS" );
 
 -- Place the layout panes
-me.TopMargin:SetPoint( "TOPLEFT" );
-me.TopMargin:SetPoint( "RIGHT" );
-me.TopMargin:SetHeight( 16 );
-me.BottomPane:SetPoint( "LEFT" );
-me.BottomPane:SetPoint( "RIGHT" );
-me.BottomPane:SetPoint( "TOP", UIParent, "CENTER" );
-me.BottomPane:SetPoint( "BOTTOM" );
-me.BottomPane:SetFrameStrata( "BACKGROUND" );
+NS.TopMargin:SetPoint( "TOPLEFT" );
+NS.TopMargin:SetPoint( "RIGHT" );
+NS.TopMargin:SetHeight( 16 );
+NS.BottomPane:SetPoint( "LEFT" );
+NS.BottomPane:SetPoint( "RIGHT" );
+NS.BottomPane:SetPoint( "TOP", UIParent, "CENTER" );
+NS.BottomPane:SetPoint( "BOTTOM" );
+NS.BottomPane:SetFrameStrata( "BACKGROUND" );
 
 -- Remove class icon padding
 local IconPadding = 0.08 / 4; -- Icons are in a 4x4 grid
@@ -273,7 +273,7 @@ RemoveClassIconBorders( CLASS_BUTTONS );
 
 local LSM = LibStub( "LibSharedMedia-3.0" );
 -- Add media to LibSharedMedia
-LSM:Register( LSM.MediaType.STATUSBAR, me.MediaBar, [[Interface\AddOns\]]..AddOnName..[[\Skin\Glaze]] );
+LSM:Register( LSM.MediaType.STATUSBAR, NS.MediaBar, [[Interface\AddOns\]]..AddOnName..[[\Skin\Glaze]] );
 
 -- Alert sounds
 local Sound = LSM.MediaType.SOUND;
@@ -290,7 +290,7 @@ local Frame;
 for Index = 1, 20 do -- Limit search to first 20 frames
 	Frame = EnumerateFrames( Frame )
 	if ( Frame and Frame.UIParentManageFramePositions ) then
-		hooksecurefunc( Frame, "UIParentManageFramePositions", me.PositionManagerUpdate );
+		hooksecurefunc( Frame, "UIParentManageFramePositions", NS.PositionManagerUpdate );
 		return;
 	end
 end

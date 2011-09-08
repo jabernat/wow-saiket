@@ -5,15 +5,15 @@
 
 
 local Overlay = select( 2, ... );
-local me = Overlay.Modules.WorldMapTemplate.Embed( CreateFrame( "Frame" ) );
+local NS = Overlay.Modules.WorldMapTemplate.Embed( CreateFrame( "Frame" ) );
 
-me.AlphaDefault = 0.8;
+NS.AlphaDefault = 0.8;
 
 
 
 
 --- Attaches the canvas to the zone map when it loads.
-function me:OnLoad ( ... )
+function NS:OnLoad ( ... )
 	self:SetParent( BattlefieldMinimap );
 
 	return self.super.OnLoad( self, ... );
@@ -22,6 +22,6 @@ end
 
 
 
-Overlay.Modules.Register( "BattlefieldMinimap", me,
+Overlay.Modules.Register( "BattlefieldMinimap", NS,
 	Overlay.L.MODULE_BATTLEFIELDMINIMAP,
 	"Blizzard_BattlefieldMinimap" );
