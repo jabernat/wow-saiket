@@ -7,12 +7,12 @@
 local Routes = LibStub( "AceAddon-3.0" ):GetAddon( "Routes" );
 local Tools = select( 2, ... );
 local Overlay = _NPCScan.Overlay;
-local me = Overlay.Modules.WorldMapTemplate.Embed( CreateFrame( "Frame", nil, WorldMapDetailFrame ) );
-Tools.Overlay = me;
+local NS = Overlay.Modules.WorldMapTemplate.Embed( CreateFrame( "Frame", nil, WorldMapDetailFrame ) );
+Tools.Overlay = NS;
 
-me.Control = CreateFrame( "Button", nil, nil, "UIPanelButtonTemplate" );
+NS.Control = CreateFrame( "Button", nil, nil, "UIPanelButtonTemplate" );
 
-me.AlphaDefault = 1;
+NS.AlphaDefault = 1;
 
 
 
@@ -43,7 +43,7 @@ do
 		end
 	end
 	--- Draws points on the map for where this NPC was spotted by WowHead.
-	function me:Paint ( Map )
+	function NS:Paint ( Map )
 		Overlay.TextureRemoveAll( self );
 		if ( Map and self.MapID == Map ) then
 			MapCurrent, SelectionDrawn = Map, false;
@@ -61,7 +61,7 @@ end
 
 
 --- Enables or disables paths for NpcID on MapFile.
-function me.SetRoutesEnabled ( MapFile, NpcID, Enable )
+function NS.SetRoutesEnabled ( MapFile, NpcID, Enable )
 	local RoutesDB = Routes.db.global.routes[ MapFile ];
 	if ( RoutesDB ) then
 		for Name, Route in pairs( RoutesDB ) do
@@ -81,47 +81,47 @@ do
 		MapFiles[ Data[ 2 ] ] = Data[ 1 ];
 	end
 	--- Validates that the selected NPC's map can be shown.
-	function me.Control:OnSelect ( NpcID )
-		if ( me.MapFile ) then
+	function NS.Control:OnSelect ( NpcID )
+		if ( NS.MapFile ) then
 			-- Re-hide routes for last shown mob
-			me.SetRoutesEnabled( me.MapFile, me.NpcID, false );
-			me:OnMapUpdate( me.MapID );
-			me.MapFile = nil;
+			NS.SetRoutesEnabled( NS.MapFile, NS.NpcID, false );
+			NS:OnMapUpdate( NS.MapID );
+			NS.MapFile = nil;
 		end
 
-		me.NpcID, me.MapID = NpcID, Tools.NPCMapIDs[ NpcID ];
-		if ( me.MapID ) then
+		NS.NpcID, NS.MapID = NpcID, Tools.NPCMapIDs[ NpcID ];
+		if ( NS.MapID ) then
 			-- Show routes for this mob
-			me.MapFile = MapFiles[ me.MapID ];
-			me.SetRoutesEnabled( me.MapFile, me.NpcID, true );
-			me:OnMapUpdate( me.MapID );
+			NS.MapFile = MapFiles[ NS.MapID ];
+			NS.SetRoutesEnabled( NS.MapFile, NS.NpcID, true );
+			NS:OnMapUpdate( NS.MapID );
 
 			self:Enable();
-			me:Show();
+			NS:Show();
 		else
 			self:Disable();
-			me:Hide();
+			NS:Hide();
 		end
 	end
 end
 --- Shows the selected NPC's map.
-function me.Control:OnClick ()
+function NS.Control:OnClick ()
 	ShowUIPanel( WorldMapFrame, true );
-	SetMapByID( me.MapID );
+	SetMapByID( NS.MapID );
 end
 --- Hides shown routes on logout.
-function me:PLAYER_LOGOUT ()
+function NS:PLAYER_LOGOUT ()
 	self.Control:OnSelect();
 end
 
 
 
 
-me:Hide();
-me:RegisterEvent( "PLAYER_LOGOUT" );
-Overlay.Modules.Register( ..., me, Tools.L.OVERLAY_TITLE );
+NS:Hide();
+NS:RegisterEvent( "PLAYER_LOGOUT" );
+Overlay.Modules.Register( ..., NS, Tools.L.OVERLAY_TITLE );
 
-local Control = me.Control;
+local Control = NS.Control;
 Control:SetSize( 144, 21 );
 Control:SetText( Tools.L.OVERLAY_CONTROL );
 Control:SetScript( "OnClick", Control.OnClick );

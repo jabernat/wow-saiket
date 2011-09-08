@@ -4,10 +4,10 @@
   ****************************************************************************]]
 
 
-local AddOnName, me = ...;
-_Corpse = me;
-local L = me.L;
-me.Frame = CreateFrame( "Frame" );
+local AddOnName, NS = ...;
+_Corpse = NS;
+local L = NS.L;
+NS.Frame = CreateFrame( "Frame" );
 
 
 
@@ -17,7 +17,7 @@ do
 	local GetMouseFocus = GetMouseFocus;
 	--- Gets the name from a visible corpse tooltip.
 	-- @return Corpse owner's name, or nil if the tooltip isn't for a corpse.
-	function me.GetCorpseName ()
+	function NS.GetCorpseName ()
 		if ( not UnitExists( "mouseover" ) and GetMouseFocus() == WorldFrame and GameTooltip:IsVisible()
 			and GameTooltip:NumLines() <= 2 -- Must recognize tooltips already partially filled in by BuildCorpseTooltip
 		) then
@@ -42,7 +42,7 @@ end
 -- @param ConnectedStatus  0 for offline, 1 for online.
 -- @param Status  AFK or DND text label.
 -- @see GetFriendInfo
-function me.BuildCorpseTooltip ( Hostile, Name, Level, Class, Location, ConnectedStatus, Status )
+function NS.BuildCorpseTooltip ( Hostile, Name, Level, Class, Location, ConnectedStatus, Status )
 	if ( Hostile == nil ) then
 		return;
 	end
@@ -100,26 +100,26 @@ end
 
 
 --- Activates different modules when changing between instances/BGs/etc.
-function me.Frame:PLAYER_ENTERING_WORLD ()
+function NS.Frame:PLAYER_ENTERING_WORLD ()
 	local Type = select( 2, IsInInstance() );
 	local Module;
 
 	if ( Type == "pvp" ) then -- In battleground
-		Module = me.Battlegrounds;
+		Module = NS.Battlegrounds;
 	elseif ( Type == "party" ) then -- In a 5-man dungeon
-		Module = me.Dungeons;
+		Module = NS.Dungeons;
 	elseif ( Type ~= "arena" ) then
-		Module = me.Standard;
+		Module = NS.Standard;
 	end -- Else disable in arenas
 
-	me.SetActiveModule( Module );
+	NS.SetActiveModule( Module );
 end
 --- Deactivates modules when leaving game worlds.
-function me.Frame:PLAYER_LEAVING_WORLD ()
-	me.SetActiveModule( nil );
+function NS.Frame:PLAYER_LEAVING_WORLD ()
+	NS.SetActiveModule( nil );
 end
 --- Global event handler.
-function me.Frame:OnEvent ( Event, ... )
+function NS.Frame:OnEvent ( Event, ... )
 	if ( self[ Event ] ) then
 		return self[ Event ]( self, Event, ... );
 	end
@@ -132,14 +132,14 @@ do
 	local ActiveModule;
 	local PlayerName = UnitName( "player" );
 	--- Hook called when GameTooltip updates.
-	function me:GameTooltipOnShow ()
+	function NS:GameTooltipOnShow ()
 		-- Tooltip contents updated
 		if ( ActiveModule ) then
-			local Name = me.GetCorpseName();
+			local Name = NS.GetCorpseName();
 			if ( Name ) then -- Found corpse tooltip
 				if ( Name == PlayerName ) then
 					-- Create a common tooltip for the player's corpse
-					me.BuildCorpseTooltip( false, Name,
+					NS.BuildCorpseTooltip( false, Name,
 						UnitLevel( "player" ), UnitClass( "player" ), GetRealZoneText(), 1,
 						( UnitIsAFK( "player" ) and CHAT_FLAG_AFK ) or ( UnitIsDND( "player" ) and CHAT_FLAG_DND ) );
 				else -- Add data to tooltip using module's info
@@ -151,7 +151,7 @@ do
 	--- Activates a module to handle filling corpse tooltips under specific settings such as cross-realm BGs.
 	-- @param NewModule  Module table containing callbacks.
 	-- @return True if module was changed.
-	function me.SetActiveModule ( NewModule )
+	function NS.SetActiveModule ( NewModule )
 		if ( NewModule ~= ActiveModule ) then
 			local OldModule = ActiveModule;
 			ActiveModule = NewModule;
@@ -167,7 +167,7 @@ do
 		end
 	end
 	--- Returns true if a given module is the active one.
-	function me.IsModuleActive ( Module )
+	function NS.IsModuleActive ( Module )
 		return Module == ActiveModule;
 	end
 end
@@ -183,7 +183,7 @@ do
 		"ERR_FRIEND_REMOVED_S",
 	};
 	--- Script to extract localization data from a client.
-	function me.LocaleExtract ()
+	function NS.LocaleExtract ()
 		local Data = {
 			Locale = GetCVar( "locale" );
 			VersionCorpse = GetAddOnMetadata( AddOnName, "Version" );
@@ -207,10 +207,10 @@ end
 
 
 
-me.Frame:SetScript( "OnEvent", me.Frame.OnEvent );
-me.Frame:RegisterEvent( "PLAYER_ENTERING_WORLD" );
+NS.Frame:SetScript( "OnEvent", NS.Frame.OnEvent );
+NS.Frame:RegisterEvent( "PLAYER_ENTERING_WORLD" );
 if ( IsLoggedIn() ) then -- Loaded on-demand
-	me.Frame:PLAYER_ENTERING_WORLD();
+	NS.Frame:PLAYER_ENTERING_WORLD();
 end
 
-GameTooltip:HookScript( "OnShow", me.GameTooltipOnShow );
+GameTooltip:HookScript( "OnShow", NS.GameTooltipOnShow );

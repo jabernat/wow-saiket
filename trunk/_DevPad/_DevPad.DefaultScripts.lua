@@ -89,7 +89,7 @@ return _DevPad.FolderRoot:Insert( WowLua );]=];
 		Text = [=[
 --- A simple example script demonstrating library usage by changing the default macro window's font.
 
-local me = ...; --- First arg is always the table representing this script.
+local NS = ...; --- First arg is always the table representing this script.
 -- Any extra parameters are optionally passed in by the caller.
 
 -- This same table is used even if the script is called more than once, so its contents can be used to keep track of state between calls to your script.  Key names prefixed with a single underscore character (like "._Name") are used internally by _DevPad.
@@ -100,17 +100,17 @@ local me = ...; --- First arg is always the table representing this script.
 -- Notice that this script is set to auto-run by default, indicated by the green arrow next to its name in the list.  There's no need to run the script manually as long as auto-run is enabled; it will execute on start up like a normal addon.
 
 -- Here we use a flag in the script table to only let the script run once.
-if ( me.Loaded ) then
+if ( NS.Loaded ) then
   return;
 end
-me.Loaded = true;
+NS.Loaded = true;
 
 
 
 
 -- Read the "AddOnInit" script object, or page, contained in the "Libs" folder.
 local AddOnInit = _DevPad( "Libs", "AddOnInit" );
--- This page object is like the "me" variable above, but used by AddOnInit.  Another way to get a reference to AddOnInit is by searching, like this:
+-- This page object is like the "NS" variable above, but used by AddOnInit.  Another way to get a reference to AddOnInit is by searching, like this:
 --   local AddOnInit = _DevPad:FindScripts( "AddOnInit" )
 -- In either case, AddOnInit may be nil if that script isn't found.
 

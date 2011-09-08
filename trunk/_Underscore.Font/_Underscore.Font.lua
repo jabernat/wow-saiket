@@ -4,11 +4,11 @@
   ****************************************************************************]]
 
 
-local me = select( 2, ... );
-_Underscore.Font = me;
+local NS = select( 2, ... );
+_Underscore.Font = NS;
 
-me.Monospace = CreateFont( "_UnderscoreMonospace" );
-me.MonospaceNumber = CreateFont( "_UnderscoreMonospaceNumber" );
+NS.Monospace = CreateFont( "_UnderscoreMonospace" );
+NS.MonospaceNumber = CreateFont( "_UnderscoreMonospaceNumber" );
 
 local NUMBER_FONT = [[Fonts\ARIALN.TTF]];
 
@@ -17,16 +17,16 @@ local NUMBER_FONT = [[Fonts\ARIALN.TTF]];
 
 --- Applies monospace font to the macro edit box.
 _Underscore.RegisterAddOnInitializer( "Blizzard_MacroUI", function ()
-	MacroFrameText:SetFontObject( me.Monospace );
+	MacroFrameText:SetFontObject( NS.Monospace );
 end );
 --- Applies monospace font to _Dev's stats display.
 _Underscore.RegisterAddOnInitializer( "_Dev", function ()
-	_Dev.Font:SetFontObject( me.MonospaceNumber );
+	_Dev.Font:SetFontObject( NS.MonospaceNumber );
 end );
 
 
-me.Monospace:SetFont( NUMBER_FONT, 10 );
-me.MonospaceNumber:SetFont( NUMBER_FONT, 8, "OUTLINE" );
+NS.Monospace:SetFont( NUMBER_FONT, 10 );
+NS.MonospaceNumber:SetFont( NUMBER_FONT, 8, "OUTLINE" );
 
 
 -- Fix the small number font to use antialiasing

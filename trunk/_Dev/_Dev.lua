@@ -14,10 +14,10 @@ _DevOptions = _DevOptionsOriginal;
 
 
 local L = _DevLocalization;
-local me = CreateFrame( "Frame", "_Dev" );
+local NS = CreateFrame( "Frame", "_Dev" );
 
-me.Font = CreateFont( "_DevFont" );
-me.ScriptSlashCommandBackup = SlashCmdList[ "SCRIPT" ];
+NS.Font = CreateFont( "_DevFont" );
+NS.ScriptSlashCommandBackup = SlashCmdList[ "SCRIPT" ];
 
 
 
@@ -26,7 +26,7 @@ me.ScriptSlashCommandBackup = SlashCmdList[ "SCRIPT" ];
   * Function: _Dev.NilFunction                                                 *
   * Description: Recycled generic function placeholder.                        *
   ****************************************************************************]]
-function me.NilFunction () end
+function NS.NilFunction () end
 --[[****************************************************************************
   * Function: _Dev.Print                                                       *
   * Description: Write a string to the specified frame, or to the default chat *
@@ -34,7 +34,7 @@ function me.NilFunction () end
   ****************************************************************************]]
 do
 	local tostring = tostring;
-	function me.Print ( Message, ChatFrame, Color )
+	function NS.Print ( Message, ChatFrame, Color )
 		if ( not Color ) then
 			Color = NORMAL_FONT_COLOR;
 		end
@@ -45,7 +45,7 @@ end
   * Function: _Dev.Error                                                       *
   * Description: Displays an error message with the current error handler.     *
   ****************************************************************************]]
-function me.Error ( Message, ForcePrint )
+function NS.Error ( Message, ForcePrint )
 	if ( ForcePrint or _DevOptions.PrintLuaErrors ) then
 		_Dev.Print( Message, nil, RED_FONT_COLOR );
 	else
@@ -62,7 +62,7 @@ end
 do
 	local rawget = rawget;
 	local type = type;
-	function me.IsUIObject ( Value )
+	function NS.IsUIObject ( Value )
 		return type( Value ) == "table"
 			and type( rawget( Value, 0 ) ) == "userdata"
 			and Value.IsObjectType
@@ -75,7 +75,7 @@ end
   ****************************************************************************]]
 do
 	local floor = floor;
-	function me.Round ( Float, Precision )
+	function NS.Round ( Float, Precision )
 		if ( Precision ) then
 			local Multiplier = 10 ^ Precision;
 			return floor( Float * Multiplier + 0.5 ) / Multiplier;
@@ -89,7 +89,7 @@ end
   * Description: Count the number of items in an array, including those with   *
 	*   non-numeric indexes.                                                     *
   ****************************************************************************]]
-function me.Count ( Table )
+function NS.Count ( Table )
 	local TableSize = 0;
 
 	for _ in pairs( Table ) do
@@ -104,7 +104,7 @@ end
   * Function: _Dev.Exec                                                        *
   * Description: Works like RunScript, but returns the output.                 *
   ****************************************************************************]]
-function me.Exec ( Script, ... )
+function NS.Exec ( Script, ... )
 	local Function, ErrorMessage = loadstring( "return "..Script );
 	if ( Function ) then
 		return pcall( Function, ... );
@@ -119,15 +119,15 @@ end
   * Description: Allows the use of text formatting when scripting through      *
   *   in-game text fields.                                                     *
   ****************************************************************************]]
-function me.ScriptSlashCommand ( Input )
-	me.ScriptSlashCommandBackup( Input and Input:gsub( "||", "|" ) or nil );
+function NS.ScriptSlashCommand ( Input )
+	NS.ScriptSlashCommandBackup( Input and Input:gsub( "||", "|" ) or nil );
 end
 --[[****************************************************************************
   * Function: _Dev.OpenChatScriptBinding                                       *
   * Description: Key binding to open chat prefixed with the shortest localized *
   *   /script equivalent slash command.                                        *
   ****************************************************************************]]
-function me.OpenChatScriptBinding ()
+function NS.OpenChatScriptBinding ()
 	local SlashIndex = 0;
 	local SlashTextShortest, SlashText;
 
@@ -147,7 +147,7 @@ end
   * Function: _Dev.ReloadUIBinding                                             *
   * Description: Key binding to reload the UI.                                 *
   ****************************************************************************]]
-function me.ReloadUIBinding ()
+function NS.ReloadUIBinding ()
 	ReloadUI(); -- Allow late binding
 end;
 --[[****************************************************************************
@@ -157,7 +157,7 @@ end;
   *   its enabled or disabled status will not be modified. Returns an error    *
   *    string on failure.                                                      *
   ****************************************************************************]]
-function me.ToggleAddOn ( AddOnName )
+function NS.ToggleAddOn ( AddOnName )
 	local Loaded, ErrorReason;
 	ErrorReason = select( 6, GetAddOnInfo( AddOnName ) );
 
@@ -185,12 +185,12 @@ end
   * Function: _Dev.ToggleAddOnSlashCommand                                     *
   * Description: Slash command chat handler for the _Dev.ToggleAddOn function. *
   ****************************************************************************]]
-function me.ToggleAddOnSlashCommand ( Input )
+function NS.ToggleAddOnSlashCommand ( Input )
 	if ( Input and not Input:find( "^%s*$" ) ) then
 		-- Call will reload UI unless it fails
-		local ErrorString = me.ToggleAddOn( Input );
+		local ErrorString = NS.ToggleAddOn( Input );
 		if ( ErrorString ) then -- Error
-			me.Error( L.TOGGLEADDON_ERROR_FORMAT:format( Input, ErrorString ), true );
+			NS.Error( L.TOGGLEADDON_ERROR_FORMAT:format( Input, ErrorString ), true );
 		end
 	end
 end
@@ -199,30 +199,30 @@ end
 --[[****************************************************************************
   * Function: _Dev:MODIFIER_STATE_CHANGED                                      *
   ****************************************************************************]]
-function me:MODIFIER_STATE_CHANGED ( _, Modifier, State )
+function NS:MODIFIER_STATE_CHANGED ( _, Modifier, State )
 	Modifier = Modifier:sub( 2 );
 	if ( GetModifiedClick( "_DEV_ENABLECONSOLE" ):find( Modifier, 1, true ) ) then
 		SetConsoleKey( State == 1 and "`" or nil );
 	end
 	if ( GetModifiedClick( "_DEV_FRAMES_INTERACTIVE" ):find( Modifier, 1, true ) ) then
-		me.Frames.SetInteractive( State == 1 );
+		NS.Frames.SetInteractive( State == 1 );
 	end
 end
 --[[****************************************************************************
   * Function: _Dev:ADDON_LOADED                                                *
   ****************************************************************************]]
-function me:ADDON_LOADED ( _, AddOn )
+function NS:ADDON_LOADED ( _, AddOn )
 	if ( AddOn:lower() == AddOnName:lower() ) then
-		me:UnregisterEvent( "ADDON_LOADED" );
-		me.ADDON_LOADED = nil;
+		NS:UnregisterEvent( "ADDON_LOADED" );
+		NS.ADDON_LOADED = nil;
 
 		if ( _DevOptions.Version ~= _DevOptionsOriginal.Version ) then
 			-- Reset settings
 			_DevOptions = _DevOptionsOriginal;
 		end
-		me.Outline:OnLoad();
-		me.Stats:OnLoad();
-		me.Options:OnLoad();
+		NS.Outline:OnLoad();
+		NS.Stats:OnLoad();
+		NS.Options:OnLoad();
 	end
 end
 --[[****************************************************************************
@@ -231,7 +231,7 @@ end
   ****************************************************************************]]
 do
 	local type = type;
-	function me:OnEvent ( Event, ... )
+	function NS:OnEvent ( Event, ... )
 		if ( type( self[ Event ] ) == "function" ) then
 			self[ Event ]( self, Event, ... );
 		end
@@ -249,19 +249,19 @@ do
 
 	local LastShift, LastCtrl, LastAlt; -- Last states of modifiers
 	local Shift, Ctrl, Alt;
-	function me:OnUpdate ()
+	function NS:OnUpdate ()
 		Shift, Ctrl, Alt = IsShiftKeyDown(), IsControlKeyDown(), IsAltKeyDown();
 		if ( Shift ~= LastShift ) then
 			LastShift = Shift;
-			me:OnEvent( "MODIFIER_STATE_CHANGED", "*SHIFT", Shift or 0 );
+			NS:OnEvent( "MODIFIER_STATE_CHANGED", "*SHIFT", Shift or 0 );
 		end
 		if ( Ctrl ~= LastCtrl ) then
 			LastCtrl = Ctrl;
-			me:OnEvent( "MODIFIER_STATE_CHANGED", "*CTRL", Ctrl or 0 );
+			NS:OnEvent( "MODIFIER_STATE_CHANGED", "*CTRL", Ctrl or 0 );
 		end
 		if ( Alt ~= LastAlt ) then
 			LastAlt = Alt;
-			me:OnEvent( "MODIFIER_STATE_CHANGED", "*ALT", Alt or 0 );
+			NS:OnEvent( "MODIFIER_STATE_CHANGED", "*ALT", Alt or 0 );
 		end
 	end
 end
@@ -270,14 +270,14 @@ end
 
 
 ConsoleExec( "fontsize 12" ); -- The console's font size
-me.Font:SetFontObject( NumberFontNormalSmall );
+NS.Font:SetFontObject( NumberFontNormalSmall );
 
-me:SetScript( "OnEvent", me.OnEvent );
-me:SetScript( "OnUpdate", me.OnUpdate );
-me:RegisterEvent( "ADDON_LOADED" );
+NS:SetScript( "OnEvent", NS.OnEvent );
+NS:SetScript( "OnUpdate", NS.OnUpdate );
+NS:RegisterEvent( "ADDON_LOADED" );
 
-math.round = me.Round;
-table.count = me.Count;
+math.round = NS.Round;
+table.count = NS.Count;
 
-SlashCmdList[ "SCRIPT" ] = me.ScriptSlashCommand;
-SlashCmdList[ "_DEV_TOGGLEADDON" ] = me.ToggleAddOnSlashCommand;
+SlashCmdList[ "SCRIPT" ] = NS.ScriptSlashCommand;
+SlashCmdList[ "_DEV_TOGGLEADDON" ] = NS.ToggleAddOnSlashCommand;

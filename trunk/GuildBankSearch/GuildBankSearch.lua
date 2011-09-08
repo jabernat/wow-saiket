@@ -4,30 +4,30 @@
   ****************************************************************************]]
 
 
-local me = select( 2, ... );
-GuildBankSearch = me;
-local L = me.L;
+local NS = select( 2, ... );
+GuildBankSearch = NS;
+local L = NS.L;
 
-me.Frame = CreateFrame( "Frame", "GuildBankSearchFrame", GuildBankFrame );
-me.Frame.UpdateRate = 0.5;
-me.Frame.NextUpdate = 0;
-me.Frame.NeedUpdate = false;
+NS.Frame = CreateFrame( "Frame", "GuildBankSearchFrame", GuildBankFrame );
+NS.Frame.UpdateRate = 0.5;
+NS.Frame.NextUpdate = 0;
+NS.Frame.NeedUpdate = false;
 
-me.ToggleButton = CreateFrame( "Button", nil, GuildBankFrame, "UIPanelButtonTemplate" );
+NS.ToggleButton = CreateFrame( "Button", nil, GuildBankFrame, "UIPanelButtonTemplate" );
 
-me.Clear = CreateFrame( "Button", nil, me.Frame, "UIPanelButtonTemplate" );
-me.Name = CreateFrame( "EditBox", "$parentName", me.Frame, "InputBoxTemplate" );
-me.Text = CreateFrame( "EditBox", "$parentText", me.Frame, "InputBoxTemplate" );
-me.Quality = CreateFrame( "Frame", "$parentQuality", me.Frame, "UIDropDownMenuTemplate" );
-me.ItemLevelMin = CreateFrame( "EditBox", "$parentItemLevelMin", me.Frame, "InputBoxTemplate" );
-me.ItemLevelMax = CreateFrame( "EditBox", "$parentItemLevelMax", me.Frame, "InputBoxTemplate" );
-me.ReqLevelMin = CreateFrame( "EditBox", "$parentReqLevelMin", me.Frame, "InputBoxTemplate" );
-me.ReqLevelMax = CreateFrame( "EditBox", "$parentReqLevelMax", me.Frame, "InputBoxTemplate" );
+NS.Clear = CreateFrame( "Button", nil, NS.Frame, "UIPanelButtonTemplate" );
+NS.Name = CreateFrame( "EditBox", "$parentName", NS.Frame, "InputBoxTemplate" );
+NS.Text = CreateFrame( "EditBox", "$parentText", NS.Frame, "InputBoxTemplate" );
+NS.Quality = CreateFrame( "Frame", "$parentQuality", NS.Frame, "UIDropDownMenuTemplate" );
+NS.ItemLevelMin = CreateFrame( "EditBox", "$parentItemLevelMin", NS.Frame, "InputBoxTemplate" );
+NS.ItemLevelMax = CreateFrame( "EditBox", "$parentItemLevelMax", NS.Frame, "InputBoxTemplate" );
+NS.ReqLevelMin = CreateFrame( "EditBox", "$parentReqLevelMin", NS.Frame, "InputBoxTemplate" );
+NS.ReqLevelMax = CreateFrame( "EditBox", "$parentReqLevelMax", NS.Frame, "InputBoxTemplate" );
 
-me.CategorySection = CreateFrame( "Frame", "$parentCategory", me.Frame, "OptionsBoxTemplate" );
-me.Type = CreateFrame( "Frame", "$parentType", me.CategorySection, "UIDropDownMenuTemplate" );
-me.SubType = CreateFrame( "Frame", "$parentSubType", me.CategorySection, "UIDropDownMenuTemplate" );
-me.Slot = CreateFrame( "Frame", "$parentSlot", me.CategorySection, "UIDropDownMenuTemplate" );
+NS.CategorySection = CreateFrame( "Frame", "$parentCategory", NS.Frame, "OptionsBoxTemplate" );
+NS.Type = CreateFrame( "Frame", "$parentType", NS.CategorySection, "UIDropDownMenuTemplate" );
+NS.SubType = CreateFrame( "Frame", "$parentSubType", NS.CategorySection, "UIDropDownMenuTemplate" );
+NS.Slot = CreateFrame( "Frame", "$parentSlot", NS.CategorySection, "UIDropDownMenuTemplate" );
 
 
 --- Filter parameter table, where filter is active if any keys exist.
@@ -44,13 +44,13 @@ local Filter = {
 	ReqLevelMin = false;
 	ReqLevelMax = false;
 };
-me.Filter = Filter;
+NS.Filter = Filter;
 
-me.Qualities = {};
-me.Types = { GetAuctionItemClasses() };
-me.SubTypes = {};
-me.Slots = {}; -- Sorted list of inventory types that can be searched for
-me.SlotGroups = { -- Categories paired with the inventory types that can match them (can be multiple)
+NS.Qualities = {};
+NS.Types = { GetAuctionItemClasses() };
+NS.SubTypes = {};
+NS.Slots = {}; -- Sorted list of inventory types that can be searched for
+NS.SlotGroups = { -- Categories paired with the inventory types that can match them (can be multiple)
 	[ "ENCHSLOT_WEAPON" ] = { -- Localized as generic "Weapon"
 		[ "INVTYPE_2HWEAPON" ] = true;
 		[ "INVTYPE_HOLDABLE" ] = true;
@@ -89,88 +89,88 @@ me.SlotGroups = { -- Categories paired with the inventory types that can match t
 	[ "INVTYPE_WRIST" ] = { [ "INVTYPE_WRIST" ] = true; };
 };
 
-me.ButtonMismatchAlpha = 0.25;
-me.LogMismatchColor = { r = 0.25; g = 0.25; b = 0.25; };
-me.Buttons = {}; -- Cache of all item buttons in bank view
+NS.ButtonMismatchAlpha = 0.25;
+NS.LogMismatchColor = { r = 0.25; g = 0.25; b = 0.25; };
+NS.Buttons = {}; -- Cache of all item buttons in bank view
 
 
 
 
 --- Updates filter when name parameter changes.
-function me.Name:OnTextChanged ()
+function NS.Name:OnTextChanged ()
 	local Text = self:GetText();
 	Filter.Name = Text ~= "" and Text:lower() or nil;
-	me.FilterUpdate();
+	NS.FilterUpdate();
 end
 --- Updates filter when text parameter changes.
-function me.Text:OnTextChanged ()
+function NS.Text:OnTextChanged ()
 	local Text = self:GetText();
 	Filter.Text = Text ~= "" and Text:lower() or nil;
-	me.FilterUpdate();
+	NS.FilterUpdate();
 end
 --- @return An iterator to list all qualities.
-function me.Quality.IterateOptions ()
-	return ipairs( me.Qualities );
+function NS.Quality.IterateOptions ()
+	return ipairs( NS.Qualities );
 end
 
 --- Updates the subtype dropdown when a type is chosen.
-function me.Type:OnSelect ( Dropdown, Type )
+function NS.Type:OnSelect ( Dropdown, Type )
 	if ( Filter.Type ~= Type ) then
-		me.SubType.OnSelect( nil, me.SubType ); -- Remove subtype filter
+		NS.SubType.OnSelect( nil, NS.SubType ); -- Remove subtype filter
 		if ( not Type ) then
-			UIDropDownMenu_DisableDropDown( me.SubType );
+			UIDropDownMenu_DisableDropDown( NS.SubType );
 		else
-			UIDropDownMenu_EnableDropDown( me.SubType );
+			UIDropDownMenu_EnableDropDown( NS.SubType );
 		end
-		me.DropdownOnSelect( self, Dropdown, Type );
+		NS.DropdownOnSelect( self, Dropdown, Type );
 	end
 end
 --- @return An iterator to list all types.
-function me.Type.IterateOptions ()
+function NS.Type.IterateOptions ()
 	local Index = 0;
 	return function ()
 		Index = Index + 1;
-		local Label = me.Types[ Index ];
+		local Label = NS.Types[ Index ];
 		return Label, Label;
 	end;
 end
 --- @return An iterator to list all sub-types.
-function me.SubType.IterateOptions ()
+function NS.SubType.IterateOptions ()
 	local Index = 0;
 	return function ()
 		Index = Index + 1;
-		local Label = me.SubTypes[ Filter.Type ][ Index ];
+		local Label = NS.SubTypes[ Filter.Type ][ Index ];
 		return Label, Label;
 	end;
 end
 --- @return An iterator to list all gear slots.
-function me.Slot.IterateOptions ()
+function NS.Slot.IterateOptions ()
 	local Index = 0;
 	return function ()
 		Index = Index + 1;
-		local Slot = me.Slots[ Index ];
+		local Slot = NS.Slots[ Index ];
 		return Slot, _G[ Slot ];
 	end;
 end
 
 --- Generic handler to update the filter when one of the level edit boxes changes.
-function me:LevelEditBoxOnTextChanged ()
+function NS:LevelEditBoxOnTextChanged ()
 	local NewLevel = self:GetText() ~= "" and self:GetNumber() or nil;
 	if ( NewLevel ~= Filter[ self.Parameter ] ) then
 		Filter[ self.Parameter ] = NewLevel;
-		me.FilterUpdate();
+		NS.FilterUpdate();
 	end
 end
 --- Generic handler to update the filter when a dropdown's value changes.
-function me:DropdownOnSelect ( Dropdown, Value )
+function NS:DropdownOnSelect ( Dropdown, Value )
 	if ( Value ~= Filter[ Dropdown.Parameter ] ) then
 		UIDropDownMenu_SetText( Dropdown, self and self.value or L.ALL );
 		Filter[ Dropdown.Parameter ] = Value;
-		me.FilterUpdate();
+		NS.FilterUpdate();
 	end
 end
 --- Generic handler to construct dropdown menus using their custom iterators.
-function me:DropdownInitialize ()
+function NS:DropdownInitialize ()
 	local CurrentValue = Filter[ self.Parameter ];
 	local Info = UIDropDownMenu_CreateInfo();
 	Info.arg1 = self; -- Arg2 left nil for unfiltered
@@ -189,37 +189,37 @@ end
 
 
 --- Resets all filter parameters to not filter anything.
-function me.FilterClear ()
+function NS.FilterClear ()
 	CloseDropDownMenus(); -- Close dropdown if open
 
-	me.Name:SetText( "" );
-	me.Text:SetText( "" );
-	me.Quality.OnSelect( nil, me.Quality );
-	me.ItemLevelMin:SetText( "" );
-	me.ItemLevelMax:SetText( "" );
-	me.ReqLevelMin:SetText( "" );
-	me.ReqLevelMax:SetText( "" );
+	NS.Name:SetText( "" );
+	NS.Text:SetText( "" );
+	NS.Quality.OnSelect( nil, NS.Quality );
+	NS.ItemLevelMin:SetText( "" );
+	NS.ItemLevelMax:SetText( "" );
+	NS.ReqLevelMin:SetText( "" );
+	NS.ReqLevelMax:SetText( "" );
 
 	-- Item category fields
-	me.Type.OnSelect( nil, me.Type ); -- Also clears SubType
-	me.Slot.OnSelect( nil, me.Slot );
+	NS.Type.OnSelect( nil, NS.Type ); -- Also clears SubType
+	NS.Slot.OnSelect( nil, NS.Slot );
 end
 
 --- Requests an update to the bank or log display.
 -- @param Force  Executes the update on the next frame, ignoring throttling.
-function me.FilterUpdate ( Force )
-	me.Frame.NeedUpdate = true;
+function NS.FilterUpdate ( Force )
+	NS.Frame.NeedUpdate = true;
 	if ( Force ) then
-		me.Frame.NextUpdate = 0;
+		NS.Frame.NextUpdate = 0;
 	end
 end
 --- @return True if any filter parameters are set.
-function me.IsFilterDefined ()
+function NS.IsFilterDefined ()
 	return next( Filter ) ~= nil;
 end
 
 do
-	local Tooltip = CreateFrame( "GameTooltip", "$parentTooltip", me.Frame );
+	local Tooltip = CreateFrame( "GameTooltip", "$parentTooltip", NS.Frame );
 	-- Add template text lines
 	Tooltip:AddFontStrings( Tooltip:CreateFontString(), Tooltip:CreateFontString() );
 	local LinesLeft, LinesRight = {}, {};
@@ -232,7 +232,7 @@ do
 		end;
 		--- Case-insensitive plain text filter by tooltip contents.
 		Text = function ( TextPattern, _, ItemLink )
-			Tooltip:SetOwner( me.Frame, "ANCHOR_NONE" );
+			Tooltip:SetOwner( NS.Frame, "ANCHOR_NONE" );
 			Tooltip:SetHyperlink( ItemLink );
 			if ( Tooltip:IsShown() ) then
 				local NumLines = Tooltip:NumLines();
@@ -266,7 +266,7 @@ do
 		end;
 		--- Filter by item gear slot.
 		Slot = function ( SlotGroup, ... )
-			return me.SlotGroups[ SlotGroup ][ select( 9, ... ) ];
+			return NS.SlotGroups[ SlotGroup ][ select( 9, ... ) ];
 		end;
 		--- Filter by item iLvl lower boundary.
 		ItemLevelMin = function ( Min, _, _, _, ItemLevel )
@@ -300,7 +300,7 @@ do
 	--- Tests an item against the current filter parameters.
 	-- @param ItemLink  Link of item to test.
 	-- @return True if the given ItemLink matches all filter parameters.
-	function me.MatchItem ( ItemLink )
+	function NS.MatchItem ( ItemLink )
 		if ( ItemLink ) then
 			return MatchItemInfo( GetItemInfo( ItemLink ) );
 		end
@@ -308,8 +308,8 @@ do
 end
 
 --- Restores an unfiltered view of the bank and log.
-function me.FilterSuspend ()
-	for Index, Button in ipairs( me.Buttons ) do
+function NS.FilterSuspend ()
+	for Index, Button in ipairs( NS.Buttons ) do
 		Button:SetAlpha( 1 );
 	end
 	if ( GuildBankFrame.mode == "log" ) then
@@ -319,17 +319,17 @@ end
 do
 	local GetGuildBankItemLink = GetGuildBankItemLink;
 	--- Applies or refreshes the current filter to the bank or log view.
-	function me.FilterResume ()
-		if ( not me.IsFilterDefined() ) then
-			return me.FilterSuspend();
+	function NS.FilterResume ()
+		if ( not NS.IsFilterDefined() ) then
+			return NS.FilterSuspend();
 		end
 
 		if ( GuildBankFrame.mode == "bank" ) then
 			local Tab = GetCurrentGuildBankTab();
 			if ( Tab <= GetNumGuildBankTabs() ) then
-				for Index, Button in ipairs( me.Buttons ) do
-					Button:SetAlpha( me.MatchItem( GetGuildBankItemLink( Tab, Index ) )
-						and 1 or me.ButtonMismatchAlpha );
+				for Index, Button in ipairs( NS.Buttons ) do
+					Button:SetAlpha( NS.MatchItem( GetGuildBankItemLink( Tab, Index ) )
+						and 1 or NS.ButtonMismatchAlpha );
 				end
 			end
 		elseif ( GuildBankFrame.mode == "log" ) then
@@ -342,27 +342,27 @@ end
 
 
 --- Hook to enable the filter depending on which bank view is displayed.
-function me.GuildBankFrameTabOnClick ()
+function NS.GuildBankFrameTabOnClick ()
 	if ( GuildBankFrame.mode == "log" or GuildBankFrame.mode == "bank" ) then
-		me.ToggleButton:Enable();
+		NS.ToggleButton:Enable();
 	else
-		me.Frame:Hide();
-		me.ToggleButton:Disable();
+		NS.Frame:Hide();
+		NS.ToggleButton:Disable();
 	end
 end
 --- Hook to update the filter display when the bank view type changes.
-function me.GuildBankFrameUpdate ()
-	me.FilterUpdate( true );
+function NS.GuildBankFrameUpdate ()
+	NS.FilterUpdate( true );
 end
 do
 	local AddMessageBackup = GuildBankMessageFrame.AddMessage;
 	--- Hook that modifies added messages when a filter is active.
-	function me:GuildBankMessageFrameAddMessage ( Message, ... )
+	function NS:GuildBankMessageFrameAddMessage ( Message, ... )
 		if ( GuildBankFrame.mode == "log"
-			and me.Frame:IsShown() and me.IsFilterDefined()
-			and not me.MatchItem( Message:match( "|H(item:[^|]+)|h" ) )
+			and NS.Frame:IsShown() and NS.IsFilterDefined()
+			and not NS.MatchItem( Message:match( "|H(item:[^|]+)|h" ) )
 		) then
-			local Color = me.LogMismatchColor;
+			local Color = NS.LogMismatchColor;
 			-- Remove all color codes
 			return AddMessageBackup( self,
 				Message:gsub( "|cff%x%x%x%x%x%x", "" ):gsub( "|r", "" ),
@@ -374,13 +374,13 @@ end
 do
 	local InsertLinkBackup = ChatEdit_InsertLink;
 	--- Hook to add linked items to the name filter edit box.
-	function me.ChatEditInsertLink ( Link, ... )
+	function NS.ChatEditInsertLink ( Link, ... )
 		if ( InsertLinkBackup( Link, ... ) ) then
 			return true;
-		elseif ( Link and me.Name:IsVisible() ) then
+		elseif ( Link and NS.Name:IsVisible() ) then
 			local Name = GetItemInfo( Link );
 			if ( Name ) then
-				me.Name:SetText( Name );
+				NS.Name:SetText( Name );
 				return true;
 			end
 		end
@@ -392,42 +392,42 @@ end
 
 
 --- Makes room for the filter pane and refreshes the filter when shown.
-function me.Frame:OnShow ()
+function NS.Frame:OnShow ()
 	PlaySound( "igCharacterInfoOpen" );
-	me.ToggleButton:SetButtonState( "PUSHED", true );
+	NS.ToggleButton:SetButtonState( "PUSHED", true );
 	GuildBankTab1:ClearAllPoints();
-	GuildBankTab1:SetPoint( "TOPLEFT", me.Frame, "TOPRIGHT", -8, -16 );
+	GuildBankTab1:SetPoint( "TOPLEFT", NS.Frame, "TOPRIGHT", -8, -16 );
 
-	me.FilterUpdate( true );
+	NS.FilterUpdate( true );
 end
 --- Undoes changes to bank window and clears any filter display when hidden.
-function me.Frame:OnHide ()
+function NS.Frame:OnHide ()
 	PlaySound( "igCharacterInfoClose" );
-	me.ToggleButton:SetButtonState( "NORMAL" );
+	NS.ToggleButton:SetButtonState( "NORMAL" );
 	GuildBankTab1:ClearAllPoints();
 	GuildBankTab1:SetPoint( "TOPLEFT", GuildBankFrame, "TOPRIGHT", -1, -32 );
-	me.FilterSuspend();
+	NS.FilterSuspend();
 end
 --- Throttles filter display updates.
-function me.Frame:OnUpdate ( Elapsed )
+function NS.Frame:OnUpdate ( Elapsed )
 	self.NextUpdate = self.NextUpdate - Elapsed;
 	if ( self.NeedUpdate and self.NextUpdate <= 0 ) then
 		self.NeedUpdate, self.NextUpdate = false, self.UpdateRate;
 
-		me.FilterResume();
+		NS.FilterResume();
 	end
 end
 --- Forces a display update when bank contents change.
-function me.Frame:OnEvent ()
-	me.FilterUpdate( true );
+function NS.Frame:OnEvent ()
+	NS.FilterUpdate( true );
 end
 
 --- Shows or hides the filter pane.
-function me.Toggle ()
-	if ( me.Frame:IsShown() ) then
-		me.Frame:Hide();
+function NS.Toggle ()
+	if ( NS.Frame:IsShown() ) then
+		NS.Frame:Hide();
 	else
-		me.Frame:Show();
+		NS.Frame:Show();
 	end
 end
 
@@ -436,21 +436,21 @@ end
 
 -- Fill in quality labels
 for Index = 0, #ITEM_QUALITY_COLORS do
-	me.Qualities[ Index ] = ITEM_QUALITY_COLORS[ Index ].hex
+	NS.Qualities[ Index ] = ITEM_QUALITY_COLORS[ Index ].hex
 		.._G[ "ITEM_QUALITY"..Index.."_DESC" ]..FONT_COLOR_CODE_CLOSE;
 end
 -- Fill in and sort subtypes
-for Index, Type in ipairs( me.Types ) do
-	me.SubTypes[ Type ] = { GetAuctionItemSubClasses( Index ) };
-	sort( me.SubTypes[ Type ] );
+for Index, Type in ipairs( NS.Types ) do
+	NS.SubTypes[ Type ] = { GetAuctionItemSubClasses( Index ) };
+	sort( NS.SubTypes[ Type ] );
 end
 -- Sort types
-sort( me.Types ); -- Note: Use after subtypes are populated so indices don't get mixed up
+sort( NS.Types ); -- Note: Use after subtypes are populated so indices don't get mixed up
 -- Fill in and sort slots table
-for InvType in pairs( me.SlotGroups ) do
-	tinsert( me.Slots, InvType );
+for InvType in pairs( NS.SlotGroups ) do
+	tinsert( NS.Slots, InvType );
 end
-sort( me.Slots, function ( Type1, Type2 )
+sort( NS.Slots, function ( Type1, Type2 )
 	return _G[ Type1 ] < _G[ Type2 ];
 end );
 
@@ -458,19 +458,19 @@ end );
 for Index = 1, MAX_GUILDBANK_SLOTS_PER_TAB do
 	local Column = floor( ( Index - 1 ) / NUM_SLOTS_PER_GUILDBANK_GROUP ) + 1;
 	local Slot = ( Index - 1 ) % NUM_SLOTS_PER_GUILDBANK_GROUP + 1;
-	me.Buttons[ Index ] = _G[ "GuildBankColumn"..Column.."Button"..Slot ];
+	NS.Buttons[ Index ] = _G[ "GuildBankColumn"..Column.."Button"..Slot ];
 end
 
 
 -- Set up filter button
-me.ToggleButton:SetSize( 100, 21 );
-me.ToggleButton:SetPoint( "TOPRIGHT", -11, -40 );
-me.ToggleButton:SetText( L.FILTER );
-me.ToggleButton:SetScript( "OnClick", me.Toggle );
+NS.ToggleButton:SetSize( 100, 21 );
+NS.ToggleButton:SetPoint( "TOPRIGHT", -11, -40 );
+NS.ToggleButton:SetText( L.FILTER );
+NS.ToggleButton:SetScript( "OnClick", NS.Toggle );
 
 
 -- Set up filter pane
-local Frame = me.Frame;
+local Frame = NS.Frame;
 Frame:Hide();
 Frame:SetSize( 187, 389 );
 Frame:SetPoint( "TOPLEFT", GuildBankFrame, "TOPRIGHT", -2, -28 );
@@ -507,11 +507,11 @@ Corner:SetPoint( "TOPRIGHT", -5, -5 );
 -- Close button
 CreateFrame( "Button", nil, Frame, "UIPanelCloseButton" ):SetPoint( "TOPRIGHT", 1, 0 );
 
-local Clear = me.Clear;
+local Clear = NS.Clear;
 Clear:SetSize( 45, 18 );
 Clear:SetPoint( "TOPRIGHT", -31, -8 );
 Clear:SetText( L.CLEAR );
-Clear:SetScript( "OnClick", me.FilterClear );
+Clear:SetScript( "OnClick", NS.FilterClear );
 
 
 -- Filter controls
@@ -523,9 +523,9 @@ local function InitializeDropdown ( self, Parameter, Label )
 	_G[ self:GetName().."Middle" ]:SetPoint( "RIGHT", -16, 0 );
 	UIDropDownMenu_JustifyText( self, "LEFT" );
 	if ( not self.OnSelect ) then
-		self.OnSelect = me.DropdownOnSelect;
+		self.OnSelect = NS.DropdownOnSelect;
 	end
-	self.initialize = me.DropdownInitialize;
+	self.initialize = NS.DropdownInitialize;
 	self.Parameter = Parameter;
 	self.Label = self:CreateFontString( nil, "OVERLAY", "GameFontHighlightSmall" );
 	self.Label:SetText( Label );
@@ -539,14 +539,14 @@ local function InitializeLevelEditBox ( self, Parameter, Label )
 	self:SetNumeric( true );
 	self:SetMaxLetters( 3 );
 	self:SetAutoFocus( false );
-	self:SetScript( "OnTextChanged", me.LevelEditBoxOnTextChanged );
+	self:SetScript( "OnTextChanged", NS.LevelEditBoxOnTextChanged );
 	self.Parameter = Parameter;
 	self.Label = self:CreateFontString( nil, "OVERLAY", "GameFontHighlightSmall" );
 	self.Label:SetText( Label );
 	return self;
 end
 
-local Name = me.Name;
+local Name = NS.Name;
 Name:SetHeight( 16 );
 Name:SetAutoFocus( false );
 Name:SetPoint( "TOP", Clear, "BOTTOM", 0, -20 );
@@ -557,7 +557,7 @@ local Label = Name:CreateFontString( nil, "OVERLAY", "GameFontHighlightSmall" );
 Label:SetPoint( "BOTTOMLEFT", Name, "TOPLEFT", 1, 0 );
 Label:SetText( L.NAME );
 
-local Text = me.Text;
+local Text = NS.Text;
 Text:SetHeight( 16 );
 Text:SetAutoFocus( false );
 Text:SetPoint( "TOP", Name, "BOTTOM", 0, -12 );
@@ -568,46 +568,46 @@ local Label = Text:CreateFontString( nil, "OVERLAY", "GameFontHighlightSmall" );
 Label:SetPoint( "BOTTOMLEFT", Text, "TOPLEFT", 1, 0 );
 Label:SetText( L.TEXT );
 
-InitializeDropdown( me.Quality, "Quality", L.QUALITY ):SetPoint( "TOP", Text, "BOTTOM", 0, -12 );
+InitializeDropdown( NS.Quality, "Quality", L.QUALITY ):SetPoint( "TOP", Text, "BOTTOM", 0, -12 );
 
 -- Item level range
-local ItemLevelMin = InitializeLevelEditBox( me.ItemLevelMin, "ItemLevelMin", L.ITEM_LEVEL );
-ItemLevelMin:SetPoint( "TOP", me.Quality, "BOTTOM", 0, -16 );
+local ItemLevelMin = InitializeLevelEditBox( NS.ItemLevelMin, "ItemLevelMin", L.ITEM_LEVEL );
+ItemLevelMin:SetPoint( "TOP", NS.Quality, "BOTTOM", 0, -16 );
 ItemLevelMin:SetPoint( "LEFT", 16, 0 );
-local ItemLevelMax = InitializeLevelEditBox( me.ItemLevelMax, "ItemLevelMax", L.LEVELRANGE_SEPARATOR );
+local ItemLevelMax = InitializeLevelEditBox( NS.ItemLevelMax, "ItemLevelMax", L.LEVELRANGE_SEPARATOR );
 ItemLevelMax.Label:SetPoint( "LEFT", ItemLevelMin, "RIGHT", 2, 0 );
 ItemLevelMax:SetPoint( "LEFT", ItemLevelMax.Label, "RIGHT", 8, 0 );
 ItemLevelMin.Label:SetPoint( "CENTER", ItemLevelMax.Label ); -- Center above dash between edit boxes
 ItemLevelMin.Label:SetPoint( "BOTTOM", ItemLevelMin, "TOP" );
 
 -- Required level range
-local ReqLevelMax = InitializeLevelEditBox( me.ReqLevelMax, "ReqLevelMax", L.REQUIRED_LEVEL );
-ReqLevelMax:SetPoint( "TOP", me.ItemLevelMin );
+local ReqLevelMax = InitializeLevelEditBox( NS.ReqLevelMax, "ReqLevelMax", L.REQUIRED_LEVEL );
+ReqLevelMax:SetPoint( "TOP", NS.ItemLevelMin );
 ReqLevelMax:SetPoint( "RIGHT", -24, 0 );
-local ReqLevelMin = InitializeLevelEditBox( me.ReqLevelMin, "ReqLevelMin", L.LEVELRANGE_SEPARATOR );
+local ReqLevelMin = InitializeLevelEditBox( NS.ReqLevelMin, "ReqLevelMin", L.LEVELRANGE_SEPARATOR );
 ReqLevelMin.Label:SetPoint( "RIGHT", ReqLevelMax, "LEFT", -8, 0 );
 ReqLevelMin:SetPoint( "RIGHT", ReqLevelMin.Label, "LEFT", -2, 0 );
 ReqLevelMax.Label:SetPoint( "CENTER", ReqLevelMin.Label );
 ReqLevelMax.Label:SetPoint( "BOTTOM", ReqLevelMax, "TOP" );
 
 -- Item category section
-local CategorySection = me.CategorySection;
+local CategorySection = NS.CategorySection;
 _G[ CategorySection:GetName().."Title" ]:SetText( L.ITEM_CATEGORY );
 CategorySection:SetPoint( "TOP", ItemLevelMin, "BOTTOM", 0, -38 );
 CategorySection:SetPoint( "LEFT", 8, 0 );
 CategorySection:SetPoint( "BOTTOMRIGHT", -16, 16 );
 
-InitializeDropdown( me.Type, "Type", L.TYPE ):SetPoint( "TOP", 0, -16 );
-InitializeDropdown( me.SubType, "SubType", L.SUB_TYPE ):SetPoint( "TOP", me.Type, "BOTTOM", 0, -6 );
-InitializeDropdown( me.Slot, "Slot", L.SLOT ):SetPoint( "TOP", me.SubType, "BOTTOM", 0, -16 );
+InitializeDropdown( NS.Type, "Type", L.TYPE ):SetPoint( "TOP", 0, -16 );
+InitializeDropdown( NS.SubType, "SubType", L.SUB_TYPE ):SetPoint( "TOP", NS.Type, "BOTTOM", 0, -6 );
+InitializeDropdown( NS.Slot, "Slot", L.SLOT ):SetPoint( "TOP", NS.SubType, "BOTTOM", 0, -16 );
 
 
 -- Hooks
-hooksecurefunc( "GuildBankFrameTab_OnClick", me.GuildBankFrameTabOnClick );
-hooksecurefunc( "GuildBankFrame_Update", me.GuildBankFrameUpdate );
-GuildBankMessageFrame.AddMessage = me.GuildBankMessageFrameAddMessage;
-ChatEdit_InsertLink = me.ChatEditInsertLink;
+hooksecurefunc( "GuildBankFrameTab_OnClick", NS.GuildBankFrameTabOnClick );
+hooksecurefunc( "GuildBankFrame_Update", NS.GuildBankFrameUpdate );
+GuildBankMessageFrame.AddMessage = NS.GuildBankMessageFrameAddMessage;
+ChatEdit_InsertLink = NS.ChatEditInsertLink;
 
-me.FilterClear();
+NS.FilterClear();
 wipe( Filter ); -- FilterClear won't fire edit box OnTextChanged handlers, so clear manually.
-me.FilterUpdate( true );
+NS.FilterUpdate( true );

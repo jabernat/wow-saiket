@@ -4,11 +4,11 @@
   ****************************************************************************]]
 
 
-local me = select( 2, ... );
-_Underscore.Chat = me;
+local NS = select( 2, ... );
+_Underscore.Chat = NS;
 
-me.Frame = CreateFrame( "Frame" );
-me.MaxLines = 1024;
+NS.Frame = CreateFrame( "Frame" );
+NS.MaxLines = 1024;
 
 local PreserveMaxLines = IsShiftKeyDown();
 
@@ -18,7 +18,7 @@ local PreserveMaxLines = IsShiftKeyDown();
 do
 	local Filters = {};
 	--- @param Filter  Callback that receives a chat message and optionally returns a replacement.
-	function me.RegisterFilter ( Filter )
+	function NS.RegisterFilter ( Filter )
 		Filters[ #Filters + 1 ] = Filter;
 	end
 	local type, ipairs = type, ipairs;
@@ -53,14 +53,14 @@ do
 		end
 	end
 	--- Modifies this chat frame.
-	function me.RegisterFrame ( Frame )
+	function NS.RegisterFrame ( Frame )
 		Frame:SetClampRectInsets( 0, 0, 0, 0 );
 		Frame:SetMaxResize( 0, 0 ); -- No limit
 		Frame:SetMinResize( 200, 120 );
 		Frame:SetFading( false );
 		Frame:SetScript( "OnMessageScrollChanged", OnMessageScrollChanged );
 		if ( not PreserveMaxLines ) then -- Keep early messages in window if shift is held
-			Frame:SetMaxLines( me.MaxLines );
+			Frame:SetMaxLines( NS.MaxLines );
 		end
 		if ( GetCVarBool( "chatMouseScroll" ) ) then
 			Frame:SetScript( "OnMouseWheel", FloatingChatFrame_OnMouseScroll );
@@ -110,28 +110,28 @@ do
 		end
 	end
 	--- Disables scrolling chat while moving the camera.
-	function me.CameraMoveStart ()
+	function NS.CameraMoveStart ()
 		IsCameraLookActive = true;
 		UpdateScrolling();
 	end
 	--- Re-enables scrolling chat after moving the camera.
-	function me.CameraMoveStop ()
+	function NS.CameraMoveStop ()
 		IsCameraLookActive = false;
 		UpdateScrolling();
 	end
 	local IsMouselooking = IsMouselooking;
 	--- Disables scrolling chat while mouselooking.
-	function me.Frame:OnUpdate ()
+	function NS.Frame:OnUpdate ()
 		local NewValue = IsMouselooking();
 		if ( IsMouseLookActive ~= NewValue ) then
 			IsMouseLookActive = NewValue;
 			UpdateScrolling();
 		end
 	end
-	me.Frame.VARIABLES_LOADED = UpdateScrolling;
+	NS.Frame.VARIABLES_LOADED = UpdateScrolling;
 end
 --- Allows modifiers to scroll by page or to top/bottom.
-function me:OnMouseWheel ( Delta )
+function NS:OnMouseWheel ( Delta )
 	local Up = Delta > 0;
 	if ( IsModifiedClick( "_UNDERSCORE_CHAT_SCROLLPAGE" ) ) then
 		return self[ Up and "PageUp" or "PageDown" ]( self );
@@ -146,15 +146,15 @@ end
 do
 	local date = date;
 	--- Adds a timestamp to Text if it doesn't already have one.
-	function me.FilterTimestamp ( Text )
-		if ( not Text:match( me.L.TIMESTAMP_PATTERN ) ) then
+	function NS.FilterTimestamp ( Text )
+		if ( not Text:match( NS.L.TIMESTAMP_PATTERN ) ) then
 			-- Avoid putting a full time string into the Lua string table
-			return me.L.TIMESTAMP_FORMAT:format( date( "%H" ), date( "%M" ), date( "%S" ), Text );
+			return NS.L.TIMESTAMP_FORMAT:format( date( "%H" ), date( "%M" ), date( "%S" ), Text );
 		end
 	end
 end
 --- Reduces chanel names in chat messages to just their number.
-function me:FilterChannelName ( _, Message, Author, Language, Channel, ... )
+function NS:FilterChannelName ( _, Message, Author, Language, Channel, ... )
 	-- Note: Returned channel string cannot be shorter than actual channel name!
 	-- Instead, abuse the way city names after a dash aren't printed.
 	Channel = Channel:gsub( "^(%d+)%. ", "%1 - " );
@@ -164,20 +164,20 @@ end
 
 
 
-ChatFrame_AddMessageEventFilter( "CHAT_MSG_CHANNEL", me.FilterChannelName );
-me.RegisterFilter( me.FilterTimestamp );
+ChatFrame_AddMessageEventFilter( "CHAT_MSG_CHANNEL", NS.FilterChannelName );
+NS.RegisterFilter( NS.FilterTimestamp );
 for _, Name in ipairs( CHAT_FRAMES ) do
-	me.RegisterFrame( _G[ Name ] );
+	NS.RegisterFrame( _G[ Name ] );
 end
 --- Hooks newly created temporary chat frames.
 setmetatable( CHAT_FRAMES, { __newindex = function ( self, Index, Name )
 	if ( Name ) then
-		return me.RegisterFrame( _G[ Name ] );
+		return NS.RegisterFrame( _G[ Name ] );
 	end
 end; } );
 if ( PreserveMaxLines ) then
 	local Color = RED_FONT_COLOR;
-	DEFAULT_CHAT_FRAME:AddMessage( me.L.MAXLINES_PRESERVED, Color.r, Color.g, Color.b );
+	DEFAULT_CHAT_FRAME:AddMessage( NS.L.MAXLINES_PRESERVED, Color.r, Color.g, Color.b );
 end
 
 FriendsMicroButton:Hide();
@@ -185,12 +185,12 @@ FriendsMicroButton:SetScript( "OnShow", FriendsMicroButton.Hide );
 ChatFrameMenuButton:Hide();
 ChatFrameMenuButton:SetScript( "OnShow", ChatFrameMenuButton.Hide );
 
-me.Frame:SetScript( "OnUpdate", me.Frame.OnUpdate );
-me.Frame:SetScript( "OnEvent", _Underscore.Frame.OnEvent );
-me.Frame:RegisterEvent( "VARIABLES_LOADED" );
-hooksecurefunc( "CameraOrSelectOrMoveStart", me.CameraMoveStart );
-hooksecurefunc( "CameraOrSelectOrMoveStop", me.CameraMoveStop );
-FloatingChatFrame_OnMouseScroll = me.OnMouseWheel;
+NS.Frame:SetScript( "OnUpdate", NS.Frame.OnUpdate );
+NS.Frame:SetScript( "OnEvent", _Underscore.Frame.OnEvent );
+NS.Frame:RegisterEvent( "VARIABLES_LOADED" );
+hooksecurefunc( "CameraOrSelectOrMoveStart", NS.CameraMoveStart );
+hooksecurefunc( "CameraOrSelectOrMoveStop", NS.CameraMoveStop );
+FloatingChatFrame_OnMouseScroll = NS.OnMouseWheel;
 
 
 --- Adds NewSize to font size menus.

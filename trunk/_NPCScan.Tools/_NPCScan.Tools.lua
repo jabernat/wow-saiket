@@ -5,15 +5,15 @@
 
 
 local _NPCScan = _NPCScan;
-local me = select( 2, ... );
-_NPCScan.Tools = me;
+local NS = select( 2, ... );
+_NPCScan.Tools = NS;
 
-me.Matrix = { -- A simple implementation of affine (3x3) transformation matrices.
+NS.Matrix = { -- A simple implementation of affine (3x3) transformation matrices.
 	Meta = { __index = {}; };
 	MetaSymbolic = { __index = {}; };
 };
-local MatrixMeta = me.Matrix.Meta;
-local MatrixMetaSymbolic = me.Matrix.MetaSymbolic;
+local MatrixMeta = NS.Matrix.Meta;
+local MatrixMetaSymbolic = NS.Matrix.MetaSymbolic;
 
 
 

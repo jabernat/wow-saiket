@@ -4,8 +4,8 @@
   ****************************************************************************]]
 
 
-local me = {};
-select( 2, ... ).Indicators = me;
+local NS = {};
+select( 2, ... ).Indicators = NS;
 
 
 
@@ -25,7 +25,7 @@ do
 		end
 	end
 	--- Disables mouse input for objectives and repositions them.
-	function me.ManageWorldState ()
+	function NS.ManageWorldState ()
 		LastFrame = WorldStateAlwaysUpFrame;
 		for Index = 1, NUM_EXTENDED_UI_FRAMES do
 			if ( not AddFrame( _G[ "WorldStateCaptureBar"..Index ], 0.8 ) ) then
@@ -42,7 +42,7 @@ end
 
 
 --- Moves the durability frame to the center of the bottom pane.
-function me.ManageDurability ()
+function NS.ManageDurability ()
 	DurabilityFrame:ClearAllPoints();
 	DurabilityFrame:SetPoint( "CENTER" );
 end
@@ -51,7 +51,7 @@ end
 do
 	local Buttons = {};
 	--- Hook to disable unusable seat buttons.
-	function me.ManageVehicleSeats ()
+	function NS.ManageVehicleSeats ()
 		if ( VehicleSeatIndicator.currSkin ) then -- In vehicle
 			-- Cache any new buttons
 			local Button = _G[ "VehicleSeatIndicatorButton"..( #Buttons + 1 ) ];
@@ -73,7 +73,7 @@ end
 do
 	local SetPoint = VehicleSeatIndicator.SetPoint;
 	--- Hook to move the vehicle seating to the center of the bottom pane.
-	function me.ManageVehicle ()
+	function NS.ManageVehicle ()
 		VehicleSeatIndicator:ClearAllPoints();
 		SetPoint( VehicleSeatIndicator, "CENTER" );
 	end
@@ -89,21 +89,21 @@ WorldStateAlwaysUpFrame:SetPoint( "BOTTOM", 0, 6 );
 WorldStateAlwaysUpFrame:SetHeight( 1 );
 WorldStateAlwaysUpFrame:EnableMouse( false );
 WorldStateAlwaysUpFrame:SetAlpha( 0.5 );
-hooksecurefunc( "WorldStateAlwaysUpFrame_Update", me.ManageWorldState );
-_Underscore.RegisterPositionManager( me.ManageWorldState );
+hooksecurefunc( "WorldStateAlwaysUpFrame_Update", NS.ManageWorldState );
+_Underscore.RegisterPositionManager( NS.ManageWorldState );
 
 
 -- Move the durability frame to the middle
 DurabilityFrame:SetParent( _Underscore.BottomPane );
 DurabilityFrame:SetScale( 2.0 );
 DurabilityFrame:SetAlpha( 0.75 );
-me.ManageDurability();
-_Underscore.RegisterPositionManager( me.ManageDurability );
+NS.ManageDurability();
+_Underscore.RegisterPositionManager( NS.ManageDurability );
 
 
 -- Move the vehicle seat indicator to the middle
 VehicleSeatIndicator:SetParent( _Underscore.BottomPane );
 VehicleSeatIndicator:SetAlpha( 0.6 );
-hooksecurefunc( "VehicleSeatIndicator_Update", me.ManageVehicleSeats );
-hooksecurefunc( VehicleSeatIndicator, "SetPoint", me.ManageVehicle );
-me.ManageVehicle();
+hooksecurefunc( "VehicleSeatIndicator_Update", NS.ManageVehicleSeats );
+hooksecurefunc( VehicleSeatIndicator, "SetPoint", NS.ManageVehicle );
+NS.ManageVehicle();

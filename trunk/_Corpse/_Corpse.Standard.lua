@@ -6,18 +6,18 @@
 
 local _Corpse = select( 2, ... );
 local L = _Corpse.L;
-local me = CreateFrame( "Frame" );
-_Corpse.Standard = me;
+local NS = CreateFrame( "Frame" );
+_Corpse.Standard = NS;
 
-me.Enemies = {}; -- Name-indexed hash of connection status.  Values: false = Unknown, 0 = Offline, 1 = Online
-me.Allies = {};
+NS.Enemies = {}; -- Name-indexed hash of connection status.  Values: false = Unknown, 0 = Offline, 1 = Online
+NS.Allies = {};
 
-me.AddFriendLast = nil; -- Saved in case added friend is hostile(ambiguous case)
-me.RemoveFriendLast = nil; -- Saved so system message can be hidden
-me.InviteUnitLast = nil; -- Saved in case invited enemy is online(ambiguous case)
+NS.AddFriendLast = nil; -- Saved in case added friend is hostile(ambiguous case)
+NS.RemoveFriendLast = nil; -- Saved so system message can be hidden
+NS.InviteUnitLast = nil; -- Saved in case invited enemy is online(ambiguous case)
 -- Following used when friends list is full
-me.RemoveFriendSwapLast = nil;
-me.AddFriendSwapLast = nil;
+NS.RemoveFriendSwapLast = nil;
+NS.AddFriendSwapLast = nil;
 
 local MAX_FRIENDS = 100;
 
@@ -27,7 +27,7 @@ local MAX_FRIENDS = 100;
 --- Caches the online status of results from GetFriendInfo, and then updates the corpse tooltip if necessary.
 -- @param ...  Returns from GetFriendInfo.
 -- @see GetFriendInfo
-function me:CacheFriendInfo ( ... )
+function NS:CacheFriendInfo ( ... )
 	local Name = ...;
 	if ( Name ) then
 		local ConnectedStatus = select( 5, ... ) or 0;
@@ -46,7 +46,7 @@ end
 
 --- Invites and saves the name of a player.
 -- @return True if invite was actually sent.
-function me:InviteUnit ( Name )
+function NS:InviteUnit ( Name )
 	if ( _Corpse.IsModuleActive( self ) and not self.InviteUnitLast ) then
 		self.InviteUnitLast = Name;
 		self:ReregisterEvent( "UI_ERROR_MESSAGE" );
@@ -57,7 +57,7 @@ function me:InviteUnit ( Name )
 end
 --- Adds a friend and saves the name.
 -- @return True if friend actually added.
-function me:AddFriend ( Name )
+function NS:AddFriend ( Name )
 	if ( not ( self.AddFriendLast or self.AddFriendSwapLast ) ) then
 		self.AddFriendLast = Name;
 		self:ReregisterEvent( "CHAT_MSG_SYSTEM" );
@@ -70,7 +70,7 @@ function me:AddFriend ( Name )
 	end
 end
 --- Removes the previously added friend and saves the name.
-function me:RemoveFriend ()
+function NS:RemoveFriend ()
 	self.RemoveFriendLast = self.AddFriendLast;
 	self.AddFriendLast = nil;
 	self:ReregisterEvent( "CHAT_MSG_SYSTEM" );
@@ -80,7 +80,7 @@ end
 
 --- Adds the previously removed friend that was swapped to make room.
 -- @return True if real friend was successfully re-added.
-function me:AddFriendSwap ()
+function NS:AddFriendSwap ()
 	if ( self.RemoveFriendSwapLast and not self.AddFriendSwapLast ) then
 		self.AddFriendSwapLast = self.RemoveFriendSwapLast;
 		self.RemoveFriendSwapLast = nil;
@@ -91,7 +91,7 @@ function me:AddFriendSwap ()
 	end
 end
 --- Removes a real friend to make room for a temporary friend.
-function me:RemoveFriendSwap ( Name )
+function NS:RemoveFriendSwap ( Name )
 	self.RemoveFriendSwapLast = Name;
 	--self:ReregisterEvent( "CHAT_MSG_SYSTEM" ); -- Always called before RemoveFriendSwap
 	RemoveFriend( Name, true ); -- "Ignore" flag for friend managing addons
@@ -103,8 +103,8 @@ end
 do
 	local Backup = UIErrorsFrame:GetScript( "OnEvent" );
 	--- Blocks error messages about trying to invite enemies to group.
-	function me:UIErrorsFrameOnEvent ( Event, Message, ... )
-		if ( not ( me.InviteUnitLast and Event == "UI_ERROR_MESSAGE" and Message == L.ENEMY_ONLINE ) ) then
+	function NS:UIErrorsFrameOnEvent ( Event, Message, ... )
+		if ( not ( NS.InviteUnitLast and Event == "UI_ERROR_MESSAGE" and Message == L.ENEMY_ONLINE ) ) then
 			-- Not caused by _Corpse, okay to display error
 			return Backup( self, Event, Message, ... );
 		end
@@ -112,34 +112,34 @@ do
 end
 -- Blocks automated invite and remove messages.
 -- @return True to block a system message.
-function me:MessageEventHandler ( _, Message )
+function NS:MessageEventHandler ( _, Message )
 	local Name;
 
-	if ( me.AddFriendLast or me.AddFriendSwapLast ) then
+	if ( NS.AddFriendLast or NS.AddFriendSwapLast ) then
 		if ( Message == L.FRIEND_IS_ENEMY ) then
 			return true;
 		else
 			Name = Message:match( L.FRIEND_ADDED_PATTERN );
-			if ( Name and ( Name == me.AddFriendLast or Name == me.AddFriendSwapLast ) ) then
+			if ( Name and ( Name == NS.AddFriendLast or Name == NS.AddFriendSwapLast ) ) then
 				return true;
 			end
 		end
 	end
-	if ( me.InviteUnitLast ) then
+	if ( NS.InviteUnitLast ) then
 		Name = Message:match( L.ENEMY_OFFLINE_PATTERN );
-		if ( Name and Name == me.InviteUnitLast ) then
+		if ( Name and Name == NS.InviteUnitLast ) then
 			return true;
 		end
 	end
-	if ( me.RemoveFriendLast or me.RemoveFriendSwapLast ) then
+	if ( NS.RemoveFriendLast or NS.RemoveFriendSwapLast ) then
 		Name = Message:match( L.FRIEND_REMOVED_PATTERN );
-		if ( Name and ( Name == me.RemoveFriendLast or Name == me.RemoveFriendSwapLast ) ) then
+		if ( Name and ( Name == NS.RemoveFriendLast or Name == NS.RemoveFriendSwapLast ) ) then
 			return true;
 		end
 	end
 end
 --- Unregisters for system chat message events when not expecting any more.
-function me:UnregisterChatMsgSystemSafely ()
+function NS:UnregisterChatMsgSystemSafely ()
 	if ( not _Corpse.IsModuleActive( self )
 		and not (
 			self.AddFriendLast or self.RemoveFriendLast
@@ -150,7 +150,7 @@ function me:UnregisterChatMsgSystemSafely ()
 	end
 end
 --- Reregisters an event so _Corpse gets it last.
-function me:ReregisterEvent ( Event )
+function NS:ReregisterEvent ( Event )
 	if ( self:IsEventRegistered( Event ) ) then
 		self:UnregisterEvent( Event );
 		self:RegisterEvent( Event );
@@ -161,7 +161,7 @@ end
 
 
 --- Reacts to system messages resulting from adding/removing friends.
-function me:CHAT_MSG_SYSTEM ( _, Message )
+function NS:CHAT_MSG_SYSTEM ( _, Message )
 	if ( self.AddFriendLast or self.AddFriendSwapLast ) then
 		if ( Message == L.FRIEND_IS_ENEMY ) then
 			-- Add failed (Ambiguous); enemy
@@ -223,7 +223,7 @@ function me:CHAT_MSG_SYSTEM ( _, Message )
 	end
 end
 --- Reacts to error messages resulting from inviting enemies.
-function me:UI_ERROR_MESSAGE ( _, Message )
+function NS:UI_ERROR_MESSAGE ( _, Message )
 	if ( self.InviteUnitLast and Message == L.ENEMY_ONLINE ) then
 		-- Enemy player is online (Ambiguous)
 		if ( self.Enemies[ self.InviteUnitLast ] ~= 1 ) then -- Changed
@@ -239,7 +239,7 @@ function me:UI_ERROR_MESSAGE ( _, Message )
 	end
 end
 --- Refreshes any shown corpse tooltip when cached friendlist data updates.
-function me:FRIENDLIST_UPDATE ()
+function NS:FRIENDLIST_UPDATE ()
 	local Name = _Corpse.GetCorpseName();
 	if ( Name ) then
 		self:CacheFriendInfo( GetFriendInfo( Name ) );
@@ -250,7 +250,7 @@ end
 
 
 --- Populates the corpse tooltip for the given player using friend list data.
-function me:Update ( Name )
+function NS:Update ( Name )
 	if ( self.Enemies[ Name ] ~= nil ) then
 		_Corpse.BuildCorpseTooltip( true, Name, nil, nil, nil, self.Enemies[ Name ] );
 		self:InviteUnit( Name );
@@ -269,13 +269,13 @@ function me:Update ( Name )
 	end
 end
 --- Initialize the module when activated.
-function me:Enable ()
+function NS:Enable ()
 	self:RegisterEvent( "CHAT_MSG_SYSTEM" );
 	self:RegisterEvent( "UI_ERROR_MESSAGE" );
 	self:RegisterEvent( "FRIENDLIST_UPDATE" );
 end
 --- Uninitialize the module when deactivated.
-function me:Disable ()
+function NS:Disable ()
 	self:UnregisterEvent( "FRIENDLIST_UPDATE" );
 	if ( not self.InviteUnitLast ) then
 		self:UnregisterEvent( "UI_ERROR_MESSAGE" );
@@ -286,7 +286,7 @@ end
 
 
 
-me:SetScript( "OnEvent", _Corpse.Frame.OnEvent );
+NS:SetScript( "OnEvent", _Corpse.Frame.OnEvent );
 
-UIErrorsFrame:SetScript( "OnEvent", me.UIErrorsFrameOnEvent );
-ChatFrame_AddMessageEventFilter( "CHAT_MSG_SYSTEM", me.MessageEventHandler );
+UIErrorsFrame:SetScript( "OnEvent", NS.UIErrorsFrameOnEvent );
+ChatFrame_AddMessageEventFilter( "CHAT_MSG_SYSTEM", NS.MessageEventHandler );

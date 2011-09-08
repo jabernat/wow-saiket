@@ -7,8 +7,8 @@
 if ( not _Underscore.Quest ) then -- Wasn't loaded because Carbonite is enabled
 	return;
 end
-local me = {};
-select( 2, ... ).Watch = me;
+local NS = {};
+select( 2, ... ).Watch = NS;
 
 
 
@@ -16,7 +16,7 @@ select( 2, ... ).Watch = me;
 do
 	local Backup = WatchFrameLinkButtonTemplate_OnLeftClick;
 	--- Stops tracking quests/achievements if shift is held when clicked.
-	function me:OnLeftClick ( ... )
+	function NS:OnLeftClick ( ... )
 		if ( IsShiftKeyDown() ) then -- Stop tracking
 			CloseDropDownMenus();
 			if ( self.type == "QUEST" ) then
@@ -37,7 +37,7 @@ end
 do
 	local Backup = WatchFrame.buttonCache.GetFrame;
 	--- Hook to lock newly made buttons.
-	function me:GetFrame ( ... )
+	function NS:GetFrame ( ... )
 		local NumFrames = self.numFrames;
 		local Frame = Backup( self, ... );
 
@@ -53,7 +53,7 @@ end
 do
 	local NumButtons = 0;
 	--- Skins and repositions quest item buttons along the right of the list.
-	function me.UpdateQuests ()
+	function NS.UpdateQuests ()
 		-- Skin new buttons
 		if ( NumButtons ~= WATCHFRAME_NUM_ITEMS ) then -- New button created
 			for Index = NumButtons + 1, WATCHFRAME_NUM_ITEMS do
@@ -76,7 +76,7 @@ do
 	end
 end
 --- Repositions the list under the minimap.
-function me.Manage ()
+function NS.Manage ()
 	WatchFrame:ClearAllPoints();
 	WatchFrame:SetPoint( "TOPRIGHT", MinimapCluster, "BOTTOMRIGHT", 0, -8 );
 	WatchFrame:SetPoint( "BOTTOM", Dominos.Frame:Get( 3 ), "TOP" );
@@ -88,11 +88,11 @@ end
 if ( IsAddOnLoaded( "_Underscore.ActionBars" ) ) then
 	-- Reposition list
 	WatchFrameLines:SetPoint( "BOTTOMRIGHT" );
-	_Underscore.RegisterPositionManager( me.Manage );
+	_Underscore.RegisterPositionManager( NS.Manage );
 
 	-- Reposition quest item buttons
 	WatchFrame_RemoveObjectiveHandler( WatchFrame_DisplayTrackedQuests );
-	hooksecurefunc( "WatchFrame_DisplayTrackedQuests", me.UpdateQuests );
+	hooksecurefunc( "WatchFrame_DisplayTrackedQuests", NS.UpdateQuests );
 	WatchFrame_AddObjectiveHandler( WatchFrame_DisplayTrackedQuests );
 end
 
@@ -102,9 +102,9 @@ WatchFrame:SetScale( 0.75 );
 WatchFrameTitle:SetPoint( "RIGHT", WatchFrameCollapseExpandButton, "LEFT", -8, 0 );
 WatchFrameTitle:SetJustifyH( "RIGHT" );
 
-WatchFrameLinkButtonTemplate_OnLeftClick = me.OnLeftClick;
+WatchFrameLinkButtonTemplate_OnLeftClick = NS.OnLeftClick;
 
-WatchFrame.buttonCache.GetFrame = me.GetFrame;
+WatchFrame.buttonCache.GetFrame = NS.GetFrame;
 for _, Frame in ipairs( WatchFrame.buttonCache.frames ) do
 	_Underscore.AddLockedButton( Frame );
 end

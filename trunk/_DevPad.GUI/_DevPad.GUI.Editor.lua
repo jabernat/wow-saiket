@@ -7,37 +7,37 @@
 local _DevPad, GUI = _DevPad, select( 2, ... );
 local L = GUI.L;
 
-local me = GUI.Dialog:New( "_DevPadGUIEditor" );
-GUI.Editor = me;
+local NS = GUI.Dialog:New( "_DevPadGUIEditor" );
+GUI.Editor = NS;
 
-me.Run = CreateFrame( "Button", nil, me );
-me.Lua = me:NewButton( [[Interface\MacroFrame\MacroFrame-Icon]] );
-me.FontCycle = me:NewButton( [[Interface\ICONS\INV_Misc_Note_04]] );
-me.FontDecrease = me:NewButton( [[Interface\Icons\Spell_ChargeNegative]] );
-me.FontIncrease = me:NewButton( [[Interface\Icons\Spell_ChargePositive]] );
+NS.Run = CreateFrame( "Button", nil, NS );
+NS.Lua = NS:NewButton( [[Interface\MacroFrame\MacroFrame-Icon]] );
+NS.FontCycle = NS:NewButton( [[Interface\ICONS\INV_Misc_Note_04]] );
+NS.FontDecrease = NS:NewButton( [[Interface\Icons\Spell_ChargeNegative]] );
+NS.FontIncrease = NS:NewButton( [[Interface\Icons\Spell_ChargePositive]] );
 
-me.Focus = CreateFrame( "Frame", nil, me.Window );
-me.Margin = CreateFrame( "Frame", nil, me.ScrollFrame );
-me.Margin.Gutter = me.Focus:CreateTexture( nil, "BORDER" );
-me.Margin.Lines = {};
+NS.Focus = CreateFrame( "Frame", nil, NS.Window );
+NS.Margin = CreateFrame( "Frame", nil, NS.ScrollFrame );
+NS.Margin.Gutter = NS.Focus:CreateTexture( nil, "BORDER" );
+NS.Margin.Lines = {};
 local MarginUpdateFrequency = 0.2; -- Time to wait after last keypress before updating
-me.Edit = CreateFrame( "EditBox", nil, me.Margin );
-me.Edit.Line = me.Edit:CreateTexture();
+NS.Edit = CreateFrame( "EditBox", nil, NS.Margin );
+NS.Edit.Line = NS.Edit:CreateTexture();
 
-me.Shortcuts = CreateFrame( "Frame", nil, me.Edit );
+NS.Shortcuts = CreateFrame( "Frame", nil, NS.Edit );
 
-me.DefaultWidth, me.DefaultHeight = 500, 500;
+NS.DefaultWidth, NS.DefaultHeight = 500, 500;
 
 local TextInset = 8; -- If too small, mouse dragging the text selection won't scroll the view easily.
 local TabWidth = 2;
 local AutoIndent = true; -- True to enable auto-indentation for Lua scripts
 if ( GUI.IndentationLib ) then
 	local T = GUI.IndentationLib.Tokens;
-	me.SyntaxColors = {};
+	NS.SyntaxColors = {};
 	--- Assigns a color to multiple tokens at once.
 	local function Color ( Code, ... )
 		for Index = 1, select( "#", ... ) do
-			me.SyntaxColors[ select( Index, ... ) ] = Code;
+			NS.SyntaxColors[ select( Index, ... ) ] = Code;
 		end
 	end
 	Color( "|cff88bbdd", T.KEYWORD ); -- Reserved words
@@ -69,23 +69,23 @@ if ( GUI.IndentationLib ) then
 end
 
 local DejaVuSansMono = [[Interface\AddOns\]]..( ... )..[[\Skin\DejaVuSansMono.ttf]];
-me.Font = CreateFont( "_DevPadGUIEditorFont" );
-me.Font.Paths = { -- Font file paths for font cycling button
+NS.Font = CreateFont( "_DevPadGUIEditorFont" );
+NS.Font.Paths = { -- Font file paths for font cycling button
 	DejaVuSansMono,
 	[[Fonts\FRIZQT__.TTF]],
 	[[Fonts\ARIALN.TTF]]
 };
 
 -- Editor colors
---me.Font:SetTextColor( 1, 1, 1 ); -- Default text/line number color
---me.Background:SetTexture( 0.05, 0.05, 0.06 ); -- Text background
-me.Margin.Gutter:SetTexture( 0.2, 0.2, 0.2 ); -- Line number background
+--NS.Font:SetTextColor( 1, 1, 1 ); -- Default text/line number color
+--NS.Background:SetTexture( 0.05, 0.05, 0.06 ); -- Text background
+NS.Margin.Gutter:SetTexture( 0.2, 0.2, 0.2 ); -- Line number background
 
 
 
 
 --- @return True if script changed.
-function me:SetScriptObject ( Script )
+function NS:SetScriptObject ( Script )
 	if ( self.Script ~= Script ) then
 		if ( self.Script ) then
 			self.Script._CursorPosition = self:GetScriptCursorPosition();
@@ -118,7 +118,7 @@ function me:SetScriptObject ( Script )
 	end
 end
 --- @return True if font changed.
-function me:SetFont ( Path, Size )
+function NS:SetFont ( Path, Size )
 	Path, Size = Path or DejaVuSansMono, Size or 10;
 	if ( ( self.FontPath ~= Path or self.FontSize ~= Size )
 		and self.Font:SetFont( Path, Size )
@@ -145,7 +145,7 @@ do
 		end
 	end
 	--- Highlights a substring in the editor, accounting for escaped pipes.
-	function me:SetScriptHighlight ( Start, End, ForceUpdate )
+	function NS:SetScriptHighlight ( Start, End, ForceUpdate )
 		if ( Start and End ) then
 			local PipesBeforeEnd = self:SetScriptCursorPosition( End, ForceUpdate );
 			if ( self.LuaEnabled ) then
@@ -158,7 +158,7 @@ do
 	--- Moves the cursor to a position in the current script, accounting for escaped pipes.
 	-- @param ForceUpdate  If true, the editbox will scroll to the cursor even if not focused.
 	-- @return Byte offset between requested position and actual position.
-	function me:SetScriptCursorPosition ( Cursor, ForceUpdate )
+	function NS:SetScriptCursorPosition ( Cursor, ForceUpdate )
 		local Offset = self.LuaEnabled and CountSubstring( self.Script._Text, "|", 0, Cursor ) or 0;
 		if ( ForceUpdate ) then
 			self.Edit.CursorForceUpdate = true;
@@ -167,7 +167,7 @@ do
 		return Offset;
 	end
 	--- @return Cursor position, ignoring extra pipe escape characters.
-	function me:GetScriptCursorPosition ()
+	function NS:GetScriptCursorPosition ()
 		local Cursor = self.Edit:GetCursorPosition();
 		return not self.LuaEnabled and Cursor
 			or Cursor - CountSubstring( self.Edit:GetText(), "||", 0, Cursor );
@@ -182,7 +182,7 @@ do
 		self:GetPushedTexture():SetVertexColor( ... );
 	end
 	--- Enables or disables syntax highlighting in the edit box.
-	function me:ScriptSetLua ( _, Script )
+	function NS:ScriptSetLua ( _, Script )
 		if ( Script == self.Script ) then
 			if ( Script._Lua ) then
 				if ( not self.LuaEnabled ) then -- Escape control codes
@@ -210,19 +210,19 @@ do
 	end
 end
 --- Shows the selected script from the list frame.
-function me:ListSetSelection ( _, Object )
+function NS:ListSetSelection ( _, Object )
 	if ( Object and Object._Class == "Script" ) then
 		return self:SetScriptObject( Object );
 	end
 end
 --- Updates the script's name on the window title.
-function me:ObjectSetName ( _, Object )
+function NS:ObjectSetName ( _, Object )
 	if ( Object == self.Script ) then
 		self.Title:SetText( Object._Name );
 	end
 end
 --- Synchronizes editor text with the script object if it gets set externally while editing.
-function me:ScriptSetText ( _, Script )
+function NS:ScriptSetText ( _, Script )
 	if ( Script == self.Script ) then
 		local Text = self.LuaEnabled and Script._Text:gsub( "|", "||" ) or Script._Text;
 		-- Don't clear syntax highlighting unnecessarily
@@ -235,7 +235,7 @@ function me:ScriptSetText ( _, Script )
 	end
 end
 --- Hides the editor if the edited script gets removed.
-function me:FolderRemove ( _, _, Object )
+function NS:FolderRemove ( _, _, Object )
 	if ( Object == self.Script
 		or ( Object._Class == "Folder" and Object:Contains( self.Script ) )
 	) then
@@ -245,46 +245,46 @@ end
 
 
 --- Runs the open script.
-function me.Run:OnClick ()
+function NS.Run:OnClick ()
 	PlaySound( "igMiniMapZoomIn" );
-	return _DevPad.SafeCall( me.Script );
+	return _DevPad.SafeCall( NS.Script );
 end
 --- Cycles to the next available font.
-function me.FontCycle:OnClick ()
-	local Paths, NewIndex = me.Font.Paths, 1;
+function NS.FontCycle:OnClick ()
+	local Paths, NewIndex = NS.Font.Paths, 1;
 	for Index = 1, #Paths - 1 do
-		if ( me.FontPath == Paths[ Index ] ) then
+		if ( NS.FontPath == Paths[ Index ] ) then
 			NewIndex = Index + 1;
 			break;
 		end
 	end
-	return me:SetFont( Paths[ NewIndex ], me.FontSize );
+	return NS:SetFont( Paths[ NewIndex ], NS.FontSize );
 end
 do
 	local SizeDelta, SizeMin, SizeMax = 2, 6, 34;
 	--- Decrements the current font size.
-	function me.FontDecrease:OnClick ()
-		return me:SetFont( me.FontPath, max( SizeMin, me.FontSize - SizeDelta ) );
+	function NS.FontDecrease:OnClick ()
+		return NS:SetFont( NS.FontPath, max( SizeMin, NS.FontSize - SizeDelta ) );
 	end
 	--- Increments the current font size.
-	function me.FontIncrease:OnClick ()
-		return me:SetFont( me.FontPath, min( SizeMax, me.FontSize + SizeDelta ) );
+	function NS.FontIncrease:OnClick ()
+		return NS:SetFont( NS.FontPath, min( SizeMax, NS.FontSize + SizeDelta ) );
 	end
 end
 --- Toggles syntax highlighting for this script.
-function me.Lua:OnClick ()
-	return me.Script:SetLua( not me.Script._Lua );
+function NS.Lua:OnClick ()
+	return NS.Script:SetLua( not NS.Script._Lua );
 end
 
 
 --- Updates the margin's line numbers.
-function me.Margin:Update ()
+function NS.Margin:Update ()
 	local Index, Count = 0, 0;
 	local Text, Lines = self.Text, self.Lines;
-	local Width = me.ScrollFrame:GetWidth()
+	local Width = NS.ScrollFrame:GetWidth()
 		- ( self:GetWidth() + TextInset ); -- Size of margins
 	local EndingLast;
-	for Line, Ending in me.Edit:GetText( true ):gmatch( "([^\r\n]*)()" ) do
+	for Line, Ending in NS.Edit:GetText( true ):gmatch( "([^\r\n]*)()" ) do
 		if ( EndingLast ~= Ending ) then
 			EndingLast = Ending;
 			Index, Count = Index + 1, Count + 1;
@@ -307,8 +307,8 @@ function me.Margin:Update ()
 	self:SetSize( Width + TextInset, Height + TextInset * 2 );
 end
 --- Highlights the entire clicked line.
-function me.Margin:OnMouseDown ()
-	local Edit = me.Edit;
+function NS.Margin:OnMouseDown ()
+	local Edit = NS.Edit;
 	if ( Edit.LineHeight ) then
 		local _, CursorHeight = GetCursorPosition();
 		local Offset = self:GetTop() - TextInset - CursorHeight / self:GetEffectiveScale();
@@ -331,19 +331,19 @@ function me.Margin:OnMouseDown ()
 	end
 end
 --- Focus the edit box text if empty space gets clicked.
-function me.Focus:OnMouseDown ()
-	me.Edit:HighlightText( 0, 0 );
-	me.Edit:SetCursorPosition( #me.Edit:GetText() );
-	me.Edit:SetFocus();
+function NS.Focus:OnMouseDown ()
+	NS.Edit:HighlightText( 0, 0 );
+	NS.Edit:SetCursorPosition( #NS.Edit:GetText() );
+	NS.Edit:SetFocus();
 end
 --- Focus the edit box text if empty space gets clicked.
-function me.Edit:OnTabPressed ()
+function NS.Edit:OnTabPressed ()
 	self:Insert( ( " " ):rep( TabWidth ) );
 end
 do
 	local LastX, LastY, LastWidth, LastHeight;
 	--- Moves the edit box's view to follow the cursor.
-	function me.Edit:OnCursorChanged ( CursorX, CursorY, CursorWidth, CursorHeight )
+	function NS.Edit:OnCursorChanged ( CursorX, CursorY, CursorWidth, CursorHeight )
 		self.LineHeight = CursorHeight;
 		-- Update line highlight
 		self.Line:SetHeight( CursorHeight );
@@ -359,12 +359,12 @@ do
 			LastWidth, LastHeight = CursorWidth, CursorHeight;
 
 			local Top, Bottom = -CursorY, CursorHeight + 2 * TextInset - CursorY;
-			me.ScrollFrame:SetVerticalScrollToCoord( Top, Bottom );
+			NS.ScrollFrame:SetVerticalScrollToCoord( Top, Bottom );
 		end
 	end
 end
 --- @return Cursor position for the start of Line within the edit box.
-function me.Edit:GetLinePosition ( Line )
+function NS.Edit:GetLinePosition ( Line )
 	local Count, PositionLast = 1, 0;
 	for Position in self:GetText():gmatch( "()[\r\n]" ) do
 		if ( Count >= Line ) then
@@ -377,25 +377,25 @@ end
 do
 	--- Updates the margin a moment after the user quits typing.
 	local function OnFinished ( Updater )
-		return me.Margin:Update();
+		return NS.Margin:Update();
 	end
-	local Updater = CreateFrame( "Frame", nil, me.Margin ):CreateAnimationGroup();
+	local Updater = CreateFrame( "Frame", nil, NS.Margin ):CreateAnimationGroup();
 	Updater:CreateAnimation( "Animation" ):SetDuration( MarginUpdateFrequency );
 	Updater:SetScript( "OnFinished", OnFinished );
 	--- Updates line numbers and saves text.
-	function me.Edit:OnTextChanged ()
-		local Script = me.Script;
+	function NS.Edit:OnTextChanged ()
+		local Script = NS.Script;
 		if ( Script ) then
 			local Text = self:GetText();
-			Script:SetText( me.LuaEnabled and Text:gsub( "||", "|" ) or Text );
+			Script:SetText( NS.LuaEnabled and Text:gsub( "||", "|" ) or Text );
 			Updater:Stop();
 			Updater:Play();
 		end
 	end
 end
 --- Links/opens the clicked link.
-function me.Edit:OnMouseUp ( MouseButton )
-	if ( me.LuaEnabled ) then
+function NS.Edit:OnMouseUp ( MouseButton )
+	if ( NS.LuaEnabled ) then
 		return;
 	end
 	local Text, Cursor = self:GetText(), self:GetCursorPosition();
@@ -435,21 +435,21 @@ function me.Edit:OnMouseUp ( MouseButton )
 	end
 end
 --- Start listening for shortcut keys.
-function me.Edit:OnEditFocusGained ()
-	me.Shortcuts:EnableKeyboard( true );
+function NS.Edit:OnEditFocusGained ()
+	NS.Shortcuts:EnableKeyboard( true );
 end
 --- Stop listening for shortcut keys.
-function me.Edit:OnEditFocusLost ()
-	me.Shortcuts:EnableKeyboard( false );
+function NS.Edit:OnEditFocusLost ()
+	NS.Shortcuts:EnableKeyboard( false );
 end
 --- Stop listening for control commands.
-function me.Shortcuts:OnKeyDown ( Key )
+function NS.Shortcuts:OnKeyDown ( Key )
 	if ( self[ Key ] ) then
 		return self[ Key ]( self, Key );
 	end
 end
 --- Cancels pending focus change.
-function me.Shortcuts:OnHide ()
+function NS.Shortcuts:OnHide ()
 	self:SetScript( "OnUpdate", nil );
 end
 do
@@ -462,53 +462,53 @@ do
 	end
 	--- Changes the keyboard focus after a shortcut gets processed.
 	-- This prevents the new edit box from receiving the original shortcut key.
-	function me.Shortcuts:SetFocus ( EditBox )
+	function NS.Shortcuts:SetFocus ( EditBox )
 		PendingEditBox = EditBox;
 		self:SetScript( "OnUpdate", OnUpdate );
 	end
 end
 
 --- Focus search edit box.
-function me.Shortcuts:F ()
+function NS.Shortcuts:F ()
 	if ( IsControlKeyDown() ) then
 		self:SetFocus( GUI.List.SearchEdit );
 	end
 end
 --- Jump to next/previous search result.
-function me.Shortcuts:F3 ()
+function NS.Shortcuts:F3 ()
 	if ( GUI.List.Search ) then
-		local Cursor, Reverse = me:GetScriptCursorPosition(), IsShiftKeyDown();
+		local Cursor, Reverse = NS:GetScriptCursorPosition(), IsShiftKeyDown();
 		if ( Reverse and Cursor > 0 ) then
 			Cursor = Cursor - 1;
 		end
-		me:SetScriptHighlight( GUI.List:NextMatchWrap( me.Script, Cursor, Reverse ) );
+		NS:SetScriptHighlight( GUI.List:NextMatchWrap( NS.Script, Cursor, Reverse ) );
 	end
 end
 
 --- Goes to the given line number.
-function me:GoToOnAccept ()
+function NS:GoToOnAccept ()
 	local Line = self.editBox:GetNumber();
 	if ( Line == 0 ) then
 		return true; -- Keep open
 	end
-	me.Edit:HighlightText( 0, 0 );
-	me.Edit:SetCursorPosition( me.Edit:GetLinePosition( Line ) );
-	me.Edit:SetFocus();
+	NS.Edit:HighlightText( 0, 0 );
+	NS.Edit:SetCursorPosition( NS.Edit:GetLinePosition( Line ) );
+	NS.Edit:SetFocus();
 end
 --- Undo changes to the edit box.
-function me:GoToOnHide ()
+function NS:GoToOnHide ()
 	self.editBox:SetNumeric( false );
 end
 --- Accepts the typed line number.
-function me:GoToOnEnterPressed ()
+function NS:GoToOnEnterPressed ()
 	return self:GetParent().button1:Click();
 end
 --- Go to line number.
-function me.Shortcuts:G ()
+function NS.Shortcuts:G ()
 	if ( IsControlKeyDown() ) then
 		local PositionLast, LineMax, LineCurrent = 0, 0, 1;
-		local Cursor = me.Edit:GetCursorPosition() + 1;
-		for Start, End in me.Edit:GetText():gmatch( "()[^\r\n]*()" ) do
+		local Cursor = NS.Edit:GetCursorPosition() + 1;
+		for Start, End in NS.Edit:GetText():gmatch( "()[^\r\n]*()" ) do
 			if ( PositionLast ~= Start ) then
 				LineMax, PositionLast = LineMax + 1, End;
 				if ( Cursor and Start <= Cursor and Cursor <= End ) then
@@ -530,9 +530,9 @@ end
 do
 	local Backup = ChatEdit_InsertLink;
 	--- Hook to add clicked links' code to the edit box.
-	function me.ChatEditInsertLink ( Link, ... )
-		if ( Link and me.Edit:HasFocus() ) then
-			me.Edit:Insert( me.LuaEnabled and Link:gsub( "|", "||" ) or Link );
+	function NS.ChatEditInsertLink ( Link, ... )
+		if ( Link and NS.Edit:HasFocus() ) then
+			NS.Edit:Insert( NS.LuaEnabled and Link:gsub( "|", "||" ) or Link );
 			return true;
 		end
 		return Backup( Link, ... );
@@ -541,10 +541,10 @@ end
 do
 	local Backup = ChatEdit_OnEditFocusLost;
 	--- Hook to keep the chat edit box open when focusing the editor.
-	function me:ChatEditOnEditFocusLost ( ... )
+	function NS:ChatEditOnEditFocusLost ( ... )
 		if ( IsMouseButtonDown() ) then
 			local Focus = GetMouseFocus();
-			if ( Focus == me.Edit or Focus == me.Margin or Focus == me.Focus ) then
+			if ( Focus == NS.Edit or Focus == NS.Margin or Focus == NS.Focus ) then
 				return; -- Probably clicked the editor to change focus
 			end
 		end
@@ -553,11 +553,11 @@ do
 end
 
 
-function me:OnShow ()
+function NS:OnShow ()
 	PlaySound( "igQuestListOpen" );
 end
 --- Close the open script.
-function me:OnHide ()
+function NS:OnHide ()
 	PlaySound( "igQuestListClose" );
 	StaticPopup_Hide( "_DEVPAD_GOTO" );
 	if ( not self:IsShown() ) then -- Explicitly hidden, not obscured by world map
@@ -567,16 +567,16 @@ end
 
 
 do
-	local Pack = me.Pack;
+	local Pack = NS.Pack;
 	--- Saves font, position, and size information for saved variables.
-	function me:Pack ( ... )
+	function NS:Pack ( ... )
 		local Options = Pack( self, ... );
 		Options.FontPath, Options.FontSize = self.FontPath, self.FontSize;
 		return Options;
 	end
-	local Unpack = me.Unpack;
+	local Unpack = NS.Unpack;
 	--- Loads font, position, and size from saved variables.
-	function me:Unpack ( Options, ... )
+	function NS:Unpack ( Options, ... )
 		self:SetFont( Options.FontPath, Options.FontSize );
 		return Unpack( self, Options, ... );
 	end
@@ -587,9 +587,9 @@ StaticPopupDialogs[ "_DEVPAD_GOTO" ] = {
 	text = L.GOTO_FORMAT;
 	button1 = ACCEPT;
 	button2 = CANCEL;
-	OnAccept = me.GoToOnAccept;
-	OnHide = me.GoToOnHide;
-	EditBoxOnEnterPressed = me.GoToOnEnterPressed;
+	OnAccept = NS.GoToOnAccept;
+	OnHide = NS.GoToOnHide;
+	EditBoxOnEnterPressed = NS.GoToOnEnterPressed;
 	EditBoxOnEscapePressed = StaticPopupDialogs[ "ADD_FRIEND" ].EditBoxOnEscapePressed;
 	hasEditBox = true;
 	timeout = 0;
@@ -600,18 +600,18 @@ StaticPopupDialogs[ "_DEVPAD_GOTO" ] = {
 
 
 
-GUI.Dialog.StickyFrames[ "Editor" ] = me;
-me:SetScript( "OnShow", me.OnShow );
-me:SetScript( "OnHide", me.OnHide );
-me.Title:SetJustifyH( "LEFT" );
-me:SetMinResize( 200, 100 );
+GUI.Dialog.StickyFrames[ "Editor" ] = NS;
+NS:SetScript( "OnShow", NS.OnShow );
+NS:SetScript( "OnHide", NS.OnHide );
+NS.Title:SetJustifyH( "LEFT" );
+NS:SetMinResize( 200, 100 );
 
 -- Title buttons
-local Run = me.Run;
+local Run = NS.Run;
 Run:SetSize( 26, 26 );
 Run:SetPoint( "TOPLEFT", 5, 1 );
 Run:SetHitRectInsets( 4, 4, 4, 4 );
-me.Title:SetPoint( "TOPLEFT", Run, "TOPRIGHT", 0, -7 );
+NS.Title:SetPoint( "TOPLEFT", Run, "TOPRIGHT", 0, -7 );
 Run:SetNormalTexture( [[Interface\Buttons\UI-SpellbookIcon-NextPage-Up]] );
 Run:SetPushedTexture( [[Interface\Buttons\UI-SpellbookIcon-NextPage-Down]] );
 Run:SetHighlightTexture( [[Interface\BUTTONS\UI-ScrollBar-Button-Overlay]] );
@@ -624,7 +624,7 @@ Run:SetScript( "OnLeave", GameTooltip_Hide );
 Run:SetScript( "OnClick", Run.OnClick );
 Run.tooltipText = L.SCRIPT_RUN;
 
-local LastButton = me.Close;
+local LastButton = NS.Close;
 --- @return A new title button.
 local function SetupTitleButton ( Button, TooltipText, Offset )
 	Button:SetPoint( "RIGHT", LastButton, "LEFT", -2 - ( Offset or 0 ), 0 );
@@ -633,34 +633,34 @@ local function SetupTitleButton ( Button, TooltipText, Offset )
 	Button:SetMotionScriptsWhileDisabled( true );
 	Button.tooltipText = TooltipText;
 end
-SetupTitleButton( me.Lua, GUI.IndentationLib and L.LUA_TOGGLE or L.RAW_TOGGLE );
-SetupTitleButton( me.FontCycle, L.FONT_CYCLE, 8 );
-SetupTitleButton( me.FontIncrease, L.FONT_INCREASE );
-SetupTitleButton( me.FontDecrease, L.FONT_DECREASE );
-me.Title:SetPoint( "RIGHT", LastButton, "LEFT" );
+SetupTitleButton( NS.Lua, GUI.IndentationLib and L.LUA_TOGGLE or L.RAW_TOGGLE );
+SetupTitleButton( NS.FontCycle, L.FONT_CYCLE, 8 );
+SetupTitleButton( NS.FontIncrease, L.FONT_INCREASE );
+SetupTitleButton( NS.FontDecrease, L.FONT_DECREASE );
+NS.Title:SetPoint( "RIGHT", LastButton, "LEFT" );
 
-local Focus = me.Focus;
-Focus:SetAllPoints( me.ScrollFrame);
+local Focus = NS.Focus;
+Focus:SetAllPoints( NS.ScrollFrame);
 Focus:SetScript( "OnMouseDown", Focus.OnMouseDown );
 
-local ScrollFrame, Margin = me.ScrollFrame, me.Margin;
+local ScrollFrame, Margin = NS.ScrollFrame, NS.Margin;
 Margin:SetSize( 1, 1 );
 Margin:SetHitRectInsets( 0, 0, 0, TextInset );
 ScrollFrame:SetScrollChild( Margin );
 Margin:SetScript( "OnMouseDown", Margin.OnMouseDown );
 local Text = Margin:CreateFontString();
 Margin.Text = Text;
-Text:SetFontObject( me.Font );
+Text:SetFontObject( NS.Font );
 Text:SetPoint( "TOPLEFT", 0, -TextInset );
 Text:SetJustifyV( "TOP" );
 Text:SetJustifyH( "RIGHT" );
 
-local Edit = me.Edit;
+local Edit = NS.Edit;
 Edit:SetPoint( "TOPLEFT", Margin, "TOPRIGHT" );
 Edit:SetPoint( "RIGHT", ScrollFrame );
 Edit:SetAutoFocus( false );
 Edit:SetMultiLine( true );
-Edit:SetFontObject( me.Font );
+Edit:SetFontObject( NS.Font );
 -- Note: Left inset simulated by margin.
 Edit:SetTextInsets( 0, TextInset, TextInset, TextInset );
 Edit:SetScript( "OnEscapePressed", Edit.ClearFocus );
@@ -671,10 +671,10 @@ Edit:SetScript( "OnMouseUp", Edit.OnMouseUp );
 -- Enable extra keyboard shortcuts
 Edit:SetScript( "OnEditFocusGained", Edit.OnEditFocusGained );
 Edit:SetScript( "OnEditFocusLost", Edit.OnEditFocusLost );
-me.Shortcuts:SetPropagateKeyboardInput( true );
-me.Shortcuts:SetScript( "OnKeyDown", me.Shortcuts.OnKeyDown );
-me.Shortcuts:SetScript( "OnHide", me.Shortcuts.OnHide );
-me.Shortcuts:EnableKeyboard( false );
+NS.Shortcuts:SetPropagateKeyboardInput( true );
+NS.Shortcuts:SetScript( "OnKeyDown", NS.Shortcuts.OnKeyDown );
+NS.Shortcuts:SetScript( "OnHide", NS.Shortcuts.OnHide );
+NS.Shortcuts:EnableKeyboard( false );
 local Gutter = Margin.Gutter;
 Gutter:SetPoint( "TOPLEFT" );
 Gutter:SetPoint( "RIGHT", Edit, "LEFT", -4, 0 );
@@ -685,8 +685,8 @@ Edit.Line:SetPoint( "LEFT", Margin );
 Edit.Line:SetPoint( "RIGHT" );
 Edit.Line:SetTexture( 1, 1, 1, 0.05 );
 
-ChatEdit_InsertLink = me.ChatEditInsertLink;
-ChatEdit_OnEditFocusLost = me.ChatEditOnEditFocusLost;
-GUI.RegisterCallback( me, "ListSetSelection" );
+ChatEdit_InsertLink = NS.ChatEditInsertLink;
+ChatEdit_OnEditFocusLost = NS.ChatEditOnEditFocusLost;
+GUI.RegisterCallback( NS, "ListSetSelection" );
 
-me:Unpack( {} ); -- Default position/size and font
+NS:Unpack( {} ); -- Default position/size and font

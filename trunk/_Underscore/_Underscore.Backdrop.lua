@@ -5,10 +5,10 @@
 
 
 local AddOnName, _Underscore = ...;
-local me = {};
-_Underscore.Backdrop = me;
+local NS = {};
+_Underscore.Backdrop = NS;
 
-me.Padding = 3;
+NS.Padding = 3;
 
 local BackgroundColor, BackgroundAlpha = _Underscore.Colors.Background, 0.75;
 
@@ -66,12 +66,12 @@ do
 	--- Creates a uniform backdrop for a given frame.
 	-- @param Padding  Overrides default padding, or nil to use default.  If false, no anchors are set.
 	-- @return New backdrop frame.
-	function me:Create ( Padding )
+	function NS:Create ( Padding )
 		local Center = self:CreateTexture( nil, "BACKGROUND" );
 		Center:SetTexture( R, G, B, BackgroundAlpha );
 
 		if ( Padding ~= false ) then
-			Padding = Padding or me.Padding;
+			Padding = Padding or NS.Padding;
 			Center:SetPoint( "TOPRIGHT", Padding, Padding );
 			Center:SetPoint( "BOTTOMLEFT", -Padding, -Padding );
 		end

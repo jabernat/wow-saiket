@@ -7,16 +7,16 @@
 if ( IsAddOnLoaded( "Carbonite" ) ) then
 	return;
 end
-local me = select( 2, ... );
-_Underscore.WorldMap = me;
-local L = me.L;
+local NS = select( 2, ... );
+_Underscore.WorldMap = NS;
+local L = NS.L;
 
-me.Frame = CreateFrame( "Frame", nil, WorldMapButton );
+NS.Frame = CreateFrame( "Frame", nil, WorldMapButton );
 -- Note: Parent ScrollHandler to WorldMapFrame so it gets disabled when Carbonite takes over
-me.ScrollHandler = CreateFrame( "Frame", nil, WorldMapFrame ); -- Can insecurely toggle mousewheel input
+NS.ScrollHandler = CreateFrame( "Frame", nil, WorldMapFrame ); -- Can insecurely toggle mousewheel input
 
-local Tooltip = CreateFrame( "Frame", nil, me.Frame );
-me.Tooltip = Tooltip;
+local Tooltip = CreateFrame( "Frame", nil, NS.Frame );
+NS.Tooltip = Tooltip;
 Tooltip.Text = Tooltip:CreateFontString( nil, "ARTWORK", "NumberFontNormalSmall" );
 
 
@@ -27,7 +27,7 @@ Tooltip.OffsetX, Tooltip.OffsetY = -8, -16;
 
 
 --- Keeps the black background behind the map hidden.
-function me.DisableBlackout ()
+function NS.DisableBlackout ()
 	WorldMapFrame:EnableMouse( false );
 	--WorldMapFrame:EnableKeyboard( false ); -- Breaks escape keybind
 end
@@ -36,7 +36,7 @@ end
 do
 	local GetCursorPosition = GetCursorPosition;
 	--- Updates the coordinate tooltip.
-	function me.Frame:OnUpdate ()
+	function NS.Frame:OnUpdate ()
 		if ( self:IsMouseOver() ) then
 			local CursorX, CursorY = GetCursorPosition();
 			local MapScale = self:GetEffectiveScale();
@@ -65,7 +65,7 @@ end
 
 
 --- Scrolls through dungeon map levels with the mousewheel when available.
-function me.ScrollHandler:OnMouseWheel ( Delta )
+function NS.ScrollHandler:OnMouseWheel ( Delta )
 	local Level, LevelsMax = GetCurrentMapDungeonLevel(), GetNumDungeonMapLevels();
 
 	if ( Delta > 0 ) then -- Up
@@ -79,24 +79,24 @@ function me.ScrollHandler:OnMouseWheel ( Delta )
 	end
 end
 --- Enables and disables the mousewheel when dungeon levels are available.
-function me.ScrollHandler:WORLD_MAP_UPDATE ()
+function NS.ScrollHandler:WORLD_MAP_UPDATE ()
 	self:EnableMouseWheel( GetNumDungeonMapLevels() > 1 );
 end
 --- Starts monitoring the map when shown.
-function me.ScrollHandler:OnShow ()
+function NS.ScrollHandler:OnShow ()
 	self:RegisterEvent( "WORLD_MAP_UPDATE" );
 	self:WORLD_MAP_UPDATE();
 end
 --- Stops monitoring the map when hidden.
-function me.ScrollHandler:OnHide ()
+function NS.ScrollHandler:OnHide ()
 	self:UnregisterEvent( "WORLD_MAP_UPDATE" );
 end
 
 
 
 
-me.Frame:SetAllPoints();
-me.Frame:SetScript( "OnUpdate", me.Frame.OnUpdate );
+NS.Frame:SetAllPoints();
+NS.Frame:SetScript( "OnUpdate", NS.Frame.OnUpdate );
 
 Tooltip:Hide();
 Tooltip:SetFrameStrata( "TOOLTIP" );
@@ -108,7 +108,7 @@ Tooltip.Text:SetTextColor( Color.r, Color.g, Color.b, 0.7 );
 Tooltip.Text:SetAllPoints();
 
 
-local ScrollHandler = me.ScrollHandler;
+local ScrollHandler = NS.ScrollHandler;
 ScrollHandler:SetAllPoints( WorldMapButton );
 ScrollHandler:SetScript( "OnMouseWheel", ScrollHandler.OnMouseWheel );
 ScrollHandler:EnableMouseWheel( false );
@@ -118,5 +118,5 @@ ScrollHandler:SetScript( "OnEvent", _Underscore.Frame.OnEvent );
 
 
 BlackoutWorld:SetTexture();
-hooksecurefunc( "WorldMap_ToggleSizeUp", me.DisableBlackout );
-me.DisableBlackout();
+hooksecurefunc( "WorldMap_ToggleSizeUp", NS.DisableBlackout );
+NS.DisableBlackout();

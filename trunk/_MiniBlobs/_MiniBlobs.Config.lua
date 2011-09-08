@@ -5,34 +5,34 @@
 
 
 local _MiniBlobs = select( 2, ... );
-local me, L = CreateFrame( "Frame", "_MiniBlobsConfig" ), _MiniBlobs.L;
-_MiniBlobs.Config = me;
+local NS, L = CreateFrame( "Frame", "_MiniBlobsConfig" ), _MiniBlobs.L;
+_MiniBlobs.Config = NS;
 
-me.Types = {};
-me.Quality = CreateFrame( "Slider", "$parentQuality", me, "OptionsSliderTemplate" );
+NS.Types = {};
+NS.Quality = CreateFrame( "Slider", "$parentQuality", NS, "OptionsSliderTemplate" );
 
 
 
 
 --- Builds a standard tooltip for a control.
-function me:ControlOnEnter ()
+function NS:ControlOnEnter ()
 	GameTooltip:SetOwner( self, "ANCHOR_TOPRIGHT" );
 	GameTooltip:SetText( self.tooltipText, nil, nil, nil, nil, 1 );
 end
 
 
 --- Sets blob quality when the slider is moved.
-function me.Quality:OnValueChanged ( Quality )
+function NS.Quality:OnValueChanged ( Quality )
 	return _MiniBlobs:SetQuality( Quality );
 end
 --- Toggles this blob type when its checkbox is clicked.
-function me:TypeEnabledOnClick ()
+function NS:TypeEnabledOnClick ()
 	local Enable = not not self:GetChecked();
 	PlaySound( Enable and "igMainMenuOptionCheckBoxOn" or "igMainMenuOptionCheckBoxOff" );
 	return _MiniBlobs:SetTypeEnabled( self:GetParent().Type, Enable );
 end
 --- Sets blob type alpha when the slider is moved.
-function me:TypeAlphaOnValueChanged ( Alpha )
+function NS:TypeAlphaOnValueChanged ( Alpha )
 	return _MiniBlobs:SetTypeAlpha( self:GetParent().Type, Alpha );
 end
 do
@@ -49,7 +49,7 @@ do
 		return L.Styles[ Style1 ] < L.Styles[ Style2 ];
 	end );
 	--- Shows a dropdown list of available blob styles.
-	function me:TypeStyleInitialize ()
+	function NS:TypeStyleInitialize ()
 		local Type = self:GetParent().Type;
 		local StyleActive = _MiniBlobs:GetTypeStyle( Type );
 		local Info = UIDropDownMenu_CreateInfo();
@@ -68,7 +68,7 @@ do
 	end
 	local Order = { "NONE", "WATCHED", "SELECTED" };
 	--- Shows a dropdown list of available quest filter options.
-	function me:QuestsFilterInitialize ()
+	function NS:QuestsFilterInitialize ()
 		local FilterActive = _MiniBlobs:GetQuestsFilter();
 		local Info = UIDropDownMenu_CreateInfo();
 		Info.func = OnSelect;
@@ -82,10 +82,10 @@ end
 
 
 -- Adjust controls to match settings when changed.
-function me:MiniBlobs_Quality ( _, Quality )
+function NS:MiniBlobs_Quality ( _, Quality )
 	return self.Quality:SetValue( Quality );
 end
-function me:MiniBlobs_TypeEnabled ( _, Type, Enabled )
+function NS:MiniBlobs_TypeEnabled ( _, Type, Enabled )
 	local Container = self.Types[ Type ];
 	if ( Enabled ) then
 		UIDropDownMenu_EnableDropDown( Container.Style );
@@ -102,33 +102,33 @@ function me:MiniBlobs_TypeEnabled ( _, Type, Enabled )
 	end
 	return Container.Enabled:SetChecked( Enabled );
 end
-function me:MiniBlobs_TypeAlpha ( _, Type, Alpha )
+function NS:MiniBlobs_TypeAlpha ( _, Type, Alpha )
 	return self.Types[ Type ].Alpha:SetValue( Alpha );
 end
-function me:MiniBlobs_TypeStyle ( _, Type, Style )
+function NS:MiniBlobs_TypeStyle ( _, Type, Style )
 	return UIDropDownMenu_SetText( self.Types[ Type ].Style, L.Styles[ Style ] );
 end
-function me:MiniBlobs_QuestsFilter ( _, Filter )
+function NS:MiniBlobs_QuestsFilter ( _, Filter )
 	return UIDropDownMenu_SetText( self.Types[ "Quests" ].Filter, L.QuestsFilters[ Filter ] );
 end
 
 
 --- Reverts to default options.
-function me:default ()
+function NS:default ()
 	return _MiniBlobs:Unpack( {} );
 end
 
 
 
 
-me.name = L.TITLE;
-me:Hide();
+NS.name = L.TITLE;
+NS:Hide();
 
 -- Pane title
-local Title = me:CreateFontString( nil, "ARTWORK", "GameFontNormalLarge" );
+local Title = NS:CreateFontString( nil, "ARTWORK", "GameFontNormalLarge" );
 Title:SetPoint( "TOPLEFT", 16, -16 );
 Title:SetText( L.TITLE );
-local SubText = me:CreateFontString( nil, "ARTWORK", "GameFontHighlightSmall" );
+local SubText = NS:CreateFontString( nil, "ARTWORK", "GameFontHighlightSmall" );
 SubText:SetPoint( "TOPLEFT", Title, "BOTTOMLEFT", 0, -8 );
 SubText:SetPoint( "RIGHT", -32, 0 );
 SubText:SetHeight( 24 );
@@ -137,13 +137,13 @@ SubText:SetJustifyV( "TOP" );
 SubText:SetText( L.DESC );
 
 
-local Quality = me.Quality;
+local Quality = NS.Quality;
 Quality:SetPoint( "LEFT", 16, 0 );
 Quality:SetPoint( "RIGHT", -16, 0 );
 Quality:SetPoint( "TOP", SubText, "BOTTOM", 0, -8 );
 Quality:SetMinMaxValues( 0, 1 );
 Quality:SetScript( "OnValueChanged", Quality.OnValueChanged );
-Quality:SetScript( "OnEnter", me.ControlOnEnter );
+Quality:SetScript( "OnEnter", NS.ControlOnEnter );
 Quality:SetScript( "OnLeave", GameTooltip_Hide );
 local Name = Quality:GetName();
 _G[ Name.."Text" ]:SetText( L.QUALITY );
@@ -166,11 +166,11 @@ table.sort( Order, function ( Type1, Type2 )
 end );
 local FrameLast = Quality;
 for _, Type in ipairs( Order ) do
-	local Container = CreateFrame( "Frame", "$parent"..Type, me, "OptionsBoxTemplate" );
-	me.Types[ Type ], Container.Type = Container, Type;
+	local Container = CreateFrame( "Frame", "$parent"..Type, NS, "OptionsBoxTemplate" );
+	NS.Types[ Type ], Container.Type = Container, Type;
 
-	Container:SetPoint( "LEFT", me, 12, 0 );
-	Container:SetPoint( "RIGHT", me, -12, 0 );
+	Container:SetPoint( "LEFT", NS, 12, 0 );
+	Container:SetPoint( "RIGHT", NS, -12, 0 );
 	Container:SetPoint( "TOP", FrameLast, "BOTTOM", 0, -38 );
 
 	local Background = Container:CreateTexture( nil, "BACKGROUND" );
@@ -182,8 +182,8 @@ for _, Type in ipairs( Order ) do
 	Container.Enabled = Enabled;
 	Enabled:SetSize( 26, 26 );
 	Enabled:SetPoint( "BOTTOMLEFT", Container, "TOPLEFT", 0, -6 );
-	Enabled:SetScript( "OnClick", me.TypeEnabledOnClick );
-	Enabled:SetScript( "OnEnter", me.ControlOnEnter );
+	Enabled:SetScript( "OnClick", NS.TypeEnabledOnClick );
+	Enabled:SetScript( "OnEnter", NS.ControlOnEnter );
 	Enabled:SetScript( "OnLeave", GameTooltip_Hide );
 	local Label = _G[ Enabled:GetName().."Text" ];
 	Label:SetFontObject( GameFontHighlight );
@@ -197,10 +197,10 @@ for _, Type in ipairs( Order ) do
 	Style:SetPoint( "RIGHT", -3, 0 );
 	UIDropDownMenu_JustifyText( Style, "LEFT" );
 	UIDropDownMenu_SetAnchor( Style, 0, 0, "TOPRIGHT", Style, "BOTTOMRIGHT" );
-	Style.initialize = me.TypeStyleInitialize;
+	Style.initialize = NS.TypeStyleInitialize;
 	_G[ Style:GetName().."Middle" ]:SetPoint( "RIGHT", -16, 0 );
 	Style:EnableMouse( true );
-	Style:SetScript( "OnEnter", me.ControlOnEnter );
+	Style:SetScript( "OnEnter", NS.ControlOnEnter );
 	Style:SetScript( "OnLeave", GameTooltip_Hide );
 	Style.tooltipText = L.TYPE_STYLE_DESC;
 	local Label = Style:CreateFontString( "$parentLabel", "ARTWORK", "GameFontHighlight" );
@@ -213,7 +213,7 @@ for _, Type in ipairs( Order ) do
 	Alpha:SetPoint( "RIGHT", -8, 0 );
 	Alpha:SetPoint( "TOP", Style, "BOTTOM", 0, -4 );
 	Alpha:SetMinMaxValues( 0, 1 );
-	Alpha:SetScript( "OnValueChanged", me.TypeAlphaOnValueChanged );
+	Alpha:SetScript( "OnValueChanged", NS.TypeAlphaOnValueChanged );
 	local Name = Alpha:GetName();
 	_G[ Name.."Low" ]:Hide();
 	_G[ Name.."High" ]:Hide();
@@ -232,10 +232,10 @@ for _, Type in ipairs( Order ) do
 		Filter:SetPoint( "RIGHT", Style );
 		UIDropDownMenu_JustifyText( Filter, "LEFT" );
 		UIDropDownMenu_SetAnchor( Filter, 0, 0, "TOPRIGHT", Filter, "BOTTOMRIGHT" );
-		Filter.initialize = me.QuestsFilterInitialize;
+		Filter.initialize = NS.QuestsFilterInitialize;
 		_G[ Filter:GetName().."Middle" ]:SetPoint( "RIGHT", -16, 0 );
 		Filter:EnableMouse( true );
-		Filter:SetScript( "OnEnter", me.ControlOnEnter );
+		Filter:SetScript( "OnEnter", NS.ControlOnEnter );
 		Filter:SetScript( "OnLeave", GameTooltip_Hide );
 		Filter.tooltipText = L.QUESTS_FILTER_DESC;
 		local Label = Filter:CreateFontString( "$parentLabel", "ARTWORK", "GameFontHighlight" );
@@ -248,10 +248,10 @@ for _, Type in ipairs( Order ) do
 end
 
 
-_MiniBlobs.RegisterCallback( me, "MiniBlobs_Quality" );
-_MiniBlobs.RegisterCallback( me, "MiniBlobs_TypeEnabled" );
-_MiniBlobs.RegisterCallback( me, "MiniBlobs_TypeAlpha" );
-_MiniBlobs.RegisterCallback( me, "MiniBlobs_TypeStyle" );
-_MiniBlobs.RegisterCallback( me, "MiniBlobs_QuestsFilter" );
+_MiniBlobs.RegisterCallback( NS, "MiniBlobs_Quality" );
+_MiniBlobs.RegisterCallback( NS, "MiniBlobs_TypeEnabled" );
+_MiniBlobs.RegisterCallback( NS, "MiniBlobs_TypeAlpha" );
+_MiniBlobs.RegisterCallback( NS, "MiniBlobs_TypeStyle" );
+_MiniBlobs.RegisterCallback( NS, "MiniBlobs_QuestsFilter" );
 
-InterfaceOptions_AddCategory( me );
+InterfaceOptions_AddCategory( NS );

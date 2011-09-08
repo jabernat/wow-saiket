@@ -5,10 +5,10 @@
 
 
 local LibSharedMedia = LibStub( "LibSharedMedia-3.0" );
-local me = select( 2, ... );
-_Underscore.CastingBar = me;
+local NS = select( 2, ... );
+_Underscore.CastingBar = NS;
 
-me.LagUpdateRate = 1; -- Seconds
+NS.LagUpdateRate = 1; -- Seconds
 
 local BarPadding = 10;
 local BarTexture = LibSharedMedia:Fetch( LibSharedMedia.MediaType.STATUSBAR, _Underscore.MediaBar );
@@ -17,7 +17,7 @@ local BarTexture = LibSharedMedia:Fetch( LibSharedMedia.MediaType.STATUSBAR, _Un
 
 
 --- Sets the spell icon for a cast bar.
-function me:SetIcon ( Path )
+function NS:SetIcon ( Path )
 	self.Icon:SetTexture( ( Path ~= [[Interface\Icons\Temp]] ) and Path or nil );
 end
 
@@ -25,7 +25,7 @@ end
 do
 	local Colors = _Underscore.Colors;	
 	--- Replaces the standard status colors.
-	function me:SetStatusBarColor ( R, G, B, A )
+	function NS:SetStatusBarColor ( R, G, B, A )
 		local Color;
 		if ( R == 0.0 and G == 1.0 and B == 0.0 ) then -- Finished / Channeling
 			Color = Colors.reaction[ 8 ]; -- Friendly
@@ -41,7 +41,7 @@ do
 	end
 end
 --- Reset lag update timer for player's cast bar only.
-function me:PlayerOnShow ()
+function NS:PlayerOnShow ()
 	self.Lag.UpdateNext = 0;
 end
 do
@@ -50,7 +50,7 @@ do
 	local max = max;
 	local GetNetStats = GetNetStats;
 	--- Hides casting bar artwork and updates time text.
-	function me:OnUpdate ( Elapsed )
+	function NS:OnUpdate ( Elapsed )
 		-- Hide artwork
 		self.Border:Hide();
 		self.Flash:Hide();
@@ -58,7 +58,7 @@ do
 
 		-- Update cast time
 		local Time = select( 6, ( self.channeling and UnitChannelInfo or UnitCastingInfo )( self.UnitID ) );
-		self.Time:SetFormattedText( me.L.TIME_FORMAT,
+		self.Time:SetFormattedText( NS.L.TIME_FORMAT,
 			Time and max( 0, Time / 1000 - GetTime() ) or 0 );
 
 		-- Update latency
@@ -66,7 +66,7 @@ do
 		if ( Lag ) then
 			Lag.UpdateNext = Lag.UpdateNext - Elapsed;
 			if ( Lag.UpdateNext <= 0 ) then
-				Lag.UpdateNext = me.LagUpdateRate;
+				Lag.UpdateNext = NS.LagUpdateRate;
 
 				Lag:SetWidth( min( 1, select( 4, GetNetStats() ) / 1000 / select( 2, self:GetMinMaxValues() ) ) * self:GetWidth() );
 			end
@@ -76,29 +76,29 @@ end
 
 
 --- Updates castbars immediately after zoning.
-function me:PLAYER_ENTERING_WORLD ()
+function NS:PLAYER_ENTERING_WORLD ()
 	if ( UnitChannelInfo( self.UnitID ) ) then
-		me.UNIT_SPELLCAST_CHANNEL_START( self, nil, self.UnitID );
+		NS.UNIT_SPELLCAST_CHANNEL_START( self, nil, self.UnitID );
 	elseif ( UnitCastingInfo( self.UnitID ) ) then
-		me.UNIT_SPELLCAST_START( self, nil, self.UnitID );
+		NS.UNIT_SPELLCAST_START( self, nil, self.UnitID );
 	end
 end
 --- Updates castbars when beginning a cast.
-function me:UNIT_SPELLCAST_START ( _, UnitID )
+function NS:UNIT_SPELLCAST_START ( _, UnitID )
 	if ( UnitID == self.UnitID ) then
-		me.SetIcon( self, select( 4, UnitCastingInfo( UnitID ) ) );
+		NS.SetIcon( self, select( 4, UnitCastingInfo( UnitID ) ) );
 	end
 end
 --- Updates castbars when beginning a channeled spell.
-function me:UNIT_SPELLCAST_CHANNEL_START ( _, UnitID )
+function NS:UNIT_SPELLCAST_CHANNEL_START ( _, UnitID )
 	if ( UnitID == self.UnitID ) then
-		me.SetIcon( self, select( 4, UnitChannelInfo( UnitID ) ) );
+		NS.SetIcon( self, select( 4, UnitChannelInfo( UnitID ) ) );
 	end
 end
 --- Generic event handler that checks the module for event handlers rather than the castbars.
-function me:OnEvent ( Event, ... )
-	if ( me[ Event ] ) then
-		return me[ Event ]( self, Event, ... );
+function NS:OnEvent ( Event, ... )
+	if ( NS[ Event ] ) then
+		return NS[ Event ]( self, Event, ... );
 	end
 end
 
@@ -155,11 +155,11 @@ local function AddCastingBar ( self, UnitID, ... )
 		self.Lag:SetBlendMode( "ADD" );
 		local R, G, B = unpack( _Underscore.Colors.disconnected );
 		self.Lag:SetVertexColor( R, G, B, 0.5 );
-		self:HookScript( "OnShow", me.PlayerOnShow );
+		self:HookScript( "OnShow", NS.PlayerOnShow );
 	end
-	self:HookScript( "OnEvent", me.OnEvent );
-	self:HookScript( "OnUpdate", me.OnUpdate );
-	hooksecurefunc( self, "SetStatusBarColor", me.SetStatusBarColor );
+	self:HookScript( "OnEvent", NS.OnEvent );
+	self:HookScript( "OnUpdate", NS.OnUpdate );
+	hooksecurefunc( self, "SetStatusBarColor", NS.SetStatusBarColor );
 end
 
 UIPARENT_MANAGED_FRAME_POSITIONS[ "CastingBarFrame" ] = nil;

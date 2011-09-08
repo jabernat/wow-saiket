@@ -7,25 +7,25 @@
 local _DevPad, GUI = _DevPad, select( 2, ... );
 local L = GUI.L;
 
-local me = GUI.Dialog:New( "_DevPadGUIList" );
-GUI.List = me;
+local NS = GUI.Dialog:New( "_DevPadGUIList" );
+GUI.List = NS;
 
-me.ScrollChild = CreateFrame( "Frame", nil, me.ScrollFrame );
+NS.ScrollChild = CreateFrame( "Frame", nil, NS.ScrollFrame );
 
-me.Send = me:NewButton( [[Interface\BUTTONS\UI-GuildButton-MOTD-Up]] );
-me.Delete = me:NewButton( [[Interface\BUTTONS\UI-GroupLoot-Pass-Up]] )
-me.NewScript = me:NewButton( [[Interface\BUTTONS\UI-GuildButton-PublicNote-Up]] );
-me.NewFolder = me:NewButton( [[Interface\MINIMAP\TRACKING\Banker]] );
+NS.Send = NS:NewButton( [[Interface\BUTTONS\UI-GuildButton-MOTD-Up]] );
+NS.Delete = NS:NewButton( [[Interface\BUTTONS\UI-GroupLoot-Pass-Up]] )
+NS.NewScript = NS:NewButton( [[Interface\BUTTONS\UI-GuildButton-PublicNote-Up]] );
+NS.NewFolder = NS:NewButton( [[Interface\MINIMAP\TRACKING\Banker]] );
 
-me.Edited = me:CreateTexture( nil, "OVERLAY" );
-me.RenameEdit = CreateFrame( "EditBox" );
-me.SearchEdit = CreateFrame( "EditBox", "_DevPadGUIListSearchEdit", me.Bottom, "InputBoxTemplate" );
-me.SearchEdit.InactiveAlpha = 0.5;
-me.SearchMismatchAlpha = 0.5;
+NS.Edited = NS:CreateTexture( nil, "OVERLAY" );
+NS.RenameEdit = CreateFrame( "EditBox" );
+NS.SearchEdit = CreateFrame( "EditBox", "_DevPadGUIListSearchEdit", NS.Bottom, "InputBoxTemplate" );
+NS.SearchEdit.InactiveAlpha = 0.5;
+NS.SearchMismatchAlpha = 0.5;
 local SearchFrequency = 0.25; -- Update rate of list item highlighting
 
-me.DefaultWidth, me.DefaultHeight = 180, 250;
-me.SendNoticeThreshold = 4096; -- Larger objects print a wait message
+NS.DefaultWidth, NS.DefaultHeight = 180, 250;
+NS.SendNoticeThreshold = 4096; -- Larger objects print a wait message
 
 local ButtonHeight = 16;
 local IndentSize = 20;
@@ -38,7 +38,7 @@ local ObjectButtons = {}; -- [ Object ] = Button;
 --- Sets or clears the list selection.
 -- @param Object  Descendant of Root to select, or nil to clear.
 -- @return True if selection changed.
-function me:SetSelection ( Object )
+function NS:SetSelection ( Object )
 	if ( self.Selection ~= Object ) then
 		if ( self.Selection ) then
 			ObjectButtons[ self.Selection ]:UnlockHighlight();
@@ -57,7 +57,7 @@ end
 --- Shows or hides the renaming UI for an object.
 -- @param Object  Descendant of Root to rename, or nil to stop.
 -- @return True if renaming target changed.
-function me:SetRenaming ( Object )
+function NS:SetRenaming ( Object )
 	if ( self.Renaming ~= Object ) then
 		if ( self.Renaming ) then -- Restore last edited button
 			ObjectButtons[ self.Renaming ].Name:Show();
@@ -118,9 +118,9 @@ do
 	--- Periodically moves the dragged object within the tree.
 	local function OnUpdate ( self, Elapsed )
 		local _, CursorY = GetCursorPosition();
-		local ScrollFrame = me.ScrollFrame;
+		local ScrollFrame = NS.ScrollFrame;
 		-- Distance from top of list
-		CursorY = me.ScrollChild:GetTop() - CursorY / ScrollFrame:GetEffectiveScale();
+		CursorY = NS.ScrollChild:GetTop() - CursorY / ScrollFrame:GetEffectiveScale();
 		if ( not ScrollFrame:IsMouseOver() ) then -- Scroll to follow
 			local Scroll = ScrollFrame:GetVerticalScroll();
 			if ( CursorY < Scroll ) then -- Above
@@ -145,7 +145,7 @@ do
 	--- Stop or start dragging an object within the tree.
 	-- @param Object  Descendant of Root to drag, or nil to stop.
 	-- @return True if drag target changed.
-	function me:SetDragging ( Object )
+	function NS:SetDragging ( Object )
 		if ( self.Dragging ~= Object ) then
 			if ( self.Dragging ) then
 				local Button = ObjectButtons[ self.Dragging ];
@@ -182,7 +182,7 @@ do
 	-- @param Search  Pattern to search for in scripts; Empty string to stop.
 	--   Backslashes and pipes get unescaped.
 	-- @return True if search pattern changed.
-	function me:SetSearch ( Text )
+	function NS:SetSearch ( Text )
 		local Search = false;
 		if ( Text ~= "" ) then
 			Search = Text:gsub( "||", "|" ):gsub( [[\(.)]], EscapesGsub );
@@ -218,21 +218,21 @@ do
 			if ( Child._Class == "Folder" ) then
 				MatchChild = UpdateFolder( Child ) or MatchChild;
 			elseif ( Child._Class == "Script" ) then
-				local Valid, Match = pcall( strfind, Child._Text, me.Search );
+				local Valid, Match = pcall( strfind, Child._Text, NS.Search );
 				Match = Valid and Match ~= nil; -- Valid pattern too
 				MatchChild = MatchChild or Match;
 				ObjectButtons[ Child ].Visual:SetAlpha(
-					Match and 1 or me.SearchMismatchAlpha );
+					Match and 1 or NS.SearchMismatchAlpha );
 			end
 		end
 		if ( Folder ) then -- Not root
 			ObjectButtons[ Folder ].Visual:SetAlpha(
-				MatchChild and 1 or me.SearchMismatchAlpha );
+				MatchChild and 1 or NS.SearchMismatchAlpha );
 		end
 		return MatchChild;
 	end
 
-	local Timer = me.SearchEdit:CreateAnimationGroup();
+	local Timer = NS.SearchEdit:CreateAnimationGroup();
 	Timer:CreateAnimation( "Animation" ):SetDuration( 1e-7 );
 	local Animation = Timer:CreateAnimation( "Animation" );
 	Animation:SetOrder( 2 ); -- Note: Keeps OnPlay from firing right after :Play.
@@ -240,7 +240,7 @@ do
 	--- Throttles search updates.
 	Animation:SetScript( "OnPlay", function ( self )
 		Timer.UpdatePending = nil;
-		if ( me.Search ) then
+		if ( NS.Search ) then
 			return UpdateFolder();
 		end
 	end );
@@ -251,7 +251,7 @@ do
 		end
 	end );
 	--- Updates search match highlights.
-	function me:UpdateSearch ()
+	function NS:UpdateSearch ()
 		Timer.UpdatePending = true;
 		return Timer:Play();
 	end
@@ -261,7 +261,7 @@ end
 -- @param Cursor  Cursor position to start from.
 -- @param Reverse  True to find the previous match.
 -- @return (Start position, End position), or nil if no match.
-function me:NextMatch ( Script, Cursor, Reverse )
+function NS:NextMatch ( Script, Cursor, Reverse )
 	local Start, End;
 	if ( Reverse ) then
 		local StartCurrent, EndCurrent;
@@ -278,8 +278,8 @@ function me:NextMatch ( Script, Cursor, Reverse )
 	end
 end
 --- Gets the position of the next match, possibly wrapping around.
--- @see me:NextMatch
-function me:NextMatchWrap ( Script, Cursor, Reverse )
+-- @see NS:NextMatch
+function NS:NextMatchWrap ( Script, Cursor, Reverse )
 	local Start, End = self:NextMatch( Script, Cursor, Reverse );
 	if ( not Start ) then
 		Cursor = Reverse and #Script._Text or 0;
@@ -299,8 +299,8 @@ do
 		until ( Object == Start );
 	end
 	--- Gets the position of the next match, cycling through all scripts for a match.
-	-- @see me:NextMatch
-	function me:NextMatchGlobal ( Script, Cursor, Reverse )
+	-- @see NS:NextMatch
+	function NS:NextMatchGlobal ( Script, Cursor, Reverse )
 		local Direction = Reverse and "_Previous" or "_Next";
 		if ( not Script ) then
 			Script = NextScript( self.Selection or _DevPad.FolderRoot, Direction );
@@ -356,14 +356,14 @@ do
 		self.ScrollFrame:UpdateScrollChildRect();
 	end
 	--- Request that the list be redrawn before the next frame.
-	function me:Update ()
+	function NS:Update ()
 		return self:SetScript( "OnUpdate", OnUpdate );
 	end
 end
 
 
 --- Updates the title buttons for the current selection.
-function me:ListSetSelection ( _, Object )
+function NS:ListSetSelection ( _, Object )
 	if ( Object ) then
 		self.Delete:Enable();
 		self.Send:Enable();
@@ -373,7 +373,7 @@ function me:ListSetSelection ( _, Object )
 	end
 end
 --- Clears popup data when closed.
-function me:StaticPopupOnHide ()
+function NS:StaticPopupOnHide ()
 	self.data = nil;
 end
 do
@@ -389,19 +389,19 @@ do
 	local function Send ( Object, Channel, Target, TargetName )
 		local Data = { Name = Object._Name; Target = TargetName; };
 		local Size = Object:Send( Channel, Target, nil, SendCallback, Data );
-		if ( Size > me.SendNoticeThreshold ) then
+		if ( Size > NS.SendNoticeThreshold ) then
 			_DevPad.Print( L.SEND_LARGE_FORMAT:format(
 				Data.Name, Size / 1024, Data.Target ) );
 		end
 	end
 	--- Sends the object to the given channel.
 	local function SendBroadcast ( self, Channel )
-		if ( me.Selection ) then
-			Send( me.Selection, Channel, nil, _G[ Channel ] );
+		if ( NS.Selection ) then
+			Send( NS.Selection, Channel, nil, _G[ Channel ] );
 		end
 	end
 	--- Whispers the object to a player.
-	function me.Send:NameOnAccept ( Object )
+	function NS.Send:NameOnAccept ( Object )
 		local Name = self.editBox:GetText():trim();
 		if ( Name == "" ) then
 			return true; -- Keep open
@@ -414,12 +414,12 @@ do
 		end
 	end
 	--- Accepts the typed name.
-	function me.Send:NameOnEnterPressed ()
+	function NS.Send:NameOnEnterPressed ()
 		return self:GetParent().button1:Click();
 	end
 	--- Requests a player name to send to.
 	local function SendToPlayer ( self )
-		local Dialog = StaticPopup_Show( "_DEVPAD_SEND_PLAYER", nil, nil, me.Selection );
+		local Dialog = StaticPopup_Show( "_DEVPAD_SEND_PLAYER", nil, nil, NS.Selection );
 		if ( Dialog ) then
 			if ( UnitIsPlayer( "target" ) ) then
 				Dialog.editBox:SetText( UnitName( "player" ) );
@@ -427,7 +427,7 @@ do
 			Dialog.editBox:SetFocus();
 		end
 	end
-	local Dropdown = CreateFrame( "Frame", "_DevPadGUIListSendDropDown", me.Send, "UIDropDownMenuTemplate" );
+	local Dropdown = CreateFrame( "Frame", "_DevPadGUIListSendDropDown", NS.Send, "UIDropDownMenuTemplate" );
 	local Menu = {
 		{ text = PLAYER; func = SendToPlayer; arg1 = "WHISPER"; notCheckable = true; },
 		{ text = PARTY; func = SendBroadcast; arg1 = "PARTY"; notCheckable = true; },
@@ -436,7 +436,7 @@ do
 		{ text = OFFICER; func = SendBroadcast; arg1 = "OFFICER"; notCheckable = true; },
 	};
 	--- Opens a dropdown menu with potential script recipients.
-	function me.Send:OnClick ()
+	function NS.Send:OnClick ()
 		-- Match chat colors
 		for _, Info in ipairs( Menu ) do
 			local Type = ChatTypeInfo[ Info.arg1 ];
@@ -451,13 +451,13 @@ do
 end
 do
 	--- Add the received object to the list.
-	function me.Send:ReceiveOnAccept ( Object )
+	function NS.Send:ReceiveOnAccept ( Object )
 		Object:SetName( L.RECEIVE_OBJECTNAME_FORMAT:format( Object._Name, Object._Author ) );
 		_DevPad.FolderRoot:Insert( Object );
 	end
 	local Queue, Ignored = _DevPad.ReceiveQueue, _DevPad.ReceiveIgnored;
 	--- Puts the author on the ignore list.
-	function me.Send:ReceiveOnIgnore ( Object )
+	function NS.Send:ReceiveOnIgnore ( Object )
 		Ignored[ Object._Author:lower() ] = true;
 		AddIgnore( Object._Author );
 	end
@@ -485,20 +485,20 @@ do
 		end
 	end
 	--- Prompt the user to save received objects.
-	function me:ObjectReceived ()
+	function NS:ObjectReceived ()
 		self.Send:SetScript( "OnUpdate", OnUpdate );
 	end
 end
 --- Deletes the object once confirmed.
-function me.Delete:OnAccept ( Object )
+function NS.Delete:OnAccept ( Object )
 	if ( Object._Parent ) then
 		Object._Parent:Remove( Object );
 	end
 	-- Note: Don't return anything, or the dialog won't hide afterwards.
 end
 --- Opens a confirmation to delete the selected object.
-function me.Delete:OnClick ()
-	local Object = me.Selection;
+function NS.Delete:OnClick ()
+	local Object = NS.Selection;
 	if ( IsShiftKeyDown()
 		or ( Object._Class == "Script" and Object._Text == "" )
 		or ( Object._Class == "Folder" and #Object == 0 )
@@ -512,56 +512,56 @@ do
 	--- Creates a new object above the selection or at the end.
 	local function InsertObject ( Class )
 		local Object = _DevPad:GetClass( Class ):New();
-		if ( me.Selection ) then -- Add just before selection
-			me.Selection._Parent:Insert( Object, me.Selection:GetIndex() );
+		if ( NS.Selection ) then -- Add just before selection
+			NS.Selection._Parent:Insert( Object, NS.Selection:GetIndex() );
 		else -- Default to end of list
 			_DevPad.FolderRoot:Insert( Object );
 		end
-		me:SetSelection( Object );
-		me:SetRenaming( Object );
+		NS:SetSelection( Object );
+		NS:SetRenaming( Object );
 	end
 	--- Creates a new script.
-	function me.NewScript:OnClick ()
+	function NS.NewScript:OnClick ()
 		InsertObject( "Script" );
 	end
 	--- Creates a new folder.
-	function me.NewFolder:OnClick ()
+	function NS.NewFolder:OnClick ()
 		InsertObject( "Folder" );
 	end
 end
 
 
 --- Stops renaming.
-function me.RenameEdit:OnEditFocusLost ()
-	return me:SetRenaming();
+function NS.RenameEdit:OnEditFocusLost ()
+	return NS:SetRenaming();
 end
 --- Saves the object's new name.
-function me.RenameEdit:OnEnterPressed ()
-	me.Renaming:SetName( self:GetText() );
+function NS.RenameEdit:OnEnterPressed ()
+	NS.Renaming:SetName( self:GetText() );
 	return self:ClearFocus();
 end
 do
 	--- Waits one frame before moving the view in case the edit box was re-anchored.
 	local function OnUpdate ( self )
 		self:SetScript( "OnUpdate", nil );
-		local Top = me.ScrollChild:GetTop() - self:GetTop();
+		local Top = NS.ScrollChild:GetTop() - self:GetTop();
 		local Bottom = Top + self:GetHeight();
-		me.ScrollFrame:SetVerticalScrollToCoord( Top, Bottom );
+		NS.ScrollFrame:SetVerticalScrollToCoord( Top, Bottom );
 	end
 	--- Scrolls the edit box into view while typing.
-	function me.RenameEdit:OnCursorChanged ()
+	function NS.RenameEdit:OnCursorChanged ()
 		return self:SetScript( "OnUpdate", OnUpdate );
 	end
 end
 
 
 --- Lights up search box while typing.
-function me.SearchEdit:OnEditFocusGained ()
+function NS.SearchEdit:OnEditFocusGained ()
 	self:HighlightText();
 	self:SetAlpha( 1 );
 end
 --- Dims search box if no longer searching.
-function me.SearchEdit:OnEditFocusLost ()
+function NS.SearchEdit:OnEditFocusLost ()
 	self:HighlightText( 0, 0 );
 	if ( self:GetText() == "" ) then
 		self:SetAlpha( self.InactiveAlpha );
@@ -573,8 +573,8 @@ function me.SearchEdit:OnEditFocusLost ()
 	end
 end
 --- Jumps to next/previous search result.
-function me.SearchEdit:OnEnterPressed ()
-	if ( me.Search ) then
+function NS.SearchEdit:OnEnterPressed ()
+	if ( NS.Search ) then
 		local Script, Cursor, Reverse = GUI.Editor.Script, 0, IsShiftKeyDown();
 		if ( Script ) then
 			Cursor = GUI.Editor:GetScriptCursorPosition();
@@ -582,7 +582,7 @@ function me.SearchEdit:OnEnterPressed ()
 				Cursor = Cursor - 1;
 			end
 		end
-		local ScriptNew, Start, End = me:NextMatchGlobal( Script, Cursor, Reverse );
+		local ScriptNew, Start, End = NS:NextMatchGlobal( Script, Cursor, Reverse );
 		if ( ScriptNew ) then
 			GUI.Editor:SetScriptObject( ScriptNew );
 		end
@@ -592,11 +592,11 @@ function me.SearchEdit:OnEnterPressed ()
 	end
 end
 --- Refilters the list when the search pattern changes.
-function me.SearchEdit:OnTextChanged ()
-	return me:SetSearch( self:GetText() );
+function NS.SearchEdit:OnTextChanged ()
+	return NS:SetSearch( self:GetText() );
 end
 --- Builds a tooltip under the edit box so it doesn't cover the list.
-function me.SearchEdit:OnEnter ()
+function NS.SearchEdit:OnEnter ()
 	GameTooltip:ClearAllPoints();
 	GameTooltip:SetPoint( "TOPLEFT", self, "BOTTOMLEFT" );
 	GameTooltip:SetOwner( self, "ANCHOR_PRESERVE" );
@@ -605,7 +605,7 @@ end
 
 
 --- Updates an object's name text.
-function me:ObjectSetName ( _, Object )
+function NS:ObjectSetName ( _, Object )
 	if ( ObjectButtons[ Object ] ) then
 		return ObjectButtons[ Object ].Name:SetText( Object._Name );
 	end
@@ -620,39 +620,39 @@ do
 				if ( self.Object._Class == "Folder" ) then
 					self.Object:SetClosed( not self.Object._Closed );
 				end
-				if ( me:SetSelection( self.Object ) ) then
+				if ( NS:SetSelection( self.Object ) ) then
 					PlaySound( "igMainMenuOptionCheckBoxOn" );
 				end
 			end
 			--- Starts renaming the object when double clicked.
 			local function ButtonOnDoubleClick ( self )
 				ButtonOnClick( self );
-				return me:SetRenaming( self.Object );
+				return NS:SetRenaming( self.Object );
 			end
 			--- Start moving the object on drag.
 			local function ButtonOnDragStart ( self )
-				return me:SetDragging( self.Object );
+				return NS:SetDragging( self.Object );
 			end
 			--- Stop dragging the object.
 			local function ButtonOnDragStop ( self )
-				if ( me.Dragging == self.Object ) then
-					return me:SetDragging();
+				if ( NS.Dragging == self.Object ) then
+					return NS:SetDragging();
 				end
 			end
 			--- Stop dragging and deselect the object.
 			local function ButtonOnHide ( self )
 				ButtonOnDragStop( self );
-				if ( me.Selection == self.Object ) then
-					return me:SetSelection();
+				if ( NS.Selection == self.Object ) then
+					return NS:SetSelection();
 				end
 			end
 			--- @return A new generic list button.
 			function CreateButton ()
-				local Button = CreateFrame( "Button", nil, me.ScrollChild );
+				local Button = CreateFrame( "Button", nil, NS.ScrollChild );
 				Button:Hide();
 				Button:SetHeight( ButtonHeight );
-				Button:SetPoint( "LEFT", me.ScrollFrame );
-				Button:SetPoint( "RIGHT", me.ScrollFrame );
+				Button:SetPoint( "LEFT", NS.ScrollFrame );
+				Button:SetPoint( "RIGHT", NS.ScrollFrame );
 				Button:SetHighlightTexture( [[Interface\QuestFrame\UI-QuestTitleHighlight]] );
 				Button:RegisterForDrag( "LeftButton" );
 				Button:SetScript( "OnClick", ButtonOnClick );
@@ -686,7 +686,7 @@ do
 		function CreateFolderButton ()
 			local Button = CreateButton();
 
-			local Expand = me.NewButton( Button.Visual, [[Interface\ACHIEVEMENTFRAME\UI-ACHIEVEMENT-PLUSMINUS]] );
+			local Expand = NS.NewButton( Button.Visual, [[Interface\ACHIEVEMENTFRAME\UI-ACHIEVEMENT-PLUSMINUS]] );
 			Button.Expand = Expand;
 			Expand:SetSize( ButtonHeight, ButtonHeight );
 			Expand:SetPoint( "LEFT" );
@@ -716,7 +716,7 @@ do
 			Button:SetScript( "OnEnter", ScriptOnEnter );
 			Button:SetScript( "OnLeave", GameTooltip_Hide );
 
-			local AutoRun = me.NewButton( Button.Visual, [[Interface\Archeology\ArchaeologyParts]] );
+			local AutoRun = NS.NewButton( Button.Visual, [[Interface\Archeology\ArchaeologyParts]] );
 			Button.AutoRun = AutoRun;
 			AutoRun:SetPoint( "RIGHT" );
 			AutoRun:SetSize( ButtonHeight, ButtonHeight * 0.8 );
@@ -763,18 +763,18 @@ do
 			Unused[ Button ] = nil;
 			ObjectButtons[ Object ], Button.Object = Button, Object;
 
-			me:ObjectSetName( nil, Object );
+			NS:ObjectSetName( nil, Object );
 			if ( Object._Class == "Script" ) then
-				me:ScriptSetAutoRun( nil, Object );
-				me:ScriptSetText( nil, Object );
+				NS:ScriptSetAutoRun( nil, Object );
+				NS:ScriptSetText( nil, Object );
 			elseif ( Object._Class == "Folder" ) then
-				me:FolderSetClosed( nil, Object );
+				NS:FolderSetClosed( nil, Object );
 			end
 		end
 		ObjectButtonUpdateVisible( Object );
 	end
 	--- Updates the tree view when an object gets added to a folder.
-	function me:FolderInsert ( _, Folder, Object )
+	function NS:FolderInsert ( _, Folder, Object )
 		if ( _DevPad.FolderRoot:Contains( Object ) ) then
 			ObjectButtonAssign( Object );
 			if ( Object._Class == "Folder" ) then -- Also assign child buttons
@@ -791,17 +791,17 @@ do
 	local function ObjectButtonRecycle ( Object )
 		local Button = ObjectButtons[ Object ];
 		Button:Hide();
-		if ( me.Search ) then
+		if ( NS.Search ) then
 			Button.Visual:SetAlpha( 1 );
 		end
-		if ( me.Edited:GetParent() == Button ) then
-			me:EditorSetScriptObject()
+		if ( NS.Edited:GetParent() == Button ) then
+			NS:EditorSetScriptObject()
 		end
 		ObjectButtons[ Object ], Button.Object = nil;
 		UnusedButtons[ Object._Class ][ Button ] = true;
 	end
 	--- Updates the tree view when an object gets removed from a folder.
-	function me:FolderRemove ( _, Folder, Object )
+	function NS:FolderRemove ( _, Folder, Object )
 		if ( ObjectButtons[ Object ] ) then
 			ObjectButtonRecycle( Object );
 			if ( Object._Class == "Folder" ) then
@@ -820,7 +820,7 @@ do
 		self:GetPushedTexture():SetTexCoord( ... );
 	end
 	--- Redraws a folder when it opens or closes.
-	function me:FolderSetClosed ( _, Folder )
+	function NS:FolderSetClosed ( _, Folder )
 		local Button = ObjectButtons[ Folder ];
 		if ( Button ) then
 			if ( Folder._Closed ) then
@@ -838,7 +838,7 @@ do
 	end
 end
 --- Updates Script's autorun indicator.
-function me:ScriptSetAutoRun ( _, Script )
+function NS:ScriptSetAutoRun ( _, Script )
 	if ( ObjectButtons[ Script ] ) then
 		local AutoRun = ObjectButtons[ Script ].AutoRun;
 		local Normal, Pushed = AutoRun:GetNormalTexture(), AutoRun:GetPushedTexture();
@@ -856,13 +856,13 @@ function me:ScriptSetAutoRun ( _, Script )
 	end
 end
 --- Updates search match highlight when text changes.
-function me:ScriptSetText ( _, Script )
+function NS:ScriptSetText ( _, Script )
 	if ( ObjectButtons[ Script ] ) then
 		return self:UpdateSearch();
 	end
 end
 --- Adds a highlight to scripts open for editing.
-function me:EditorSetScriptObject ( _, Script )
+function NS:EditorSetScriptObject ( _, Script )
 	local Button, Edited = ObjectButtons[ Script ], self.Edited;
 	if ( Button ) then
 		Edited:SetParent( Button );
@@ -875,11 +875,11 @@ function me:EditorSetScriptObject ( _, Script )
 end
 
 
-function me:OnShow ()
+function NS:OnShow ()
 	PlaySound( "igSpellBookOpen" );
 end
 --- Closes open scripts and cancels pending actions.
-function me:OnHide ()
+function NS:OnHide ()
 	PlaySound( "igSpellBookClose" );
 	StaticPopup_Hide( "_DEVPAD_DELETE_CONFIRM" );
 	StaticPopup_Hide( "_DEVPAD_SEND_PLAYER" );
@@ -900,16 +900,16 @@ end
 
 
 
-GUI.Dialog.StickyFrames[ "List" ] = me;
-me:SetScript( "OnShow", me.OnShow );
-me:SetScript( "OnHide", me.OnHide );
-me.Title:SetText( L.LIST_TITLE );
+GUI.Dialog.StickyFrames[ "List" ] = NS;
+NS:SetScript( "OnShow", NS.OnShow );
+NS:SetScript( "OnHide", NS.OnHide );
+NS.Title:SetText( L.LIST_TITLE );
 
-me.ScrollChild:SetSize( 1, 1 );
-me.ScrollFrame:SetScrollChild( me.ScrollChild );
+NS.ScrollChild:SetSize( 1, 1 );
+NS.ScrollFrame:SetScrollChild( NS.ScrollChild );
 
 -- Title buttons
-local LastButton, ButtonCount = me.Close, 0;
+local LastButton, ButtonCount = NS.Close, 0;
 --- @return A new title button.
 local function SetupTitleButton ( Button, TooltipText )
 	Button:SetPoint( "RIGHT", LastButton, "LEFT", -2, 0 );
@@ -918,25 +918,25 @@ local function SetupTitleButton ( Button, TooltipText )
 	Button:SetMotionScriptsWhileDisabled( true );
 	Button.tooltipText = TooltipText;
 end
-SetupTitleButton( me.Send, L.SEND );
-SetupTitleButton( me.Delete, L.DELETE );
-SetupTitleButton( me.NewScript, L.SCRIPT_NEW );
-SetupTitleButton( me.NewFolder, L.FOLDER_NEW );
-me:SetMinResize( 40 + ButtonCount * 18 + me.Title:GetWidth(), 100 );
-me:ListSetSelection(); -- Update title buttons
+SetupTitleButton( NS.Send, L.SEND );
+SetupTitleButton( NS.Delete, L.DELETE );
+SetupTitleButton( NS.NewScript, L.SCRIPT_NEW );
+SetupTitleButton( NS.NewFolder, L.FOLDER_NEW );
+NS:SetMinResize( 40 + ButtonCount * 18 + NS.Title:GetWidth(), 100 );
+NS:ListSetSelection(); -- Update title buttons
 
 StaticPopupDialogs[ "_DEVPAD_DELETE_CONFIRM" ] = {
 	text = L.DELETE_CONFIRM_FORMAT;
 	button1 = YES;
 	button2 = NO;
-	OnAccept = me.Delete.OnAccept;
-	OnHide = me.StaticPopupOnHide;
+	OnAccept = NS.Delete.OnAccept;
+	OnHide = NS.StaticPopupOnHide;
 	timeout = 0;
 	hideOnEscape = true;
 	whileDead = true;
 	showAlert = true;
 };
-local Send = me.Send;
+local Send = NS.Send;
 StaticPopupDialogs[ "_DEVPAD_SEND_PLAYER" ] = {
 	text = L.SEND_PLAYER_NAME;
 	button1 = ACCEPT;
@@ -956,7 +956,7 @@ StaticPopupDialogs[ "_DEVPAD_RECEIVE_CONFIRM" ] = {
 	button3 = IGNORE_PLAYER;
 	OnAccept = Send.ReceiveOnAccept;
 	OnAlt = Send.ReceiveOnIgnore;
-	OnHide = me.StaticPopupOnHide;
+	OnHide = NS.StaticPopupOnHide;
 	timeout = 0;
 	hideOnEscape = true;
 	whileDead = true;
@@ -966,8 +966,8 @@ StaticPopupDialogs[ "_DEVPAD_RECEIVE_CONFIRM" ] = {
 };
 
 -- Search bar
-me.Bottom:SetHeight( 24 );
-local Search = me.SearchEdit;
+NS.Bottom:SetHeight( 24 );
+local Search = NS.SearchEdit;
 Search:SetHeight( 20 );
 Search:SetPoint( "BOTTOMLEFT", 12, 2 );
 Search:SetPoint( "RIGHT", -10, 0 );
@@ -985,10 +985,10 @@ local Icon = Search:CreateTexture( nil, "OVERLAY" );
 Icon:SetPoint( "LEFT", 0, -2 );
 Icon:SetSize( 14, 14 );
 Icon:SetTexture( [[Interface\COMMON\UI-Searchbox-Icon]] );
-me:SetSearch( "" );
+NS:SetSearch( "" );
 
 -- Object renaming edit box
-local Rename = me.RenameEdit;
+local Rename = NS.RenameEdit;
 Rename:Hide();
 Rename:SetAutoFocus( false );
 Rename:SetScript( "OnEnterPressed", Rename.OnEnterPressed );
@@ -998,28 +998,28 @@ Rename:SetScript( "OnEditFocusLost", Rename.OnEditFocusLost );
 Rename:SetScript( "OnCursorChanged", Rename.OnCursorChanged );
 
 -- Highlight for script open in editor
-local Edited = me.Edited;
+local Edited = NS.Edited;
 Edited:Hide();
 Edited:SetTexture( [[Interface\ACHIEVEMENTFRAME\UI-Achievement-Category-Highlight]] );
 Edited:SetBlendMode( "ADD" );
 Edited:SetTexCoord( 0.029, 0.635, 0.149, 0.733 );
 Edited:SetAlpha( 0.5 );
 
-_DevPad.RegisterCallback( me, "ObjectSetName" );
-_DevPad.RegisterCallback( me, "ObjectReceived" );
-_DevPad.RegisterCallback( me, "FolderInsert" );
-_DevPad.RegisterCallback( me, "FolderRemove" );
-_DevPad.RegisterCallback( me, "FolderSetClosed" );
-_DevPad.RegisterCallback( me, "ScriptSetAutoRun" );
-_DevPad.RegisterCallback( me, "ScriptSetText" );
-GUI.RegisterCallback( me, "ListSetSelection" );
-GUI.RegisterCallback( me, "EditorSetScriptObject" );
+_DevPad.RegisterCallback( NS, "ObjectSetName" );
+_DevPad.RegisterCallback( NS, "ObjectReceived" );
+_DevPad.RegisterCallback( NS, "FolderInsert" );
+_DevPad.RegisterCallback( NS, "FolderRemove" );
+_DevPad.RegisterCallback( NS, "FolderSetClosed" );
+_DevPad.RegisterCallback( NS, "ScriptSetAutoRun" );
+_DevPad.RegisterCallback( NS, "ScriptSetText" );
+GUI.RegisterCallback( NS, "ListSetSelection" );
+GUI.RegisterCallback( NS, "EditorSetScriptObject" );
 
-me:Unpack( {} ); -- Default position/size
+NS:Unpack( {} ); -- Default position/size
 
 -- Synchronize with _DevPad
 local Root = _DevPad.FolderRoot;
 for _, Child in ipairs( Root ) do
-	me:FolderInsert( "FolderInsert", Root, Child );
+	NS:FolderInsert( "FolderInsert", Root, Child );
 end
-me:ObjectReceived( "ObjectReceived", nil );
+NS:ObjectReceived( "ObjectReceived", nil );

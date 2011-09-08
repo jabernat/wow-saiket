@@ -5,33 +5,33 @@
 
 
 local _Underscore = _Underscore;
-local me = _Underscore.Units.oUF;
-assert( me.StyleMeta.__call, "_Underscore.Units.oUF Initializer already destroyed!" );
+local NS = _Underscore.Units.oUF;
+assert( NS.StyleMeta.__call, "_Underscore.Units.oUF Initializer already destroyed!" );
 
 oUF:RegisterStyle( "_UnderscoreUnitsArena", setmetatable( {
 	Width = 110;
 	Height = 36;
 	HealthText = "Tiny";
 	PowerText  = "Tiny";
-	NameFont = me.FontTiny;
+	NameFont = NS.FontTiny;
 	CastTime = false;
 	Auras = false;
 	DebuffHighlight = false;
 	PowerHeight = 0.2;
 	ProgressHeight = 0.2;
-}, me.StyleMeta ) );
+}, NS.StyleMeta ) );
 oUF:RegisterStyle( "_UnderscoreUnitsArenaTarget", setmetatable( {
 	Width = 80;
 	Height = 36;
 	PortraitSide = "LEFT";
 	HealthText = false;
 	PowerText  = false;
-	NameFont = me.FontTiny;
+	NameFont = NS.FontTiny;
 	CastTime = false;
 	Auras = false;
 	PowerHeight = 0.2;
 	ProgressHeight = 0.2;
-}, me.StyleMeta ) );
+}, NS.StyleMeta ) );
 
 
 local LastFrame;
@@ -42,7 +42,7 @@ for Index = 1, 5 do
 		Frame:SetPoint( "TOPLEFT", LastFrame, "BOTTOMLEFT", 0, -_Underscore.Backdrop.Padding * 2 );
 	else
 		Frame:SetPoint( "LEFT", UIParent );
-		Frame:SetPoint( "TOP", me.Pet, "BOTTOM", 0, -185 );
+		Frame:SetPoint( "TOP", NS.Pet, "BOTTOM", 0, -185 );
 	end
 	LastFrame = Frame;
 
@@ -56,4 +56,4 @@ for Index = 1, 5 do
 end
 
 -- Garbage collect _Underscore.Units.oUF's initialization code
-me.StyleMeta.__call = nil;
+NS.StyleMeta.__call = nil;

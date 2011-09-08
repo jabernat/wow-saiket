@@ -4,12 +4,12 @@
   ****************************************************************************]]
 
 
-local me = {};
-select( 2, ... ).Dialog = me;
+local NS = {};
+select( 2, ... ).Dialog = NS;
 
-me.StickyFrames = {};
+NS.StickyFrames = {};
 
-me.StuckColor = { 0.5, 0.5, 0.2 };
+NS.StuckColor = { 0.5, 0.5, 0.2 };
 
 local StickTolerance = 16;
 
@@ -17,14 +17,14 @@ local StickTolerance = 16;
 
 
 --- Builds a standard tooltip for a control.
-function me:ControlOnEnter ()
+function NS:ControlOnEnter ()
 	if ( self.tooltipText ) then
 		GameTooltip:SetOwner( self, "ANCHOR_TOPRIGHT" );
 		GameTooltip:SetText( self.tooltipText, nil, nil, nil, nil, 1 );
 	end
 end
 --- Brings a range of Y-coords into this ScrollFrame's view.
-function me:SetVerticalScrollToCoord ( TargetTop, TargetBottom )
+function NS:SetVerticalScrollToCoord ( TargetTop, TargetBottom )
 	if ( self:GetVerticalScrollRange() > 0 ) then
 		local Height = self:GetHeight();
 		local Top = self:GetVerticalScroll();
@@ -38,10 +38,10 @@ function me:SetVerticalScrollToCoord ( TargetTop, TargetBottom )
 	end
 end
 --- @return A new standard button frame.
-function me:NewButton ( Path )
+function NS:NewButton ( Path )
 	local Button = CreateFrame( "Button", nil, self );
 	Button:SetSize( 16, 16 );
-	Button:SetScript( "OnEnter", me.ControlOnEnter );
+	Button:SetScript( "OnEnter", NS.ControlOnEnter );
 	Button:SetScript( "OnLeave", GameTooltip_Hide );
 
 	Button:SetHighlightTexture( [[Interface\Buttons\UI-PlusButton-Hilight]] );
@@ -62,32 +62,32 @@ end
 
 
 --- Starts resizing the frame.
-function me:ResizeOnMouseDown ()
+function NS:ResizeOnMouseDown ()
 	self.Frame:StartSizing( "BOTTOMRIGHT" );
 end
 --- Stops resizing the frame.
-function me:ResizeOnMouseUp ()
+function NS:ResizeOnMouseUp ()
 	local Frame = self.Frame;
 	Frame:StopMovingOrSizing();
 	-- Reattach if previously stuck
 	FlyPaper.StickToPoint( Frame,
-		me.StickyFrames[ Frame.StickTarget ], Frame.StickPoint )
+		NS.StickyFrames[ Frame.StickTarget ], Frame.StickPoint )
 end
 --- Starts dragging the frame.
-function me:OnMouseDown ()
+function NS:OnMouseDown ()
 	self:StartMoving();
 	self:SetBackdropBorderColor( 1, 1, 1 );
 end
 --- Stops dragging the frame.
-function me:OnMouseUp ()
+function NS:OnMouseUp ()
 	self:StopMovingOrSizing();
 	-- Try to stick to other windows
-	for Name, Frame in pairs( me.StickyFrames ) do
+	for Name, Frame in pairs( NS.StickyFrames ) do
 		if ( Frame ~= self and Frame:IsVisible() ) then
 			local Point = FlyPaper.Stick( self, Frame, StickTolerance );
 			if ( Point ) then
 				self.StickTarget, self.StickPoint = Name, Point;
-				self:SetBackdropBorderColor( unpack( me.StuckColor ) );
+				self:SetBackdropBorderColor( unpack( NS.StuckColor ) );
 				return;
 			end
 		end
@@ -97,12 +97,12 @@ function me:OnMouseUp ()
 end
 
 --- Updates clamp to allow dragging the frame mostly but not completely offscreen.
-function me:OnSizeChanged ( Width, Height )
+function NS:OnSizeChanged ( Width, Height )
 	self:SetClampRectInsets( Width - 32, 32 - Width, 32 - Height, Height - 32 );
 	self:SetClampedToScreen( true );
 end
 --- Adds and adjusts scrollbars when necessary.
-function me:ScrollFrameOnScrollRangeChanged ( XRange, YRange )
+function NS:ScrollFrameOnScrollRangeChanged ( XRange, YRange )
 	local Bar = self.Bar;
 	self:GetParent():EnableMouseWheel( YRange > 0 ); -- Enable only if scrollable
 
@@ -121,7 +121,7 @@ function me:ScrollFrameOnScrollRangeChanged ( XRange, YRange )
 	end
 end
 --- Synchronizes the scrollbar with the scroll range.
-function me:ScrollFrameOnVerticalScroll ( Offset )
+function NS:ScrollFrameOnVerticalScroll ( Offset )
 	return self.Bar:SetValue( Offset );
 end
 do
@@ -130,17 +130,17 @@ do
 		Bar:SetValue( Bar:GetValue() + Delta * Bar:GetParent():GetHeight() / 2 );
 	end
 	--- Scrolls the view vertically with the mousewheel.
-	function me:WindowOnMouseWheel ( Delta )
+	function NS:WindowOnMouseWheel ( Delta )
 		BarIncrement( self:GetParent().ScrollFrame.Bar, -Delta );
 	end
 	--- Scrolls a bar when its button is clicked.
-	function me:ScrollButtonOnClick ()
+	function NS:ScrollButtonOnClick ()
 		PlaySound( "UChatScrollButton" );
 		BarIncrement( self:GetParent(), self.Delta );
 	end
 end
 --- Syncs view and scroll buttons when scrollbar moves.
-function me:ScrollBarOnValueChanged ( Position )
+function NS:ScrollBarOnValueChanged ( Position )
 	local Min, Max = self:GetMinMaxValues();
 	self.Dec[ Position == Min and "Disable" or "Enable" ]( self.Dec );
 	self.Inc[ Position == Max and "Disable" or "Enable" ]( self.Inc );
@@ -149,7 +149,7 @@ end
 
 
 --- Saves position and size information for saved variables.
-function me:Pack ()
+function NS:Pack ()
 	local Options, _ = {};
 	Options.Width, Options.Height = self:GetSize();
 	if ( self.StickTarget ) then
@@ -160,13 +160,13 @@ function me:Pack ()
 	return Options;
 end
 --- Loads position and size from saved variables.
-function me:Unpack ( Options )
+function NS:Unpack ( Options )
 	self:SetSize( Options.Width or self.DefaultWidth, Options.Height or self.DefaultHeight );
 	if ( FlyPaper.StickToPoint( self,
-		me.StickyFrames[ Options.StickTarget ], Options.StickPoint )
+		NS.StickyFrames[ Options.StickTarget ], Options.StickPoint )
 	) then
 		self.StickTarget, self.StickPoint = Options.StickTarget, Options.StickPoint;
-		self:SetBackdropBorderColor( unpack( me.StuckColor ) );
+		self:SetBackdropBorderColor( unpack( NS.StuckColor ) );
 	else
 		self:ClearAllPoints();
 		self:SetPoint( Options.Point or "CENTER", nil, Options.Point or "CENTER", Options.X or 0, Options.Y or 0 );
@@ -179,7 +179,7 @@ end
 
 local ResizeTexture = [[Interface\AddOns\]]..( ... )..[[\Skin\ResizeGrip]];
 --- @return A new frame.
-function me:New ( Name )
+function NS:New ( Name )
 	local Frame = CreateFrame( "Frame", Name, UIParent );
 	Frame:Hide();
 	Frame:SetScale( 0.9 );

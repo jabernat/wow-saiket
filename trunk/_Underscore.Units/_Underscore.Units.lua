@@ -4,8 +4,8 @@
   ****************************************************************************]]
 
 
-local me = select( 2, ... );
-_Underscore.Units = me;
+local NS = select( 2, ... );
+_Underscore.Units = NS;
 
 
 
@@ -41,7 +41,7 @@ do
 	end
 	--- Adds a unit popup at the cursor for the given unit.
 	-- @param UnitID  Unit to show a dropdown menu for.
-	function me:ShowGenericMenu ( UnitID )
+	function NS:ShowGenericMenu ( UnitID )
 		HideDropDownMenu( 1 );
 
 		DropDown.unit = UnitID or SecureButton_GetUnit( self );

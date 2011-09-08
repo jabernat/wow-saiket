@@ -10,10 +10,10 @@ if ( IsAddOnLoaded( "Carbonite" ) ) then
 end
 
 
-local me = CreateFrame( "Frame" );
-_MiniBlobs.Canvas = me;
-local BlobAnchor = CreateFrame( "Frame", nil, me );
-me.BlobAnchor = BlobAnchor;
+local NS = CreateFrame( "Frame" );
+_MiniBlobs.Canvas = NS;
+local BlobAnchor = CreateFrame( "Frame", nil, NS );
+NS.BlobAnchor = BlobAnchor;
 
 local UPDATE_INTERVAL = 1 / 25; -- Minimum time between repaints
 local UPDATE_DISTANCE2 = 1 ^ 2; -- Minimum change in yards (squared) before the map will repaint
@@ -31,20 +31,20 @@ local Minimap = Minimap;
 
 local TypeEnabledQueue = {};
 --- Prints a warning message if "Rotate Minimap" is enabled on login.
-function me:PLAYER_LOGIN ()
+function NS:PLAYER_LOGIN ()
 	if ( GetCVarBool( "rotateMinimap" ) ) then
 		_MiniBlobs.Print( _MiniBlobs.L.ROTATE_MINIMAP_NOTICE, ORANGE_FONT_COLOR );
 	end
 end
 --- Removes the blobs in combat since they're protected.
-function me:PLAYER_REGEN_DISABLED ()
+function NS:PLAYER_REGEN_DISABLED ()
 	self:Hide();
 	self:SetParent( nil ); -- Unprotect the minimap during combat
 	self:ClearAllPoints();
 	BlobAnchor:ClearAllPoints();
 end
 --- Shows the blobs after combat ends.
-function me:PLAYER_REGEN_ENABLED ()
+function NS:PLAYER_REGEN_ENABLED ()
 	self:SetParent( Minimap );
 	self:SetFrameLevel( Minimap:GetFrameLevel() );
 	self:SetAllPoints();
@@ -57,19 +57,19 @@ function me:PLAYER_REGEN_ENABLED ()
 end
 
 --- Re-draws blobs when the viewed map changes.
-function me:WORLD_MAP_UPDATE ()
+function NS:WORLD_MAP_UPDATE ()
 	return self:UpdateMap();
 end
 --- Re-draws archaeology blobs when they get added or removed.
-function me:ARTIFACT_DIG_SITE_UPDATED ()
+function NS:ARTIFACT_DIG_SITE_UPDATED ()
 	return self:Update();
 end
 --- Re-draws quest blobs when they get added or removed.
-function me:QUEST_POI_UPDATE ()
+function NS:QUEST_POI_UPDATE ()
 	return self:Update();
 end
 --- Hides completed quest blobs and updates blobs when objectives change.
-function me:UNIT_QUEST_LOG_CHANGED ( _, UnitID )
+function NS:UNIT_QUEST_LOG_CHANGED ( _, UnitID )
 	if ( UnitID == "player" ) then
 		return self:Update();
 	end
@@ -78,7 +78,7 @@ do
 	--- Hook to force a repaint when a quest watch is added or removed.
 	local function UpdateQuestsWatched ()
 		if ( BlobTypeData[ "Quests" ].Enabled and _MiniBlobs:GetQuestsFilter() == "WATCHED" ) then
-			return me:Update();
+			return NS:Update();
 		end
 	end
 	hooksecurefunc( "AddQuestWatch", UpdateQuestsWatched );
@@ -87,11 +87,11 @@ end
 --- Hook to force a repaint when a watched quest is selected.
 hooksecurefunc( "SetSuperTrackedQuestID", function ()
 	if ( BlobTypeData[ "Quests" ].Enabled and _MiniBlobs:GetQuestsFilter() == "SELECTED" ) then
-		return me:Update();
+		return NS:Update();
 	end
 end );
 --- Force a repaint when the minimap swaps between indoor and outdoor zoom.
-function me:MINIMAP_UPDATE_ZOOM ()
+function NS:MINIMAP_UPDATE_ZOOM ()
 	local Zoom;
 	if ( GetCVar( "minimapZoom" ) == GetCVar( "minimapInsideZoom" ) ) then -- Indeterminate case
 		Zoom = Minimap:GetZoom();
@@ -105,20 +105,20 @@ function me:MINIMAP_UPDATE_ZOOM ()
 end
 --- Hook to force a repaint when minimap zoom changes.
 hooksecurefunc( Minimap, "SetZoom", function ()
-	me.Radius = nil;
+	NS.Radius = nil;
 end );
 
 --- Reposition blobs immediately after being shown.
-function me:OnShow ()
+function NS:OnShow ()
 	return self:Update();
 end
 --- Repositions blob slices when the minimap changes size.
-function me:OnSizeChanged ()
+function NS:OnSizeChanged ()
 	return self:UpdateClip();
 end
 --- Re-draws blobs when the minimap moves, since rendered blobs are static to the screen.
-function me:OnPositionChanged ()
-	return me:Update();
+function NS:OnPositionChanged ()
+	return NS:Update();
 end
 
 
@@ -131,7 +131,7 @@ do
 		Blob:SetNumSplinePoints( 8 + 22 * Quality ); -- Max points per polygon, between [8-30]
 	end
 	--- Adjusts the render quality of all blobs when settings change.
-	function me:MiniBlobs_Quality ( _, Quality )
+	function NS:MiniBlobs_Quality ( _, Quality )
 		for _, Column in ipairs( BlobAnchor ) do
 			for Type in pairs( BlobTypeData ) do
 				if ( Column[ Type ] ) then
@@ -151,7 +151,7 @@ do
 		Blob:SetBorderAlpha( 255 * Style.BorderAlpha );
 	end
 	--- Sets the alpha for a given blob type when settings change.
-	function me:MiniBlobs_TypeStyle ( _, Type, StyleName, Style )
+	function NS:MiniBlobs_TypeStyle ( _, Type, StyleName, Style )
 		for _, Column in ipairs( BlobAnchor ) do
 			local Blob = Column[ Type ];
 			if ( not Blob ) then
@@ -168,7 +168,7 @@ do
 		return Blob:SetFillAlpha( 255 * Alpha );
 	end
 	--- Sets the alpha for a given blob type when settings change.
-	function me:MiniBlobs_TypeAlpha ( _, Type, Alpha )
+	function NS:MiniBlobs_TypeAlpha ( _, Type, Alpha )
 		for _, Column in ipairs( BlobAnchor ) do
 			local Blob = Column[ Type ];
 			if ( not Blob ) then
@@ -202,23 +202,23 @@ do
 	end
 	--- Handler to setup tracking of this type's blob data.
 	function BlobTypeData.Archaeology.OnEnable ()
-		me:RegisterEvent( "ARTIFACT_DIG_SITE_UPDATED" );
+		NS:RegisterEvent( "ARTIFACT_DIG_SITE_UPDATED" );
 	end
 	function BlobTypeData.Archaeology.OnDisable ()
-		me:UnregisterEvent( "ARTIFACT_DIG_SITE_UPDATED" );
+		NS:UnregisterEvent( "ARTIFACT_DIG_SITE_UPDATED" );
 	end
 	function BlobTypeData.Quests.OnEnable ()
-		me:RegisterEvent( "QUEST_POI_UPDATE" );
-		me:RegisterEvent( "UNIT_QUEST_LOG_CHANGED" );
-		_MiniBlobs.RegisterCallback( me, "MiniBlobs_QuestsFilter", "Update" );
+		NS:RegisterEvent( "QUEST_POI_UPDATE" );
+		NS:RegisterEvent( "UNIT_QUEST_LOG_CHANGED" );
+		_MiniBlobs.RegisterCallback( NS, "MiniBlobs_QuestsFilter", "Update" );
 	end
 	function BlobTypeData.Quests.OnDisable ()
-		me:UnregisterEvent( "QUEST_POI_UPDATE" );
-		me:UnregisterEvent( "UNIT_QUEST_LOG_CHANGED" );
-		_MiniBlobs.UnregisterCallback( me, "MiniBlobs_QuestsFilter" );
+		NS:UnregisterEvent( "QUEST_POI_UPDATE" );
+		NS:UnregisterEvent( "UNIT_QUEST_LOG_CHANGED" );
+		_MiniBlobs.UnregisterCallback( NS, "MiniBlobs_QuestsFilter" );
 	end
 	--- Creates or hides blob frames when settings change.
-	function me:MiniBlobs_TypeEnabled ( _, Type, Enabled )
+	function NS:MiniBlobs_TypeEnabled ( _, Type, Enabled )
 		if ( InCombatLockdown() ) then -- Queue to update after combat
 			TypeEnabledQueue[ Type ] = Enabled;
 		else
@@ -231,7 +231,7 @@ do
 		end
 	end
 	--- @return An unused blob column at BlobAnchor[ Index ].
-	function me:GetColumn ( Index )
+	function NS:GetColumn ( Index )
 		local Column = BlobAnchor[ Index ];
 		if ( Column ) then
 			Column:Show();
@@ -280,7 +280,7 @@ do
 		end
 	end
 	--- Sets up blob frames clipped to the minimap.
-	function me:Clip ()
+	function NS:Clip ()
 		local NumVisible = 0;
 		-- Optimize number of columns used for square parts
 		if ( Shape[ 1 ] or Shape[ 2 ] or Shape[ 3 ] or Shape[ 4 ] ) then
@@ -305,7 +305,7 @@ end
 
 do
 	-- Note: Must be parented to Frame so handlers run in the right order.
-	local Updater, Width = CreateFrame( "Frame", nil, me ), 1;
+	local Updater, Width = CreateFrame( "Frame", nil, NS ), 1;
 	Updater:SetPoint( "TOPLEFT" );
 	Updater:SetSize( Width, 1 );
 	local pairs = pairs;
@@ -329,14 +329,14 @@ do
 		end
 	end
 	--- Repaints all blobs in their new locations.
-	function me:DrawBlobs ()
+	function NS:DrawBlobs ()
 		Updater:SetScript( "OnSizeChanged", OnSizeChanged );
 		Width = Width % 2 + 1; -- 2,1,2,1
 		return Updater:SetWidth( Width ); -- Force the handler to run
 	end
 end
 --- Resizes blobs relative to the minimap's view.
-function me:ResizeBlobs ()
+function NS:ResizeBlobs ()
 	local Width, Height = self:GetSize();
 	local Size = 2 * self.Radius;
 	BlobAnchor:SetSize( self.ZoneWidth / Size * Width, self.ZoneHeight / Size * Height );
@@ -348,21 +348,21 @@ end
 
 local UpdateForce;
 --- Attempt to re-draw blobs before the next frame.
-function me:Update ()
+function NS:Update ()
 	UpdateForce = true;
 end
 --- Clip blobs to the minimap before the next frame.
-function me:UpdateClip ()
+function NS:UpdateClip ()
 	Shape = nil;
 end
 local UpdateZoom;
 --- Updates the relative size of blobs before the next frame.
-function me:UpdateZoom ()
+function NS:UpdateZoom ()
 	UpdateZoom = true;
 end
 local UpdateMap;
 --- Updates the display when the viewed map changes.
-function me:UpdateMap ()
+function NS:UpdateMap ()
 	UpdateMap = true;
 end
 
@@ -406,7 +406,7 @@ do
 	local LastX, LastY, YardsX, YardsY;
 	local UpdateNext = 0;
 	--- Repositions blob slices.
-	function me:OnUpdate ( Elapsed )
+	function NS:OnUpdate ( Elapsed )
 		-- Re-clip if shape or size changes
 		ShapeNew = MINIMAP_SHAPES[ GetMinimapShape and GetMinimapShape() ] or MINIMAP_SHAPES.ROUND;
 		if ( Shape ~= ShapeNew ) then
@@ -513,20 +513,20 @@ end
 
 
 
-me:Hide();
-me:SetScript( "OnUpdate", me.OnUpdate );
-me:SetScript( "OnSizeChanged", me.OnSizeChanged );
-me:SetScript( "OnShow", me.OnShow );
-me:SetScript( "OnEvent", _MiniBlobs.Frame.OnEvent );
-me:RegisterEvent( "PLAYER_LOGIN" );
-me:RegisterEvent( "PLAYER_REGEN_ENABLED" );
-me:RegisterEvent( "PLAYER_REGEN_DISABLED" );
-me:RegisterEvent( "WORLD_MAP_UPDATE" );
-me:RegisterEvent( "MINIMAP_UPDATE_ZOOM" );
-_MiniBlobs.RegisterCallback( me, "MiniBlobs_Quality" );
-_MiniBlobs.RegisterCallback( me, "MiniBlobs_TypeEnabled" );
-_MiniBlobs.RegisterCallback( me, "MiniBlobs_TypeAlpha" );
-_MiniBlobs.RegisterCallback( me, "MiniBlobs_TypeStyle" );
+NS:Hide();
+NS:SetScript( "OnUpdate", NS.OnUpdate );
+NS:SetScript( "OnSizeChanged", NS.OnSizeChanged );
+NS:SetScript( "OnShow", NS.OnShow );
+NS:SetScript( "OnEvent", _MiniBlobs.Frame.OnEvent );
+NS:RegisterEvent( "PLAYER_LOGIN" );
+NS:RegisterEvent( "PLAYER_REGEN_ENABLED" );
+NS:RegisterEvent( "PLAYER_REGEN_DISABLED" );
+NS:RegisterEvent( "WORLD_MAP_UPDATE" );
+NS:RegisterEvent( "MINIMAP_UPDATE_ZOOM" );
+_MiniBlobs.RegisterCallback( NS, "MiniBlobs_Quality" );
+_MiniBlobs.RegisterCallback( NS, "MiniBlobs_TypeEnabled" );
+_MiniBlobs.RegisterCallback( NS, "MiniBlobs_TypeAlpha" );
+_MiniBlobs.RegisterCallback( NS, "MiniBlobs_TypeStyle" );
 
 -- Raise round minimap border over top of the overlays to hide jagged edges
 local Level = Minimap:GetFrameLevel() + 3; -- Leave room for scrollframes and blobs
@@ -535,15 +535,15 @@ if ( MinimapBackdrop:GetFrameLevel() < Level ) then
 end
 
 -- Makeshift "OnPositionChanged" handler
-local BottomLeft = CreateFrame( "Frame", nil, me );
+local BottomLeft = CreateFrame( "Frame", nil, NS );
 BottomLeft:SetPoint( "BOTTOMLEFT", nil );
-BottomLeft:SetPoint( "TOPRIGHT", me, "BOTTOMLEFT" );
-BottomLeft:SetScript( "OnSizeChanged", me.OnPositionChanged );
+BottomLeft:SetPoint( "TOPRIGHT", NS, "BOTTOMLEFT" );
+BottomLeft:SetScript( "OnSizeChanged", NS.OnPositionChanged );
 
 if ( IsLoggedIn() ) then
-	me:PLAYER_LOGIN();
+	NS:PLAYER_LOGIN();
 end
 if ( not InCombatLockdown() ) then
-	me:PLAYER_REGEN_ENABLED(); -- Show
+	NS:PLAYER_REGEN_ENABLED(); -- Show
 end
-me:WORLD_MAP_UPDATE();
+NS:WORLD_MAP_UPDATE();

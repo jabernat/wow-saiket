@@ -6,20 +6,20 @@
 
 local _Cursor = _Cursor;
 local L = _CursorLocalization;
-local me = CreateFrame( "Frame" );
-_Cursor.Options = me;
+local NS = CreateFrame( "Frame" );
+_Cursor.Options = NS;
 
 
-local SetsPanel = CreateFrame( "Frame", "_CursorOptionsSets", me, "OptionsBoxTemplate" );
-me.SetsPanel = SetsPanel;
+local SetsPanel = CreateFrame( "Frame", "_CursorOptionsSets", NS, "OptionsBoxTemplate" );
+NS.SetsPanel = SetsPanel;
 SetsPanel.Set = CreateFrame( "EditBox", "_CursorOptionsSet", SetsPanel, "InputBoxTemplate" );
 SetsPanel.Set.Button = CreateFrame( "Button", nil, SetsPanel.Set );
 SetsPanel.SaveButton = CreateFrame( "Button", nil, SetsPanel, "UIPanelButtonTemplate" );
 SetsPanel.LoadButton = CreateFrame( "Button", nil, SetsPanel, "UIPanelButtonTemplate" );
 SetsPanel.DeleteButton = CreateFrame( "Button", nil, SetsPanel, "UIPanelButtonGrayTemplate" );
 
-local CursorsPanel = CreateFrame( "Frame", "_CursorOptionsCursors", me, "OptionsBoxTemplate" );
-me.CursorsPanel = CursorsPanel;
+local CursorsPanel = CreateFrame( "Frame", "_CursorOptionsCursors", NS, "OptionsBoxTemplate" );
+NS.CursorsPanel = CursorsPanel;
 CursorsPanel.ApplyButton = CreateFrame( "Button", nil, CursorsPanel, "UIPanelButtonGrayTemplate" );
 CursorsPanel.Enabled = CreateFrame( "CheckButton", "_CursorOptionsEnabled", CursorsPanel, "InterfaceOptionsCheckButtonTemplate" );
 CursorsPanel.Preview = CreateFrame( "Frame", nil, CursorsPanel );
@@ -37,7 +37,7 @@ local TabsUsed = {};
 CursorsPanel.TabsUsed = TabsUsed;
 
 local Preset = {};
-me.Preset = Preset;
+NS.Preset = Preset;
 
 
 
@@ -356,7 +356,7 @@ end
   * Function: _Cursor.Options:ControlOnEnter                                   *
   * Description: Shows the control's tooltip.                                  *
   ****************************************************************************]]
-function me:ControlOnEnter ()
+function NS:ControlOnEnter ()
 	GameTooltip:ClearAllPoints();
 	GameTooltip:SetPoint( "TOPLEFT", self, "BOTTOMLEFT" );
 	GameTooltip:SetOwner( self, "ANCHOR_PRESERVE" );
@@ -619,22 +619,22 @@ end
   * Function: _Cursor.Options.ResetAll                                         *
   * Description: Reloads cursor settings and all sets.                         *
   ****************************************************************************]]
-function me.ResetAll ()
+function NS.ResetAll ()
 	_CursorOptions.Sets = CopyTable( _Cursor.DefaultSets );
-	me.ResetCharacter();
+	NS.ResetCharacter();
 end
 --[[****************************************************************************
   * Function: _Cursor.Options.ResetCharacter                                   *
   * Description: Reloads cursor settings.                                      *
   ****************************************************************************]]
-function me.ResetCharacter ()
+function NS.ResetCharacter ()
 	_Cursor.LoadSet( _Cursor.DefaultSets[ _Cursor.DefaultModelSet ] );
 end
 --[[****************************************************************************
   * Function: _Cursor.Options:default                                          *
   * Description: Prompts the user to reset settings to default.                *
   ****************************************************************************]]
-function me:default ()
+function NS:default ()
 	StaticPopup_Show( "_CURSOR_RESET_CONFIRM" );
 end
 
@@ -645,21 +645,21 @@ end
   * Function: _Cursor.Options:OnHide                                           *
   * Description: Updates the actual cursor models when settings are closed.    *
   ****************************************************************************]]
-function me:OnHide ()
+function NS:OnHide ()
 	_Cursor.Update();
 end
 --[[****************************************************************************
   * Function: _Cursor.Options.OnApply                                          *
   * Description: Updates the actual cursor models when Apply is pressed.       *
   ****************************************************************************]]
-function me.OnApply ()
+function NS.OnApply ()
 	_Cursor.Update();
 end
 --[[****************************************************************************
   * Function: _Cursor.Options.Update                                           *
   * Description: Full update that syncronizes tabs to actual saved settings.   *
   ****************************************************************************]]
-function me.Update ()
+function NS.Update ()
 	for Tab in pairs( TabsUsed ) do
 		CursorsPanel.TabDisable( Tab );
 	end
@@ -687,27 +687,27 @@ end
   * Function: _Cursor.Options.SlashCommand                                     *
   * Description: Slash command chat handler to open the options pane.          *
   ****************************************************************************]]
-function me.SlashCommand ()
-	InterfaceOptionsFrame_OpenToCategory( me );
+function NS.SlashCommand ()
+	InterfaceOptionsFrame_OpenToCategory( NS );
 end
 
 
 
 
-me.name = L.OPTIONS_TITLE;
-me:Hide();
-me:SetScript( "OnHide", me.OnHide );
+NS.name = L.OPTIONS_TITLE;
+NS:Hide();
+NS:SetScript( "OnHide", NS.OnHide );
 
-InterfaceOptions_AddCategory( me );
+InterfaceOptions_AddCategory( NS );
 
 
 -- Pane title
-me.Title = me:CreateFontString( nil, "ARTWORK", "GameFontNormalLarge" );
-me.Title:SetPoint( "TOPLEFT", 16, -16 );
-me.Title:SetText( L.OPTIONS_TITLE );
-local SubText = me:CreateFontString( nil, "ARTWORK", "GameFontHighlightSmall" );
-me.SubText = SubText;
-SubText:SetPoint( "TOPLEFT", me.Title, "BOTTOMLEFT", 0, -8 );
+NS.Title = NS:CreateFontString( nil, "ARTWORK", "GameFontNormalLarge" );
+NS.Title:SetPoint( "TOPLEFT", 16, -16 );
+NS.Title:SetText( L.OPTIONS_TITLE );
+local SubText = NS:CreateFontString( nil, "ARTWORK", "GameFontHighlightSmall" );
+NS.SubText = SubText;
+SubText:SetPoint( "TOPLEFT", NS.Title, "BOTTOMLEFT", 0, -8 );
 SubText:SetPoint( "RIGHT", -32, 0 );
 SubText:SetHeight( 32 );
 SubText:SetJustifyH( "LEFT" );
@@ -732,7 +732,7 @@ Set.SetHeight = function () end;
 Set:SetAutoFocus( false );
 Set:SetScript( "OnEnterPressed", Set.OnEnterPressed );
 Set:SetScript( "OnTextChanged", Set.OnTextChanged );
-Set:SetScript( "OnEnter", me.ControlOnEnter );
+Set:SetScript( "OnEnter", NS.ControlOnEnter );
 Set:SetScript( "OnLeave", GameTooltip_Hide );
 Set.point = "TOPRIGHT";
 Set.relativePoint = "BOTTOMRIGHT";
@@ -763,7 +763,7 @@ DeleteButton:SetPoint( "BOTTOMRIGHT", -8, 10 );
 DeleteButton:SetSize( 74, 22 );
 DeleteButton:SetText( L.OPTIONS.DELETE );
 DeleteButton:SetScript( "OnClick", DeleteButton.OnClick );
-DeleteButton:SetScript( "OnEnter", me.ControlOnEnter );
+DeleteButton:SetScript( "OnEnter", NS.ControlOnEnter );
 DeleteButton:SetScript( "OnLeave", GameTooltip_Hide );
 DeleteButton.tooltipText = L.OPTIONS.DELETE_DESC;
 
@@ -780,7 +780,7 @@ Text:SetPoint( "BOTTOMLEFT", CursorsPanel, "TOPLEFT", 9, 20 );
 
 -- Apply button
 local ApplyButton = CursorsPanel.ApplyButton;
-ApplyButton:SetScript( "OnClick", me.OnApply );
+ApplyButton:SetScript( "OnClick", NS.OnApply );
 ApplyButton:SetPoint( "BOTTOMRIGHT", CursorsPanel, "TOPRIGHT", 0, 2 );
 ApplyButton:SetSize( 64, 16 );
 ApplyButton:SetText( L.OPTIONS.APPLY );
@@ -802,7 +802,7 @@ Preview:SetBackdrop( {
 	edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border"; edgeSize = 16;
 } );
 Preview:SetScript( "OnMouseUp", Preview.OnMouseUp );
-Preview:SetScript( "OnEnter", me.ControlOnEnter );
+Preview:SetScript( "OnEnter", NS.ControlOnEnter );
 Preview:SetScript( "OnLeave", GameTooltip_Hide );
 Preview.Rate = math.pi;
 Preview.tooltipText = L.OPTIONS.PREVIEW_DESC;
@@ -832,7 +832,7 @@ X:SetHeight( 14 );
 X:SetScale( 0.8 );
 X:SetMinMaxValues( -32, 32 );
 X:SetScript( "OnValueChanged", X.OnValueChanged );
-X:SetScript( "OnEnter", me.ControlOnEnter );
+X:SetScript( "OnEnter", NS.ControlOnEnter );
 X:SetScript( "OnLeave", GameTooltip_Hide );
 X.tooltipText = L.OPTIONS[ "X_DESC" ];
 Text = _G[ X:GetName().."Low" ];
@@ -854,7 +854,7 @@ Y:SetScale( 0.8 );
 Y:SetThumbTexture( "Interface\\Buttons\\UI-SliderBar-Button-Vertical" );
 Y:SetMinMaxValues( -32, 32 );
 Y:SetScript( "OnValueChanged", Y.OnValueChanged );
-Y:SetScript( "OnEnter", me.ControlOnEnter );
+Y:SetScript( "OnEnter", NS.ControlOnEnter );
 Y:SetScript( "OnLeave", GameTooltip_Hide );
 Y.tooltipText = L.OPTIONS[ "Y_DESC" ];
 Text = _G[ Y:GetName().."Low" ];
@@ -873,7 +873,7 @@ Scale:SetPoint( "RIGHT", Preview );
 Scale:SetPoint( "TOP", X, "BOTTOM", 0, -8 );
 Scale:SetMinMaxValues( 1 / 2, 4 );
 Scale:SetScript( "OnValueChanged", Scale.OnValueChanged );
-Scale:SetScript( "OnEnter", me.ControlOnEnter );
+Scale:SetScript( "OnEnter", NS.ControlOnEnter );
 Scale:SetScript( "OnLeave", GameTooltip_Hide );
 Scale.tooltipText = L.OPTIONS[ "SCALE_DESC" ];
 _G[ Scale:GetName().."Low" ]:SetText( 0.5 );
@@ -888,7 +888,7 @@ Facing:SetPoint( "TOPLEFT", Scale, "BOTTOMLEFT", 0, -8 );
 Facing:SetPoint( "RIGHT", Scale );
 Facing:SetMinMaxValues( 0, math.pi * 2 );
 Facing:SetScript( "OnValueChanged", Facing.OnValueChanged );
-Facing:SetScript( "OnEnter", me.ControlOnEnter );
+Facing:SetScript( "OnEnter", NS.ControlOnEnter );
 Facing:SetScript( "OnLeave", GameTooltip_Hide );
 Facing.tooltipText = L.OPTIONS[ "FACING_DESC" ];
 _G[ Facing:GetName().."Low" ]:SetText( L.OPTIONS.FACING_LOW );
@@ -902,7 +902,7 @@ local Type = CursorsPanel.Type;
 Type:SetPoint( "LEFT", -6, 0 );
 Type:SetPoint( "TOP", Enabled, "BOTTOM", 0, -12 );
 Type:SetPoint( "RIGHT", Y, "LEFT", -8, 0 );
-Type:SetScript( "OnEnter", me.ControlOnEnter );
+Type:SetScript( "OnEnter", NS.ControlOnEnter );
 Type:SetScript( "OnLeave", GameTooltip_Hide );
 UIDropDownMenu_JustifyText( Type, "LEFT" );
 _G[ Type:GetName().."Middle" ]:SetPoint( "RIGHT", -16, 0 );
@@ -917,7 +917,7 @@ local Value = CursorsPanel.Value;
 Value:SetPoint( "LEFT", Type );
 Value:SetPoint( "RIGHT", Type );
 Value:SetPoint( "BOTTOM", Preview );
-Value:SetScript( "OnEnter", me.ControlOnEnter );
+Value:SetScript( "OnEnter", NS.ControlOnEnter );
 Value:SetScript( "OnLeave", GameTooltip_Hide );
 UIDropDownMenu_JustifyText( Value, "LEFT" );
 _G[ Value:GetName().."Middle" ]:SetPoint( "RIGHT", -16, 0 );
@@ -935,7 +935,7 @@ Path:SetHeight( 20 );
 Path:SetAutoFocus( false );
 Path:SetScript( "OnEnterPressed", Path.OnEnterPressed );
 Path:SetScript( "OnEscapePressed", Path.OnEscapePressed );
-Path:SetScript( "OnEnter", me.ControlOnEnter );
+Path:SetScript( "OnEnter", NS.ControlOnEnter );
 Path:SetScript( "OnLeave", GameTooltip_Hide );
 Path.tooltipText = L.OPTIONS[ "PATH_DESC" ];
 Text = Path:CreateFontString( nil, "ARTWORK", "GameFontNormalSmall" );
@@ -951,11 +951,11 @@ StaticPopupDialogs[ "_CURSOR_RESET_CONFIRM" ] = {
 	button1 = L.RESET_ALL;
 	button3 = L.RESET_CHARACTER;
 	button2 = L.RESET_CANCEL;
-	OnAccept = me.ResetAll;
-	OnAlt    = me.ResetCharacter;
+	OnAccept = NS.ResetAll;
+	OnAlt    = NS.ResetCharacter;
 	timeout = 0;
 	exclusive = 1;
 	hideOnEscape = 1;
 	whileDead = 1;
 };
-SlashCmdList[ "_CURSOR_OPTIONS" ] = me.SlashCommand;
+SlashCmdList[ "_CURSOR_OPTIONS" ] = NS.SlashCommand;

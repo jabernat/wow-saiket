@@ -4,26 +4,26 @@
   ****************************************************************************]]
 
 
-local AddOnName, me = ...;
-_DevPad.GUI = me;
+local AddOnName, NS = ...;
+_DevPad.GUI = NS;
 
-me.Frame = CreateFrame( "Frame" );
-me.Callbacks = LibStub( "CallbackHandler-1.0" ):New( me );
+NS.Frame = CreateFrame( "Frame" );
+NS.Callbacks = LibStub( "CallbackHandler-1.0" ):New( NS );
 
 
 
 
 --- Load saved variables and position windows.
-function me.Frame:ADDON_LOADED ( Event, AddOn )
+function NS.Frame:ADDON_LOADED ( Event, AddOn )
 	if ( AddOn == AddOnName ) then
 		self:UnregisterEvent( Event );
 		self[ Event ] = nil;
 
 		local Options = _DevPadGUIOptions;
 		if ( Options and Options.List ) then
-			me.List:Unpack( Options.List );
+			NS.List:Unpack( Options.List );
 		end
-		me.Editor:Unpack( ( Options and Options.Editor )
+		NS.Editor:Unpack( ( Options and Options.Editor )
 			or { StickTarget = "List"; StickPoint = "RT"; } );
 
 		-- Replace settings last in case of errors loading them
@@ -32,10 +32,10 @@ function me.Frame:ADDON_LOADED ( Event, AddOn )
 	end
 end
 --- Save settings before exiting.
-function me.Frame:PLAYER_LOGOUT ()
+function NS.Frame:PLAYER_LOGOUT ()
 	_DevPadGUIOptions = {
-		List = me.List:Pack();
-		Editor = me.Editor:Pack();
+		List = NS.List:Pack();
+		Editor = NS.Editor:Pack();
 	};
 end
 
@@ -50,7 +50,7 @@ do
 	local Allowed;
 	--- Catches the game menu bind just before it fires.
 	Listener:SetScript( "OnKeyDown", function ( self, Key )
-		Allowed = ( me.Editor:IsShown() or me.List:IsShown() )
+		Allowed = ( NS.Editor:IsShown() or NS.List:IsShown() )
 			and GetBindingFromClick( Key ) == "TOGGLEGAMEMENU";
 	end );
 	--- Disallows closing the dialogs once the game menu bind is processed.
@@ -70,14 +70,14 @@ do
 	-- Used instead of UISpecialFrames to close *only* from escape.
 	function CloseSpecialWindows ( ... )
 		return Backup( ... )
-			or Allowed and ( Hide( me.Editor ) or Hide( me.List ) );
+			or Allowed and ( Hide( NS.Editor ) or Hide( NS.List ) );
 	end
 end
 
 
 
 
-me.Frame:SetScript( "OnEvent", _DevPad.Frame.OnEvent );
-me.Frame:RegisterEvent( "ADDON_LOADED" );
-me.Frame:RegisterEvent( "PLAYER_ENTERING_WORLD" );
-me.Frame:RegisterEvent( "PLAYER_LEAVING_WORLD" );
+NS.Frame:SetScript( "OnEvent", _DevPad.Frame.OnEvent );
+NS.Frame:RegisterEvent( "ADDON_LOADED" );
+NS.Frame:RegisterEvent( "PLAYER_ENTERING_WORLD" );
+NS.Frame:RegisterEvent( "PLAYER_LEAVING_WORLD" );

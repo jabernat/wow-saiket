@@ -6,16 +6,16 @@
 
 
 local L = select( 2, ... ).L;
-local me = Grid:GetModule( "GridStatus" ):NewModule( "GridStatusHealthFade" );
+local NS = Grid:GetModule( "GridStatus" ):NewModule( "GridStatusHealthFade" );
 
 local STATUS_ID = "alert_healthFade";
 
-me.ColorTables = {};
+NS.ColorTables = {};
 
-me.menuName = L.TITLE;
-me.options = false;
+NS.menuName = L.TITLE;
+NS.options = false;
 
-me.defaultDB = {
+NS.defaultDB = {
 	debug = false;
 	[ STATUS_ID ] = {
 		text = L.TITLE;
@@ -33,14 +33,14 @@ me.defaultDB = {
 do
 	local function ColorGet ( self )
 		local Property = self[ 3 ];
-		local Color = me.db.profile[ STATUS_ID ][ Property ];
+		local Color = NS.db.profile[ STATUS_ID ][ Property ];
 		return Color.r, Color.g, Color.b, Color.a;
 	end
 	local function ColorSet ( self, R, G, B, A )
 		local Property = self[ 3 ];
-		local Color = me.db.profile[ STATUS_ID ][ Property ];
+		local Color = NS.db.profile[ STATUS_ID ][ Property ];
 		Color.r, Color.g, Color.b, Color.a = R, G, B, A or 1;
-		me:UpdateAllUnits();
+		NS:UpdateAllUnits();
 	end
 	local Options = {
 		color = false; -- Don't use original color picker
@@ -56,7 +56,7 @@ do
 		};
 	end
 	--- Registers the HealthFade status and its options with Grid OnLoad.
-	function me:OnInitialize ()
+	function NS:OnInitialize ()
 		self.super.OnInitialize( self );
 		AddColorPicker( "ColorHigh", L.COLOR_HIGH, L.COLOR_HIGH_DESC );
 		AddColorPicker( "ColorLow", L.COLOR_LOW, L.COLOR_LOW_DESC );
@@ -64,7 +64,7 @@ do
 	end
 end
 --- Called when this status is enabled and used.
-function me:OnStatusEnable ( Status )
+function NS:OnStatusEnable ( Status )
 	if ( Status == STATUS_ID ) then
 		self:RegisterMessage( "Grid_UnitJoined", "UpdateUnit" );
 		self:RegisterMessage( "Grid_UnitLeft", "RemoveUnit" );
@@ -75,16 +75,16 @@ function me:OnStatusEnable ( Status )
 	end
 end
 --- Called when this status gets disabled or becomes unused.
-function me:OnStatusDisable ( Status )
+function NS:OnStatusDisable ( Status )
 	if ( Status == STATUS_ID ) then
 		self:UnregisterAllEvents();
 		self:UnregisterAllMessages();
 		self.core:SendStatusLostAllUnits( STATUS_ID );
-		wipe( me.ColorTables );
+		wipe( NS.ColorTables );
 	end
 end
 --- Completely reinitializes the status.
-function me:Reset ()
+function NS:Reset ()
 	self.super.Reset( self );
 	self:UpdateAllUnits();
 end
@@ -95,25 +95,25 @@ end
 do
 	local UnitGUID = UnitGUID;
 	--- Update status when health changes.
-	function me:UNIT_HEALTH( Event, UnitID )
+	function NS:UNIT_HEALTH( Event, UnitID )
 		self:UpdateUnit( Event, UnitGUID( UnitID ), UnitID );
 	end
 
 	--- Update status when max health changes.
-	function me:UNIT_MAXHEALTH( Event, UnitID )
+	function NS:UNIT_MAXHEALTH( Event, UnitID )
 		self:UpdateUnit( Event, UnitGUID( UnitID ), UnitID );
 	end
 end
 
 
 --- When a unit leaves the raid, removes its color table from the cache.
-function me:RemoveUnit ( Event, GUID, UnitID )
-	me.ColorTables[ GUID ] = nil;
+function NS:RemoveUnit ( Event, GUID, UnitID )
+	NS.ColorTables[ GUID ] = nil;
 end
 do
 	local GridRoster = Grid:GetModule( "GridRoster" );
 	--- Fully updates all active units.
-	function me:UpdateAllUnits ()
+	function NS:UpdateAllUnits ()
 		for GUID, UnitID in GridRoster:IterateRoster() do
 			self:UpdateUnit( nil, GUID, UnitID );
 		end
@@ -125,7 +125,7 @@ do
 	local UnitIsDeadOrGhost = UnitIsDeadOrGhost;
 	local ceil = ceil;
 	--- Updates or removes the health fade status for a given unit.
-	function me:UpdateUnit( Event, GUID, UnitID, ... )
+	function NS:UpdateUnit( Event, GUID, UnitID, ... )
 		local Settings = self.db.profile[ STATUS_ID ];
 
 		local HealthMax = UnitHealthMax( UnitID );
@@ -138,10 +138,10 @@ do
 			Percentage = UnitHealth( UnitID ) / HealthMax;
 		end
 
-		local Color = me.ColorTables[ GUID ];
+		local Color = NS.ColorTables[ GUID ];
 		if ( not Color ) then
 			Color = {};
-			me.ColorTables[ GUID ] = Color;
+			NS.ColorTables[ GUID ] = Color;
 		end
 		local High, Low = Settings.ColorHigh, Settings.ColorLow;
 		Color.r = High.r * Percentage + Low.r * ( 1 - Percentage );

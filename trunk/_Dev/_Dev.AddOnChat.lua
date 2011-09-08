@@ -6,12 +6,12 @@
 
 local _Dev = _Dev;
 local L = _DevLocalization;
-local me = CreateFrame( "Frame", nil, _Dev );
-_Dev.AddOnChat = me;
+local NS = CreateFrame( "Frame", nil, _Dev );
+_Dev.AddOnChat = NS;
 
-me.ListenerCount = 0; -- Number of chat types registered across all chat frames
+NS.ListenerCount = 0; -- Number of chat types registered across all chat frames
 local ChatFrames = {};
-me.ChatFrames = ChatFrames;
+NS.ChatFrames = ChatFrames;
 
 
 
@@ -20,7 +20,7 @@ me.ChatFrames = ChatFrames;
   * Function: _Dev.AddOnChat.EnableChatType                                    *
   * Description: Enables or disables a chat type for the given chat window.    *
   ****************************************************************************]]
-function me.EnableChatType ( ChatFrame, Type, Enable )
+function NS.EnableChatType ( ChatFrame, Type, Enable )
 	if ( not ChatFrames[ ChatFrame ] ) then
 		if ( not Enable ) then
 			return;
@@ -30,22 +30,22 @@ function me.EnableChatType ( ChatFrame, Type, Enable )
 	local TypeList = ChatFrames[ ChatFrame ];
 	local TypeCount = TypeList.n;
 
-	local Count = me.ListenerCount;
+	local Count = NS.ListenerCount;
 	if ( Enable ) then
 		if ( not TypeList[ Type ] ) then
 			if ( Count == 0 ) then
-				me:RegisterEvent( "CHAT_MSG_ADDON" );
+				NS:RegisterEvent( "CHAT_MSG_ADDON" );
 			end
-			me.ListenerCount = Count + 1;
+			NS.ListenerCount = Count + 1;
 			TypeList[ Type ] = true;
 			TypeList.n = TypeCount + 1;
 		end
 
 	elseif ( TypeList[ Type ] ) then
 		if ( Count == 1 ) then
-			me:UnregisterEvent( "CHAT_MSG_ADDON" );
+			NS:UnregisterEvent( "CHAT_MSG_ADDON" );
 		end
-		me.ListenerCount = Count - 1;
+		NS.ListenerCount = Count - 1;
 		TypeList[ Type ] = nil;
 		if ( TypeCount == 1 ) then -- About to remove last chat type
 			ChatFrames[ ChatFrame ] = nil;
@@ -63,7 +63,7 @@ end
 do
 	local EscapeString = _Dev.Dump.EscapeString;
 	local Print, tostring = _Dev.Print, tostring;
-	function me.AddMessage ( Prefix, Message, Type, Sender )
+	function NS.AddMessage ( Prefix, Message, Type, Sender )
 		local Color = ChatTypeInfo[ Type ];
 		local Message = L.ADDONCHAT_MSG_FORMAT:format( L.ADDONCHAT_TYPES[ Type ],
 			Type == "WHISPER_INFORM" and L.ADDONCHAT_OUTBOUND or "",
@@ -82,17 +82,17 @@ end
 --[[****************************************************************************
   * Function: _Dev.AddOnChat:OnEvent                                           *
   ****************************************************************************]]
-function me:OnEvent ( Event, ... )
-	me.AddMessage( ... );
+function NS:OnEvent ( Event, ... )
+	NS.AddMessage( ... );
 end
 --[[****************************************************************************
   * Function: _Dev.AddOnChat.SendAddonMessage                                  *
   ****************************************************************************]]
 do
 	local strupper = strupper;
-	function me.SendAddonMessage ( Prefix, Message, Type, Target )
-		if ( me:IsEventRegistered( "CHAT_MSG_ADDON" ) and Type:upper() == "WHISPER" ) then
-			me.AddMessage( Prefix, Message, "WHISPER_INFORM", Target:lower():gsub( "^%a", strupper ) );
+	function NS.SendAddonMessage ( Prefix, Message, Type, Target )
+		if ( NS:IsEventRegistered( "CHAT_MSG_ADDON" ) and Type:upper() == "WHISPER" ) then
+			NS.AddMessage( Prefix, Message, "WHISPER_INFORM", Target:lower():gsub( "^%a", strupper ) );
 		end
 	end
 end
@@ -102,8 +102,8 @@ end
   * Function: _Dev.AddOnChat:DropDownOnSelect                                  *
   * Description: Enables or disables chat types when clicked in the drop down. *
   ****************************************************************************]]
-function me:DropDownOnSelect ( Type, _, Checked )
-	me.EnableChatType( FCF_GetCurrentChatFrame(), Type, not not Checked );
+function NS:DropDownOnSelect ( Type, _, Checked )
+	NS.EnableChatType( FCF_GetCurrentChatFrame(), Type, not not Checked );
 end
 --[[****************************************************************************
   * Function: _Dev.AddOnChat:DropDownInitialize                                *
@@ -121,7 +121,7 @@ do
 		Info.checked = ( TypeList and TypeList[ Type ] ) and 1 or nil;
 		UIDropDownMenu_AddButton( Info, 2 );
 	end
-	function me:DropDownInitialize ( Level )
+	function NS:DropDownInitialize ( Level )
 		local Info = UIDropDownMenu_CreateInfo();
 		if ( Level == 1 ) then
 			-- Spacer
@@ -134,7 +134,7 @@ do
 			Info.disabled = nil;
 			UIDropDownMenu_AddButton( Info );
 		elseif ( Level == 2 and UIDROPDOWNMENU_MENU_VALUE == L.ADDONCHAT_MESSAGES ) then -- Addon Chat sub-menu
-			Info.func = me.DropDownOnSelect;
+			Info.func = NS.DropDownOnSelect;
 			Info.isNotRadio = true;
 			Info.keepShownOnClick = true;
 
@@ -151,12 +151,12 @@ end
 
 
 
-me:SetScript( "OnEvent", me.OnEvent );
-hooksecurefunc( "SendAddonMessage", me.SendAddonMessage );
+NS:SetScript( "OnEvent", NS.OnEvent );
+hooksecurefunc( "SendAddonMessage", NS.SendAddonMessage );
 
-hooksecurefunc( "FCFOptionsDropDown_Initialize", me.DropDownInitialize );
+hooksecurefunc( "FCFOptionsDropDown_Initialize", NS.DropDownInitialize );
 
 -- Hook chat windows if not hooked already
 for Index = 1, NUM_CHAT_WINDOWS do
-	hooksecurefunc( _G[ "ChatFrame"..Index.."TabDropDown" ], "initialize", me.DropDownInitialize );
+	hooksecurefunc( _G[ "ChatFrame"..Index.."TabDropDown" ], "initialize", NS.DropDownInitialize );
 end

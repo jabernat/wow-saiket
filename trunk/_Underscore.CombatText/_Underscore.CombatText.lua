@@ -4,8 +4,8 @@
   ****************************************************************************]]
 
 
-local me = select( 2, ... );
-_Underscore.CombatText = me;
+local NS = select( 2, ... );
+_Underscore.CombatText = NS;
 
 local NumLines = 40; -- Max number of visible messages
 

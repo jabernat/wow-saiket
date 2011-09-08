@@ -7,21 +7,21 @@
   ****************************************************************************]]
 
 
-local me = select( 2, ... );
-_Underscore.HUD = me;
-local L = me.L;
+local NS = select( 2, ... );
+_Underscore.HUD = NS;
+local L = NS.L;
 
-me.Frame = CreateFrame( "Frame", nil, UIParent );
+NS.Frame = CreateFrame( "Frame", nil, UIParent );
 
-me.UpdateRate = 0.1;
+NS.UpdateRate = 0.1;
 local RowHeight = 14;
 
 
-me.Columns = {}; -- [ Name ] = ColumnFrame;
-me.Units = {}; -- [ UnitID ] = RowFrame;
+NS.Columns = {}; -- [ Name ] = ColumnFrame;
+NS.Units = {}; -- [ UnitID ] = RowFrame;
 
-local ColumnMeta = { __index = setmetatable( {}, getmetatable( me.Frame ) ); };
-local UnitMeta = { __index = setmetatable( {}, getmetatable( me.Frame ) ); };
+local ColumnMeta = { __index = setmetatable( {}, getmetatable( NS.Frame ) ); };
+local UnitMeta = { __index = setmetatable( {}, getmetatable( NS.Frame ) ); };
 
 
 
@@ -32,7 +32,7 @@ do
 		self:SetScript( "OnUpdate", nil );
 
 		local Width, Name = 1e-3, self.Name;
-		for _, Unit in pairs( me.Units ) do
+		for _, Unit in pairs( NS.Units ) do
 			local Field = Unit[ Name ];
 			if ( Field and Unit:IsShown() and Width < Field.Width ) then
 				Width = Field.Width;
@@ -70,7 +70,7 @@ do
 	function UnitMeta.__index:OnHide ()
 		self:SetHeight( 1e-3 ); -- Not a noticeable height, but renders properly
 		-- Resize affected columns
-		for Name, Column in pairs( me.Columns ) do
+		for Name, Column in pairs( NS.Columns ) do
 			local Field = self[ Name ];
 			if ( Field ) then
 				Field.Value = nil;
@@ -82,7 +82,7 @@ do
 	function UnitMeta.__index:OnUpdate ( Elapsed )
 		self.NextUpdate = self.NextUpdate - Elapsed;
 		if ( self.NextUpdate <= 0 ) then
-			self.NextUpdate = me.UpdateRate;
+			self.NextUpdate = NS.UpdateRate;
 
 			self:UpdateHealth();
 			self:UpdatePower();
@@ -212,42 +212,42 @@ end
 
 
 --- Update the name field when a unit's name changes.
-function me.Frame:UNIT_NAME_UPDATE ( _, UnitID )
-	local Unit = me.Units[ UnitID ];
+function NS.Frame:UNIT_NAME_UPDATE ( _, UnitID )
+	local Unit = NS.Units[ UnitID ];
 	if ( Unit ) then
 		Unit:UpdateName();
 	end
 end
 --- Update the condition field when a unit's "UnitIsCorpse" result changes.
-function me.Frame:UNIT_DYNAMIC_FLAGS ( _, UnitID )
-	local Unit = me.Units[ UnitID ];
+function NS.Frame:UNIT_DYNAMIC_FLAGS ( _, UnitID )
+	local Unit = NS.Units[ UnitID ];
 	if ( Unit ) then
 		Unit:UpdateCondition();
 	end
 end
 --- Update the condition field when a unit feigns or becomes a ghost.
-me.Frame.UNIT_AURA = me.Frame.UNIT_DYNAMIC_FLAGS;
+NS.Frame.UNIT_AURA = NS.Frame.UNIT_DYNAMIC_FLAGS;
 
 
 --- Updates pet units when they change.
-function me.Frame:UNIT_PET ( _, OwnerUnitID )
-	local Unit = me.Units[ OwnerUnitID == "player" and "pet" or OwnerUnitID.."pet" ];
+function NS.Frame:UNIT_PET ( _, OwnerUnitID )
+	local Unit = NS.Units[ OwnerUnitID == "player" and "pet" or OwnerUnitID.."pet" ];
 	if ( Unit ) then
 		Unit:Update();
 	end
 end
 --- Updates the target unit when it changes.
-function me.Frame:PLAYER_TARGET_CHANGED ()
-	me.Units[ "target" ]:Update();
+function NS.Frame:PLAYER_TARGET_CHANGED ()
+	NS.Units[ "target" ]:Update();
 end
 --- Updates the focus unit when it changes.
-function me.Frame:PLAYER_FOCUS_CHANGED ()
-	me.Units[ "focus" ]:Update();
+function NS.Frame:PLAYER_FOCUS_CHANGED ()
+	NS.Units[ "focus" ]:Update();
 end
 
 --- Refresh all units after zoning.
-function me.Frame:PLAYER_ENTERING_WORLD ()
-	for _, Unit in pairs( me.Units ) do
+function NS.Frame:PLAYER_ENTERING_WORLD ()
+	for _, Unit in pairs( NS.Units ) do
 		Unit:Update();
 	end
 end
@@ -255,7 +255,7 @@ end
 
 
 
-local Frame = me.Frame;
+local Frame = NS.Frame;
 Frame:SetSize( 1, 1 );
 Frame:SetPoint( "CENTER" );
 Frame:SetFrameStrata( "BACKGROUND" );
@@ -274,7 +274,7 @@ Frame:RegisterEvent( "PLAYER_ENTERING_WORLD" );
 -- Setup all columns
 local function CreateColumn ( Name, Align )
 	local Column = setmetatable( CreateFrame( "Frame", nil, Frame ), ColumnMeta );
-	me.Columns[ Name ] = Column;
+	NS.Columns[ Name ] = Column;
 	Column.Name, Column.Align = Name, Align;
 
 	Column:SetSize( 1e-3, 1e-3 );
@@ -291,7 +291,7 @@ CreateColumn( "Condition", "LEFT" ):SetPoint( "LEFT", Power, "RIGHT", 16, 0 );
 -- Setup all unit rows
 local function CreateUnit ( UnitID )
 	local Unit = setmetatable( CreateFrame( "Frame", nil, Frame ), UnitMeta );
-	me.Units[ UnitID ], Unit.UnitID = Unit, UnitID;
+	NS.Units[ UnitID ], Unit.UnitID = Unit, UnitID;
 
 	Unit:Hide();
 	Unit:SetSize( 1e-3, 1e-3 );
@@ -300,7 +300,7 @@ local function CreateUnit ( UnitID )
 	Unit:SetScript( "OnUpdate", Unit.OnUpdate );
 
 	-- Create all fields
-	for Name, Column in pairs( me.Columns ) do
+	for Name, Column in pairs( NS.Columns ) do
 		local Field = Unit:CreateFontString( nil, "ARTWORK", "NumberFontNormalLarge" );
 		Unit[ Name ] = Field;
 		Field.Column, Field.Width = Column, 0;

@@ -7,9 +7,9 @@
 if ( IsAddOnLoaded( "Carbonite" ) ) then
 	return;
 end
-local me = select( 2, ... );
-_Underscore.Quest = me;
-local L = me.L;
+local NS = select( 2, ... );
+_Underscore.Quest = NS;
+local L = NS.L;
 
 
 
@@ -17,7 +17,7 @@ local L = me.L;
 do
 	local GetQuestLogTitle = GetQuestLogTitle;
 	--- Adds levels to quest log entries, and abbreviated tags for quest types.
-	function me.QuestLogUpdate ()
+	function NS.QuestLogUpdate ()
 		if ( not QuestLogFrame:IsShown() ) then
 			return;
 		end
@@ -58,5 +58,5 @@ for Index, Button in ipairs( QuestLogScrollFrame.buttons ) do
 end
 QuestLogTitleButton_Resize = _Underscore.NilFunction;
 
-hooksecurefunc( "QuestLog_Update", me.QuestLogUpdate );
+hooksecurefunc( "QuestLog_Update", NS.QuestLogUpdate );
 QuestLogScrollFrame.update = QuestLog_Update;

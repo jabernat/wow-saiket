@@ -5,8 +5,8 @@
 
 
 local Overlay = select( 2, ... );
-local me = {};
-Overlay.Modules.WorldMapTemplate = me;
+local NS = {};
+Overlay.Modules.WorldMapTemplate = NS;
 
 
 
@@ -25,7 +25,7 @@ do
 	--- Draws paths for the given map on this canvas.
 	-- Must be viewing Map using the WorldMap API.
 	-- @param Map  AreaID to draw paths for.
-	function me:Paint ( Map )
+	function NS:Paint ( Map )
 		MapCurrent = Map;
 		Overlay.TextureRemoveAll( self );
 		Overlay.ApplyZone( self, Map, PaintPath );
@@ -58,11 +58,11 @@ end
 
 
 --- Update the map if the viewed zone changes.
-function me:WORLD_MAP_UPDATE ()
+function NS:WORLD_MAP_UPDATE ()
 	MapUpdate( self );
 end
 --- Immediately update the map when shown.
-function me:OnShow ()
+function NS:OnShow ()
 	MapUpdate( self );
 end
 
@@ -71,31 +71,31 @@ end
 
 --- Force an update if shown paths change.
 -- @param Map  AreaID that changed, or nil if all zones must update.
-function me:OnMapUpdate ( Map )
+function NS:OnMapUpdate ( Map )
 	if ( not Map or Map == self.MapLast ) then
 		MapUpdate( self, true );
 	end
 end
 --- Shows the canvas when enabled.
-function me:OnEnable ()
+function NS:OnEnable ()
 	self:RegisterEvent( "WORLD_MAP_UPDATE" );
 	self:Show();
 end
 --- Hides the canvas when disabled.
-function me:OnDisable ()
+function NS:OnDisable ()
 	self:UnregisterEvent( "WORLD_MAP_UPDATE" );
 	self:Hide();
 	Overlay.TextureRemoveAll( self );
 end
 --- Initializes the canvas after its dependencies load.
-function me:OnLoad ()
+function NS:OnLoad ()
 	self:Hide();
 	self:SetAllPoints();
 	self:SetScript( "OnShow", self.OnShow );
 	self:SetScript( "OnEvent", Overlay.Modules.OnEvent );
 end
 --- Clears all methods and scripts to be garbage collected.
-function me:OnUnload ()
+function NS:OnUnload ()
 	self:SetScript( "OnShow", nil );
 	self:SetScript( "OnEvent", nil );
 	self:SetScript( "OnUpdate", nil );
@@ -108,7 +108,7 @@ do
 		OnSynchronize = true;
 	};
 	--- Clears most module data to be garbage collected.
-	function me:OnUnregister ()
+	function NS:OnUnregister ()
 		for Key in pairs( self ) do
 			if ( not Preserve[ Key ] ) then
 				self[ Key ] = nil;
@@ -133,11 +133,11 @@ do
 		"OnUnregister"
 	};
 	--- Implements WorldMapTemplate for a given canvas module frame.
-	function me:Embed ()
+	function NS:Embed ()
 		for _, Method in ipairs( Inherit ) do
-			self[ Method ] = me[ Method ];
+			self[ Method ] = NS[ Method ];
 		end
-		self.super = me;
+		self.super = NS;
 		return self;
 	end
 end

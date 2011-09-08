@@ -14,15 +14,15 @@ _UTFOptions.Chat = {
 
 
 local _UTF = select( 2, ... );
-local me = {};
-_UTF.Chat = me;
+local NS = {};
+_UTF.Chat = NS;
 
 
 
 
 --- Replaces character references in a chat edit box.
 -- @return True if any replacements were made.
-function me:ReplaceEditBoxText ()
+function NS:ReplaceEditBoxText ()
 	if ( _UTFOptions.Chat.EntityReferenceReplace ) then
 		local OldText = self:GetText();
 		local Command = OldText:match( "^(/%S+)" );
@@ -41,12 +41,12 @@ end
 do
 	--- Replaces the "Handled" return without affecting other returns.
 	local function HandleReturn ( self, Handled, ... )
-		return me.ReplaceEditBoxText( self ) or Handled, ...;
+		return NS.ReplaceEditBoxText( self ) or Handled, ...;
 	end
 	local Backup = ChatEdit_CustomTabPressed;
 	--- Replaces references when tab is pressed in an edit box.
 	-- @return True if the tab keypress was handled.
-	function me:ChatEditCustomTabPressed ( ... )
+	function NS:ChatEditCustomTabPressed ( ... )
 		return HandleReturn( self, Backup( self, ... ) );
 	end
 end
@@ -62,13 +62,13 @@ do
 	end
 	local Backup = SendChatMessage;
 	--- Replaces custom text strings in outbound chat.
-	function me.SendChatMessage ( Message, ... )
+	function NS.SendChatMessage ( Message, ... )
 		return Backup( TextReplace( Message ), ... );
 	end
 
 	local Backup = BNSendWhisper;
 	--- Replaces custom text strings in outbound Battle.net RealID whispers.
-	function me.BNSendWhisper ( ID, Message, ... )
+	function NS.BNSendWhisper ( ID, Message, ... )
 		return Backup( ID, TextReplace( Message ), ... );
 	end
 end
@@ -77,8 +77,8 @@ end
 
 
 -- Hook to catch macro lines as they're executed
-hooksecurefunc( MacroEditBox, "SetText", me.ReplaceEditBoxText );
+hooksecurefunc( MacroEditBox, "SetText", NS.ReplaceEditBoxText );
 
-ChatEdit_CustomTabPressed = me.ChatEditCustomTabPressed;
-SendChatMessage = me.SendChatMessage;
-BNSendWhisper = me.BNSendWhisper;
+ChatEdit_CustomTabPressed = NS.ChatEditCustomTabPressed;
+SendChatMessage = NS.SendChatMessage;
+BNSendWhisper = NS.BNSendWhisper;
