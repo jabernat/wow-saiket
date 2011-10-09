@@ -274,16 +274,4 @@ end
 dump = NS.Explore;
 
 SlashCmdList[ "_DEV_DUMP" ] = NS.SlashCommand;
-
-local Forbidden = {
-	[ "PRINT" ] = true;
-	[ "DUMP" ] = true;
-};
-for Key in pairs( Forbidden ) do
-	SlashCmdList[ Key ] = nil;
-end
-setmetatable( SlashCmdList, { __newindex = function ( self, Key, Value )
-	if ( not Forbidden[ Key ] ) then
-		rawset( self, Key, Value );
-	end
-end; } );
+SlashCmdList[ "DUMP" ] = nil; -- Overwrite default /dump command from Blizzard_DebugTools
