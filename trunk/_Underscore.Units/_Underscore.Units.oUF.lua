@@ -193,7 +193,8 @@ end
 function NS:ExperiencePostUpdate ( UnitID, Value, ValueMax )
 	local RestedExperience = GetXPExhaustion();
 	if ( RestedExperience ) then
-		self.RestTexture:SetPoint( "RIGHT", self, "LEFT", self:GetWidth() * min( 1, ( Value + RestedExperience ) / ValueMax ), 0 );
+		local Percent = ValueMax == 0 and math.huge or ( Value + RestedExperience ) / ValueMax;
+		self.RestTexture:SetPoint( "RIGHT", self, "LEFT", self:GetWidth() * min( 1, Percent ), 0 );
 		self.RestTexture:Show();
 	else -- Not resting
 		self.RestTexture:Hide();
@@ -312,16 +313,19 @@ do
 end
 local CreateBarReverse;
 do
+	local min = min;
 	--- Repositions the status bar texture to fill from the right at most once per frame.
 	local function UpdaterOnUpdate ( Updater )
 		Updater:Hide();
 
 		local Bar = Updater:GetParent();
 		local Texture = Bar:GetStatusBarTexture();
+		local Max = select( 2, Bar:GetMinMaxValues() );
+		local Percent = Max == 0 and math.huge or Bar:GetValue() / Max;
 		Texture:ClearAllPoints();
 		Texture:SetPoint( "BOTTOMRIGHT" );
 		Texture:SetPoint( "TOPLEFT", Bar, "TOPRIGHT",
-			( Bar:GetValue() / select( 2, Bar:GetMinMaxValues() ) - 1 ) * Bar:GetWidth(), 0 );
+			( min( 1, Percent ) - 1 ) * Bar:GetWidth(), 0 );
 	end
 	--- Requests that the status bar texture be updated before the next frame.
 	local function OnChanged ( Bar )
