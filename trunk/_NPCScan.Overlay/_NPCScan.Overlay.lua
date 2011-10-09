@@ -102,6 +102,9 @@ do
 		-- @param ...  First 6 elements of transformation matrix.
 		function ApplyTransform( Texture, A, B, C, D, E, F )
 			Det = A * E - B * D;
+			if ( Det == 0 ) then
+				return Texture:Hide(); -- Scaled infinitely small
+			end
 			AF, BF, CD, CE = A * F, B * F, C * D, C * E;
 
 			ULx, ULy = ( BF - CE ) / Det, ( CD - AF ) / Det;
@@ -135,25 +138,23 @@ do
 		ABx, ABy, BCx, BCy = Ax - Bx, Ay - By, Bx - Cx, By - Cy;
 		ScaleX = ( BCx * BCx + BCy * BCy ) ^ 0.5;
 		if ( ScaleX == 0 ) then
-			return;
+			return; -- Points B and C are the same
 		end
-		ScaleY = ( ABx * BCy - BCx * ABy ) / ScaleX;
+		ScaleY = ( ABx * BCy - ABy * BCx ) / ScaleX;
 		if ( ScaleY == 0 ) then
-			return;
+			return; -- Points are co-linear
 		end
 		ShearFactor = -( ABx * BCx + ABy * BCy ) / ( ScaleX * ScaleX );
 		Sin, Cos = BCy / ScaleX, -BCx / ScaleX;
-
-
-		-- Get a texture
-		local Texture = NS.TextureCreate( self, Layer, R, G, B );
-		Texture:SetTexture( TrianglePath );
-
 
 		-- Note: The texture region is made as small as possible to improve framerates.
 		MinX, MinY = min( Ax, Bx, Cx ), min( Ay, By, Cy );
 		WindowX, WindowY = max( Ax, Bx, Cx ) - MinX, max( Ay, By, Cy ) - MinY;
 
+
+		-- Get a texture
+		local Texture = NS.TextureCreate( self, Layer, R, G, B );
+		Texture:SetTexture( TrianglePath );
 		Width, Height = self:GetSize();
 		Texture:SetPoint( "TOPLEFT", MinX * Width, -MinY * Height );
 		Texture:SetSize( WindowX * Width, WindowY * Height );
