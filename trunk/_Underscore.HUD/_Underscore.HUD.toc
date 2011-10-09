@@ -1,4 +1,4 @@
-## Interface: 40200
+## Interface: 40300
 ## Title: _|cffCCCC88Underscore|r.HUD
 ## Notes: Adds a light Heads Up Display to the center of the screen.
 ## Author: Saiket

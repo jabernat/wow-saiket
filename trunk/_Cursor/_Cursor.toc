@@ -1,4 +1,4 @@
-## Interface: 40200
+## Interface: 40300
 ## Title: _|cffCCCC88Cursor|r
 ## Notes: Adds custom effects to your cursor.
 ## Notes-koKR: 사용자가 정의한 효과를 커서에 추가합니다.

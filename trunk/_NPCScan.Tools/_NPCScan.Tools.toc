@@ -1,9 +1,9 @@
-## Interface: 40200
+## Interface: 40300
 ## Title: _|cffCCCC88NPCScan|r.|cff888888Tools|r
 ## Notes: Tools to help maintain _|cffCCCC88NPCScan|r and _|cffCCCC88NPCScan|r.Overlay.
 ## Author: Saiket
 ## Version: 4.1.0.1
-## X-Date: 2011-03-29
+## X-Date: 2011-10-01
 ## X-Category: Development Tools
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com

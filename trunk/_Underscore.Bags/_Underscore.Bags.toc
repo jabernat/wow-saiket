@@ -1,4 +1,4 @@
-## Interface: 40200
+## Interface: 40300
 ## Title: _|cffCCCC88Underscore|r.Bags
 ## Notes: Moves Default UI bags relative to _|cffCCCC88Underscore|r.ActionBars.
 ## Author: Saiket

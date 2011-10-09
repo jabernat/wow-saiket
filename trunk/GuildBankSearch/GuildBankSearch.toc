@@ -1,4 +1,4 @@
-## Interface: 40200
+## Interface: 40300
 ## Title: GuildBank|cffccccccSearch|r
 ## Notes: Adds a search filter to the guild bank.
 ## Notes-frFR: Ajoute un filtre de recherche à la banque de guilde.

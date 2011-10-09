@@ -1,9 +1,9 @@
-## Interface: 40200
+## Interface: 40300
 ## Title: _|cffCCCC88Dev|r
 ## Notes: Special tools useful for debugging the UI.
 ## Author: Saiket
 ## Version: 4.2.0.1
-## X-Date: 2011-06-26
+## X-Date: 2011-09-28
 ## X-Category: Development Tools
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com

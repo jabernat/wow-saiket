@@ -1,4 +1,4 @@
-## Interface: 40200
+## Interface: 40300
 ## Title: _|cffCCCC88Corpse|r
 ## Notes: Adds online/offline status and other info to corpse tooltips.
 ## Notes-deDE: Fügt Online-/Offline-Status sowie weitere Informationen zu Leichnam-Tooltips hinzu.

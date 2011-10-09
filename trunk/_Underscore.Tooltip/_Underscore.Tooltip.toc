@@ -1,4 +1,4 @@
-## Interface: 40200
+## Interface: 40300
 ## Title: _|cffCCCC88Underscore|r.Tooltip
 ## Notes: Skins the default UI's tooltips.
 ## Author: Saiket
