@@ -1,9 +1,9 @@
-## Interface: 40200
+## Interface: 40300
 ## Title: _|cffCCCC88Underscore|r.Units
 ## Notes: A set of skinned unit frames.
 ## Author: Saiket
 ## Version: 4.1.0.1
-## X-Date: 2011-06-29
+## X-Date: 2011-10-01
 ## X-Category: Frame Modification
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com

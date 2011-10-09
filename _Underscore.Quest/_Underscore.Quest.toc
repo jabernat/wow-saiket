@@ -1,4 +1,4 @@
-## Interface: 40200
+## Interface: 40300
 ## Title: _|cffCCCC88Underscore|r.Quest
 ## Notes: Skins the default UI's quest and watch frames.
 ## Author: Saiket

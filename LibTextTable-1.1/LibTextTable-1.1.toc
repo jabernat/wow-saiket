@@ -1,4 +1,4 @@
-## Interface: 40200
+## Interface: 40300
 ## Title: Lib: TextTable-1.1
 ## Notes: Creates simple table controls for tabular text data.
 ## Author: Saiket
