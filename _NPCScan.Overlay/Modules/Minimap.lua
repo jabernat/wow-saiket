@@ -167,52 +167,57 @@ do
 		do
 			local ABx, ABy;
 			local PointX, PointY;
-			local IntersectPos, Intercept, Length, Temp;
-			--- Adds the intersection of a line with the minimap to the Points list.
+			local IntersectPos, Intercept, Length2, Temp;
+			--- Adds the intersection of line AB with the minimap to the Points list.
 			-- @param PerpDist2  Distance from center to intersection squared.
 			-- @param IsExiting  True if should save found intersection as the last exit point.
 			function AddIntersection ( Ax, Ay, Bx, By, PerpDist2, IsExiting )
 				PointX, PointY = nil;
 				ABx, ABy = Ax - Bx, Ay - By;
+				--assert( ABx ~= 0 or ABy ~= 0, "Points A and B don't form a line." );
 
 				-- Clip to square
 				if ( Ax >= -0.5 and Ax <= 0.5 and Ay >= -0.5 and Ay <= 0.5 ) then
 					PointX, PointY = Ax, Ay;
 				else
-					-- Test intersection with horizontal border
-					Intercept = ABy < 0 and -0.5 or 0.5;
-					IntersectPos = ( Ay - Intercept ) / ABy;
-					if ( IntersectPos >= 0 and IntersectPos <= 1 ) then
-						PointX = Ax - ABx * IntersectPos;
-						if ( PointX >= -0.5 and PointX <= 0.5 ) then
-							PointY = Intercept;
+					if ( ABy ~= 0 ) then -- Not horizontal line
+						-- Test vertical intersection
+						Intercept = ABy < 0 and -0.5 or 0.5;
+						IntersectPos = ( Ay - Intercept ) / ABy;
+						if ( IntersectPos >= 0 and IntersectPos <= 1 ) then
+							PointX = Ax - ABx * IntersectPos;
+							if ( PointX >= -0.5 and PointX <= 0.5 ) then
+								PointY = Intercept;
+							end
 						end
 					end
 
-					-- Test vertical border intersection
-					if ( not PointY ) then -- Was no horizontal intersect
+					if ( not PointY -- Was no vertical intersect
+						and ABx ~= 0 -- Not vertical line
+					) then
+						-- Test horizontal intersection
 						Intercept = ABx < 0 and -0.5 or 0.5;
 						IntersectPos = ( Ax - Intercept ) / ABx;
 						if ( IntersectPos >= 0 and IntersectPos <= 1 ) then
 							PointY = Ay - ABy * IntersectPos;
 							if ( PointY >= -0.5 and PointY <= 0.5 ) then
 								PointX = Intercept;
-							else
-								return;
 							end
-						else
-							return;
 						end
+					end
+
+					if ( not PointX or not PointY ) then
+						return;
 					end
 				end
 
 				if ( IsQuadrantRound( PointX, PointY ) ) then
 					-- Clip to circle
 					if ( PerpDist2 < 0.25 ) then
-						Length = ABx * ABx + ABy * ABy;
+						Length2 = ABx * ABx + ABy * ABy;
 						Temp = ABx * Bx + ABy * By;
 
-						IntersectPos = ( ( Temp * Temp - Length * ( Bx * Bx + By * By - 0.25 ) ) ^ 0.5 - Temp ) / Length;
+						IntersectPos = ( ( Temp * Temp - Length2 * ( Bx * Bx + By * By - 0.25 ) ) ^ 0.5 - Temp ) / Length2;
 						if ( IntersectPos >= 0 and IntersectPos <= 1 ) then
 							PointX, PointY = Bx + ABx * IntersectPos, By + ABy * IntersectPos;
 						else
@@ -299,85 +304,89 @@ do
 						BCx, BCy = Bx - Cx, By - Cy;
 						ACx, ACy = Ax - Cx, Ay - Cy;
 
-						-- Intersection between the side and a line perpendicular to it that passes through the center
-						IntersectPos = ( Ax * ABx + Ay * ABy ) / ( ABx * ABx + ABy * ABy );
-						PerpX, PerpY = Ax - IntersectPos * ABx, Ay - IntersectPos * ABy;
-						ABPerpDist2 = PerpX * PerpX + PerpY * PerpY; -- From center to intersection squared
+						if ( ( ABx ~= 0 or ABy ~= 0 ) and ( BCx ~= 0 or BCy ~= 0 ) and ( ACx ~= 0 or ACy ~= 0 ) ) then
+							-- Intersection between the side and a line perpendicular to it that passes through the center
+							IntersectPos = ( Ax * ABx + Ay * ABy ) / ( ABx * ABx + ABy * ABy );
+							PerpX, PerpY = Ax - IntersectPos * ABx, Ay - IntersectPos * ABy;
+							ABPerpDist2 = PerpX * PerpX + PerpY * PerpY; -- From center to intersection squared
 
-						IntersectPos = ( Bx * BCx + By * BCy ) / ( BCx * BCx + BCy * BCy );
-						PerpX, PerpY = Bx - IntersectPos * BCx, By - IntersectPos * BCy;
-						BCPerpDist2 = PerpX * PerpX + PerpY * PerpY;
+							IntersectPos = ( Bx * BCx + By * BCy ) / ( BCx * BCx + BCy * BCy );
+							PerpX, PerpY = Bx - IntersectPos * BCx, By - IntersectPos * BCy;
+							BCPerpDist2 = PerpX * PerpX + PerpY * PerpY;
 
-						IntersectPos = ( Ax * ACx + Ay * ACy ) / ( ACx * ACx + ACy * ACy );
-						PerpX, PerpY = Ax - IntersectPos * ACx, Ay - IntersectPos * ACy;
-						ACPerpDist2 = PerpX * PerpX + PerpY * PerpY;
+							IntersectPos = ( Ax * ACx + Ay * ACy ) / ( ACx * ACx + ACy * ACy );
+							PerpX, PerpY = Ax - IntersectPos * ACx, Ay - IntersectPos * ACy;
+							ACPerpDist2 = PerpX * PerpX + PerpY * PerpY;
 
 
-						if ( #Points > 0 ) then
-							wipe( Points );
-						end
-						LastExitPoint = nil;
-
-						-- Check intersection with circle with radius at minimap's corner
-						if ( ABPerpDist2 < 0.5 or BCPerpDist2 < 0.5 or ACPerpDist2 < 0.5 ) then -- Inside radius ~= 0.71
-							-- Find all polygon vertices
-							IsClockwise = BCx * ( By + Cy ) + ABx * ( Ay + By ) + ( Cx - Ax ) * ( Cy + Ay ) > 0;
-							if ( AInside ) then
-								Points[ #Points + 1 ] = Ax;
-								Points[ #Points + 1 ] = Ay;
-							else
-								AddIntersection( Ax, Ay, Cx, Cy, ACPerpDist2, true );
-								AddIntersection( Ax, Ay, Bx, By, ABPerpDist2 );
+							if ( #Points > 0 ) then
+								wipe( Points );
 							end
-							if ( BInside ) then
-								Points[ #Points + 1 ] = Bx;
-								Points[ #Points + 1 ] = By;
-							else
-								AddIntersection( Bx, By, Ax, Ay, ABPerpDist2, true );
-								AddIntersection( Bx, By, Cx, Cy, BCPerpDist2 );
-							end
-							if ( CInside ) then
-								Points[ #Points + 1 ] = Cx;
-								Points[ #Points + 1 ] = Cy;
-							else
-								AddIntersection( Cx, Cy, Bx, By, BCPerpDist2, true );
-								AddIntersection( Cx, Cy, Ax, Ay, ACPerpDist2 );
-							end
-							if ( LastExitPoint ) then -- Final split points between C and A
-								AddSplit( Points[ 1 ], Points[ 2 ], true );
+							LastExitPoint = nil;
+
+							-- Check intersection with circle with radius at minimap's corner
+							if ( ABPerpDist2 < 0.5 or BCPerpDist2 < 0.5 or ACPerpDist2 < 0.5 ) then -- Inside radius ~= 0.71
+								-- Find all polygon vertices
+								IsClockwise = BCx * ( By + Cy ) + ABx * ( Ay + By ) + ( Cx - Ax ) * ( Cy + Ay ) > 0;
+								if ( AInside ) then
+									Points[ #Points + 1 ] = Ax;
+									Points[ #Points + 1 ] = Ay;
+								else
+									AddIntersection( Ax, Ay, Cx, Cy, ACPerpDist2, true );
+									AddIntersection( Ax, Ay, Bx, By, ABPerpDist2 );
+								end
+								if ( BInside ) then
+									Points[ #Points + 1 ] = Bx;
+									Points[ #Points + 1 ] = By;
+								else
+									AddIntersection( Bx, By, Ax, Ay, ABPerpDist2, true );
+									AddIntersection( Bx, By, Cx, Cy, BCPerpDist2 );
+								end
+								if ( CInside ) then
+									Points[ #Points + 1 ] = Cx;
+									Points[ #Points + 1 ] = Cy;
+								else
+									AddIntersection( Cx, Cy, Bx, By, BCPerpDist2, true );
+									AddIntersection( Cx, Cy, Ax, Ay, ACPerpDist2 );
+								end
+								if ( LastExitPoint ) then -- Final split points between C and A
+									AddSplit( Points[ 1 ], Points[ 2 ], true );
+								end
+
+								-- Draw tris between convex polygon vertices
+								for Index = #Points, 6, -2 do
+									Overlay.TextureAdd( self, "ARTWORK", R, G, B,
+										Points[ 1 ] + 0.5, Points[ 2 ] + 0.5, Points[ Index - 3 ] + 0.5, Points[ Index - 2 ] + 0.5, Points[ Index - 1 ] + 0.5, Points[ Index ] + 0.5 );
+								end
 							end
 
-							-- Draw tris between convex polygon vertices
-							for Index = #Points, 6, -2 do
-								Overlay.TextureAdd( self, "ARTWORK", R, G, B,
-									Points[ 1 ] + 0.5, Points[ 2 ] + 0.5, Points[ Index - 3 ] + 0.5, Points[ Index - 2 ] + 0.5, Points[ Index - 1 ] + 0.5, Points[ Index ] + 0.5 );
-							end
-						end
+							if ( #Points == 0 ) then -- No intersections
+								-- Check if the center is in the triangle
+								Dot00, Dot01 = ACx * ACx + ACy * ACy, ACx * BCx + ACy * BCy;
+								Dot02 = ACx * -Cx - ACy * Cy;
+								Dot11, Dot12 = BCx * BCx + BCy * BCy, BCx * -Cx - BCy * Cy;
 
-						if ( #Points == 0 ) then -- No intersections
-							-- Check if the center is in the triangle
-							Dot00, Dot01 = ACx * ACx + ACy * ACy, ACx * BCx + ACy * BCy;
-							Dot02 = ACx * -Cx - ACy * Cy;
-							Dot11, Dot12 = BCx * BCx + BCy * BCy, BCx * -Cx - BCy * Cy;
+								Denominator = Dot00 * Dot11 - Dot01 * Dot01;
+								if ( Denominator ~= 0 ) then -- Points aren't co-linear
+									U, V = ( Dot11 * Dot02 - Dot01 * Dot12 ) / Denominator,
+										( Dot00 * Dot12 - Dot01 * Dot02 ) / Denominator;
 
-							Denominator = Dot00 * Dot11 - Dot01 * Dot01;
-							U, V = ( Dot11 * Dot02 - Dot01 * Dot12 ) / Denominator,
-								( Dot00 * Dot12 - Dot01 * Dot02 ) / Denominator;
-
-							if ( U > 0 and V > 0 and U + V < 1 ) then -- Entire minimap is contained
-								for Index = 1, 4 do
-									Texture = Overlay.TextureCreate( self, "ARTWORK", R, G, B );
-									Left, Top = Index == 2 or Index == 3, Index <= 2;
-									Texture:SetPoint( "LEFT", self, Left and "LEFT" or "CENTER" );
-									Texture:SetPoint( "RIGHT", self, Left and "CENTER" or "RIGHT" );
-									Texture:SetPoint( "TOP", self, Top and "TOP" or "CENTER" );
-									Texture:SetPoint( "BOTTOM", self, Top and "CENTER" or "BOTTOM" );
-									if ( Quadrants[ Index ] ) then -- Rounded
-										Texture:SetTexture( [[Interface\CHARACTERFRAME\TempPortraitAlphaMask]] );
-										Texture:SetTexCoord( Left and 0 or 0.5, Left and 0.5 or 1, Top and 0 or 0.5, Top and 0.5 or 1 );
-									else -- Square
-										Texture:SetTexture( [[Interface\Buttons\WHITE8X8]] );
-										Texture:SetTexCoord( 0, 1, 0, 1 );
+									if ( U > 0 and V > 0 and U + V < 1 ) then -- Entire minimap is contained
+										for Index = 1, 4 do
+											Texture = Overlay.TextureCreate( self, "ARTWORK", R, G, B );
+											Left, Top = Index == 2 or Index == 3, Index <= 2;
+											Texture:SetPoint( "LEFT", self, Left and "LEFT" or "CENTER" );
+											Texture:SetPoint( "RIGHT", self, Left and "CENTER" or "RIGHT" );
+											Texture:SetPoint( "TOP", self, Top and "TOP" or "CENTER" );
+											Texture:SetPoint( "BOTTOM", self, Top and "CENTER" or "BOTTOM" );
+											if ( Quadrants[ Index ] ) then -- Rounded
+												Texture:SetTexture( [[Interface\CHARACTERFRAME\TempPortraitAlphaMask]] );
+												Texture:SetTexCoord( Left and 0 or 0.5, Left and 0.5 or 1, Top and 0 or 0.5, Top and 0.5 or 1 );
+											else -- Square
+												Texture:SetTexture( [[Interface\Buttons\WHITE8X8]] );
+												Texture:SetTexCoord( 0, 1, 0, 1 );
+											end
+										end
 									end
 								end
 							end
@@ -420,20 +429,21 @@ do
 
 			-- Cache split points
 			wipe( SplitPoints );
-			for Index = 1, 4 do
-				if ( Quadrants[ Index ] ) then -- Round
-					if ( not Quadrants[ ( Index - 2 ) % 4 + 1 ] ) then -- Transition from previous
-						local Angle = ( Index - 1 ) * math.pi / 2;
-						SplitPoints[ #SplitPoints + 1 ] = Cos( Angle ) * 0.5;
-						SplitPoints[ #SplitPoints + 1 ] = Sin( Angle ) * -0.5;
+			for Quadrant = 1, 4 do
+				if ( Quadrants[ Quadrant ] ) then -- Round
+					if ( not Quadrants[ ( Quadrant - 2 ) % 4 + 1 ] ) then -- Transition from previous
+						local Angle = ( Quadrant - 1 ) * math.pi / 2;
+						-- Round coords to exactly 0 or 0.5; Necessary for later comparisons
+						SplitPoints[ #SplitPoints + 1 ] = floor( Cos( Angle ) + 0.5 ) * 0.5;
+						SplitPoints[ #SplitPoints + 1 ] = floor( Sin( Angle ) + 0.5 ) * -0.5;
 					end
-					if ( not Quadrants[ Index % 4 + 1 ] ) then -- Transition to next
-						local Angle = Index * math.pi / 2;
-						SplitPoints[ #SplitPoints + 1 ] = Cos( Angle ) * 0.5;
-						SplitPoints[ #SplitPoints + 1 ] = Sin( Angle ) * -0.5;
+					if ( not Quadrants[ Quadrant % 4 + 1 ] ) then -- Transition to next
+						local Angle = Quadrant * math.pi / 2;
+						SplitPoints[ #SplitPoints + 1 ] = floor( Cos( Angle ) + 0.5 ) * 0.5;
+						SplitPoints[ #SplitPoints + 1 ] = floor( Sin( Angle ) + 0.5 ) * -0.5;
 					end
 				else -- Square
-					local Left, Top = Index == 2 or Index == 3, Index <= 2;
+					local Left, Top = Quadrant == 2 or Quadrant == 3, Quadrant <= 2;
 					SplitPoints[ #SplitPoints + 1 ] = Left and -0.5 or 0.5;
 					SplitPoints[ #SplitPoints + 1 ] = Top and -0.5 or 0.5;
 				end
