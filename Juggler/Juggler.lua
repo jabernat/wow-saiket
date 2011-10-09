@@ -90,7 +90,7 @@ function NS.Timer:OnUpdate ( Elapsed )
 		self:Hide();
 	else
 		self.Label:SetFormattedText( NS.L.TIMER_FORMAT, self.Remaining );
-		local Percent = self.Remaining / self.Duration;
+		local Percent = self.Duration == 0 and 0 or self.Remaining / self.Duration;
 		local R, G;
 		if ( Percent > 0.5 ) then
 			R, G = ( 1 - Percent ) * 2, 1;
