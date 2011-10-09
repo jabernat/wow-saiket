@@ -126,17 +126,29 @@ do
 		local Dot12 = V1x * V2x + V1y * V2y;
 
 		local Denominator = Dot00 * Dot11 - Dot01 * Dot01;
-		local u = ( Dot11 * Dot02 - Dot01 * Dot12 ) / Denominator;
-		local v = ( Dot00 * Dot12 - Dot01 * Dot02 ) / Denominator;
+		local U = ( Dot11 * Dot02 - Dot01 * Dot12 ) / Denominator;
+		local V = ( Dot00 * Dot12 - Dot01 * Dot02 ) / Denominator;
 
-		return u > 0 and v > 0 and u + v < 1;
+		return U > 0 and V > 0 and U + V < 1;
 	end
 
+	local function TriIsValid ( Ax, Ay, Bx, By, Cx, Cy )
+		if ( ( Ax ~= Bx or Ay ~= By ) -- No same points
+		  and ( Bx ~= Cx or By ~= Cy )
+			and ( Ax ~= Cx or Ay ~= Cy )
+		) then
+			if ( ( Ay - By ) / ( Ax - Bx ) ~= ( By - Cy ) / ( Bx - Cx ) ) then -- Not co-linear
+				return true;
+			end
+		end
+	end
 	local function TriTableAdd ( Table, ... )
-		for Index = 1, select( "#", ... ), 2 do
-			local X, Y = select( Index, ... );
-			Table[ #Table + 1 ] = X;
-			Table[ #Table + 1 ] = 1 - Y;
+		if ( TriIsValid( ... ) ) then
+			for Index = 1, select( "#", ... ), 2 do
+				local X, Y = select( Index, ... );
+				Table[ #Table + 1 ] = X;
+				Table[ #Table + 1 ] = 1 - Y;
+			end
 		end
 	end
 	local function TriTableCompile ( Table )
