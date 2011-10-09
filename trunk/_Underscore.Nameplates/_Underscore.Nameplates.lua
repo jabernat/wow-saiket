@@ -286,7 +286,7 @@ do
 	--- Updates the healer-mode health bar when health changes.
 	function NS:HealthOnValueChanged ( Health )
 		local _, HealthMax = self:GetMinMaxValues();
-		local Percent = Health / HealthMax;
+		local Percent = HealthMax == 0 and 1 or Health / HealthMax;
 		self.Left:SetWidth( Percent * ( PlateWidth - PlateHeight ) );
 		if ( self.IsHealerMode ) then
 			if ( Percent <= HealthIsGhost ) then -- Ghost or close to it
