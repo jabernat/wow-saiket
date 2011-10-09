@@ -68,7 +68,10 @@ do
 			if ( Lag.UpdateNext <= 0 ) then
 				Lag.UpdateNext = NS.LagUpdateRate;
 
-				Lag:SetWidth( min( 1, select( 4, GetNetStats() ) / 1000 / select( 2, self:GetMinMaxValues() ) ) * self:GetWidth() );
+				local Time = select( 4, GetNetStats() ) / 1000;
+				local TimeTotal = select( 2, self:GetMinMaxValues() );
+				local Percent = TimeTotal == 0 and math.huge or Time / TimeTotal;
+				Lag:SetWidth( min( 1, Percent ) * self:GetWidth() );
 			end
 		end
 	end
