@@ -50,13 +50,13 @@ do
 			self.Text:SetTextColor( unpack( Colors.disconnected ) );
 		end
 	end
-	local FeignDeath = GetSpellInfo( 28728 );
+	local FEIGN_DEATH = GetSpellInfo( 28728 );
 	--- Sets health bar text and color when health changes.
 	function NS:HealthPostUpdate ( UnitID, Health, HealthMax )
 		if ( UnitIsGhost( UnitID ) ) then
 			self:SetValue( 0 );
 			SetDead( self, L.GHOST );
-		elseif ( UnitIsDead( UnitID ) and not UnitAura( UnitID, FeignDeath ) ) then
+		elseif ( UnitIsDead( UnitID ) and not UnitAura( UnitID, FEIGN_DEATH ) ) then
 			self:SetValue( 0 );
 			SetDead( self, L.DEAD );
 		elseif ( not UnitIsConnected( UnitID ) ) then
@@ -145,12 +145,9 @@ do
 	--- Switches buff filter based on unit hostility.
 	function NS:BuffPreUpdate ( UnitID )
 		self.BuffConsolidate = GetCVarBool( "consolidateBuffs" );
-		self.Hostile = UnitCanAttack( "player", UnitID );
+		self.Hostile = UnitCanAttack( "player", UnitID ) or UnitCanAttack( "pet", UnitID );
 
-		if ( self.ShowAll
-			or self.Hostile -- Show all hostile buffs
-			or not GetCVarBool( "showCastableBuffs" ) -- Not limited to player's buffs
-		) then
+		if ( self.ShowAll or self.Hostile ) then
 			self.filter = "HELPFUL";
 		else
 			self.filter = "HELPFUL|PLAYER"; -- Show player's buffs cast on friendlies
@@ -158,14 +155,12 @@ do
 	end
 	--- Switches debuff filter based on unit hostility.
 	function NS:DebuffPreUpdate ( UnitID )
-		if ( self.ShowAll ) then
-			self.filter = "HARMFUL";
-		elseif ( GetCVarBool( "showCastableDebuffs" ) and ( UnitCanAttack( "player", UnitID ) or UnitCanAttack( "pet", UnitID ) ) ) then
+		if ( not self.ShowAll
+			and ( UnitCanAttack( "player", UnitID ) or UnitCanAttack( "pet", UnitID ) )
+		) then
 			self.filter = "HARMFUL|PLAYER"; -- Show only your debuffs on hostiles
-		elseif ( GetCVarBool( "showDispelDebuffs" ) ) then
-			self.filter = "HARMFUL|RAID"; -- Show cleansable debuffs
 		else
-			self.filter = "HARMFUL"; -- Show all debuffs on friendlies
+			self.filter = "HARMFUL";
 		end
 	end
 end
