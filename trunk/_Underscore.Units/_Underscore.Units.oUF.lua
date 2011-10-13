@@ -125,6 +125,7 @@ end
 --- Adjusts buff/debuff icons when they're created.
 function NS:AuraPostCreateIcon ( Frame )
 	_Underscore.SkinButtonIcon( Frame.icon );
+	Frame.icon:SetNonBlocking( true );
 	Frame.cd:SetReverse( true );
 	Frame.cd:SetDrawEdge( true ); -- Adds a line along the cooldown's edge
 
