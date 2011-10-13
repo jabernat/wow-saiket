@@ -44,7 +44,7 @@ do
 	--- Colors and sets text for a bar representing a dead player.
 	-- @param Label  New bar text.
 	local function SetDead ( self, Label )
-		self:SetStatusBarColor( 0.2, 0.2, 0.2 );
+		self.bg:SetVertexColor( 0.2, 0.2, 0.2 );
 		if ( self.Text ) then
 			self.Text:SetText( Label );
 			self.Text:SetTextColor( unpack( Colors.disconnected ) );
@@ -270,12 +270,10 @@ local LibSharedMedia = LibStub( "LibSharedMedia-3.0" );
 local BarTexture = LibSharedMedia:Fetch( LibSharedMedia.MediaType.STATUSBAR, _Underscore.MediaBar );
 
 --- Creates a common bar background.
--- @param Brightness  Shade of gray between 0 and 1 to color texture.
 -- @return Background texture.
-local function CreateBarBackground ( self, Brightness )
+local function CreateBarBackground ( self )
 	local Background = self:CreateTexture( nil, "BACKGROUND" );
 	Background:SetAllPoints( self );
-	Background:SetVertexColor( Brightness, Brightness, Brightness );
 	Background:SetTexture( BarTexture );
 	return Background;
 end
@@ -285,7 +283,9 @@ do
 	--- Hook that sets bar text color along with actual bar color.
 	local function SetStatusBarColor ( self, ... )
 		self.Text:SetTextColor( ... );
-		return SetStatusBarColorBackup( self, ... );
+		if ( not self.bg ) then -- Not a reverse bar
+			return SetStatusBarColorBackup( self, ... );
+		end
 	end
 	--- Creates a common status bar.
 	-- @param Parent  Parent frame.
@@ -303,42 +303,6 @@ do
 			end
 			Bar.SetStatusBarColor = SetStatusBarColor;
 		end
-		return Bar;
-	end
-end
-local CreateBarReverse;
-do
-	local min = min;
-	--- Repositions the status bar texture to fill from the right at most once per frame.
-	local function UpdaterOnUpdate ( Updater )
-		Updater:Hide();
-
-		local Bar = Updater:GetParent();
-		local Texture = Bar:GetStatusBarTexture();
-		local Max = select( 2, Bar:GetMinMaxValues() );
-		local Percent = Max == 0 and math.huge or Bar:GetValue() / Max;
-		Texture:ClearAllPoints();
-		Texture:SetPoint( "BOTTOMRIGHT" );
-		Texture:SetPoint( "TOPLEFT", Bar, "TOPRIGHT",
-			( min( 1, Percent ) - 1 ) * Bar:GetWidth(), 0 );
-	end
-	--- Requests that the status bar texture be updated before the next frame.
-	local function OnChanged ( Bar )
-		Bar.Updater:Show();
-	end
-	--- Creates a status bar that fills in reverse.
-	-- @see CreateBar
-	function CreateBarReverse ( ... )
-		local Bar = CreateBar( ... );
-		-- Use a separate frame for OnUpdates, since the bar's OnUpdate handler is used by oUF.
-		Bar.Updater = CreateFrame( "Frame", nil, Bar );
-		Bar.Updater:Hide();
-		Bar.Updater:SetScript( "OnUpdate", UpdaterOnUpdate );
-
-		Bar:SetScript( "OnSizeChanged", OnChanged );
-		Bar:SetScript( "OnValueChanged", OnChanged );
-		Bar:SetScript( "OnMinMaxChanged", OnChanged );
-
 		return Bar;
 	end
 end
@@ -529,12 +493,13 @@ function NS.StyleMeta.__call ( Style, Frame, UnitID )
 
 
 	-- Health bar
-	local Health = CreateBarReverse( Frame, Style.HealthText and Style.BarTextFont );
+	local Health = CreateBar( Frame, Style.HealthText and Style.BarTextFont );
 	Frame.Health = Health;
 	Health:SetPoint( "TOPLEFT", Bars );
 	Health:SetPoint( "RIGHT", Bars );
 	Health:SetHeight( Style.Height * ( 1 - Style.PowerHeight - Style.ProgressHeight ) );
-	CreateBarBackground( Health, 0.07 );
+	Health:SetStatusBarColor( 0.1, 0.1, 0.1 );
+	Health.bg = CreateBarBackground( Health );
 	Health.frequentUpdates = true;
 	Health.colorTapping = true;
 	Health.colorSmooth = true;
@@ -552,7 +517,7 @@ function NS.StyleMeta.__call ( Style, Frame, UnitID )
 
 	-- Healing prediction
 	local MyBar = CreateBar( Health );
-	MyBar:SetPoint( "TOPLEFT", Health:GetStatusBarTexture() );
+	MyBar:SetPoint( "TOPLEFT", Health:GetStatusBarTexture(), "TOPRIGHT" );
 	MyBar:SetPoint( "BOTTOM", Health:GetStatusBarTexture() );
 	MyBar:SetWidth( BarWidth );
 	MyBar:SetAlpha( 0.75 );
@@ -578,7 +543,7 @@ function NS.StyleMeta.__call ( Style, Frame, UnitID )
 	Power:SetPoint( "TOPLEFT", Health, "BOTTOMLEFT" );
 	Power:SetPoint( "RIGHT", Bars );
 	Power:SetHeight( Style.Height * Style.PowerHeight );
-	CreateBarBackground( Power, 0.14 );
+	CreateBarBackground( Power ):SetVertexColor( 0.14, 0.14, 0.14 );
 	Power.frequentUpdates = true;
 	Power.colorPower = true;
 
@@ -598,7 +563,9 @@ function NS.StyleMeta.__call ( Style, Frame, UnitID )
 	Progress:SetPoint( "TOPRIGHT", Power, "BOTTOMRIGHT" );
 	Progress:SetAlpha( 0.8 );
 	Progress:Hide();
-	CreateBarBackground( Progress, 0.07 ):SetParent( Bars ); -- Show background while hidden
+	local Background = CreateBarBackground( Progress );
+	Background:SetParent( Bars ); -- Show background while hidden
+	Background:SetVertexColor( 0.07, 0.07, 0.07 );
 	if ( UnitID == "player" ) then
 		if ( IsAddOnLoaded( "oUF_Experience" ) and UnitLevel( "player" ) ~= MAX_PLAYER_LEVEL and not IsXPUserDisabled() ) then
 			Frame.Experience = Progress;
