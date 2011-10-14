@@ -5,6 +5,7 @@
 ## Notes-koKR: 길드 금고에 검색 필터를 추가합니다.
 ## Author: Saiket
 ## X-Credits: Harros (Original author)
+## X-Credits-enTW: Localization: jyuny1
 ## X-Credits-frFR: Localization: Nodd, contrebasse
 ## X-Credits-koKR: Localization: freshworks
 ## X-Credits-zhTW: Localization: jyuny1
@@ -17,7 +18,7 @@
 ## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:GuildBankSearch
 ## X-WoWI-ID: 9448
 ## X-Curse-Project-ID: guild-bank-search
-## X-Localizations: enUS, frFR, koKR, zhTW
+## X-Localizations: enTW, enUS, frFR, koKR, zhTW
 ## X-CompatibleLocales: deDE, enCN, enTW, enUS, esES, esMX, frFR, koKR, ptBR, ptPT, ruRU, zhCN, zhTW
 ## LoadOnDemand: 1
 ## LoadWith: Blizzard_GuildBankUI
