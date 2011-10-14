@@ -2,6 +2,8 @@
 ## Title: _|cffCCCC88NPCScan|r.Overlay
 ## Notes: Adds mob patrol paths to your map.
 ## Notes-deDE: Fügt deiner Karte die Laufpfade hinzu
+## Notes-enCN: 在你的地图上新增怪物路径图。
+## Notes-enTW: 在你的地圖上新增怪物路徑圖。
 ## Notes-esES: Añade los caminos de los NPCs a tu mapa.
 ## Notes-esMX: Añade los caminos de los NPCs a tu mapa.
 ## Notes-frFR: Ajoute les trajets des monstres rares sur votre carte.
@@ -11,6 +13,8 @@
 ## Notes-zhTW: 在你的地圖上新增怪物路徑圖。
 ## Author: Saiket
 ## X-Credits-deDE: Localization: Freydis88
+## X-Credits-enCN: Localization: tss1398383123, zhTW, ananhaid
+## X-Credits-enTW: Localization: s8095324, pepper_ep, zhTW, alpha2009
 ## X-Credits-esES: Localization: galen2, MazarbulZero
 ## X-Credits-esMX: Localization: galen2, MazarbulZero
 ## X-Credits-frFR: Localization: Pettigrow
@@ -27,7 +31,7 @@
 ## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:NPCScan.Overlay
 ## X-WoWI-ID: 14686
 ## X-Curse-Project-ID: npcscan-overlay
-## X-Localizations: deDE, enUS, esES, esMX, frFR, koKR, ruRU, zhCN, zhTW
+## X-Localizations: deDE, enCN, enTW, enUS, esES, esMX, frFR, koKR, ruRU, zhCN, zhTW
 ## X-CompatibleLocales: deDE, enCN, enTW, enUS, esES, esMX, frFR, koKR, ptBR, ptPT, ruRU, zhCN, zhTW
 ## SavedVariables: _NPCScanOverlayOptions
 ## OptionalDeps: Ace3, _NPCScan, AlphaMap3, Carbonite
