@@ -12,7 +12,7 @@
 ## X-WoWI-ID: 16959
 ## X-Curse-Project-ID: juggler
 ## X-Localizations: enUS
-## X-CompatibleLocales: deDE, enUS, esES, esMX, frFR, koKR, ruRU, zhCN, zhTW
+## X-CompatibleLocales: deDE, enUS, esES, esMX, frFR, koKR, ptBR, ruRU, zhCN, zhTW
 Locales.xml
 
 StateMachine.lua

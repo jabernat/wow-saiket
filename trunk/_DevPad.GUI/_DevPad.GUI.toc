@@ -13,7 +13,7 @@
 ## X-Curse-Project-ID: devpad
 ## X-Child-Of: _DevPad
 ## X-Localizations: enUS
-## X-CompatibleLocales: deDE, enUS, esES, esMX, frFR, koKR, ruRU, zhCN, zhTW
+## X-CompatibleLocales: deDE, enUS, esES, esMX, frFR, koKR, ptBR, ruRU, zhCN, zhTW
 ## X-Embeds: FlyPaper
 ## SavedVariables: _DevPadGUIOptions
 ## RequiredDeps: _DevPad

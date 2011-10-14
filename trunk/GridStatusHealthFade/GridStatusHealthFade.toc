@@ -13,7 +13,7 @@
 ## X-WoWI-ID: 12309
 ## X-Curse-Project-ID: gridstatushealthfade
 ## X-Localizations: enUS
-## X-CompatibleLocales: deDE, enUS, esES, esMX, frFR, koKR, ruRU, zhCN, zhTW
+## X-CompatibleLocales: deDE, enUS, esES, esMX, frFR, koKR, ptBR, ruRU, zhCN, zhTW
 ## X-GridStatusModule: GridStatusHealthFade
 ## RequiredDeps: Grid
 Locales.xml
