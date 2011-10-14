@@ -12,7 +12,7 @@
 ## X-WoWI-ID: 9336
 ## X-Curse-Project-ID: utf
 ## X-Localizations: enUS
-## X-CompatibleLocales: deDE, enUS, esES, esMX, frFR, koKR, ptBR, ruRU, zhCN, zhTW
+## X-CompatibleLocales: deDE, enCN, enTW, enUS, esES, esMX, frFR, koKR, ptBR, ptPT, ruRU, zhCN, zhTW
 ## X-Embeds: LibTextTable-1.1
 ## SavedVariables: _UTFOptions
 ## OptionalDeps: LibTextTable-1.1
