@@ -18,7 +18,7 @@
 ## X-WoWI-ID: 9448
 ## X-Curse-Project-ID: guild-bank-search
 ## X-Localizations: enUS, frFR, koKR, zhTW
-## X-CompatibleLocales: deDE, enUS, esES, esMX, frFR, koKR, ruRU, zhCN, zhTW
+## X-CompatibleLocales: deDE, enUS, esES, esMX, frFR, koKR, ptBR, ruRU, zhCN, zhTW
 ## LoadOnDemand: 1
 ## LoadWith: Blizzard_GuildBankUI
 ## RequiredDeps: Blizzard_GuildBankUI

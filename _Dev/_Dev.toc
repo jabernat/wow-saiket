@@ -12,7 +12,7 @@
 ## X-WoWI-ID: 9333
 ## X-Curse-Project-ID: dev
 ## X-Localizations: enUS
-## X-CompatibleLocales: deDE, enUS, esES, esMX, frFR, koKR, ruRU, zhCN, zhTW
+## X-CompatibleLocales: deDE, enUS, esES, esMX, frFR, koKR, ptBR, ruRU, zhCN, zhTW
 ## SavedVariables: _DevOptions
 ## LoadWith: Blizzard_DebugTools
 ## OptionalDeps: !ImprovedErrorFrame, !BugGrabber, !Swatter, !BaudErrorFrame
