@@ -10,7 +10,7 @@
 ## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons
 ## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Latency
 ## X-Localizations: enUS
-## X-CompatibleLocales: deDE, enUS, esES, esMX, frFR, koKR, ptBR, ruRU, zhCN, zhTW
+## X-CompatibleLocales: deDE, enCN, enTW, enUS, esES, esMX, frFR, koKR, ptBR, ptPT, ruRU, zhCN, zhTW
 ## X-Embeds: LibGraph-2.0
 ## SavedVariablesPerCharacter: _LatencyOptions
 ## LoadManagers: AddonLoader

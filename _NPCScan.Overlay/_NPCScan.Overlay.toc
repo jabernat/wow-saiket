@@ -28,7 +28,7 @@
 ## X-WoWI-ID: 14686
 ## X-Curse-Project-ID: npcscan-overlay
 ## X-Localizations: deDE, enUS, esES, esMX, frFR, koKR, ruRU, zhCN, zhTW
-## X-CompatibleLocales: deDE, enUS, esES, esMX, frFR, koKR, ptBR, ruRU, zhCN, zhTW
+## X-CompatibleLocales: deDE, enCN, enTW, enUS, esES, esMX, frFR, koKR, ptBR, ptPT, ruRU, zhCN, zhTW
 ## SavedVariables: _NPCScanOverlayOptions
 ## OptionalDeps: Ace3, _NPCScan, AlphaMap3, Carbonite
 Libs\LibStub\LibStub.lua
