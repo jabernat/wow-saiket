@@ -245,7 +245,7 @@ function NS.SlashCommand ( Input )
 		local Success, Region = _Dev.Exec( Input );
 
 		if ( not Success ) then
-			_Dev.Error( L.OUTLINE_MESSAGE_FORMAT:format( Region ) );
+			_Dev.Error( L.OUTLINE_MESSAGE_FORMAT:format( tostring( Region ) ) );
 		else
 			NS.Toggle( Region, Input );
 		end
