@@ -242,7 +242,7 @@ do
 				_Dev.Error( L.DUMP_MESSAGE_FORMAT:format( ErrorMessage ) );
 			end
 		else -- Couldn't parse/runtime error
-			_Dev.Error( L.DUMP_MESSAGE_FORMAT:format( ( ... ) ) );
+			_Dev.Error( L.DUMP_MESSAGE_FORMAT:format( tostring( ( ... ) ) ) );
 		end
 	end
 	function NS.SlashCommand ( Input )
