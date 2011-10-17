@@ -19,6 +19,7 @@ NS.FontIncrease = NS:NewButton( [[Interface\Icons\Spell_ChargePositive]] );
 NS.Focus = CreateFrame( "Frame", nil, NS.Window );
 NS.Margin = CreateFrame( "Frame", nil, NS.ScrollFrame );
 NS.Margin.Gutter = NS.Focus:CreateTexture( nil, "BORDER" );
+NS.Margin.Text = NS.Margin:CreateFontString();
 NS.Margin.Lines = {};
 local MarginUpdateFrequency = 0.2; -- Time to wait after last keypress before updating
 NS.Edit = CreateFrame( "EditBox", nil, NS.Margin );
@@ -77,8 +78,9 @@ NS.Font.Paths = { -- Font file paths for font cycling button
 };
 
 -- Editor colors
---NS.Font:SetTextColor( 1, 1, 1 ); -- Default text/line number color
+--NS.Edit:SetTextColor( 1, 1, 1 ); -- Default text color
 --NS.Background:SetTexture( 0.05, 0.05, 0.06 ); -- Text background
+--NS.Margin.Text:SetTextColor( 1, 1, 1 ); -- Line number color
 NS.Margin.Gutter:SetTexture( 0.2, 0.2, 0.2 ); -- Line number background
 
 
@@ -604,7 +606,7 @@ GUI.Dialog.StickyFrames[ "Editor" ] = NS;
 NS:SetScript( "OnShow", NS.OnShow );
 NS:SetScript( "OnHide", NS.OnHide );
 NS.Title:SetJustifyH( "LEFT" );
-NS:SetMinResize( 200, 100 );
+NS:SetMinResize( 100, 100 );
 
 -- Title buttons
 local Run = NS.Run;
@@ -624,20 +626,17 @@ Run:SetScript( "OnLeave", GameTooltip_Hide );
 Run:SetScript( "OnClick", Run.OnClick );
 Run.tooltipText = L.SCRIPT_RUN;
 
-local LastButton = NS.Close;
 --- @return A new title button.
 local function SetupTitleButton ( Button, TooltipText, Offset )
-	Button:SetPoint( "RIGHT", LastButton, "LEFT", -2 - ( Offset or 0 ), 0 );
-	LastButton = Button;
+	NS:AddTitleButton( Button, ( Offset or 0 ) - 2 );
 	Button:SetScript( "OnClick", Button.OnClick );
 	Button:SetMotionScriptsWhileDisabled( true );
 	Button.tooltipText = TooltipText;
 end
 SetupTitleButton( NS.Lua, GUI.IndentationLib and L.LUA_TOGGLE or L.RAW_TOGGLE );
-SetupTitleButton( NS.FontCycle, L.FONT_CYCLE, 8 );
+SetupTitleButton( NS.FontCycle, L.FONT_CYCLE, -8 );
 SetupTitleButton( NS.FontIncrease, L.FONT_INCREASE );
 SetupTitleButton( NS.FontDecrease, L.FONT_DECREASE );
-NS.Title:SetPoint( "RIGHT", LastButton, "LEFT" );
 
 local Focus = NS.Focus;
 Focus:SetAllPoints( NS.ScrollFrame);
@@ -648,8 +647,7 @@ Margin:SetSize( 1, 1 );
 Margin:SetHitRectInsets( 0, 0, 0, TextInset );
 ScrollFrame:SetScrollChild( Margin );
 Margin:SetScript( "OnMouseDown", Margin.OnMouseDown );
-local Text = Margin:CreateFontString();
-Margin.Text = Text;
+local Text = Margin.Text;
 Text:SetFontObject( NS.Font );
 Text:SetPoint( "TOPLEFT", 0, -TextInset );
 Text:SetJustifyV( "TOP" );

@@ -904,16 +904,15 @@ GUI.Dialog.StickyFrames[ "List" ] = NS;
 NS:SetScript( "OnShow", NS.OnShow );
 NS:SetScript( "OnHide", NS.OnHide );
 NS.Title:SetText( L.LIST_TITLE );
+NS.Title:SetJustifyH( "LEFT" );
+NS:SetMinResize( 46 + NS.Title:GetStringWidth(), 100 );
 
 NS.ScrollChild:SetSize( 1, 1 );
 NS.ScrollFrame:SetScrollChild( NS.ScrollChild );
 
--- Title buttons
-local LastButton, ButtonCount = NS.Close, 0;
 --- @return A new title button.
 local function SetupTitleButton ( Button, TooltipText )
-	Button:SetPoint( "RIGHT", LastButton, "LEFT", -2, 0 );
-	LastButton, ButtonCount = Button, ButtonCount + 1;
+	NS:AddTitleButton( Button, -2 );
 	Button:SetScript( "OnClick", Button.OnClick );
 	Button:SetMotionScriptsWhileDisabled( true );
 	Button.tooltipText = TooltipText;
@@ -922,7 +921,6 @@ SetupTitleButton( NS.Send, L.SEND );
 SetupTitleButton( NS.Delete, L.DELETE );
 SetupTitleButton( NS.NewScript, L.SCRIPT_NEW );
 SetupTitleButton( NS.NewFolder, L.FOLDER_NEW );
-NS:SetMinResize( 40 + ButtonCount * 18 + NS.Title:GetWidth(), 100 );
 NS:ListSetSelection(); -- Update title buttons
 
 StaticPopupDialogs[ "_DEVPAD_DELETE_CONFIRM" ] = {

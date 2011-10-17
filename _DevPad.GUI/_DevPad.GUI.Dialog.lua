@@ -59,6 +59,15 @@ function NS:NewButton ( Path )
 	Pushed:SetPoint( "BOTTOMRIGHT", 1, -1 );
 	return Button;
 end
+--- Adds Button to this dialog window's title bar.
+-- @param Offset  Optional extra distance to anchor from the previous button.
+function NS:AddTitleButton ( Button, Offset )
+	Button:SetPoint( "RIGHT", self.LastTitleButton or self.Close, "LEFT", Offset or 0, 0 );
+	self.Title:SetPoint( "RIGHT", Button, "LEFT" );
+	local MinX, MinY = self:GetMinResize();
+	self:SetMinResize( MinX + Button:GetWidth() - ( Offset or 0 ), MinY );
+	self.LastTitleButton = Button;
+end
 
 
 --- Starts resizing the frame.
@@ -192,7 +201,7 @@ function NS:New ( Name )
 		insets = { left = 7; right = 5; top = 3; bottom = 6; };
 	} );
 	Frame.Pack, Frame.Unpack = self.Pack, self.Unpack;
-	Frame.NewButton = self.NewButton;
+	Frame.NewButton, Frame.AddTitleButton = self.NewButton, self.AddTitleButton;
 	-- Make dragable
 	Frame:EnableMouse( true );
 	Frame:SetMovable( true );
