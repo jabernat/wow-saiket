@@ -216,18 +216,17 @@ end
 -- Title buttons
 local Redo = NS.RedoButton;
 SetupButton( Redo );
-Redo:SetPoint( "RIGHT", GUI.Editor.FontDecrease, "LEFT", -6, 0 );
+GUI.Editor:AddTitleButton( Redo, -2 );
 Redo.tooltipText = GUI.L.REDO;
 
 local Undo = NS.UndoButton;
 SetupButton( Undo );
-Undo:SetPoint( "RIGHT", Redo, "LEFT", 12, 0 );
-GUI.Editor.Title:SetPoint( "RIGHT", Undo, "LEFT", 6, 0 );
+GUI.Editor:AddTitleButton( Undo, 12 );
+Undo.tooltipText = GUI.L.UNDO;
 -- Flip texture to the left since no left arrow texture exists
 Undo:GetNormalTexture():SetTexCoord( 1, 0, 0, 1 );
 Undo:GetPushedTexture():SetTexCoord( 1, 0, 0, 1 );
 Undo:GetDisabledTexture():SetTexCoord( 1, 0, 0, 1 );
-Undo.tooltipText = GUI.L.UNDO;
 
 
 NS.CompareTimer:CreateAnimation( "Animation" ):SetDuration( CompareFrequency );
