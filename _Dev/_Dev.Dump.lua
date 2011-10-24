@@ -126,7 +126,7 @@ do
 	local EndTime = nil; -- Set to the cutoff execution time when limited.
 	local OverTime = false; -- Boolean, true when ran out of time.
 
-	local GetTime = GetTime;
+	local time = time;
 	local next = next;
 	local pairs = pairs;
 	local select = select;
@@ -147,7 +147,7 @@ do
 				and "("..tostring( LValueString )..")" or L.DUMP_LVALUE_DEFAULT;
 			OverTime = false;
 			EndTime = _DevOptions.Dump.MaxExploreTime
-				and ( _DevOptions.Dump.MaxExploreTime + GetTime() ) or nil;
+				and ( _DevOptions.Dump.MaxExploreTime + time() ) or nil;
 
 			-- Trim nil values from end
 			for Index = select( "#", ... ), 1, -1 do
@@ -188,7 +188,7 @@ do
 								if ( EndTime ) then
 									if ( OverTime ) then
 										break;
-									elseif ( EndTime <= GetTime() ) then
+									elseif ( EndTime <= time() ) then
 										_Dev.Print( IndentString..L.DUMP_INDENT..L.DUMP_MAXEXPLORETIME_ABBR );
 										OverTime = true;
 										break;
