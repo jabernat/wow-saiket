@@ -131,8 +131,8 @@ end
 do
 	local GetScreenHeight = GetScreenHeight;
 	local GetScreenWidth = GetScreenWidth;
-	local atan = math.atan; -- Note: Global atan() uses degrees!
-	local Pi = math.pi;
+	local atan2 = math.atan2;
+	local PI = math.pi;
 	function NS:OutlineOnUpdate ()
 		local CenterX2, CenterY2 = self:GetCenter();
 		local Threshold = _DevOptions.Outline.BoundsThreshold;
@@ -147,8 +147,7 @@ do
 		) ) then
 			local CenterX1, CenterY1 = Arrow:GetCenter();
 
-			Arrow:SetFacing( atan( ( CenterY2 - CenterY1 ) / ( CenterX2 - CenterX1 ) )
-				- Pi / 2 + ( ( CenterX2 - CenterX1 ) < 0 and Pi or 0 ) );
+			Arrow:SetFacing( atan2( CenterY2 - CenterY1, CenterX2 - CenterX1 ) - PI / 2 );
 			Arrow:Show();
 		else
 			Arrow:Hide();

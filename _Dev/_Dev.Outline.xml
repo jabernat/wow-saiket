@@ -25,9 +25,9 @@
 				<Layers>
 					<Layer level="OVERLAY">
 						<Texture file="Interface\WorldMap\WorldMapPartyIcon">
-							<Size x="20" y="20"/>
+							<Size x="16" y="16"/>
 							<Anchors>
-								<Anchor point="CENTER"/>
+								<Anchor point="CENTER" x="3" y="1"/>
 							</Anchors>
 						</Texture>
 					</Layer>
