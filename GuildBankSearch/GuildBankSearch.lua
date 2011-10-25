@@ -365,7 +365,7 @@ do
 			local Color = NS.LogMismatchColor;
 			-- Remove all color codes
 			return AddMessageBackup( self,
-				Message:gsub( "|cff%x%x%x%x%x%x", "" ):gsub( "|r", "" ),
+				Message:gsub( "|c%x%x%x%x%x%x%x%x", "" ):gsub( "|r", "" ),
 				Color.r, Color.g, Color.b, select( 4, ... ) );
 		end
 		return AddMessageBackup( self, Message, ... );
@@ -396,7 +396,7 @@ function NS.Frame:OnShow ()
 	PlaySound( "igCharacterInfoOpen" );
 	NS.ToggleButton:SetButtonState( "PUSHED", true );
 	GuildBankTab1:ClearAllPoints();
-	GuildBankTab1:SetPoint( "TOPLEFT", NS.Frame, "TOPRIGHT", -8, -16 );
+	GuildBankTab1:SetPoint( "TOPLEFT", NS.Frame, "TOPRIGHT", -8, -2 );
 
 	NS.FilterUpdate( true );
 end
@@ -472,7 +472,7 @@ NS.ToggleButton:SetScript( "OnClick", NS.Toggle );
 -- Set up filter pane
 local Frame = NS.Frame;
 Frame:Hide();
-Frame:SetSize( 187, 389 );
+Frame:SetSize( 187, 409 );
 Frame:SetPoint( "TOPLEFT", GuildBankFrame, "TOPRIGHT", -2, -28 );
 Frame:EnableMouse( true );
 Frame:SetToplevel( true );
@@ -492,7 +492,7 @@ Label:SetText( L.TITLE );
 
 local Top = Frame:CreateTexture( nil, "BACKGROUND" );
 Top:SetTexture( [[Interface\AuctionFrame\AuctionHouseDressUpFrame-Top]] );
-Top:SetSize( 256, 256 );
+Top:SetSize( 256, 276 );
 Top:SetPoint( "TOPLEFT" );
 local Bottom = Frame:CreateTexture( nil, "BACKGROUND" );
 Bottom:SetTexture( [[Interface\AuctionFrame\AuctionHouseDressUpFrame-Bottom]] );
@@ -501,11 +501,11 @@ Bottom:SetPoint( "TOPLEFT", Top, "BOTTOMLEFT" );
 local Corner = Frame:CreateTexture( nil, "BACKGROUND" );
 Corner:SetTexture( [[Interface\AuctionFrame\AuctionHouseDressUpFrame-Corner]] );
 Corner:SetSize( 32, 32 );
-Corner:SetPoint( "TOPRIGHT", -5, -5 );
+Corner:SetPoint( "TOPRIGHT", -5, -7 );
 
 
 -- Close button
-CreateFrame( "Button", nil, Frame, "UIPanelCloseButton" ):SetPoint( "TOPRIGHT", 1, 0 );
+CreateFrame( "Button", nil, Frame, "UIPanelCloseButton" ):SetPoint( "TOPRIGHT", Corner, 6, 5 );
 
 local Clear = NS.Clear;
 Clear:SetSize( 45, 18 );
