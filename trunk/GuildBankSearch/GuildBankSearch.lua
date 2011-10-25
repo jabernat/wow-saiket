@@ -459,6 +459,16 @@ for Index = 1, MAX_GUILDBANK_SLOTS_PER_TAB do
 	local Column = floor( ( Index - 1 ) / NUM_SLOTS_PER_GUILDBANK_GROUP ) + 1;
 	local Slot = ( Index - 1 ) % NUM_SLOTS_PER_GUILDBANK_GROUP + 1;
 	NS.Buttons[ Index ] = _G[ "GuildBankColumn"..Column.."Button"..Slot ];
+	NS.Buttons[ Index ].searchOverlay:SetTexture();
+end
+
+-- Remove default UI's search functionality
+GuildItemSearchBox:Hide();
+GuildBankFrame:UnregisterEvent( "INVENTORY_SEARCH_UPDATE" );
+for Index = 1, MAX_GUILDBANK_TABS do
+	local Tab = _G[ "GuildBankTab"..Index.."Button" ];
+	Tab:UnregisterEvent( "INVENTORY_SEARCH_UPDATE" );
+	Tab.searchOverlay:SetTexture();
 end
 
 
