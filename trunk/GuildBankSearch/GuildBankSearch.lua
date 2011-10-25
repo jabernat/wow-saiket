@@ -91,7 +91,7 @@ NS.SlotGroups = { -- Categories paired with the inventory types that can match t
 
 NS.ButtonMismatchAlpha = 0.25;
 NS.LogMismatchColor = { r = 0.25; g = 0.25; b = 0.25; };
-NS.Buttons = {}; -- Cache of all item buttons in bank view
+NS.Buttons, NS.Tabs = {}, {}; -- Cache of all item and tab buttons in bank view
 
 
 
@@ -309,7 +309,10 @@ end
 
 --- Restores an unfiltered view of the bank and log.
 function NS.FilterSuspend ()
-	for Index, Button in ipairs( NS.Buttons ) do
+	for _, Tab in ipairs( NS.Tabs ) do
+		Tab:SetAlpha( 1 );
+	end
+	for _, Button in ipairs( NS.Buttons ) do
 		Button:SetAlpha( 1 );
 	end
 	if ( GuildBankFrame.mode == "log" ) then
@@ -318,17 +321,33 @@ function NS.FilterSuspend ()
 end
 do
 	local GetGuildBankItemLink = GetGuildBankItemLink;
+	--- @return True if Tab contains at least one matching item.
+	local function MatchTab ( Tab )
+		for Slot = 1, MAX_GUILDBANK_SLOTS_PER_TAB do
+			if ( NS.MatchItem( GetGuildBankItemLink( Tab, Slot ) ) ) then
+				return true;
+			end
+		end
+	end
 	--- Applies or refreshes the current filter to the bank or log view.
 	function NS.FilterResume ()
 		if ( not NS.IsFilterDefined() ) then
 			return NS.FilterSuspend();
 		end
 
+		local TabCount = GetNumGuildBankTabs();
+		for Tab = 1, TabCount do
+			NS.Tabs[ Tab ]:SetAlpha( MatchTab( Tab ) and 1 or NS.ButtonMismatchAlpha );
+		end
+		for Tab = TabCount + 1, #NS.Tabs do
+			NS.Tabs[ Tab ]:SetAlpha( 1 );
+		end
+
 		if ( GuildBankFrame.mode == "bank" ) then
 			local Tab = GetCurrentGuildBankTab();
-			if ( Tab <= GetNumGuildBankTabs() ) then
-				for Index, Button in ipairs( NS.Buttons ) do
-					Button:SetAlpha( NS.MatchItem( GetGuildBankItemLink( Tab, Index ) )
+			if ( Tab <= TabCount ) then
+				for Slot, Button in ipairs( NS.Buttons ) do
+					Button:SetAlpha( NS.MatchItem( GetGuildBankItemLink( Tab, Slot ) )
 						and 1 or NS.ButtonMismatchAlpha );
 				end
 			end
@@ -397,6 +416,10 @@ function NS.Frame:OnShow ()
 	NS.ToggleButton:SetButtonState( "PUSHED", true );
 	GuildBankTab1:ClearAllPoints();
 	GuildBankTab1:SetPoint( "TOPLEFT", NS.Frame, "TOPRIGHT", -8, -2 );
+	-- Query contents of all bank tabs for tab button filtering
+	for Tab = 1, GetNumGuildBankTabs() do
+		QueryGuildBankTab( Tab );
+	end
 
 	NS.FilterUpdate( true );
 end
@@ -458,8 +481,9 @@ end );
 for Index = 1, MAX_GUILDBANK_SLOTS_PER_TAB do
 	local Column = floor( ( Index - 1 ) / NUM_SLOTS_PER_GUILDBANK_GROUP ) + 1;
 	local Slot = ( Index - 1 ) % NUM_SLOTS_PER_GUILDBANK_GROUP + 1;
-	NS.Buttons[ Index ] = _G[ "GuildBankColumn"..Column.."Button"..Slot ];
-	NS.Buttons[ Index ].searchOverlay:SetTexture();
+	local Button = _G[ "GuildBankColumn"..Column.."Button"..Slot ];
+	NS.Buttons[ Index ] = Button;
+	Button.searchOverlay:SetTexture();
 end
 
 -- Remove default UI's search functionality
@@ -467,6 +491,7 @@ GuildItemSearchBox:Hide();
 GuildBankFrame:UnregisterEvent( "INVENTORY_SEARCH_UPDATE" );
 for Index = 1, MAX_GUILDBANK_TABS do
 	local Tab = _G[ "GuildBankTab"..Index.."Button" ];
+	NS.Tabs[ Index ] = Tab;
 	Tab:UnregisterEvent( "INVENTORY_SEARCH_UPDATE" );
 	Tab.searchOverlay:SetTexture();
 end
