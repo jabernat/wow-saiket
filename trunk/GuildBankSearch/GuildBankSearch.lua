@@ -596,6 +596,10 @@ _G[ CategorySection:GetName().."Title" ]:SetText( L.ITEM_CATEGORY );
 CategorySection:SetPoint( "TOP", ItemLevelMin, "BOTTOM", 0, -38 );
 CategorySection:SetPoint( "LEFT", 8, 0 );
 CategorySection:SetPoint( "BOTTOMRIGHT", -16, 16 );
+local Background = CategorySection:CreateTexture( nil, "BACKGROUND" );
+Background:SetPoint( "TOPLEFT", 4, -4 );
+Background:SetPoint( "BOTTOMRIGHT", -4, 4 );
+Background:SetTexture( 1, 1, 1, 0.2 );
 
 InitializeDropdown( NS.Type, "Type", L.TYPE ):SetPoint( "TOP", 0, -16 );
 InitializeDropdown( NS.SubType, "SubType", L.SUB_TYPE ):SetPoint( "TOP", NS.Type, "BOTTOM", 0, -6 );
