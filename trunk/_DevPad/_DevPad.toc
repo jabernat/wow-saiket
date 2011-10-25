@@ -3,7 +3,7 @@
 ## Notes: Notepad for Lua scripts and mini-addons.
 ## Author: Saiket
 ## Version: 4.2.0.3
-## X-Date: 2011-08-06
+## X-Date: 2011-10-24
 ## X-Category: Development Tools
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com

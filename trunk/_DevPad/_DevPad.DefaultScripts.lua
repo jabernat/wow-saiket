@@ -13,11 +13,11 @@ local L = _DevPad.L;
 --- Settings table compatible with Folder:Unpack used when no saved variables are found.
 -- Note: Don't use tabs in script text fields!
 _DevPad.DefaultScripts = { Class = "Folder"; Name = "ROOT";
-	{	Class = "Script"; Name = L.README;
+	{ Class = "Script"; Name = L.README;
 		Text = L.README_TEXT;
 	},
 	{ Class = "Folder"; Name = L.IMPORTERS;
-		{	Class = "Script"; Name = "Hack"; Lua = true;
+		{ Class = "Script"; Name = "Hack"; Lua = true;
 			Text = [=[
 --- Run with Hack enabled to transfer all settings to _DevPad.
 -- Hack books transfer as folders.
@@ -43,7 +43,7 @@ for _, BookData in ipairs( DB.books ) do
 end
 return _DevPad.FolderRoot:Insert( Hack );]=];
 		},
-		{	Class = "Script"; Name = "TinyPad"; Lua = true;
+		{ Class = "Script"; Name = "TinyPad"; Lua = true;
 			Text = [=[
 --- Run with TinyPad enabled to transfer all settings to _DevPad.
 
@@ -60,7 +60,7 @@ for Index, Text in ipairs( DB ) do
 end
 return _DevPad.FolderRoot:Insert( TinyPad );]=];
 		},
-		{	Class = "Script"; Name = "WowLua"; Lua = true;
+		{ Class = "Script"; Name = "WowLua"; Lua = true;
 			Text = [=[
 --- Run with WowLua loaded to transfer all settings to _DevPad.
 -- _DevPad doesn't support script "locking"; All imported scripts will be writable.
@@ -84,8 +84,8 @@ return _DevPad.FolderRoot:Insert( WowLua );]=];
 	},
 
 
-	{	Class = "Script"; }, -- Spacer
-	{	Class = "Script"; Name = L.EXAMPLE; Lua = true; AutoRun = true;
+	{ Class = "Script"; }, -- Spacer
+	{ Class = "Script"; Name = L.EXAMPLE; Lua = true; AutoRun = true;
 		Text = [=[
 --- A simple example script demonstrating library usage by changing the default macro window's font.
 
@@ -137,7 +137,7 @@ end );
 -- Hopefully this example helps illustrate how multiple scripts can interact with each other, and how scripts can easily manipulate addons other than _DevPad.]=];
 	},
 	{ Class = "Folder"; Name = "Libs";
-		{	Class = "Script"; Name = "AddOnInit"; Lua = true;
+		{ Class = "Script"; Name = "AddOnInit"; Lua = true;
 			Text = [=[
 --- API to register a script to run when its target addon loads.
 local lib = ...;
@@ -207,7 +207,7 @@ function lib:IsLoadable ( Name )
 end
 return lib;]=];
 		},
-		{	Class = "Script"; Name = "RegisterForSave"; Lua = true;
+		{ Class = "Script"; Name = "RegisterForSave"; Lua = true;
 			Text = [=[
 --- Provides an API for scripts to save data between sessions.
 -- @usage local Value = _DevPad( "Libs", "RegisterForSave" )( "VariableName"[, DefaultValue] );
@@ -285,11 +285,11 @@ do
       end
     end
   end
-  local Backup = _DevPad.Frame.PLAYER_LOGOUT;
+  local Pack = _DevPad.FolderRoot.Pack;
   --- Saves variables just before _DevPad does.
-  function _DevPad.Frame:PLAYER_LOGOUT ( ... )
+  function _DevPad.FolderRoot:Pack ( ... )
     pcall( SerializeData ); -- Entire pad is at stake!
-    return Backup( self, ... );
+    return Pack( self, ... );
   end
 end
 
