@@ -496,6 +496,7 @@ function NS.StyleMeta.__call ( Style, Frame, UnitID )
 	Health:SetHeight( Style.Height * ( 1 - Style.PowerHeight - Style.ProgressHeight ) );
 	Health:SetStatusBarColor( 0.1, 0.1, 0.1 );
 	Health.bg = CreateBarBackground( Health );
+	Health.bg:SetPoint( "TOPLEFT", Health:GetStatusBarTexture(), "TOPRIGHT" );
 	Health.frequentUpdates = true;
 	Health.colorTapping = true;
 	Health.colorSmooth = true;
