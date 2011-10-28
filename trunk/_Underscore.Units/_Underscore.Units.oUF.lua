@@ -141,13 +141,10 @@ function NS:AuraPreSetPosition ()
 	self:SetHeight( Height < 1e-3 and 1e-3 or Height );
 end
 do
-	local GetCVarBool = GetCVarBool;
 	local UnitCanAttack = UnitCanAttack;
 	--- Switches buff filter based on unit hostility.
 	function NS:BuffPreUpdate ( UnitID )
-		self.BuffConsolidate = GetCVarBool( "consolidateBuffs" );
 		self.Hostile = UnitCanAttack( "player", UnitID ) or UnitCanAttack( "pet", UnitID );
-
 		if ( self.ShowAll or self.Hostile ) then
 			self.filter = "HELPFUL";
 		else
@@ -169,10 +166,8 @@ do
 	local select = select;
 	--- Hides consolidated buffs unless moused-over.
 	function NS:BuffCustomFilter ( UnitID, _, ... )
-		if ( not self.Hostile and self.BuffConsolidate and not self.ShowAll ) then
-			local Caster, _, ShouldConsolidate = select( 8, ... );
-			local IsMine = Caster == "player" or Caster == "pet" or Caster == "vehicle";
-			return not ShouldConsolidate or IsMine; -- Hide consolidated auras cast by others
+		if ( not self.Hostile and not self.ShowAll ) then
+			return not select( 10, ... ); -- Not ShouldConsolidate
 		else
 			return true;
 		end
