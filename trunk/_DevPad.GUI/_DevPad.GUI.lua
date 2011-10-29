@@ -75,6 +75,12 @@ do
 end
 
 
+--- @return Color code representing (R,G,B).
+function NS.FormatColorCode ( R, G, B )
+	return ( "|cff%02x%02x%02x" ):format( R * 255 + 0.5, G * 255 + 0.5, B * 255 + 0.5 );
+end
+
+
 
 
 NS.Frame:SetScript( "OnEvent", _DevPad.Frame.OnEvent );

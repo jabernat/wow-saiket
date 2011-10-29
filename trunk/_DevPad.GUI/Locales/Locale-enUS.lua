@@ -5,6 +5,10 @@
 
 
 select( 2, ... ).L = setmetatable( {
+	COLOR_DROPPER = "Pick color at cursor.",
+	COLOR_SWATCH = [=[Color selected text.
+|cff808080(Right click to choose color)|r]=],
+	COLOR_CUSTOM = "Custom…",
 	COPY_OBJECTNAME_FORMAT = "Copy of “%s”",
 	DELETE = [=[Delete this script or folder.
 |cff808080(Hold shift to skip confirmation)|r]=],
