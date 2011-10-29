@@ -36,6 +36,10 @@ function NS:OnEnter ()
 	end
 	UnitFrame_OnEnter( self );
 end
+--- Raises and shows all auras using the secure AuraMouseover frame.
+NS.OnEnterSecure = [=[
+	self:GetAttribute( "AuraMouseoverSecure" ):Show( true );
+]=];
 
 
 
@@ -121,6 +125,30 @@ do
 		Frame.Buffs:ForceUpdate();
 	end
 end
+--- Begin showing all auras once moused over the secure aura driver.
+NS.AuraMouseoverSecureOnShow = [=[
+	local Strata = self:GetParent():GetFrameStrata();
+	Buffs:Hide( true ); -- Prevent full updates after every attribute change
+	Buffs:SetAttribute( "filter", "HELPFUL" );
+	Buffs:SetAttribute( "consolidateTo", nil );
+	Buffs:Show( true );
+	-- Note: Can't resize frame after calling RegisterAutoHide.
+	self:SetHeight( self:GetParent():GetHeight() + self:GetAttribute( "Padding" )
+		+ Buffs:GetHeight() + Debuffs:GetHeight() );
+	Buffs:SetFrameStrata( Strata );
+	Debuffs:SetFrameStrata( Strata );
+	self:RegisterAutoHide( 0 ); -- Hide immediately OnLeave without enabling mouse input
+]=];
+--- Return to a minimal aura list once moused out of the secure aura driver.
+NS.AuraMouseoverSecureOnHide = [=[
+	self:Hide( true ); -- Force hide if unit frame was hidden
+	Buffs:SetFrameStrata( "LOW" ); -- Don't allow auras to overlap other units
+	Debuffs:SetFrameStrata( "LOW" );
+	Buffs:Hide( true );
+	Buffs:SetAttribute( "filter", "HELPFUL|PLAYER" ); -- Player's buffs only
+	Buffs:SetAttribute( "consolidateTo", 1 );
+	Buffs:Show( true );
+]=];
 
 --- Adjusts buff/debuff icons when they're created.
 function NS:AuraPostCreateIcon ( Frame )
@@ -315,6 +343,171 @@ local function CreateAuras ( Frame, Style )
 	Auras.PostCreateIcon = NS.AuraPostCreateIcon;
 	Auras.PreSetPosition = NS.AuraPreSetPosition;
 	return Auras;
+end
+local CreateAurasSecure;
+do
+	--- Refreshes this button's buff tooltip.
+	local function UpdateTooltip ( self )
+		local UnitID, Slot = self:GetParent():GetAttribute( "unit" ), self:GetAttribute( "target-slot" );
+		if ( Slot ) then -- Temporary enchant
+			GameTooltip:SetInventoryItem( UnitID, Slot );
+		else
+			GameTooltip:SetUnitAura( UnitID, self:GetID(), self:GetAttribute( "filter" ) );
+		end
+	end
+	--- Shows this button's aura tooltip on mouseover.
+	local function ButtonOnEnter ( self )
+		self:GetParent().Mouseover = self;
+		GameTooltip:SetOwner( self, "ANCHOR_BOTTOMRIGHT" );
+		return self:UpdateTooltip();
+	end
+	--- Hides this button's aura tooltip.
+	local function ButtonOnLeave ( self )
+		GameTooltip:Hide();
+		self:GetParent().Mouseover = nil;
+	end
+	local UpdaterOnUpdate;
+	do
+		local ipairs, UnitAura = ipairs, UnitAura;
+		local DebuffTypeColor = DebuffTypeColor;
+		--- Updates all aura buttons' displays.
+		function UpdaterOnUpdate ( Updater )
+			local Header = Updater:GetParent();
+			local IsBuff = Header:GetAttribute( "IsBuffs" );
+			local UnitID, Filter = Header:GetAttribute( "unit" ), Header:GetAttribute( "filter" );
+			for Index, Button in ipairs( Header ) do
+				if ( not Button:IsShown() ) then
+					break;
+				end
+
+				local Texture, Count, Type, Duration, Expires, _;
+				local Slot = Button:GetAttribute( "target-slot" );
+				if ( Slot ) then -- Temporary enchant
+					Texture = GetInventoryItemTexture( UnitID, Slot );
+					Type = ITEM_QUALITY_COLORS[ 4 ]; -- Epic
+				else
+					local TypeName;
+					_, _, Texture, Count, TypeName, Duration, Expires = UnitAura( UnitID, Button:GetID(), Filter );
+					if ( not IsBuff ) then -- Don't show buff types
+						Type = DebuffTypeColor[ TypeName ] or DebuffTypeColor[ "none" ];
+					end
+				end
+
+				Button.icon:SetTexture( Texture );
+				if ( Duration and Duration > 0 ) then
+					Button.cd:SetCooldown( Expires - Duration, Duration );
+					Button.cd:Show();
+				else
+					Button.cd:Hide();
+				end
+				if ( Type ) then
+					Button.overlay:SetVertexColor( Type.r, Type.g, Type.b );
+					Button.overlay:Show();
+				else
+					Button.overlay:Hide();
+				end
+				Button.count:SetText( ( Count and Count > 1 ) and Count or nil );
+			end
+
+			-- Update tooltip if mouse was over an aura button
+			if ( Header.Mouseover ) then
+				return Header.Mouseover:UpdateTooltip();
+			end
+		end
+	end
+	--- Throttles aura updates to at most once per frame.
+	local function UpdateButtons ( Header )
+		return Header.Updater:Show();
+	end
+	--- Sets up this aura header's new button with common elements.
+	local function SetupButton ( Header )
+		local AuraMouseoverSecure = GetFrameHandleFrame( Header:GetAttribute( "AuraMouseoverSecure" ) );
+		local Button = GetFrameHandleFrame( AuraMouseoverSecure:GetAttribute( "ButtonLatest" ) );
+		Header[ #Header + 1 ] = Button;
+		Button:SetScript( "OnEnter", ButtonOnEnter );
+		Button:SetScript( "OnLeave", ButtonOnLeave );
+		Button.UpdateTooltip = UpdateTooltip;
+
+		local Cooldown = CreateFrame( "Cooldown", nil, Button );
+		Button.cd = Cooldown;
+		Cooldown:SetAllPoints();
+
+		local Icon = Button:CreateTexture( nil, "BORDER" );
+		Button.icon = Icon;
+		Icon:SetAllPoints();
+
+		local Count = Button:CreateFontString( nil, "OVERLAY" );
+		Button.count = Count;
+		Count:SetFontObject( NumberFontNormal );
+
+		local Overlay = Button:CreateTexture( nil, "OVERLAY" );
+		Button.overlay = Overlay;
+		Overlay:SetAllPoints();
+		Overlay:SetTexture( [[Interface\Buttons\UI-Debuff-Overlays]] );
+		Overlay:SetTexCoord( 0.296875, 0.5703125, 0, 0.515625 );
+
+		if ( Header:GetAttribute( "IsBuffs" ) ) then
+			Button:RegisterForClicks( "RightButtonUp" ); -- Right click to cancel buff
+		end
+		NS:AuraPostCreateIcon( Button );
+		return Header:UpdateButtons();
+	end
+	--- Sets up protected settings for this header's new button.
+	local SetupButtonSecure = [=[
+		local Header = self:GetParent();
+		local AuraSize = Header:GetAttribute( "AuraSize" );
+		self:SetWidth( AuraSize );
+		self:SetHeight( AuraSize );
+
+		if ( Header:GetAttribute( "IsBuffs" ) ) then
+			self:SetAttribute( "type", "cancelaura" );
+		end
+		-- Note: Using AuraMouseoverSecure to store ButtonLatest so the SecureAuraHeader doesn't react to OnAttributeChanged.
+		Header:GetAttribute( "AuraMouseoverSecure" ):SetAttribute( "ButtonLatest", self );
+		return Header:CallMethod( "SetupButton" );
+	]=];
+	--- Styles aura buttons when auras change.
+	local function HeaderOnEvent ( self, Event, UnitID )
+		-- Only run if SecureAuraHeader_OnEvent would update
+		if ( Event == "UNIT_AURA" and self:IsVisible() and UnitID == self:GetAttribute( "unit" ) ) then
+			return self:UpdateButtons( self );
+		end
+	end
+	--- Styles aura buttons when header options change.
+	local function HeaderOnAttributeChanged ( Header )
+		if ( Header:IsVisible() and not Header:GetAttribute( "_ignore" ) ) then
+			return Header:UpdateButtons();
+		end
+	end
+	--- @return A basic secure aura header frame.
+	function CreateAurasSecure ( Frame, Style, UnitID )
+		local Header = CreateFrame( "Frame", nil, Frame, "SecureAuraHeaderTemplate" );
+		Header:SetAttribute( "AuraMouseoverSecure", Frame:GetAttribute( "AuraMouseoverSecure" ) );
+		Header:SetAttribute( "AuraSize", Style.AuraSize );
+		Header:SetAttribute( "unit", UnitID );
+		Header:SetAttribute( "separateOwn", 1 ); -- Own auras first
+		Header:SetAttribute( "sortMethod", "TIME" );
+		Header:SetAttribute( "sortDirection", "+" );
+		Header:SetAttribute( "point", "TOPLEFT" );
+		Header:SetAttribute( "xOffset", Style.AuraSize );
+		Header:SetAttribute( "yOffset", 0 );
+		Header:SetAttribute( "wrapXOffset", 0 );
+		Header:SetAttribute( "wrapYOffset", -Style.AuraSize );
+		Header:SetAttribute( "minHeight", 1e-3 ); -- Near-zero to appear hidden
+		local ButtonsPerRow = max( 1, floor( Frame:GetWidth() / Style.AuraSize + 0.5 ) );
+		Header:SetAttribute( "wrapAfter", ButtonsPerRow );
+		Header:SetAttribute( "initialConfigFunction", SetupButtonSecure );
+		Header.SetupButton, Header.UpdateButtons = SetupButton, UpdateButtons;
+
+		Header:HookScript( "OnAttributeChanged", HeaderOnAttributeChanged );
+		Header:HookScript( "OnEvent", HeaderOnEvent );
+		Header:HookScript( "OnShow", UpdateButtons );
+
+		Header.Updater = CreateFrame( "Frame", nil, Header );
+		Header.Updater:Hide();
+		Header.Updater:SetScript( "OnUpdate", UpdaterOnUpdate );
+		return Header;
+	end
 end
 
 
@@ -634,30 +827,74 @@ function NS.StyleMeta.__call ( Style, Frame, UnitID )
 
 
 	if ( Style.Auras ) then
-		local Buffs, Debuffs = CreateAuras( Frame, Style ), CreateAuras( Frame, Style );
-		Frame.Buffs, Frame.Debuffs = Buffs, Debuffs;
-	
-		-- Buffs
-		Buffs:SetPoint( "TOPLEFT", Backdrop, "BOTTOMLEFT" );
-		Buffs:SetPoint( "RIGHT", Backdrop );
-		Buffs.PreUpdate = NS.BuffPreUpdate;
-		Buffs.CustomFilter = NS.BuffCustomFilter;
+		if ( UnitID == "player" or UnitID == "pet" ) then
+			-- Secure aura frames to cancel buffs with
+			local AuraMouseoverSecure = CreateFrame( "Frame", nil, Frame, "SecureHandlerShowHideTemplate" );
+			Frame.AuraMouseoverSecure = AuraMouseoverSecure;
+			AuraMouseoverSecure:Execute( [=[
+				self:GetParent():SetAttribute( "AuraMouseoverSecure", self );
+			]=] );
+			AuraMouseoverSecure:WrapScript( Frame, "OnEnter", NS.OnEnterSecure );
 
-		-- Debuffs
-		Debuffs:SetPoint( "TOPLEFT", Buffs, "BOTTOMLEFT" );
-		Debuffs:SetPoint( "RIGHT", Backdrop );
-		Debuffs.showDebuffType = true;
-		Debuffs.PreUpdate = NS.DebuffPreUpdate;
+			local Buffs = CreateAurasSecure( Frame, Style, UnitID );
+			Buffs:SetAttribute( "template", "SecureActionButtonTemplate" );
+			Buffs:SetAttribute( "includeWeapons", 1 );
+			Buffs:SetAttribute( "weaponTemplate", "SecureActionButtonTemplate" );
+			Buffs:SetAttribute( "consolidateTo", 1 );
+			Buffs:SetAttribute( "consolidateDuration", 0 ); -- Hide all consolidatable buffs
+			Buffs:SetAttribute( "IsBuffs", true );
+			local Padding = _Underscore.Backdrop.Padding; -- Can't anchor secure frame to Backdrop region
+			Buffs:SetPoint( "TOPLEFT", Frame, "BOTTOMLEFT", 0, -Padding ); -- Don't go off left side of screen
+			Buffs:SetPoint( "RIGHT", Frame, Padding, 0 );
 
-		-- Mouseover handler
-		local AuraMouseover = CreateFrame( "Frame", nil, Frame );
-		Frame.AuraMouseover = AuraMouseover;
-		AuraMouseover:Hide();
-		AuraMouseover:SetPoint( "TOPLEFT", -8, 0 ); -- Allow some leeway on the sides and bottom
-		AuraMouseover:SetPoint( "BOTTOMRIGHT", Debuffs, "BOTTOMRIGHT", 8, -8 );
-		AuraMouseover:SetScript( "OnUpdate", NS.AuraMouseoverOnUpdate );
-		AuraMouseover:SetScript( "OnShow", NS.AuraMouseoverOnShow );
-		AuraMouseover:SetScript( "OnHide", NS.AuraMouseoverOnHide );
+			local Debuffs = CreateAurasSecure( Frame, Style, UnitID );
+			Debuffs:SetAttribute( "template", "SecureFrameTemplate" );
+			Debuffs:SetPoint( "TOPLEFT", Buffs, "BOTTOMLEFT" );
+			Debuffs:SetPoint( "RIGHT", Buffs );
+			Debuffs:SetAttribute( "filter", "HARMFUL" );
+
+			AuraMouseoverSecure:Hide();
+			local Padding = 8;
+			AuraMouseoverSecure:SetAttribute( "Padding", Padding );
+			AuraMouseoverSecure:SetPoint( "TOPLEFT", -Padding, 0 );
+			AuraMouseoverSecure:SetPoint( "RIGHT", Padding, 0 );
+			AuraMouseoverSecure:SetHeight( Frame:GetHeight() ); -- Resized when shown
+			AuraMouseoverSecure:SetAttribute( "_onshow", NS.AuraMouseoverSecureOnShow );
+			AuraMouseoverSecure:SetAttribute( "_onhide", NS.AuraMouseoverSecureOnHide );
+			AuraMouseoverSecure:SetFrameRef( "Buffs", Buffs );
+			AuraMouseoverSecure:SetFrameRef( "Debuffs", Debuffs );
+			AuraMouseoverSecure:Execute( [=[
+				Buffs, Debuffs = self:GetFrameRef( "Buffs" ), self:GetFrameRef( "Debuffs" );
+				return self:RunAttribute( "_onhide" );
+			]=] );
+			Buffs:Show();
+			Debuffs:Show();
+		else -- Insecure aura frames
+			local Buffs, Debuffs = CreateAuras( Frame, Style ), CreateAuras( Frame, Style );
+			Frame.Buffs, Frame.Debuffs = Buffs, Debuffs;
+		
+			-- Buffs
+			Buffs:SetPoint( "TOPLEFT", Backdrop, "BOTTOMLEFT" );
+			Buffs:SetPoint( "RIGHT", Backdrop );
+			Buffs.PreUpdate = NS.BuffPreUpdate;
+			Buffs.CustomFilter = NS.BuffCustomFilter;
+
+			-- Debuffs
+			Debuffs:SetPoint( "TOPLEFT", Buffs, "BOTTOMLEFT" );
+			Debuffs:SetPoint( "RIGHT", Buffs );
+			Debuffs.showDebuffType = true;
+			Debuffs.PreUpdate = NS.DebuffPreUpdate;
+
+			-- Mouseover handler
+			local AuraMouseover = CreateFrame( "Frame", nil, Frame );
+			Frame.AuraMouseover = AuraMouseover;
+			AuraMouseover:Hide();
+			AuraMouseover:SetPoint( "TOPLEFT", -8, 0 ); -- Allow some leeway on the sides and bottom
+			AuraMouseover:SetPoint( "BOTTOMRIGHT", Debuffs, "BOTTOMRIGHT", 8, -8 );
+			AuraMouseover:SetScript( "OnUpdate", NS.AuraMouseoverOnUpdate );
+			AuraMouseover:SetScript( "OnShow", NS.AuraMouseoverOnShow );
+			AuraMouseover:SetScript( "OnHide", NS.AuraMouseoverOnHide );
+		end
 	end
 
 	-- Debuff highlight
