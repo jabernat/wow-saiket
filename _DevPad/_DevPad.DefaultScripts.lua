@@ -63,7 +63,7 @@ return _DevPad.FolderRoot:Insert( TinyPad );]=];
 		{ Class = "Script"; Name = "WowLua"; Lua = true;
 			Text = [=[
 --- Run with WowLua loaded to transfer all settings to _DevPad.
--- _DevPad doesn't support script "locking"; All imported scripts will be writable.
+-- _DevPad doesn't support page "locking"; All imported pages will be writable.
 
 if ( IsAddOnLoadOnDemand( "WowLua" ) ) then
   LoadAddOn( "WowLua" ); -- In case AddonLoader is installed
@@ -89,17 +89,17 @@ return _DevPad.FolderRoot:Insert( WowLua );]=];
 		Text = [=[
 --- A simple example script demonstrating library usage by changing the default macro window's font.
 
-local NS = ...; --- First arg is always the table representing this script.
+local NS = ...; --- First arg is always the table representing this page.
 -- Any extra parameters are optionally passed in by the caller.
 
--- This same table is used even if the script is called more than once, so its contents can be used to keep track of state between calls to your script.  Key names prefixed with a single underscore character (like "._Name") are used internally by _DevPad.
+-- This same table is used even if the page is called more than once, so its contents can be used to keep track of state between calls.  Key names prefixed with a single underscore character (like "._Name") are used internally by _DevPad.
 
 
 
 
--- Notice that this script is set to auto-run by default, indicated by the green arrow next to its name in the list.  There's no need to run the script manually as long as auto-run is enabled; it will execute on start up like a normal addon.
+-- Notice that this page is set to auto-run by default, indicated by the green arrow next to its name in the list.  There's no need to run the page manually as long as auto-run is enabled; it will execute on start up like a normal addon.
 
--- Here we use a flag in the script table to only let the script run once.
+-- Here we use a flag in the page's table to only let it run once.
 if ( NS.Loaded ) then
   return;
 end
@@ -108,14 +108,14 @@ NS.Loaded = true;
 
 
 
--- Read the "AddOnInit" script object, or page, contained in the "Libs" folder.
+-- Fetch the "AddOnInit" page contained in the "Libs" folder.
 local AddOnInit = _DevPad( "Libs", "AddOnInit" );
 -- This page object is like the "NS" variable above, but used by AddOnInit.  Another way to get a reference to AddOnInit is by searching, like this:
 --   local AddOnInit = _DevPad:FindScripts( "AddOnInit" )
--- In either case, AddOnInit may be nil if that script isn't found.
+-- In either case, AddOnInit may be nil if that page isn't found.
 
-AddOnInit(); -- Runs the script, allowing it to initialize itself.
--- Various scripts may handle execution differently, by returning results for example.  In this case though, AddOnInit populates its table with methods.
+AddOnInit(); -- Runs the page, allowing it to initialize its table.
+-- Various pages may handle execution differently, by returning results for example.  In this case though, AddOnInit populates its table with methods.
 
 
 
@@ -134,7 +134,7 @@ AddOnInit:Register( "Blizzard_MacroUI", function ()
     end );
 end );
 
--- Hopefully this example helps illustrate how multiple scripts can interact with each other, and how scripts can easily manipulate addons other than _DevPad.]=];
+-- Hopefully this example helps illustrate how multiple pages can interact with each other, and how pages can easily manipulate addons other than _DevPad.]=];
 	},
 	{ Class = "Folder"; Name = "Libs";
 		{ Class = "Script"; Name = "AddOnInit"; Lua = true;
@@ -209,7 +209,7 @@ return lib;]=];
 		},
 		{ Class = "Script"; Name = "RegisterForSave"; Lua = true;
 			Text = [=[
---- Provides an API for scripts to save data between sessions.
+--- Provides an API for pages to save data between sessions.
 -- @usage local Value = _DevPad( "Libs", "RegisterForSave" )( "VariableName"[, DefaultValue] );
 --   Set new values to _G[ "VariableName" ] and they will be saved on logout.
 local lib = ...;
