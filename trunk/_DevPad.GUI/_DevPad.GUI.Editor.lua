@@ -639,7 +639,7 @@ local function SetupTitleButton ( Button, TooltipText, Offset )
 	Button:SetMotionScriptsWhileDisabled( true );
 	Button.tooltipText = TooltipText;
 end
-SetupTitleButton( NS.Lua, GUI.IndentationLib and L.LUA_TOGGLE or L.RAW_TOGGLE );
+SetupTitleButton( NS.Lua, L.LUA_TOGGLE );
 SetupTitleButton( NS.FontCycle, L.FONT_CYCLE, -8 );
 SetupTitleButton( NS.FontIncrease, L.FONT_INCREASE );
 SetupTitleButton( NS.FontDecrease, L.FONT_DECREASE );
