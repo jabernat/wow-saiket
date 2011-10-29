@@ -439,8 +439,8 @@ do
 	function NS.Send:OnClick ()
 		-- Match chat colors
 		for _, Info in ipairs( Menu ) do
-			local Type = ChatTypeInfo[ Info.arg1 ];
-			Info.colorCode = ( "|cff%02x%02x%02x" ):format( Type.r * 255, Type.g * 255, Type.b * 255 );
+			local Color = ChatTypeInfo[ Info.arg1 ];
+			Info.colorCode = GUI.FormatColorCode( Color.r, Color.g, Color.b );
 		end
 		Menu[ 2 ].disabled = GetNumPartyMembers() == 0;
 		Menu[ 3 ].disabled = GetNumRaidMembers() == 0;

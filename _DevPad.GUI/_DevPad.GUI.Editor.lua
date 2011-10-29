@@ -338,7 +338,7 @@ function NS.Focus:OnMouseDown ()
 	NS.Edit:SetCursorPosition( #NS.Edit:GetText() );
 	NS.Edit:SetFocus();
 end
---- Focus the edit box text if empty space gets clicked.
+--- Simulate a tab character with spaces.
 function NS.Edit:OnTabPressed ()
 	self:Insert( ( " " ):rep( TabWidth ) );
 end
@@ -574,12 +574,18 @@ do
 	function NS:Pack ( ... )
 		local Options = Pack( self, ... );
 		Options.FontPath, Options.FontSize = self.FontPath, self.FontSize;
+		if ( self.Color ) then
+			Options.Color = self.Color:Pack();
+		end
 		return Options;
 	end
 	local Unpack = NS.Unpack;
 	--- Loads font, position, and size from saved variables.
 	function NS:Unpack ( Options, ... )
 		self:SetFont( Options.FontPath, Options.FontSize );
+		if ( self.Color ) then
+			self.Color:Unpack( Options.Color or {} );
+		end
 		return Unpack( self, Options, ... );
 	end
 end
