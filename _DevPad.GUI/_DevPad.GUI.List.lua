@@ -731,18 +731,6 @@ do
 			return Button;
 		end
 	end
-	--- Fires a callback for all descendants of Object.
-	-- @param ShownOnly  Don't recurse closed folders if true.
-	local function RecurseChildren ( Folder, Callback, ShownOnly )
-		for Index, Child in ipairs( Folder ) do
-			Callback( Child );
-			if ( Child._Class == "Folder"
-				and not ( ShownOnly and Child._Closed )
-			) then
-				RecurseChildren( Child, Callback, ShownOnly );
-			end
-		end
-	end
 	local UnusedButtons = {
 		[ "Folder" ] = setmetatable( {}, { __call = CreateFolderButton; } );
 		[ "Script" ] = setmetatable( {}, { __call = CreateScriptButton; } );
@@ -778,7 +766,9 @@ do
 		if ( _DevPad.FolderRoot:Contains( Object ) ) then
 			ObjectButtonAssign( Object );
 			if ( Object._Class == "Folder" ) then -- Also assign child buttons
-				RecurseChildren( Object, ObjectButtonAssign );
+				for Child in Object:IterateChildren() do
+					ObjectButtonAssign( Child );
+				end
 			end
 			self:UpdateSearch();
 			if ( not Object:IsHidden() ) then
@@ -805,7 +795,9 @@ do
 		if ( ObjectButtons[ Object ] ) then
 			ObjectButtonRecycle( Object );
 			if ( Object._Class == "Folder" ) then
-				RecurseChildren( Object, ObjectButtonRecycle );
+				for Child in Object:IterateChildren() do
+					ObjectButtonRecycle( Child );
+				end
 			end
 			self:UpdateSearch();
 			if ( not ( Folder._Closed or Folder:IsHidden() ) ) then
@@ -818,6 +810,15 @@ do
 	local function SetTexCoords ( self, ... )
 		self:GetNormalTexture():SetTexCoord( ... );
 		self:GetPushedTexture():SetTexCoord( ... );
+	end
+	--- Updates all visible descendants of Folder.
+	local function UpdateVisibleChildren ( Folder )
+		for Index, Child in ipairs( Folder ) do
+			ObjectButtonUpdateVisible( Child );
+			if ( Child._Class == "Folder" and not Child._Closed ) then
+				UpdateVisibleChildren( Child );
+			end
+		end
 	end
 	--- Redraws a folder when it opens or closes.
 	function NS:FolderSetClosed ( _, Folder )
@@ -832,7 +833,7 @@ do
 		if ( Folder == _DevPad.FolderRoot
 			or ( Button and not Folder:IsHidden() ) -- Contents visible
 		) then
-			RecurseChildren( Folder, ObjectButtonUpdateVisible, true );
+			UpdateVisibleChildren( Folder );
 			return self:Update();
 		end
 	end
