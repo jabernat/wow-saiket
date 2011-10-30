@@ -94,28 +94,20 @@ do
 	--- Gets an object by path relative to this object.
 	-- @param ...  List of path parts.  Values of true go up like URLs' "..".
 	-- @return Found object, or nil if not found.
-	function ObjectMeta.__index:GetRelObject ( ... )
-		local Object, Parent = self;
-		for Index = 1, select( "#", ... ) do
-			local Name = select( Index, ... );
-			if ( Name == true ) then -- Up/".."
-				Object = Object._Parent;
-			else
-				Parent, Object = Object;
-				if ( Parent._Class == "Folder" ) then
-					for _, Child in ipairs( Parent ) do
-						if ( Name == Child._Name ) then
-							Object = Child;
-							break;
-						end
-					end
-				end
-				if ( not Object ) then
-					return;
+	function ObjectMeta.__index:GetRelObject ( Name, ... )
+		if ( not Name ) then
+			return self;
+		elseif ( Name == true ) then
+			if ( self._Parent ) then
+				return self._Parent:GetRelObject( ... );
+			end
+		elseif ( self._Class == "Folder" ) then
+			for _, Child in ipairs( self ) do
+				if ( Name == Child._Name ) then
+					return Child:GetRelObject( ... );
 				end
 			end
 		end
-		return Object;
 	end
 	--- @return True if this object is in a closed folder.
 	function ObjectMeta.__index:IsHidden ()
@@ -219,6 +211,22 @@ do
 			Parent = Parent._Parent;
 		end
 	end
+	do
+		--- Coroutine that recursively yields each child in Folder.
+		local function Iterate ( Folder )
+			for Index, Child in ipairs( Folder ) do
+				coroutine.yield( Child );
+				if ( Child._Class == "Folder" ) then
+					Iterate( Child );
+				end
+			end
+		end
+		--- @return An iterator function and this Folder to recursively iterate over all its children.
+		-- @usage for Child in Folder:IterateChildren() do ... end
+		function FolderMeta.__index:IterateChildren ()
+			return coroutine.wrap( Iterate ), self;
+		end
+	end
 	--- @return Table containing unique settings for this folder and its children.
 	function FolderMeta.__index:Pack ()
 		local Settings = {
@@ -245,8 +253,8 @@ do
 				local Class = NS:GetClass( Child.Class );
 				if ( Class ) then
 					local Object = Class:New();
-					self:Insert( Object );
 					Object:Unpack( Child );
+					self:Insert( Object );
 				end
 			end
 		end
@@ -342,33 +350,29 @@ do
 end
 
 
---- Fires a callback for each script in Object.
+--- Fires a callback for each script in Folder.
 -- @param Callback  Function or method name.
 -- @param ...  Extra args passed after Script to Callback.
-function NS:IterateScripts ( Object, Callback, ... )
-	if ( Object._Class == "Script" ) then
-		return ( Object[ Callback ] or Callback )( Object, ... );
-	elseif ( Object._Class == "Folder" ) then
-		for _, Child in ipairs( Object ) do
-			self:IterateScripts( Child, Callback, ... );
+function NS:IterateScripts ( Folder, Callback, ... )
+	for Child in Folder:IterateChildren() do
+		if ( Child._Class == "Script" ) then
+			( Child[ Callback ] or Callback )( Child, ... );
 		end
 	end
 end
 do
 	local Matches = {};
-	--- Adds scripts to found list matched by name.
-	local function Callback ( Script, Pattern )
-		if ( Script._Name:match( Pattern ) ) then
-			Matches[ #Matches + 1 ] = Script;
-		end
-	end
 	--- Finds Script objects by name.
 	-- @param Pattern  Name pattern to match by.
-	-- @param Object  Optional object to search in, or FolderRoot if nil.
+	-- @param Folder  Optional folder to search in, otherwise FolderRoot is used.
 	-- @return Each matching script, or nil if none found.
-	function NS:FindScripts ( Pattern, Object )
+	function NS:FindScripts ( Pattern, Folder )
 		wipe( Matches );
-		self:IterateScripts( Object or self.FolderRoot, Callback, Pattern );
+		for Child in ( Folder or self.FolderRoot ):IterateChildren() do
+			if ( Child._Class == "Script" and Child._Name:match( Pattern ) ) then
+				Matches[ #Matches + 1 ] = Child;
+			end
+		end
 		return unpack( Matches );
 	end
 end
@@ -413,7 +417,16 @@ do
 		end
 
 		Object._Channel, Object._Author = Channel, Author;
-		self:IterateScripts( Object, "SetAutoRun", false ); -- Sanitize scripts
+		-- Sanitize scripts
+		if ( Object._Class == "Script" ) then
+			Object:SetAutoRun( false );
+		elseif ( Object._Class == "Folder" ) then
+			for Child in Object:IterateChildren() do
+				if ( Child._Class == "Script" ) then
+					Child:SetAutoRun( false );
+				end
+			end
+		end
 		tinsert( self.ReceiveQueue, Object );
 		self.Callbacks:Fire( "ObjectReceived", Object );
 	end
@@ -431,11 +444,11 @@ function NS.Frame:ADDON_LOADED ( Event, AddOn )
 		if ( Scripts ) then
 			NS.FolderRoot:Unpack( Scripts );
 		end
-		NS:IterateScripts( NS.FolderRoot, function ( Script )
-			if ( Script._AutoRun ) then
-				NS.SafeCall( Script );
+		for Object in NS.FolderRoot:IterateChildren() do
+			if ( Object._Class == "Script" and Object._AutoRun ) then
+				NS.SafeCall( Object );
 			end
-		end );
+		end
 		AceComm.RegisterComm( NS, NS.COMM_PREFIX );
 		-- Replace settings last in case of errors loading them
 		self:RegisterEvent( "PLAYER_LOGOUT" );
