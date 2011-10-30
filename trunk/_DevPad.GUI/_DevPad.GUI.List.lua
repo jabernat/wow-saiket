@@ -95,8 +95,11 @@ do
 				end
 				if ( Child._Class == "Folder" and -Offset < 0.5 ) then -- Over bottom half of folder
 					-- Pause before opening closed folders
-					if ( not Child._Closed or MouseoverTime >= CLOSED_FOLDER_WAIT ) then
+					if ( Child._Closed and MouseoverTime >= CLOSED_FOLDER_WAIT ) then
+						Child._TemporarilyOpened = true;
 						Child:SetClosed( false );
+					end
+					if ( not Child._Closed ) then
 						Child:Insert( Object, 1 );
 					end
 				else
@@ -151,6 +154,12 @@ do
 				local Button = ObjectButtons[ self.Dragging ];
 				Button:SetScript( "OnUpdate", nil );
 				Button:GetHighlightTexture():SetVertexColor( 1, 1, 1 );
+				for Child in _DevPad.FolderRoot:IterateChildren() do
+					if ( Child._TemporarilyOpened and not Child:Contains( self.Dragging ) ) then
+						Child:SetClosed( true );
+					end
+					Child._TemporarilyOpened = nil;
+				end
 				if ( self.Dragging._Class == "Folder" ) then
 					self.Dragging:SetClosed( ClosedBackup );
 				end
