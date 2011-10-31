@@ -314,33 +314,47 @@ local function NPCRemove ( NpcID )
 		end
 	end
 end
---- Saves an NPC's last seen position at the player.
-local function NPCFound ( NpcID )
-	NpcID = GetRealNpcID( NpcID );
-	if ( NS.NPCMaps[ NpcID ] and not NS.NPCsFoundIgnored[ NpcID ] ) then
-		local MapOld, MapNew = GetCurrentMapAreaID(), nil;
-		SetMapToCurrentZone();
-		local MapCurrent = GetCurrentMapAreaID();
-		for Map, Found in pairs( NS.NPCMaps[ NpcID ] ) do
-			SetMapByID( Map );
-			local X, Y = GetPlayerMapPosition( "player" );
-			if ( X ~= 0 or Y ~= 0 ) then -- Found on this map
-				if ( MapNew ~= MapCurrent ) then -- Current map has priority if found there
-					MapNew = Map; -- Force map to view found rare
-				end
-
-				if ( type( Found ) ~= "table" ) then
-					Found = {};
-					NS.NPCMaps[ NpcID ][ Map ] = Found;
-				end
-				Found[ 1 ], Found[ 2 ] = X, Y;
-
-				if ( NS.NPCCounts[ NpcID ] ) then
-					NS.Modules.UpdateMap( Map );
+local NPCFound;
+do
+	--- Saves the position of NpcID on Map and updates displays.
+	local function SaveFound ( NpcID, Map, X, Y )
+		local Found = NS.NPCMaps[ NpcID ][ Map ];
+		if ( type( Found ) ~= "table" ) then
+			Found = {};
+			NS.NPCMaps[ NpcID ][ Map ] = Found;
+		end
+		Found[ 1 ], Found[ 2 ] = X, Y;
+		if ( NS.NPCCounts[ NpcID ] ) then
+			NS.Modules.UpdateMap( Map );
+		end
+	end
+	--- Saves an NPC's last seen position at the given position or the player.
+	function NPCFound ( NpcID, Map, X, Y )
+		NpcID = GetRealNpcID( NpcID );
+		if ( not NS.NPCMaps[ NpcID ] or NS.NPCsFoundIgnored[ NpcID ] ) then
+			return;
+		end
+		if ( Map and X and Y ) then
+			if ( NS.NPCMaps[ NpcID ][ Map ] ) then
+				SaveFound( NpcID, Map, X, Y );
+				SetMapByID( Map );
+			end
+		else
+			local MapOld, MapNew = GetCurrentMapAreaID(), nil;
+			SetMapToCurrentZone();
+			local MapCurrent = GetCurrentMapAreaID();
+			for Map in pairs( NS.NPCMaps[ NpcID ] ) do
+				SetMapByID( Map );
+				local X, Y = GetPlayerMapPosition( "player" );
+				if ( X ~= 0 or Y ~= 0 ) then -- Found on this map
+					SaveFound( NpcID, Map, X, Y );
+					if ( not MapNew or Map == MapCurrent ) then -- Current map has priority if found there
+						MapNew = Map; -- Force map to view found rare
+					end
 				end
 			end
+			SetMapByID( MapNew or MapOld );
 		end
-		SetMapByID( MapNew or MapOld );
 	end
 end
 
@@ -383,12 +397,14 @@ do
 				"Remove message NpcID must be numeric." ) );
 		end
 	end;
-	--- Saves an NPC's last seen position at the player.
-	-- Will fail if the current zone doesn't match saved path data.
+	--- Saves an NPC's last seen position at the given position or at the player.
+	-- Will fail if the given or current zone doesn't have path data.
 	-- @param NpcID  Numeric creature ID that was found.
-	NS.Events[ MESSAGE_FOUND ] = function ( self, _, NpcID )
-		return NPCFound( assert( tonumber( NpcID ),
-			"Found message Npc ID must be a number." ) );
+	-- @param MapID  Optional numeric map ID that the NPC was found on.
+	-- @param X..Y  Optional numeric coordinates of NPC on MapID.
+	NS.Events[ MESSAGE_FOUND ] = function ( self, _, NpcID, MapID, X, Y )
+		return NPCFound( assert( tonumber( NpcID ), "Found message Npc ID must be a number." ),
+			tonumber( MapID ), tonumber( X ), tonumber( Y ) );
 	end;
 end
 
