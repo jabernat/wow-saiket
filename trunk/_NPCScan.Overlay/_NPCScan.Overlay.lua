@@ -324,7 +324,7 @@ do
 			NS.NPCMaps[ NpcID ][ Map ] = Found;
 		end
 		Found[ 1 ], Found[ 2 ] = X, Y;
-		if ( NS.NPCCounts[ NpcID ] ) then
+		if ( NS.Options.ShowAll or NS.NPCCounts[ NpcID ] ) then
 			NS.Modules.UpdateMap( Map );
 		end
 	end
@@ -337,7 +337,12 @@ do
 		if ( Map and X and Y ) then
 			if ( NS.NPCMaps[ NpcID ][ Map ] ) then
 				SaveFound( NpcID, Map, X, Y );
+				local MapOld = GetCurrentMapAreaID();
 				SetMapByID( Map );
+				local X, Y = GetPlayerMapPosition( "player" );
+				if ( X == 0 and Y == 0 ) then -- Player isn't on the same map
+					SetMapByID( MapOld ); -- Undo map change if mob isn't nearby
+				end
 			end
 		else
 			local MapOld, MapNew = GetCurrentMapAreaID(), nil;
