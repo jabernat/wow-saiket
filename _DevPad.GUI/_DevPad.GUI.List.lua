@@ -30,23 +30,22 @@ NS.SendNoticeThreshold = 4096; -- Larger objects print a wait message
 local ButtonHeight = 16;
 local IndentSize = 20;
 
-local ObjectButtons = {}; -- [ Object ] = Button;
-
 
 
 
 --- Sets or clears the list selection.
--- @param Object  Descendant of Root to select, or nil to clear.
+-- @param Object  Descendant of root to select, or nil to clear.
 -- @return True if selection changed.
 function NS:SetSelection ( Object )
 	if ( self.Selection ~= Object ) then
+		assert( not Object or Object._ListButton, "Object must be in folder root." );
 		if ( self.Selection ) then
-			ObjectButtons[ self.Selection ]:UnlockHighlight();
+			self.Selection._ListButton:UnlockHighlight();
 		end
 		self.Selection = Object;
 		self:SetRenaming(); -- Stop renaming
 		if ( Object ) then
-			ObjectButtons[ Object ]:LockHighlight();
+			Object._ListButton:LockHighlight();
 		end
 		GUI.Callbacks:Fire( "ListSetSelection", Object );
 		return true;
@@ -55,17 +54,18 @@ function NS:SetSelection ( Object )
 	end
 end
 --- Shows or hides the renaming UI for an object.
--- @param Object  Descendant of Root to rename, or nil to stop.
+-- @param Object  Descendant of root to rename, or nil to stop.
 -- @return True if renaming target changed.
 function NS:SetRenaming ( Object )
 	if ( self.Renaming ~= Object ) then
+		assert( not Object or Object._ListButton, "Object must be in folder root." );
 		if ( self.Renaming ) then -- Restore last edited button
-			ObjectButtons[ self.Renaming ].Name:Show();
+			self.Renaming._ListButton.Name:Show();
 		end
 		self.Renaming = Object;
 		local Edit = self.RenameEdit;
 		if ( Object ) then
-			local Button = ObjectButtons[ Object ];
+			local Button = Object._ListButton;
 			Button.Name:Hide();
 			Edit:SetParent( Button.Visual );
 			Edit:SetAllPoints( Button.Name );
@@ -146,12 +146,13 @@ do
 	end
 	local ClosedBackup;
 	--- Stop or start dragging an object within the tree.
-	-- @param Object  Descendant of Root to drag, or nil to stop.
+	-- @param Object  Descendant of root to drag, or nil to stop.
 	-- @return True if drag target changed.
 	function NS:SetDragging ( Object )
 		if ( self.Dragging ~= Object ) then
+			assert( not Object or Object._ListButton, "Object must be in folder root." );
 			if ( self.Dragging ) then
-				local Button = ObjectButtons[ self.Dragging ];
+				local Button = self.Dragging._ListButton;
 				Button:SetScript( "OnUpdate", nil );
 				Button:GetHighlightTexture():SetVertexColor( 1, 1, 1 );
 				for Child in _DevPad.FolderRoot:IterateChildren() do
@@ -167,7 +168,7 @@ do
 			self.Dragging = Object;
 			MouseoverObject, MouseoverTime = nil;
 			if ( Object ) then
-				local Button = ObjectButtons[ Object ];
+				local Button = Object._ListButton;
 				Button:SetScript( "OnUpdate", OnUpdate );
 				local Color = ORANGE_FONT_COLOR;
 				Button:GetHighlightTexture():SetVertexColor( Color.r, Color.g, Color.b ); -- Orange
@@ -208,8 +209,10 @@ do
 				if ( not Edit:HasFocus() ) then
 					Edit:SetAlpha( Edit.InactiveAlpha );
 				end
-				for _, Button in pairs( ObjectButtons ) do
-					Button.Visual:SetAlpha( 1 );
+				for Child in _DevPad.FolderRoot:IterateChildren() do
+					if ( Child._ListButton ) then
+						Child._ListButton.Visual:SetAlpha( 1 );
+					end
 				end
 			end
 			return true;
@@ -217,28 +220,28 @@ do
 	end
 end
 do
-	local ipairs = ipairs;
-	local pcall, strfind = pcall, strfind;
+	local ipairs, pcall, strfind = ipairs, pcall, string.find;
 	--- Recursively highlights folders if any of their children match.
-	-- @return True if the folder contained at least one match.
+	-- @return The number of matches found within Folder.
 	local function UpdateFolder ( Folder )
-		local MatchChild;
-		for _, Child in ipairs( Folder or _DevPad.FolderRoot ) do
+		local Matches = 0;
+		for _, Child in ipairs( Folder ) do
 			if ( Child._Class == "Folder" ) then
-				MatchChild = UpdateFolder( Child ) or MatchChild;
+				Matches = Matches + UpdateFolder( Child );
 			elseif ( Child._Class == "Script" ) then
 				local Valid, Match = pcall( strfind, Child._Text, NS.Search );
 				Match = Valid and Match ~= nil; -- Valid pattern too
-				MatchChild = MatchChild or Match;
-				ObjectButtons[ Child ].Visual:SetAlpha(
+				if ( Match ) then
+					Matches = Matches + 1;
+				end
+				Child._ListButton.Visual:SetAlpha(
 					Match and 1 or NS.SearchMismatchAlpha );
 			end
 		end
-		if ( Folder ) then -- Not root
-			ObjectButtons[ Folder ].Visual:SetAlpha(
-				MatchChild and 1 or NS.SearchMismatchAlpha );
+		if ( Folder._ListButton ) then -- Not root
+			Folder._ListButton.Visual:SetAlpha( Matches > 0 and 1 or NS.SearchMismatchAlpha );
 		end
-		return MatchChild;
+		return Matches;
 	end
 
 	local Timer = NS.SearchEdit:CreateAnimationGroup();
@@ -250,7 +253,7 @@ do
 	Animation:SetScript( "OnPlay", function ( self )
 		Timer.UpdatePending = nil;
 		if ( NS.Search ) then
-			return UpdateFolder();
+			return UpdateFolder( _DevPad.FolderRoot );
 		end
 	end );
 	--- Refilter after the cooldown if requested since the last update.
@@ -347,7 +350,7 @@ do
 		if ( not Folder._Closed ) then
 			for _, Child in ipairs( Folder ) do
 				Count = Count + 1;
-				local Button = ObjectButtons[ Child ];
+				local Button = Child._ListButton;
 				Button:SetPoint( "TOP", 0, -( Count - 1 ) * ButtonHeight );
 				Button.Visual:SetPoint( "LEFT", IndentSize * Depth, 0 );
 
@@ -615,8 +618,8 @@ end
 
 --- Updates an object's name text.
 function NS:ObjectSetName ( _, Object )
-	if ( ObjectButtons[ Object ] ) then
-		return ObjectButtons[ Object ].Name:SetText( Object._Name );
+	if ( Object._ListButton ) then
+		return Object._ListButton.Name:SetText( Object._Name );
 	end
 end
 do
@@ -747,18 +750,18 @@ do
 
 	--- Shows or hides an object's button.
 	local function ObjectButtonUpdateVisible ( Object )
-		local Button = ObjectButtons[ Object ];
+		local Button = Object._ListButton;
 		if ( Button ) then
 			return Button[ Object:IsHidden() and "Hide" or "Show" ]( Button );
 		end
 	end
 	--- Assigns a button to a new script or folder.
 	local function ObjectButtonAssign ( Object )
-		local Button, Unused = ObjectButtons[ Object ], UnusedButtons[ Object._Class ];
+		local Button, Unused = Object._ListButton, UnusedButtons[ Object._Class ];
 		if ( not Button and Unused ) then -- Known class and not already assigned
 			Button = next( Unused ) or Unused();
 			Unused[ Button ] = nil;
-			ObjectButtons[ Object ], Button.Object = Button, Object;
+			Object._ListButton, Button.Object = Button, Object;
 
 			NS:ObjectSetName( nil, Object );
 			if ( Object._Class == "Script" ) then
@@ -788,20 +791,20 @@ do
 
 	--- Reclaims a script or folder button for reuse.
 	local function ObjectButtonRecycle ( Object )
-		local Button = ObjectButtons[ Object ];
+		local Button = Object._ListButton;
 		Button:Hide();
 		if ( NS.Search ) then
 			Button.Visual:SetAlpha( 1 );
 		end
 		if ( NS.Edited:GetParent() == Button ) then
-			NS:EditorSetScriptObject()
+			NS:EditorSetScriptObject();
 		end
-		ObjectButtons[ Object ], Button.Object = nil;
+		Object._ListButton, Button.Object = nil;
 		UnusedButtons[ Object._Class ][ Button ] = true;
 	end
 	--- Updates the tree view when an object gets removed from a folder.
 	function NS:FolderRemove ( _, Folder, Object )
-		if ( ObjectButtons[ Object ] ) then
+		if ( Object._ListButton ) then
 			ObjectButtonRecycle( Object );
 			if ( Object._Class == "Folder" ) then
 				for Child in Object:IterateChildren() do
@@ -831,7 +834,7 @@ do
 	end
 	--- Redraws a folder when it opens or closes.
 	function NS:FolderSetClosed ( _, Folder )
-		local Button = ObjectButtons[ Folder ];
+		local Button = Folder._ListButton;
 		if ( Button ) then
 			if ( Folder._Closed ) then
 				SetTexCoords( Button.Expand, 0, 0.5, 0.5, 0.75 );
@@ -849,8 +852,8 @@ do
 end
 --- Updates Script's autorun indicator.
 function NS:ScriptSetAutoRun ( _, Script )
-	if ( ObjectButtons[ Script ] ) then
-		local AutoRun = ObjectButtons[ Script ].AutoRun;
+	if ( Script._ListButton ) then
+		local AutoRun = Script._ListButton.AutoRun;
 		local Normal, Pushed = AutoRun:GetNormalTexture(), AutoRun:GetPushedTexture();
 		if ( Script._AutoRun ) then
 			Normal:SetDesaturated( false );
@@ -867,13 +870,13 @@ function NS:ScriptSetAutoRun ( _, Script )
 end
 --- Updates search match highlight when text changes.
 function NS:ScriptSetText ( _, Script )
-	if ( ObjectButtons[ Script ] ) then
+	if ( Script._ListButton ) then
 		return self:UpdateSearch();
 	end
 end
 --- Adds a highlight to scripts open for editing.
 function NS:EditorSetScriptObject ( _, Script )
-	local Button, Edited = ObjectButtons[ Script ], self.Edited;
+	local Button, Edited = Script and Script._ListButton, self.Edited;
 	if ( Button ) then
 		Edited:SetParent( Button );
 		Edited:SetAllPoints();
