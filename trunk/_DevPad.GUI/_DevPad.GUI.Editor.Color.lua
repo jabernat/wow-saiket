@@ -27,7 +27,7 @@ do
 			self.ButtonContainer:Hide();
 		end
 	end
-	--- Enables coloring only when syntax highlighting is disabled.
+	--- Enables coloring only when Lua mode is disabled.
 	function NS:ScriptSetLua ( _, Script )
 		if ( Script == self.Script ) then
 			self.Enabled = not Script._Lua;

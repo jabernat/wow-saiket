@@ -90,7 +90,7 @@ NS.Margin.Gutter:SetTexture( 0.2, 0.2, 0.2 ); -- Line number background
 function NS:SetScriptObject ( Script )
 	if ( self.Script ~= Script ) then
 		if ( self.Script ) then
-			self.Script._CursorPosition = self:GetScriptCursorPosition();
+			self.Script._EditCursor = self:GetScriptCursorPosition();
 		end
 		self.Script = Script;
 		if ( Script ) then
@@ -104,7 +104,7 @@ function NS:SetScriptObject ( Script )
 			self:ObjectSetName( nil, Script );
 			self:ScriptSetText( nil, Script );
 			self:ScriptSetLua( nil, Script );
-			self:SetScriptCursorPosition( Script._CursorPosition or 0, true );
+			self:SetScriptCursorPosition( Script._EditCursor or 0, true );
 			self.Margin:Update();
 			self:Show();
 		else
@@ -273,7 +273,7 @@ do
 		return NS:SetFont( NS.FontPath, min( SizeMax, NS.FontSize + SizeDelta ) );
 	end
 end
---- Toggles syntax highlighting for this script.
+--- Toggles Lua mode for this script.
 function NS.Lua:OnClick ()
 	return NS.Script:SetLua( not NS.Script._Lua );
 end
@@ -386,10 +386,9 @@ do
 	Updater:SetScript( "OnFinished", OnFinished );
 	--- Updates line numbers and saves text.
 	function NS.Edit:OnTextChanged ()
-		local Script = NS.Script;
-		if ( Script ) then
+		if ( NS.Script ) then
 			local Text = self:GetText();
-			Script:SetText( NS.LuaEnabled and Text:gsub( "||", "|" ) or Text );
+			NS.Script:SetText( NS.LuaEnabled and Text:gsub( "||", "|" ) or Text );
 			Updater:Stop();
 			Updater:Play();
 		end
