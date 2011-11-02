@@ -272,7 +272,7 @@ end
 
 do
 	local ScriptMeta = RegisterClass( "Script" );
-	--- Sets the script chunk body and flags it for recompilation.
+	--- Sets the script text and flags it for recompilation.
 	-- @return True if Text changed.
 	function ScriptMeta.__index:SetText ( Text )
 		Text = type( Text ) == "string" and Text or "";
@@ -292,8 +292,8 @@ do
 			return true;
 		end
 	end
-	--- Enables/disables Lua syntax highlighting for this script in the editor.
-	-- @return True if SyntaxHighlight flag changed.
+	--- Enables/disables Lua mode for this script in the editor.
+	-- @return True if Lua mode flag changed.
 	function ScriptMeta.__index:SetLua ( Lua )
 		Lua = not not Lua;
 		if ( self._Lua ~= Lua ) then
@@ -352,7 +352,7 @@ end
 
 --- Fires a callback for each script in Folder.
 -- @param Callback  Function or method name.
--- @param ...  Extra args passed after Script to Callback.
+-- @param ...  Extra args passed after script to Callback.
 function NS:IterateScripts ( Folder, Callback, ... )
 	for Child in Folder:IterateChildren() do
 		if ( Child._Class == "Script" ) then
@@ -437,10 +437,8 @@ function NS.Frame:ADDON_LOADED ( Event, AddOn )
 		self:UnregisterEvent( Event );
 		self[ Event ] = nil;
 
-
 		local Options = _DevPadOptions;
 		local Scripts = ( Options and Options.Scripts ) or NS.DefaultScripts;
-		NS.DefaultScripts = nil;
 		if ( Scripts ) then
 			NS.FolderRoot:Unpack( Scripts );
 		end
@@ -453,6 +451,7 @@ function NS.Frame:ADDON_LOADED ( Event, AddOn )
 		-- Replace settings last in case of errors loading them
 		self:RegisterEvent( "PLAYER_LOGOUT" );
 		--_DevPadOptions = nil; -- GC options
+		NS.DefaultScripts = nil;
 	end
 end
 --- Save settings before exiting.

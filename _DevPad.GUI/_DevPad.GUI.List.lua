@@ -96,7 +96,7 @@ do
 				if ( Child._Class == "Folder" and -Offset < 0.5 ) then -- Over bottom half of folder
 					-- Pause before opening closed folders
 					if ( Child._Closed and MouseoverTime >= CLOSED_FOLDER_WAIT ) then
-						Child._TemporarilyOpened = true;
+						Child._ListMouseoverOpen = true;
 						Child:SetClosed( false );
 					end
 					if ( not Child._Closed ) then
@@ -155,10 +155,10 @@ do
 				Button:SetScript( "OnUpdate", nil );
 				Button:GetHighlightTexture():SetVertexColor( 1, 1, 1 );
 				for Child in _DevPad.FolderRoot:IterateChildren() do
-					if ( Child._TemporarilyOpened and not Child:Contains( self.Dragging ) ) then
+					if ( Child._ListMouseoverOpen and not Child:Contains( self.Dragging ) ) then
 						Child:SetClosed( true );
 					end
-					Child._TemporarilyOpened = nil;
+					Child._ListMouseoverOpen = nil;
 				end
 				if ( self.Dragging._Class == "Folder" ) then
 					self.Dragging:SetClosed( ClosedBackup );
@@ -444,7 +444,7 @@ do
 		{ text = GUILD; func = SendBroadcast; arg1 = "GUILD"; notCheckable = true; },
 		{ text = OFFICER; func = SendBroadcast; arg1 = "OFFICER"; notCheckable = true; },
 	};
-	--- Opens a dropdown menu with potential script recipients.
+	--- Opens a dropdown menu with potential object recipients.
 	function NS.Send:OnClick ()
 		-- Match chat colors
 		for _, Info in ipairs( Menu ) do
@@ -624,7 +624,7 @@ do
 	do
 		local CreateButton;
 		do
-			--- Selects a folder or script button when clicked.
+			--- Selects this button's object when clicked.
 			local function ButtonOnClick ( self )
 				if ( self.Object._Class == "Folder" ) then
 					self.Object:SetClosed( not self.Object._Closed );
