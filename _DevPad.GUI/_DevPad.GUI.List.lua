@@ -201,7 +201,7 @@ do
 	end
 end
 do
-	local Escapes = { n = "\n"; r = "\r"; };
+	local Escapes = { a = "\a"; b = "\b"; f = "\f"; n = "\n"; r = "\r"; t = "\t"; v = "\v"; };
 	--- Unescapes escape sequences found by gsub.
 	local function EscapesGsub ( Character )
 		return Escapes[ Character ] or Character;
