@@ -33,6 +33,24 @@ local IndentSize = 20;
 
 
 
+--- Sets the root folder to display the contents of.
+-- @return True if the displayed root changed.
+function NS:SetRoot ( Folder )
+	if ( self.Root ~= Folder ) then
+		assert( Folder and Folder._Class == "Folder", "Root must be a Folder object." );
+		if ( self.Root ) then
+			for _, Child in ipairs( self.Root ) do
+				self:FolderRemove( nil, self.Root, Child );
+			end
+		end
+		self.Root = Folder;
+		for _, Child in ipairs( Folder ) do
+			self:FolderInsert( nil, Folder, Child );
+		end
+		GUI.Callbacks:Fire( "ListSetRoot", Folder );
+		return true;
+	end
+end
 --- Sets or clears the list selection.
 -- @param Object  Descendant of root to select, or nil to clear.
 -- @return True if selection changed.
@@ -138,9 +156,9 @@ do
 		if ( self:IsMouseOver( 0, 0, -Huge, Huge ) ) then -- Over dragged object
 			MouseoverObject, MouseoverTime = nil;
 		else -- Above or below
-			if ( SetAbsPosition( self.Object, _DevPad.FolderRoot, CursorY / ButtonHeight, Elapsed ) ) then
+			if ( SetAbsPosition( self.Object, NS.Root, CursorY / ButtonHeight, Elapsed ) ) then
 				-- Below end of tree
-				return _DevPad.FolderRoot:Insert( self.Object );
+				return NS.Root:Insert( self.Object );
 			end
 		end
 	end
@@ -155,7 +173,7 @@ do
 				local Button = self.Dragging._ListButton;
 				Button:SetScript( "OnUpdate", nil );
 				Button:GetHighlightTexture():SetVertexColor( 1, 1, 1 );
-				for Child in _DevPad.FolderRoot:IterateChildren() do
+				for Child in self.Root:IterateChildren() do
 					if ( Child._ListMouseoverOpen and not Child:Contains( self.Dragging ) ) then
 						Child:SetClosed( true );
 					end
@@ -209,10 +227,8 @@ do
 				if ( not Edit:HasFocus() ) then
 					Edit:SetAlpha( Edit.InactiveAlpha );
 				end
-				for Child in _DevPad.FolderRoot:IterateChildren() do
-					if ( Child._ListButton ) then
-						Child._ListButton.Visual:SetAlpha( 1 );
-					end
+				for Child in self.Root:IterateChildren() do
+					Child._ListButton.Visual:SetAlpha( 1 );
 				end
 			end
 			return true;
@@ -253,7 +269,7 @@ do
 	Animation:SetScript( "OnPlay", function ( self )
 		Timer.UpdatePending = nil;
 		if ( NS.Search ) then
-			return UpdateFolder( _DevPad.FolderRoot );
+			return UpdateFolder( NS.Root );
 		end
 	end );
 	--- Refilter after the cooldown if requested since the last update.
@@ -301,10 +317,10 @@ function NS:NextMatchWrap ( Script, Cursor, Reverse )
 end
 do
 	--- @return Script at or after Start, or nil if no scripts found.
-	local function NextScript ( Start, Direction )
+	local function NextScript ( Root, Start, Direction )
 		local Object = Start;
 		repeat
-			if ( Object._Class == "Script" ) then
+			if ( Object._Class == "Script" and Root:Contains( Object ) ) then
 				return Object;
 			end
 			Object = Object[ Direction ];
@@ -315,7 +331,7 @@ do
 	function NS:NextMatchGlobal ( Script, Cursor, Reverse )
 		local Direction = Reverse and "_Previous" or "_Next";
 		if ( not Script ) then
-			Script = NextScript( self.Selection or _DevPad.FolderRoot, Direction );
+			Script = NextScript( self.Root, self.Selection or self.Root, Direction );
 			if ( not Script ) then -- No scripts in root
 				return;
 			end
@@ -327,7 +343,7 @@ do
 		-- Wrap through other scripts, then search the rest of the first one
 		local First = Script;
 		repeat
-			Script = NextScript( Script[ Direction ], Direction );
+			Script = NextScript( self.Root, Script[ Direction ], Direction );
 			Start, End = self:NextMatch( Script, Reverse and #Script._Text or 0, Reverse );
 			if ( Start and ( Script ~= First
 				or ( Reverse and Start > Cursor ) -- Wrapped back into rest of start
@@ -364,7 +380,7 @@ do
 	--- Throttles tree repaints to once per frame.
 	local function OnUpdate ( self )
 		self:SetScript( "OnUpdate", nil );
-		LayoutFolder( _DevPad.FolderRoot )
+		LayoutFolder( self.Root )
 		self.ScrollFrame:UpdateScrollChildRect();
 	end
 	--- Request that the list be redrawn before the next frame.
@@ -420,7 +436,7 @@ do
 		elseif ( UnitIsUnit( Name, "player" ) ) then -- Direct copy
 			local Copy = Object:Copy();
 			Copy:SetName( L.COPY_OBJECTNAME_FORMAT:format( Object._Name ) );
-			_DevPad.FolderRoot:Insert( Copy );
+			NS.Root:Insert( Copy );
 		else
 			Send( Object, "WHISPER", Name, Name );
 		end
@@ -465,7 +481,7 @@ do
 	--- Add the received object to the list.
 	function NS.Send:ReceiveOnAccept ( Object )
 		Object:SetName( L.RECEIVE_OBJECTNAME_FORMAT:format( Object._Name, Object._Author ) );
-		_DevPad.FolderRoot:Insert( Object );
+		NS.Root:Insert( Object );
 	end
 	local Queue, Ignored = _DevPad.ReceiveQueue, _DevPad.ReceiveIgnored;
 	--- Puts the author on the ignore list.
@@ -527,7 +543,7 @@ do
 		if ( NS.Selection ) then -- Add just before selection
 			NS.Selection._Parent:Insert( Object, NS.Selection:GetIndex() );
 		else -- Default to end of list
-			_DevPad.FolderRoot:Insert( Object );
+			NS.Root:Insert( Object );
 		end
 		NS:SetSelection( Object );
 		NS:SetRenaming( Object );
@@ -775,7 +791,7 @@ do
 	end
 	--- Updates the tree view when an object gets added to a folder.
 	function NS:FolderInsert ( _, Folder, Object )
-		if ( _DevPad.FolderRoot:Contains( Object ) ) then
+		if ( self.Root:Contains( Object ) ) then
 			ObjectButtonAssign( Object );
 			if ( Object._Class == "Folder" ) then -- Also assign child buttons
 				for Child in Object:IterateChildren() do
@@ -786,6 +802,8 @@ do
 			if ( not Object:IsHidden() ) then
 				return self:Update();
 			end
+		elseif ( Object._ListButton ) then -- Removed from root
+			return self:FolderRemove( nil, Folder, Object );
 		end
 	end
 
@@ -842,7 +860,7 @@ do
 				SetTexCoords( Button.Expand, 0, 0.5, 0.75, 1 );
 			end
 		end
-		if ( Folder == _DevPad.FolderRoot
+		if ( Folder == self.Root
 			or ( Button and not Folder:IsHidden() ) -- Contents visible
 		) then
 			UpdateVisibleChildren( Folder );
@@ -934,7 +952,6 @@ SetupTitleButton( NS.Send, L.SEND );
 SetupTitleButton( NS.Delete, L.DELETE );
 SetupTitleButton( NS.NewScript, L.SCRIPT_NEW );
 SetupTitleButton( NS.NewFolder, L.FOLDER_NEW );
-NS:ListSetSelection(); -- Update title buttons
 
 StaticPopupDialogs[ "_DEVPAD_DELETE_CONFIRM" ] = {
 	text = L.DELETE_CONFIRM_FORMAT;
@@ -996,7 +1013,6 @@ local Icon = Search:CreateTexture( nil, "OVERLAY" );
 Icon:SetPoint( "LEFT", 0, -2 );
 Icon:SetSize( 14, 14 );
 Icon:SetTexture( [[Interface\COMMON\UI-Searchbox-Icon]] );
-NS:SetSearch( "" );
 
 -- Object renaming edit box
 local Rename = NS.RenameEdit;
@@ -1029,8 +1045,7 @@ GUI.RegisterCallback( NS, "EditorSetScriptObject" );
 NS:Unpack( {} ); -- Default position/size
 
 -- Synchronize with _DevPad
-local Root = _DevPad.FolderRoot;
-for _, Child in ipairs( Root ) do
-	NS:FolderInsert( "FolderInsert", Root, Child );
-end
-NS:ObjectReceived( "ObjectReceived", nil );
+NS:SetRoot( _DevPad.FolderRoot );
+NS:SetSearch( "" );
+NS:ListSetSelection(); -- Update title buttons
+NS:ObjectReceived(); -- Handle objects received before GUI loaded
