@@ -9,9 +9,8 @@ select( 2, ... ).Dialog = NS;
 
 NS.StickyFrames = {};
 
-NS.StuckColor = { 0.5, 0.5, 0.2 };
-
-local StickTolerance = 16;
+NS.StickColor = { 0.5, 0.5, 0.2 };
+NS.StickTolerance = 16;
 
 
 
@@ -93,10 +92,10 @@ function NS:OnMouseUp ()
 	-- Try to stick to other windows
 	for Name, Frame in pairs( NS.StickyFrames ) do
 		if ( Frame ~= self and Frame:IsVisible() ) then
-			local Point = FlyPaper.Stick( self, Frame, StickTolerance );
+			local Point = FlyPaper.Stick( self, Frame, NS.StickTolerance );
 			if ( Point ) then
 				self.StickTarget, self.StickPoint = Name, Point;
-				self:SetBackdropBorderColor( unpack( NS.StuckColor ) );
+				self:SetBackdropBorderColor( unpack( NS.StickColor ) );
 				return;
 			end
 		end
@@ -175,7 +174,7 @@ function NS:Unpack ( Options )
 		NS.StickyFrames[ Options.StickTarget ], Options.StickPoint )
 	) then
 		self.StickTarget, self.StickPoint = Options.StickTarget, Options.StickPoint;
-		self:SetBackdropBorderColor( unpack( NS.StuckColor ) );
+		self:SetBackdropBorderColor( unpack( NS.StickColor ) );
 	else
 		self:ClearAllPoints();
 		self:SetPoint( Options.Point or "CENTER", nil, Options.Point or "CENTER", Options.X or 0, Options.Y or 0 );

@@ -38,9 +38,11 @@ do
 	function NS:EditorSetScriptObject ( _, Script )
 		self.Script = Script;
 		if ( Script ) then
+			_DevPad.RegisterCallback( self, "ScriptSetLua" );
 			self:ScriptSetLua( nil, Script );
 		else
 			self.Enabled = false;
+			_DevPad.UnregisterCallback( self, "ScriptSetLua" );
 			UpdateEnabled( self );
 		end
 	end
@@ -416,7 +418,6 @@ Custom:SetHeight( 20 );
 Custom:SetScript( "OnClick", Custom.OnClick );
 
 
-_DevPad.RegisterCallback( NS, "ScriptSetLua" );
 GUI.RegisterCallback( NS, "EditorSetScriptObject" );
 
 NS:Unpack( {} ); -- Default swatch color

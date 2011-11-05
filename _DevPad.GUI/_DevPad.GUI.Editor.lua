@@ -21,7 +21,7 @@ NS.Margin = CreateFrame( "Frame", nil, NS.ScrollFrame );
 NS.Margin.Gutter = NS.Focus:CreateTexture( nil, "BORDER" );
 NS.Margin.Text = NS.Margin:CreateFontString();
 NS.Margin.Lines = {};
-local MarginUpdateFrequency = 0.2; -- Time to wait after last keypress before updating
+local MARGIN_UPDATE_INTERVAL = 0.2; -- Time to wait after last keypress before updating
 NS.Edit = CreateFrame( "EditBox", nil, NS.Margin );
 NS.Edit.Line = NS.Edit:CreateTexture();
 
@@ -382,7 +382,7 @@ do
 		return NS.Margin:Update();
 	end
 	local Updater = CreateFrame( "Frame", nil, NS.Margin ):CreateAnimationGroup();
-	Updater:CreateAnimation( "Animation" ):SetDuration( MarginUpdateFrequency );
+	Updater:CreateAnimation( "Animation" ):SetDuration( MARGIN_UPDATE_INTERVAL );
 	Updater:SetScript( "OnFinished", OnFinished );
 	--- Updates line numbers and saves text.
 	function NS.Edit:OnTextChanged ()
@@ -466,23 +466,6 @@ do
 	function NS.Shortcuts:SetFocus ( EditBox )
 		PendingEditBox = EditBox;
 		self:SetScript( "OnUpdate", OnUpdate );
-	end
-end
-
---- Focus search edit box.
-function NS.Shortcuts:F ()
-	if ( IsControlKeyDown() ) then
-		self:SetFocus( GUI.List.SearchEdit );
-	end
-end
---- Jump to next/previous search result.
-function NS.Shortcuts:F3 ()
-	if ( GUI.List.Search ) then
-		local Cursor, Reverse = NS:GetScriptCursorPosition(), IsShiftKeyDown();
-		if ( Reverse and Cursor > 0 ) then
-			Cursor = Cursor - 1;
-		end
-		NS:SetScriptHighlight( GUI.List:NextMatchWrap( NS.Script, Cursor, Reverse ) );
 	end
 end
 

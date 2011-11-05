@@ -13,7 +13,7 @@ NS.UndoButton = CreateFrame( "Button", nil, GUI.Editor );
 NS.RedoButton = CreateFrame( "Button", nil, GUI.Editor );
 NS.CompareTimer = CreateFrame( "Frame", nil, GUI.Editor ):CreateAnimationGroup();
 
-local CompareFrequency = 0.5; -- Time to wait after last keypress before recomparing
+local COMPARE_INTERVAL = 0.5; -- Time to wait after last keypress before recomparing
 NS.MaxEntries = 128; -- Use math.huge for unlimited history, or delete this file to disable history
 local KEYS_PER_ENTRY = 3; -- Number of _History array indices required to store one entry
 
@@ -245,7 +245,7 @@ Undo:GetPushedTexture():SetTexCoord( 1, 0, 0, 1 );
 Undo:GetDisabledTexture():SetTexCoord( 1, 0, 0, 1 );
 
 
-NS.CompareTimer:CreateAnimation( "Animation" ):SetDuration( CompareFrequency );
+NS.CompareTimer:CreateAnimation( "Animation" ):SetDuration( COMPARE_INTERVAL );
 NS.CompareTimer:SetScript( "OnFinished", NS.CompareTimer.OnFinished );
 
 _DevPad.RegisterCallback( NS, "ScriptSetText" );

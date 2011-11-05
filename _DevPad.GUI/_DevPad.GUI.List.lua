@@ -19,16 +19,12 @@ NS.NewFolder = NS:NewButton( [[Interface\MINIMAP\TRACKING\Banker]] );
 
 NS.Edited = NS:CreateTexture( nil, "OVERLAY" );
 NS.RenameEdit = CreateFrame( "EditBox" );
-NS.SearchEdit = CreateFrame( "EditBox", "_DevPadGUIListSearchEdit", NS.Bottom, "InputBoxTemplate" );
-NS.SearchEdit.InactiveAlpha = 0.5;
-NS.SearchMismatchAlpha = 0.5;
-local SearchFrequency = 0.25; -- Update rate of list item highlighting
 
 NS.DefaultWidth, NS.DefaultHeight = 180, 250;
 NS.SendNoticeThreshold = 4096; -- Larger objects print a wait message
 
-local ButtonHeight = 16;
-local IndentSize = 20;
+local BUTTON_HEIGHT = 16;
+local INDENT_SIZE = 20;
 
 
 
@@ -156,7 +152,7 @@ do
 		if ( self:IsMouseOver( 0, 0, -Huge, Huge ) ) then -- Over dragged object
 			MouseoverObject, MouseoverTime = nil;
 		else -- Above or below
-			if ( SetAbsPosition( self.Object, NS.Root, CursorY / ButtonHeight, Elapsed ) ) then
+			if ( SetAbsPosition( self.Object, NS.Root, CursorY / BUTTON_HEIGHT, Elapsed ) ) then
 				-- Below end of tree
 				return NS.Root:Insert( self.Object );
 			end
@@ -201,160 +197,6 @@ do
 	end
 end
 do
-	local Escapes = { a = "\a"; b = "\b"; f = "\f"; n = "\n"; r = "\r"; t = "\t"; v = "\v"; };
-	--- Unescapes escape sequences found by gsub.
-	local function EscapesGsub ( Character )
-		return Escapes[ Character ] or Character;
-	end
-	--- Updates the search highlight or stops searching.
-	-- @param Search  Pattern to search for in scripts; Empty string to stop.
-	--   Backslashes and pipes get unescaped.
-	-- @return True if search pattern changed.
-	function NS:SetSearch ( Text )
-		local Search = false;
-		if ( Text ~= "" ) then
-			Search = Text:gsub( "||", "|" ):gsub( [[\(.)]], EscapesGsub );
-		end
-		if ( self.Search ~= Search ) then
-			self.Search = Search;
-			local Edit = self.SearchEdit;
-			Edit:SetText( Text );
-
-			if ( Search ) then
-				Edit:SetAlpha( 1 );
-				self:UpdateSearch();
-			else
-				if ( not Edit:HasFocus() ) then
-					Edit:SetAlpha( Edit.InactiveAlpha );
-				end
-				for Child in self.Root:IterateChildren() do
-					Child._ListButton.Visual:SetAlpha( 1 );
-				end
-			end
-			return true;
-		end
-	end
-end
-do
-	local ipairs, pcall, strfind = ipairs, pcall, string.find;
-	--- Recursively highlights folders if any of their children match.
-	-- @return The number of matches found within Folder.
-	local function UpdateFolder ( Folder )
-		local Matches = 0;
-		for _, Child in ipairs( Folder ) do
-			if ( Child._Class == "Folder" ) then
-				Matches = Matches + UpdateFolder( Child );
-			elseif ( Child._Class == "Script" ) then
-				local Valid, Match = pcall( strfind, Child._Text, NS.Search );
-				Match = Valid and Match ~= nil; -- Valid pattern too
-				if ( Match ) then
-					Matches = Matches + 1;
-				end
-				Child._ListButton.Visual:SetAlpha(
-					Match and 1 or NS.SearchMismatchAlpha );
-			end
-		end
-		if ( Folder._ListButton ) then -- Not root
-			Folder._ListButton.Visual:SetAlpha( Matches > 0 and 1 or NS.SearchMismatchAlpha );
-		end
-		return Matches;
-	end
-
-	local Timer = NS.SearchEdit:CreateAnimationGroup();
-	Timer:CreateAnimation( "Animation" ):SetDuration( 1e-7 );
-	local Animation = Timer:CreateAnimation( "Animation" );
-	Animation:SetOrder( 2 ); -- Note: Keeps OnPlay from firing right after :Play.
-	Animation:SetDuration( SearchFrequency );
-	--- Throttles search updates.
-	Animation:SetScript( "OnPlay", function ( self )
-		Timer.UpdatePending = nil;
-		if ( NS.Search ) then
-			return UpdateFolder( NS.Root );
-		end
-	end );
-	--- Refilter after the cooldown if requested since the last update.
-	Timer:SetScript( "OnFinished", function ( self )
-		if ( self.UpdatePending ) then
-			return self:Play();
-		end
-	end );
-	--- Updates search match highlights.
-	function NS:UpdateSearch ()
-		Timer.UpdatePending = true;
-		return Timer:Play();
-	end
-end
---- Gets the position of the next match within a given script.
--- @param Script  Script to search within.
--- @param Cursor  Cursor position to start from.
--- @param Reverse  True to find the previous match.
--- @return (Start position, End position), or nil if no match.
-function NS:NextMatch ( Script, Cursor, Reverse )
-	local Start, End;
-	if ( Reverse ) then
-		local StartCurrent, EndCurrent;
-		EndCurrent = 0;
-		while ( EndCurrent and EndCurrent <= Cursor ) do
-			Start, End = StartCurrent, EndCurrent;
-			StartCurrent, EndCurrent = Script._Text:find( self.Search, EndCurrent + 1 );
-		end
-	else
-		Start, End = Script._Text:find( self.Search, Cursor + 1 );
-	end
-	if ( Start ) then
-		return Start - 1, End;
-	end
-end
---- Gets the position of the next match, possibly wrapping around.
--- @see NS:NextMatch
-function NS:NextMatchWrap ( Script, Cursor, Reverse )
-	local Start, End = self:NextMatch( Script, Cursor, Reverse );
-	if ( not Start ) then
-		Cursor = Reverse and #Script._Text or 0;
-		Start, End = self:NextMatch( Script, Cursor, Reverse );
-	end
-	return Start, End;
-end
-do
-	--- @return Script at or after Start, or nil if no scripts found.
-	local function NextScript ( Root, Start, Direction )
-		local Object = Start;
-		repeat
-			if ( Object._Class == "Script" and Root:Contains( Object ) ) then
-				return Object;
-			end
-			Object = Object[ Direction ];
-		until ( Object == Start );
-	end
-	--- Gets the position of the next match, cycling through all scripts for a match.
-	-- @see NS:NextMatch
-	function NS:NextMatchGlobal ( Script, Cursor, Reverse )
-		local Direction = Reverse and "_Previous" or "_Next";
-		if ( not Script ) then
-			Script = NextScript( self.Root, self.Selection or self.Root, Direction );
-			if ( not Script ) then -- No scripts in root
-				return;
-			end
-		end
-		local Start, End = self:NextMatch( Script, Cursor, Reverse );
-		if ( Start ) then
-			return Script, Start, End;
-		end
-		-- Wrap through other scripts, then search the rest of the first one
-		local First = Script;
-		repeat
-			Script = NextScript( self.Root, Script[ Direction ], Direction );
-			Start, End = self:NextMatch( Script, Reverse and #Script._Text or 0, Reverse );
-			if ( Start and ( Script ~= First
-				or ( Reverse and Start > Cursor ) -- Wrapped back into rest of start
-				or ( not Reverse and End <= Cursor )
-			) ) then
-				return Script, Start, End;
-			end
-		until ( Script == First );
-	end
-end
-do
 	--- Recursively adds script and folder buttons to the list.
 	-- @param Depth  How deep Folder is nested.  Leave nil on initial call.
 	-- @param Count  Number of buttons already visible in list.
@@ -367,8 +209,8 @@ do
 			for _, Child in ipairs( Folder ) do
 				Count = Count + 1;
 				local Button = Child._ListButton;
-				Button:SetPoint( "TOP", 0, -( Count - 1 ) * ButtonHeight );
-				Button.Visual:SetPoint( "LEFT", IndentSize * Depth, 0 );
+				Button:SetPoint( "TOP", 0, -( Count - 1 ) * BUTTON_HEIGHT );
+				Button.Visual:SetPoint( "LEFT", INDENT_SIZE * Depth, 0 );
 
 				if ( Child._Class == "Folder" ) then
 					Count = LayoutFolder( Child, Depth + 1, Count );
@@ -583,55 +425,6 @@ do
 end
 
 
---- Lights up search box while typing.
-function NS.SearchEdit:OnEditFocusGained ()
-	self:HighlightText();
-	self:SetAlpha( 1 );
-end
---- Dims search box if no longer searching.
-function NS.SearchEdit:OnEditFocusLost ()
-	self:HighlightText( 0, 0 );
-	if ( self:GetText() == "" ) then
-		self:SetAlpha( self.InactiveAlpha );
-	end
-	if ( GUI.Editor:IsVisible()
-		and not GetCurrentKeyBoardFocus() -- Didn't switch to another editbox
-	) then
-		GUI.Editor.Edit:SetFocus();
-	end
-end
---- Jumps to next/previous search result.
-function NS.SearchEdit:OnEnterPressed ()
-	if ( NS.Search ) then
-		local Script, Cursor, Reverse = GUI.Editor.Script, 0, IsShiftKeyDown();
-		if ( Script ) then
-			Cursor = GUI.Editor:GetScriptCursorPosition();
-			if ( Reverse and Cursor > 0 ) then
-				Cursor = Cursor - 1;
-			end
-		end
-		local ScriptNew, Start, End = NS:NextMatchGlobal( Script, Cursor, Reverse );
-		if ( ScriptNew ) then
-			GUI.Editor:SetScriptObject( ScriptNew );
-		end
-		GUI.Editor:SetScriptHighlight( Start, End, true );
-	else
-		return self:ClearFocus();
-	end
-end
---- Refilters the list when the search pattern changes.
-function NS.SearchEdit:OnTextChanged ()
-	return NS:SetSearch( self:GetText() );
-end
---- Builds a tooltip under the edit box so it doesn't cover the list.
-function NS.SearchEdit:OnEnter ()
-	GameTooltip:ClearAllPoints();
-	GameTooltip:SetPoint( "TOPLEFT", self, "BOTTOMLEFT" );
-	GameTooltip:SetOwner( self, "ANCHOR_PRESERVE" );
-	GameTooltip:SetText( L.SEARCH_DESC, nil, nil, nil, nil, 1 );
-end
-
-
 --- Updates an object's name text.
 function NS:ObjectSetName ( _, Object )
 	if ( Object._ListButton ) then
@@ -678,7 +471,7 @@ do
 			function CreateButton ()
 				local Button = CreateFrame( "Button", nil, NS.ScrollChild );
 				Button:Hide();
-				Button:SetHeight( ButtonHeight );
+				Button:SetHeight( BUTTON_HEIGHT );
 				Button:SetPoint( "LEFT", NS.ScrollFrame );
 				Button:SetPoint( "RIGHT", NS.ScrollFrame );
 				Button:SetHighlightTexture( [[Interface\QuestFrame\UI-QuestTitleHighlight]] );
@@ -716,12 +509,12 @@ do
 
 			local Expand = NS.NewButton( Button.Visual, [[Interface\ACHIEVEMENTFRAME\UI-ACHIEVEMENT-PLUSMINUS]] );
 			Button.Expand = Expand;
-			Expand:SetSize( ButtonHeight, ButtonHeight );
+			Expand:SetSize( BUTTON_HEIGHT, BUTTON_HEIGHT );
 			Expand:SetPoint( "LEFT" );
 			Expand:SetScript( "OnClick", ExpandOnClick );
 
 			Button.Name:SetFontObject( GameFontNormal );
-			Button.Name:SetPoint( "LEFT", Expand, "RIGHT", IndentSize - ButtonHeight, 0 );
+			Button.Name:SetPoint( "LEFT", Expand, "RIGHT", INDENT_SIZE - BUTTON_HEIGHT, 0 );
 			return Button;
 		end
 
@@ -747,7 +540,7 @@ do
 			local AutoRun = NS.NewButton( Button.Visual, [[Interface\Archeology\ArchaeologyParts]] );
 			Button.AutoRun = AutoRun;
 			AutoRun:SetPoint( "RIGHT" );
-			AutoRun:SetSize( ButtonHeight, ButtonHeight * 0.8 );
+			AutoRun:SetSize( BUTTON_HEIGHT, BUTTON_HEIGHT * 0.8 );
 			AutoRun:SetScript( "OnClick", AutoRunOnClick );
 			AutoRun.tooltipText = L.SCRIPT_AUTORUN_DESC
 			-- Show tab arrow icon
@@ -782,7 +575,6 @@ do
 			NS:ObjectSetName( nil, Object );
 			if ( Object._Class == "Script" ) then
 				NS:ScriptSetAutoRun( nil, Object );
-				NS:ScriptSetText( nil, Object );
 			elseif ( Object._Class == "Folder" ) then
 				NS:FolderSetClosed( nil, Object );
 			end
@@ -798,7 +590,6 @@ do
 					ObjectButtonAssign( Child );
 				end
 			end
-			self:UpdateSearch();
 			if ( not Object:IsHidden() ) then
 				return self:Update();
 			end
@@ -811,9 +602,7 @@ do
 	local function ObjectButtonRecycle ( Object )
 		local Button = Object._ListButton;
 		Button:Hide();
-		if ( NS.Search ) then
-			Button.Visual:SetAlpha( 1 );
-		end
+		Button.Visual:SetAlpha( 1 ); -- Undo fading from search module
 		if ( NS.Edited:GetParent() == Button ) then
 			NS:EditorSetScriptObject();
 		end
@@ -829,7 +618,6 @@ do
 					ObjectButtonRecycle( Child );
 				end
 			end
-			self:UpdateSearch();
 			if ( not ( Folder._Closed or Folder:IsHidden() ) ) then
 				return self:Update();
 			end
@@ -884,12 +672,6 @@ function NS:ScriptSetAutoRun ( _, Script )
 			Normal:SetVertexColor( 0.6, 0.6, 0.6 );
 			Pushed:SetVertexColor( 0.6, 0.6, 0.6 );
 		end
-	end
-end
---- Updates search match highlight when text changes.
-function NS:ScriptSetText ( _, Script )
-	if ( Script._ListButton ) then
-		return self:UpdateSearch();
 	end
 end
 --- Adds a highlight to scripts open for editing.
@@ -993,27 +775,6 @@ StaticPopupDialogs[ "_DEVPAD_RECEIVE_CONFIRM" ] = {
 	notClosableByLogout = true;
 };
 
--- Search bar
-NS.Bottom:SetHeight( 24 );
-local Search = NS.SearchEdit;
-Search:SetHeight( 20 );
-Search:SetPoint( "BOTTOMLEFT", 12, 2 );
-Search:SetPoint( "RIGHT", -10, 0 );
-Search:SetAutoFocus( false );
-Search:SetTextInsets( 12, 0, 0, 0 );
-Search:SetFontObject( ChatFontSmall );
-Search:SetScript( "OnEditFocusGained", Search.OnEditFocusGained );
-Search:SetScript( "OnEditFocusLost", Search.OnEditFocusLost );
-Search:SetScript( "OnEnterPressed", Search.OnEnterPressed );
-Search:SetScript( "OnEscapePressed", Search.ClearFocus );
-Search:SetScript( "OnTextChanged", Search.OnTextChanged );
-Search:SetScript( "OnEnter", Search.OnEnter );
-Search:SetScript( "OnLeave", GameTooltip_Hide );
-local Icon = Search:CreateTexture( nil, "OVERLAY" );
-Icon:SetPoint( "LEFT", 0, -2 );
-Icon:SetSize( 14, 14 );
-Icon:SetTexture( [[Interface\COMMON\UI-Searchbox-Icon]] );
-
 -- Object renaming edit box
 local Rename = NS.RenameEdit;
 Rename:Hide();
@@ -1038,7 +799,6 @@ _DevPad.RegisterCallback( NS, "FolderInsert" );
 _DevPad.RegisterCallback( NS, "FolderRemove" );
 _DevPad.RegisterCallback( NS, "FolderSetClosed" );
 _DevPad.RegisterCallback( NS, "ScriptSetAutoRun" );
-_DevPad.RegisterCallback( NS, "ScriptSetText" );
 GUI.RegisterCallback( NS, "ListSetSelection" );
 GUI.RegisterCallback( NS, "EditorSetScriptObject" );
 
@@ -1046,6 +806,5 @@ NS:Unpack( {} ); -- Default position/size
 
 -- Synchronize with _DevPad
 NS:SetRoot( _DevPad.FolderRoot );
-NS:SetSearch( "" );
 NS:ListSetSelection(); -- Update title buttons
 NS:ObjectReceived(); -- Handle objects received before GUI loaded
