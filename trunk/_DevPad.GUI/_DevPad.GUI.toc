@@ -26,5 +26,7 @@ _DevPad.GUI.lua
 _DevPad.GUI.Dialog.lua
 _DevPad.GUI.List.lua
 _DevPad.GUI.Editor.lua
+# Optional modules
+_DevPad.GUI.List.Search.lua
 _DevPad.GUI.Editor.Color.lua
 _DevPad.GUI.Editor.History.lua

@@ -12,7 +12,7 @@ NS.Callbacks = LibStub( "CallbackHandler-1.0" ):New( NS );
 NS.ReceiveQueue = {};
 NS.ReceiveIgnored = { [ UnitName( "player" ):lower() ] = true; };
 
-NS.COMM_PREFIX = "_DP";
+local COMM_PREFIX = "_DP";
 
 local AceSerializer, AceComm = LibStub( "AceSerializer-3.0" ), LibStub( "AceComm-3.0" );
 
@@ -59,7 +59,7 @@ do
 	-- @return Number of bytes being transmitted.
 	function ObjectMeta.__index:Send ( ... )
 		local Data = AceSerializer:Serialize( "Object", self:Pack() );
-		AceComm:SendCommMessage( NS.COMM_PREFIX, Data, ... );
+		AceComm:SendCommMessage( COMM_PREFIX, Data, ... );
 		return #Data;
 	end
 	-- @return A copy of this object.
@@ -447,7 +447,7 @@ function NS.Frame:ADDON_LOADED ( Event, AddOn )
 				NS.SafeCall( Object );
 			end
 		end
-		AceComm.RegisterComm( NS, NS.COMM_PREFIX );
+		AceComm.RegisterComm( NS, COMM_PREFIX );
 		-- Replace settings last in case of errors loading them
 		self:RegisterEvent( "PLAYER_LOGOUT" );
 		--_DevPadOptions = nil; -- GC options
