@@ -35,16 +35,30 @@
 ## X-CompatibleLocales: deDE, enCN, enTW, enUS, esES, esMX, frFR, koKR, ptBR, ptPT, ruRU, zhCN, zhTW
 ## SavedVariables: _NPCScanOverlayOptions
 ## OptionalDeps: Ace3, _NPCScan, AlphaMap3, Carbonite
+
 Libs\LibStub\LibStub.lua
 Libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
+Libs\AceEvent-3.0\AceEvent-3.0.xml
 
-Embeds.xml
-Locales.xml
+# See http://wow.curseforge.com/addons/npcscan-overlay/localization/
+Locales\Locale-enUS.lua
+Locales\Locale-deDE.lua
+Locales\Locale-esES.lua
+Locales\Locale-frFR.lua
+Locales\Locale-koKR.lua
+Locales\Locale-ruRU.lua
+Locales\Locale-zhCN.lua
+Locales\Locale-zhTW.lua
 
 _NPCScan.Overlay.lua
 _NPCScan.Overlay.Config.lua
 _NPCScan.Overlay.Modules.lua
-
 _NPCScan.Overlay.PathData.lua
 
-Modules.xml
+# Canvas modules
+Modules\WorldMapTemplate.lua
+Modules\WorldMap.lua
+Modules\BattlefieldMinimap.lua
+Modules\Minimap.lua
+Modules\AlphaMap3.lua
+Modules\Carbonite.lua

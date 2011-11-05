@@ -12,11 +12,12 @@
 ## X-Localizations: enUS
 ## X-Embeds: LibSharedMedia-3.0
 ## OptionalDeps: LibSharedMedia-3.0
+
 Libs\LibStub\LibStub.lua
 Libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
+Libs\LibSharedMedia-3.0\lib.xml
 
-Embeds.xml
-Locales.xml
+Locales\Locale-enUS.lua
 
 _Underscore.lua
 _Underscore.Backdrop.lua

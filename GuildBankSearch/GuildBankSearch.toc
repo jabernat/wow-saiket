@@ -23,6 +23,11 @@
 ## LoadOnDemand: 1
 ## LoadWith: Blizzard_GuildBankUI
 ## RequiredDeps: Blizzard_GuildBankUI
-Locales.xml
+
+# See http://wow.curseforge.com/addons/guild-bank-search/localization/
+Locales\Locale-enUS.lua
+Locales\Locale-frFR.lua
+Locales\Locale-koKR.lua
+Locales\Locale-zhTW.lua
 
 GuildBankSearch.lua

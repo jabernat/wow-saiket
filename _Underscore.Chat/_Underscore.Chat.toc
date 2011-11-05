@@ -12,11 +12,11 @@
 ## X-Child-Of: _Underscore
 ## X-Localizations: enUS
 ## RequiredDeps: _Underscore
-Locales.xml
+
+Locales\Locale-enUS.lua
 
 _Underscore.Chat.lua
 _Underscore.Chat.URLs.lua
 _Underscore.Chat.Icons.lua
 _Underscore.Chat.RaidWarning.lua
-
 _Underscore.Chat.CombatLogDisable.lua

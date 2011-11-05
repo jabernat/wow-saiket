@@ -13,7 +13,8 @@
 ## X-Curse-Project-ID: juggler
 ## X-Localizations: enUS
 ## X-CompatibleLocales: deDE, enCN, enTW, enUS, esES, esMX, frFR, koKR, ptBR, ptPT, ruRU, zhCN, zhTW
-Locales.xml
+
+Locales\Locale-enUS.lua
 
 StateMachine.lua
 Juggler.lua

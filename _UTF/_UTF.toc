@@ -16,17 +16,16 @@
 ## X-Embeds: LibTextTable-1.1
 ## SavedVariables: _UTFOptions
 ## OptionalDeps: LibTextTable-1.1
-Libs\LibStub\LibStub.lua
 
-Embeds.xml
-Locales.xml
+Libs\LibStub\LibStub.lua
+Libs\LibTextTable-1.1\Lib.xml
+
+Locales\Locale-enUS.lua
 
 _UTF.lua
 _UTF.CharacterEntities.lua
 _UTF.Chat.lua
-
 _UTF.Browse.lua
-
 _UTF.Options.lua
 _UTF.Customize.lua
 _UTF.Customize.Entities.lua

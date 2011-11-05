@@ -16,7 +16,8 @@
 ## SavedVariables: _DevOptions
 ## LoadWith: Blizzard_DebugTools
 ## OptionalDeps: !ImprovedErrorFrame, !BugGrabber, !Swatter, !BaudErrorFrame
-Locales.xml
+
+Locales\Locale-enUS.lua
 
 _Dev.lua
 _Dev.xml

@@ -13,4 +13,5 @@
 ## X-Curse-Project-ID: ouf_spellrange
 ## X-oUF: oUF
 ## RequiredDeps: oUF
+
 oUF_SpellRange.lua

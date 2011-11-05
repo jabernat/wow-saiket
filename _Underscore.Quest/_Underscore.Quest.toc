@@ -13,7 +13,8 @@
 ## X-Localizations: enUS
 ## RequiredDeps: _Underscore
 ## OptionalDeps: _Underscore.ActionBars, Carbonite
-Locales.xml
+
+Locales\Locale-enUS.lua
 
 _Underscore.Quest.lua
 _Underscore.Quest.Watch.lua
