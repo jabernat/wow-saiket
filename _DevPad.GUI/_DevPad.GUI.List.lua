@@ -370,7 +370,8 @@ end
 function NS.Delete:OnClick ()
 	local Object = NS.Selection;
 	if ( IsShiftKeyDown()
-		or ( Object._Class == "Script" and Object._Text == "" )
+		or ( Object._Class == "Script" and Object._Text == ""
+			and ( not Object._History or #Object._History == 0 ) ) -- No edit history
 		or ( Object._Class == "Folder" and #Object == 0 )
 	) then
 		return self:OnAccept( Object );
