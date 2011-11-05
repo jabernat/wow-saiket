@@ -12,7 +12,8 @@
 ## X-Child-Of: _Underscore
 ## X-Localizations: enUS
 ## RequiredDeps: _Underscore
-Locales.xml
+
+Locales\Locale-enUS.lua
 
 _Underscore.Tooltip.lua
 _Underscore.Tooltip.Target.lua

@@ -17,7 +17,10 @@
 ## X-CompatibleLocales: deDE, enCN, enTW, enUS, esES, esMX, frFR, koKR, ptBR, ptPT, ruRU, zhCN, zhTW
 ## SavedVariables: _CursorOptions
 ## SavedVariablesPerCharacter: _CursorOptionsCharacter
-Locales.xml
+
+# See http://wow.curseforge.com/addons/cursor/localization/
+Locales\Locale-enUS.lua
+Locales\Locale-koKR.lua
 
 _Cursor.lua
 _Cursor.Options.lua

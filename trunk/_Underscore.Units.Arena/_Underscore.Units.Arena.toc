@@ -13,4 +13,5 @@
 ## RequiredDeps: _Underscore.Units
 ## LoadOnDemand: 1
 ## LoadWith: Blizzard_ArenaUI
+
 _Underscore.Units.Arena.lua

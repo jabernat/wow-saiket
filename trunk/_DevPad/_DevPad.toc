@@ -15,11 +15,14 @@
 ## X-CompatibleLocales: deDE, enCN, enTW, enUS, esES, esMX, frFR, koKR, ptBR, ptPT, ruRU, zhCN, zhTW
 ## SavedVariables: _DevPadOptions
 ## OptionalDeps: _Dev, Ace3
+
 Libs\LibStub\LibStub.lua
 Libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
+Libs\AceSerializer-3.0\AceSerializer-3.0.xml
+Libs\AceComm-3.0\AceComm-3.0.xml
 
-Embeds.xml
-Locales.xml
+# See http://wow.curseforge.com/addons/devpad/localization/
+Locales\Locale-enUS.lua
 
 _DevPad.lua
 # Optional default scripts file

@@ -16,6 +16,7 @@
 ## X-CompatibleLocales: deDE, enCN, enTW, enUS, esES, esMX, frFR, koKR, ptBR, ptPT, ruRU, zhCN, zhTW
 ## X-GridStatusModule: GridStatusHealthFade
 ## RequiredDeps: Grid
-Locales.xml
+
+Locales\Locale-enUS.lua
 
 GridStatusHealthFade.lua

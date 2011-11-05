@@ -10,14 +10,12 @@
 ## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons/NPCScanOverlay
 ## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:NPCScan.Tools
 ## RequiredDeps: _NPCScan, _NPCScan.Overlay, Routes
-Locales.xml
+
+Locales\Locale-enUS.lua
 
 _NPCScan.Tools.lua
 _NPCScan.Tools.NPCData.lua
-
 _NPCScan.Tools.Config.lua
-
 _NPCScan.Tools.Overlay.lua
 _NPCScan.Tools.Model.lua
-
 _NPCScan.Tools.Routes.lua

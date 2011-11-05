@@ -19,8 +19,12 @@
 ## RequiredDeps: _DevPad
 ## OptionalDeps: FlyPaper
 ## LoadOnDemand: 1
-Embeds.xml
-Locales.xml
+
+Libs\FlyPaper\FlyPaper.lua
+Libs\ForAllIndentsAndPurposes\indent.lua
+
+# See http://wow.curseforge.com/addons/devpad/localization/
+Locales\Locale-enUS.lua
 
 _DevPad.GUI.lua
 _DevPad.GUI.Dialog.lua

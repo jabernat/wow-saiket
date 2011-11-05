@@ -12,10 +12,10 @@
 ## X-Child-Of: _Underscore
 ## X-Localizations: enUS
 ## RequiredDeps: _Underscore
-Locales.xml
+
+Locales\Locale-enUS.lua
 
 _Underscore.HUD.lua
-
 _Underscore.HUD.Crosshairs.lua
 _Underscore.HUD.Indicators.lua
 _Underscore.HUD.Flags.lua

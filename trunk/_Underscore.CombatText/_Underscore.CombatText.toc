@@ -13,4 +13,5 @@
 ## LoadOnDemand: 1
 ## LoadWith: Blizzard_CombatText
 ## RequiredDeps: _Underscore, Blizzard_CombatText
+
 _Underscore.CombatText.lua

@@ -12,6 +12,7 @@
 ## X-Child-Of: _Underscore
 ## X-Localizations: enUS
 ## RequiredDeps: _Underscore.ActionBars
-Locales.xml
+
+Locales\Locale-enUS.lua
 
 _Underscore.CastingBar.lua

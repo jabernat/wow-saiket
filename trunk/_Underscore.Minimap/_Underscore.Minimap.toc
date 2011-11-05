@@ -12,5 +12,6 @@
 ## X-Child-Of: _Underscore
 ## RequiredDeps: _Underscore
 ## OptionalDeps: Carbonite
+
 _Underscore.Minimap.lua
 _Underscore.Minimap.LibDBIcon_1_0.lua

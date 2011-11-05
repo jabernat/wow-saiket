@@ -16,9 +16,10 @@
 ## LoadManagers: AddonLoader
 ## X-LoadOn-Slash: /latency, /lag
 ## OptionalDeps: LibGraph-2.0
-Libs\LibStub\LibStub.lua
 
-Embeds.xml
-Locales.xml
+Libs\LibStub\LibStub.lua
+Libs\LibGraph-2.0\LibGraph-2.0.lua
+
+Locales\Locale-enUS.lua
 
 _Latency.lua
