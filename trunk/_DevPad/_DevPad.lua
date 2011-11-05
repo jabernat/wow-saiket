@@ -212,19 +212,17 @@ do
 		end
 	end
 	do
-		--- Coroutine that recursively yields each child in Folder.
-		local function Iterate ( Folder )
-			for Index, Child in ipairs( Folder ) do
-				coroutine.yield( Child );
-				if ( Child._Class == "Folder" ) then
-					Iterate( Child );
-				end
+		--- @return The next child object of Folder.
+		local function NextChild ( Folder, Child )
+			Child = Child._Next;
+			if ( Folder:Contains( Child ) ) then
+				return Child;
 			end
 		end
-		--- @return An iterator function and this Folder to recursively iterate over all its children.
+		--- @return An iterator function with values to iterate over all of this folder's children.
 		-- @usage for Child in Folder:IterateChildren() do ... end
 		function FolderMeta.__index:IterateChildren ()
-			return coroutine.wrap( Iterate ), self;
+			return NextChild, self, self;
 		end
 	end
 	--- @return Table containing unique settings for this folder and its children.
