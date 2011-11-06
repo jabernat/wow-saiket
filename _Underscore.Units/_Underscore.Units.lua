@@ -12,7 +12,6 @@ _Underscore.Units = NS;
 
 do
 	local DropDown = CreateFrame( "Frame", "_UnderscoreUnitsDropDown", UIParent, "UIDropDownMenuTemplate" );
-
 	--- Constructs the unit popup menu.
 	function DropDown:initialize ()
 		local UnitID = self.unit or "player";
@@ -32,8 +31,7 @@ do
 				Which = "PLAYER";
 			end
 		else
-			Which = "RAID_TARGET_ICON";
-			Name = RAID_TARGET_ICON;
+			Which, Name = "RAID_TARGET_ICON", RAID_TARGET_ICON;
 		end
 		if ( Which ) then
 			UnitPopup_ShowMenu( self, Which, UnitID, Name, ID );
@@ -45,7 +43,6 @@ do
 		HideDropDownMenu( 1 );
 
 		DropDown.unit = UnitID or SecureButton_GetUnit( self );
-
 		if ( DropDown.unit ) then
 			ToggleDropDownMenu( 1, nil, DropDown, "cursor" );
 		end
@@ -60,14 +57,24 @@ end
 
 do
 	local TargetNoise = CreateFrame( "Frame" );
-
 	--- Plays target gained/lost sounds from the default UI when changing target or focus.
 	function TargetNoise:OnEvent ( Event )
 		local UnitID = Event == "PLAYER_FOCUS_CHANGED" and "focus" or "target";
 		PlaySound( UnitExists( UnitID ) and "igCharacterSelect" or "igCharacterDeselect" );
 	end
-
 	TargetNoise:SetScript( "OnEvent", TargetNoise.OnEvent );
 	TargetNoise:RegisterEvent( "PLAYER_TARGET_CHANGED" );
 	TargetNoise:RegisterEvent( "PLAYER_FOCUS_CHANGED" );
 end
+
+
+
+
+-- Disable default buff frame
+BuffFrame:UnregisterAllEvents();
+local Hidden = CreateFrame( "Frame" );
+Hidden:Hide();
+BuffFrame:SetParent( Hidden );
+ConsolidatedBuffs:SetParent( Hidden );
+ConsolidatedBuffsTooltip:SetParent( Hidden );
+TemporaryEnchantFrame:SetParent( Hidden );
