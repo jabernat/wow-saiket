@@ -161,16 +161,15 @@ do
 					Object._Parent:Remove( Object );
 					FireEvents = true;
 				end
+
 				Object._Parent = self;
 				tinsert( self, Index, Object );
-
 				-- Doubly-circular linked list of objects in tree
-				Object._Previous = Index == 1 and self
-					or GetLastDescendant( self[ Index - 1 ] );
-				local ObjectLast = GetLastDescendant( Object );
-				ObjectLast._Next = Object._Previous._Next;
-				Object._Previous._Next = Object;
-				ObjectLast._Next._Previous = ObjectLast;
+				local Previous = Index == 1 and self or GetLastDescendant( self[ Index - 1 ] );
+				local Next, ObjectLast = Previous._Next, Object._Previous;
+				Previous._Next, Next._Previous = Object, ObjectLast;
+				ObjectLast._Next, Object._Previous = Next, Previous;
+
 				NS.Callbacks:Fire( "FolderInsert", self, Object, Index );
 				return true;
 			end
@@ -178,13 +177,13 @@ do
 		--- @return True if child removed successfully.
 		function FolderMeta.__index:Remove ( Object )
 			if ( Object._Parent == self ) then
-				local ObjectLast = GetLastDescendant( Object );
-				ObjectLast._Next._Previous = Object._Previous;
-				Object._Previous._Next = ObjectLast._Next;
-				Object._Previous = ObjectLast;
-				ObjectLast._Next = Object;
 				tremove( self, assert( Object:GetIndex(),
 					"Child not found in parent folder." ) )._Parent = nil;
+				local ObjectLast = GetLastDescendant( Object );
+				local Previous, Next = Object._Previous, ObjectLast._Next;
+				Previous._Next, Next._Previous = Next, Previous;
+				ObjectLast._Next, Object._Previous = Object, ObjectLast;
+
 				if ( FireEvents ) then
 					NS.Callbacks:Fire( "FolderRemove", self, Object );
 				end
