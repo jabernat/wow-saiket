@@ -159,7 +159,7 @@ do
 		end
 	end
 
-	local COLOR_TERMINATOR = "|r";
+	local TERMINATOR, BYTE_PIPE = "|r", ( "|" ):byte();
 	--- Wraps this editbox's selected text with the given color.
 	-- @param ColorStart  Lowercase color code to wrap the selection in.  Use an
 	--   empty string to remove color instead.
@@ -170,21 +170,33 @@ do
 		if ( Start == End ) then -- Nothing selected
 			return; -- Wrapping the cursor in a color code and hitting backspace crashes the client!
 		end
+		-- Check for redundant color terminator before selection
+		if ( Start >= #TERMINATOR and Text:find( "^|r", Start - #TERMINATOR + 1 ) ) then
+			local Index, Pipes, Byte = Start - #TERMINATOR, 0, BYTE_PIPE;
+			while ( Byte == BYTE_PIPE ) do
+				Index, Pipes, Byte = Index - 1, Pipes + 1, Text:byte( Index );
+			end
+			if ( Pipes % 2 == 1 ) then -- Not escaped
+				Start = Start - #TERMINATOR; -- Remove terminator and read active color from before it
+			end
+		end
 
 		-- Find active color codes at the edges of the selection
 		local ColorStartOld = End > 0 and GetActiveColor( Text, Start ) or "";
 		local ColorEndOld = End < #Text and GetActiveColor( Text, End ) or "";
 		local ColorEnd = ColorEndOld;
 		-- Optimizations to avoid unnecessary color codes
-		if ( ColorEndOld == ColorStart ) then
-			ColorEnd = ""; -- End of selection is already this color
+		if ( ColorEndOld == ColorStart -- End of selection is already this color
+			or Text:find( "^|c%x%x%x%x%x%x%x%x", End + 1 ) -- Color changes just after selection
+		) then
+			ColorEnd = "";
 		elseif ( ColorEndOld == "" and ColorStart ~= "" ) then
-			ColorEnd = COLOR_TERMINATOR; -- Transitioning out of color
+			ColorEnd = TERMINATOR; -- Transitioning out of color
 		end
 		if ( ColorStartOld == ColorStart ) then
 			ColorStart = ""; -- Beginning of selection is already this color
 		elseif ( ColorStartOld ~= "" and ColorStart == "" ) then
-			ColorStart = COLOR_TERMINATOR; -- Transitioning out of color
+			ColorStart = TERMINATOR; -- Transitioning out of color
 		end
 
 		local Selection = Text:sub( Start + 1, End );
@@ -199,20 +211,20 @@ do
 		-- Restore cursor and highlight, adjusting for color codes
 		Cursor = Start + CursorReplacement;
 		if ( CursorReplacement > 0 -- Cursor beyond start of selection
-			or ( CursorReplacement == 0 and ColorStart == COLOR_TERMINATOR )
+			or ( CursorReplacement == 0 and ColorStart == TERMINATOR )
 		) then
 			Cursor = Cursor + #ColorStart;
 		end
 		if ( CursorReplacement > #Replacement -- Cursor beyond end of selection
-			or ( CursorReplacement == #Replacement and ColorEnd == COLOR_TERMINATOR )
+			or ( CursorReplacement == #Replacement and ColorEnd == TERMINATOR )
 		) then
 			Cursor = Cursor + #ColorEnd;
 		end
-		if ( ColorStart == COLOR_TERMINATOR ) then
+		if ( ColorStart == TERMINATOR ) then
 			Start = Start + #ColorStart;
 		end
 		End = End + #ColorStart + ( #Replacement - #Selection );
-		if ( ColorEnd == COLOR_TERMINATOR ) then
+		if ( ColorEnd == TERMINATOR ) then
 			End = End + #ColorEnd;
 		end
 
