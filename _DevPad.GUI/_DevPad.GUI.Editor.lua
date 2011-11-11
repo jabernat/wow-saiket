@@ -350,7 +350,7 @@ function NS.Margin:Update ()
 	local Text, Lines = self.Text, self.Lines;
 	local Width = NS.ScrollFrame:GetWidth() - ( self:GetWidth() + TextInset ); -- Size of margins
 	local EndingLast;
-	for Line, Ending in NS.Script._Text:gmatch( "([^\r\n]*)()" ) do
+	for Line, Ending in NS.Edit:GetText():gmatch( "([^\r\n]*)()" ) do
 		if ( EndingLast ~= Ending ) then
 			EndingLast = Ending;
 			Index, Count = Index + 1, Count + 1;
