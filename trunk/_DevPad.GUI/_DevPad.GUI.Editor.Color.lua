@@ -121,6 +121,8 @@ do
 	--- @return StartPos, EndPos of highlight in this editbox.
 	local function GetTextHighlight ( self )
 		local Text, Cursor = self:GetText(), self:GetCursorPosition();
+		-- Note: If cursor is in a link, this technique fails; Move out of potential links first.
+		self:SetCursorPosition( 0 );
 		self:Insert( "" ); -- Delete selected text
 		local TextNew, CursorNew = self:GetText(), self:GetCursorPosition();
 		local Start, End = CursorNew, #Text - ( #TextNew - CursorNew );
