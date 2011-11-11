@@ -34,7 +34,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 local lib = {};
 select( 2, ... ).IndentationLib = lib;
 
-local UpdateCooldown = 0.2; -- Time to wait after last keypress before updating
+local UPDATE_INTERVAL = 0.2; -- Time to wait after last keypress before updating
 
 
 
@@ -253,7 +253,7 @@ do
 				-- text will cause huge framerate drops after Updater:Play().
 				local Updater = CreateFrame( "Frame", nil, self ):CreateAnimationGroup();
 				Updaters[ self ], Updater.EditBox = Updater, self;
-				Updater:CreateAnimation( "Animation" ):SetDuration( UpdateCooldown );
+				Updater:CreateAnimation( "Animation" ):SetDuration( UPDATE_INTERVAL );
 				Updater:SetScript( "OnFinished", UpdaterOnFinished );
 				HookHandler( self, "OnTextChanged", OnTextChanged );
 				HookHandler( self, "OnTabPressed", OnTabPressed );

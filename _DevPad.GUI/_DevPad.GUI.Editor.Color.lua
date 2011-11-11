@@ -108,13 +108,12 @@ do
 	--- @return R, G, B of text color at the cursor.
 	function NS:GetCursorColor ()
 		if ( self.Enabled ) then
-			local EditBox = GUI.Editor.Edit;
-			local Color = GetActiveColor( EditBox:GetText(), EditBox:GetCursorPosition() );
+			local Color = GetActiveColor( self.Script._Text, GUI.Editor.Edit:GetCursorPosition() );
 			if ( Color ) then
 				local R, G, B = Color:match( "|c%x%x(%x%x)(%x%x)(%x%x)" );
 				return tonumber( R, 16 ) / 255, tonumber( G, 16 ) / 255, tonumber( B, 16 ) / 255;
 			else
-				return EditBox:GetTextColor();
+				return GUI.Editor.Edit:GetTextColor();
 			end
 		end
 	end
@@ -161,14 +160,22 @@ do
 
 	local TERMINATOR, BYTE_PIPE = "|r", ( "|" ):byte();
 	--- Wraps this editbox's selected text with the given color.
-	-- @param ColorStart  Lowercase color code to wrap the selection in.  Use an
-	--   empty string to remove color instead.
 	-- @return True if text was selected and colored.
-	local function ColorSelection ( self, ColorStart )
-		local Start, End = GetTextHighlight( self );
-		local Text, Cursor = self:GetText(), self:GetCursorPosition();
+	function NS:ColorSelection ( R, G, B )
+		if ( not self.Enabled ) then
+			return;
+		end
+		local Edit = GUI.Editor.Edit;
+		local ColorStart = GUI.FormatColorCode( R, G, B );
+		local ColorDefault = GUI.FormatColorCode( Edit:GetTextColor() );
+		if ( ColorStart == ColorDefault ) then
+			ColorStart = "";
+		end
+
+		local Start, End = GetTextHighlight( Edit );
+		local Text, Cursor = self.Script._Text, Edit:GetCursorPositionUnescaped();
 		if ( Start == End ) then -- Nothing selected
-			return; -- Wrapping the cursor in a color code and hitting backspace crashes the client!
+			return; -- Wrapping the cursor in a color code and hitting backspace crashes PTR clients!
 		end
 		-- Check for redundant color terminator before selection
 		if ( Start >= #TERMINATOR and Text:find( "^|r", Start - #TERMINATOR + 1 ) ) then
@@ -203,44 +210,25 @@ do
 		-- Remove color codes from the selection
 		local Replacement, CursorReplacement = StripColors( Selection, Cursor - Start );
 
-		self:SetText( ( "" ):join(
+		self.Script:SetText( ( "" ):join(
 			Text:sub( 1, Start ),
 			ColorStart, Replacement, ColorEnd,
 			Text:sub( End + 1 ) ) );
 
 		-- Restore cursor and highlight, adjusting for color codes
 		Cursor = Start + CursorReplacement;
-		if ( CursorReplacement > 0 -- Cursor beyond start of selection
-			or ( CursorReplacement == 0 and ColorStart == TERMINATOR )
-		) then
+		if ( CursorReplacement > 0 ) then -- Cursor beyond start of selection
 			Cursor = Cursor + #ColorStart;
 		end
-		if ( CursorReplacement > #Replacement -- Cursor beyond end of selection
-			or ( CursorReplacement == #Replacement and ColorEnd == TERMINATOR )
-		) then
+		if ( CursorReplacement > #Replacement ) then -- Cursor beyond end of selection
 			Cursor = Cursor + #ColorEnd;
 		end
-		if ( ColorStart == TERMINATOR ) then
-			Start = Start + #ColorStart;
-		end
-		End = End + #ColorStart + ( #Replacement - #Selection );
-		if ( ColorEnd == TERMINATOR ) then
-			End = End + #ColorEnd;
-		end
+		Start = Edit:ValidateCursorPosition( Start );
+		End = Edit:ValidateCursorPosition( End + #ColorStart + ( #Replacement - #Selection ) );
 
-		self:SetCursorPosition( Cursor );
-		self:HighlightText( Start, End );
+		Edit:SetCursorPositionUnescaped( Edit:ValidateCursorPosition( Cursor ) );
+		Edit:HighlightTextUnescaped( Start, End );
 		return true;
-	end
-
-	--- Applies the given color to the selected text.
-	-- @return True if text was selected and colored.
-	function NS:ColorSelection ( R, G, B )
-		if ( self.Enabled ) then
-			local Color = GUI.FormatColorCode( R, G, B );
-			local ColorDefault = GUI.FormatColorCode( GUI.Editor.Edit:GetTextColor() );
-			return ColorSelection( GUI.Editor.Edit, Color == ColorDefault and "" or Color );
-		end
 	end
 end
 
