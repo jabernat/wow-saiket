@@ -70,7 +70,7 @@ function NS.RedoButton:OnClick ()
 end
 --- Undoes/redoes a change to the script with <ctrl+z> and <ctrl+shift+Z>.
 function GUI.Editor.Shortcuts:Z ()
-	if ( NS.Script and IsControlKeyDown() ) then
+	if ( IsControlKeyDown() ) then
 		return NS[ IsShiftKeyDown() and "Redo" or "Undo" ]( NS, NS.Script );
 	end
 end
@@ -150,7 +150,6 @@ do
 	end
 end
 do
-	local COLOR_TERMINATOR = "|r";
 	--- Applies an edit from the history buffer to Script.
 	local function ApplyHistory ( Script, Start, MiddleNew, MiddleCurrent )
 		local Prefix = Script._Text:sub( 1, Start - 1 );
@@ -161,21 +160,7 @@ do
 		Script:SetText( Text );
 		if ( NS.Script == Script ) then -- Move cursor to just after replaced text
 			Start = Start + #MiddleNew - 1;
-			-- Cursor can't be directly after a color code or before a terminator
-			if ( Suffix:sub( 1, #COLOR_TERMINATOR ) == COLOR_TERMINATOR ) then
-				Start = Start + #COLOR_TERMINATOR; -- Move cursor to after terminator
-			else -- Check for color code just before cursor
-				local ColorEnd, _, Escapes, Color = 0;
-				while ( true ) do
-					_, ColorEnd, Escapes, Color = Text:find( "(|*)(|c%x%x%x%x%x%x%x%x)", ColorEnd + 1 );
-					if ( not ColorEnd or ColorEnd > Start ) then
-						break;
-					elseif ( ColorEnd == Start and #Escapes % 2 == 0 ) then
-						Start = Start - #Color;
-					end
-				end
-			end
-			GUI.Editor:SetScriptCursorPosition( Start );
+			GUI.Editor.Edit:SetCursorPositionUnescaped( GUI.Editor.Edit:ValidateCursorPosition( Start ) );
 		end
 	end
 	--- Undoes one edit on Script, if available.

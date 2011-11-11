@@ -90,7 +90,7 @@ NS.Margin.Gutter:SetTexture( 0.2, 0.2, 0.2 ); -- Line number background
 function NS:SetScriptObject ( Script )
 	if ( self.Script ~= Script ) then
 		if ( self.Script ) then
-			self.Script._EditCursor = self:GetScriptCursorPosition();
+			self.Script._EditCursor = self.Edit:GetCursorPositionUnescaped();
 		end
 		self.Script = Script;
 		if ( Script ) then
@@ -104,7 +104,8 @@ function NS:SetScriptObject ( Script )
 			self:ObjectSetName( nil, Script );
 			self:ScriptSetText( nil, Script );
 			self:ScriptSetLua( nil, Script );
-			self:SetScriptCursorPosition( Script._EditCursor or 0, true );
+			self.Edit:SetCursorPositionUnescaped(
+				self.Edit:ValidateCursorPosition( Script._EditCursor or 0 ), true );
 			self.Margin:Update();
 			self:Show();
 		else
@@ -130,6 +131,19 @@ function NS:SetFont ( Path, Size )
 		return true;
 	end
 end
+--- @return Cursor position for the start of Line within this edit box.
+function NS:GetLinePosition ( Line )
+	local LineCurrent, PositionLast = 1, 0;
+	for Position in self.Script._Text:gmatch( "()[\r\n]" ) do
+		if ( LineCurrent >= Line ) then
+			break;
+		end
+		LineCurrent, PositionLast = LineCurrent + 1, Position;
+	end
+	return PositionLast;
+end
+
+
 do
 	--- @return Number of Substring found between cursor positions Start and End.
 	local function CountSubstring ( Text, Substring, Start, End )
@@ -147,32 +161,79 @@ do
 		end
 	end
 	--- Highlights a substring in the editor, accounting for escaped pipes.
-	function NS:SetScriptHighlight ( Start, End, ForceUpdate )
-		if ( Start and End ) then
-			local PipesBeforeEnd = self:SetScriptCursorPosition( End, ForceUpdate );
-			if ( self.LuaEnabled ) then
-				Start = Start + PipesBeforeEnd - CountSubstring( self.Script._Text, "|", Start, End );
-				End = End + PipesBeforeEnd;
+	function NS.Edit:HighlightTextUnescaped ( Start, End )
+		if ( self.Lua ) then
+			local PipesBeforeStart;
+			if ( Start or End ) then
+				PipesBeforeStart = CountSubstring( NS.Script._Text, "|", 0, Start or 0 );
+			end
+			if ( End ) then
+				End = End + PipesBeforeStart + CountSubstring( NS.Script._Text, "|", Start or 0, End );
+			end
+			if ( Start ) then
+				Start = Start + PipesBeforeStart;
 			end
 		end
-		self.Edit:HighlightText( Start or 0, End or 0 );
+		return self:HighlightText( Start, End );
 	end
 	--- Moves the cursor to a position in the current script, accounting for escaped pipes.
 	-- @param ForceUpdate  If true, the editbox will scroll to the cursor even if not focused.
 	-- @return Byte offset between requested position and actual position.
-	function NS:SetScriptCursorPosition ( Cursor, ForceUpdate )
-		local Offset = self.LuaEnabled and CountSubstring( self.Script._Text, "|", 0, Cursor ) or 0;
-		if ( ForceUpdate ) then
-			self.Edit.CursorForceUpdate = true;
+	function NS.Edit:SetCursorPositionUnescaped ( Cursor, ForceUpdate )
+		if ( self.Lua ) then
+			Cursor = Cursor + CountSubstring( NS.Script._Text, "|", 0, Cursor );
 		end
-		self.Edit:SetCursorPosition( Cursor + Offset );
-		return Offset;
+		if ( ForceUpdate ) then
+			self.CursorForceUpdate = true;
+		end
+		return self:SetCursorPosition( Cursor );
 	end
 	--- @return Cursor position, ignoring extra pipe escape characters.
-	function NS:GetScriptCursorPosition ()
-		local Cursor = self.Edit:GetCursorPosition();
-		return not self.LuaEnabled and Cursor
-			or Cursor - CountSubstring( self.Edit:GetText(), "||", 0, Cursor );
+	function NS.Edit:GetCursorPositionUnescaped ()
+		local Cursor = self:GetCursorPosition();
+		if ( self.Lua ) then
+			Cursor = Cursor - CountSubstring( self:GetText(), "||", 0, Cursor );
+		end
+		return Cursor;
+	end
+end
+do
+	local BYTE_PIPE = ( "|" ):byte();
+	--- @return True if the pipe at Position isn't escaped.
+	local function IsPipeActive ( Text, Position )
+		local Pipes = 0;
+		for Index = Position, 1, -1 do
+			if ( Text:byte( Index ) ~= BYTE_PIPE ) then
+				break;
+			end
+			Pipes = Pipes + 1;
+		end
+		return Pipes % 2 == 1;
+	end
+	local COLOR_LENGTH = 10;
+	--- Moves the cursor if it's currently in an invalid position.
+	-- The cursor cannot be placed just after color codes or just before color
+	--   terminators.  On live realms, the cursor interacts with codes in these
+	--   positions like visible characters, which is confusing.  On builds with
+	--   debug assertions enabled, doing this crashes the game instead.
+	function NS.Edit:ValidateCursorPosition ( Cursor )
+		if ( self.Lua ) then -- Pipes are escaped
+			return Cursor;
+		end
+		local Text = NS.Script._Text;
+		if ( Cursor > 0 and IsPipeActive( Text, Cursor ) ) then
+			Cursor = Cursor - 1; -- Can't be just after an active pipe
+		end
+		local _, End = Text:find( "^|r", Cursor + 1 );
+		if ( End ) then -- Cursor is just before a color terminator
+			Cursor = End;
+		elseif ( Cursor > 0 ) then
+			local Start = Text:find( "|c%x%x%x%x%x%x%x%x", max( 1, Cursor - COLOR_LENGTH + 1 ) );
+			if ( Start and Start <= Cursor ) then -- Cursor is in or just after a color code
+				Cursor = Start - 1;
+			end
+		end
+		return Cursor;
 	end
 end
 
@@ -186,27 +247,28 @@ do
 	--- Enables or disables syntax highlighting in the edit box.
 	function NS:ScriptSetLua ( _, Script )
 		if ( Script == self.Script ) then
+			local Edit = self.Edit;
 			if ( Script._Lua ) then
-				if ( not self.LuaEnabled ) then -- Escape control codes
+				if ( not Edit.Lua ) then -- Escape control codes
 					SetVertexColors( self.Lua, 0.4, 0.8, 1 );
-					local Cursor = self:GetScriptCursorPosition();
-					self.LuaEnabled = true;
-					self.Edit:SetText( self.Edit:GetText():gsub( "|", "||" ) );
-					self:SetScriptCursorPosition( Cursor );
+					local Cursor = Edit:GetCursorPositionUnescaped();
+					Edit.Lua = true;
+					Edit:SetText( self.Script._Text:gsub( "|", "||" ) );
+					Edit:SetCursorPositionUnescaped( Cursor );
 					if ( GUI.IndentationLib ) then
-						GUI.IndentationLib.Enable( self.Edit, -- Suppress immediate auto-indent
+						GUI.IndentationLib.Enable( Edit, -- Suppress immediate auto-indent
 							AutoIndent and TabWidth, self.SyntaxColors, true );
 					end
 				end
-			elseif ( self.LuaEnabled ) then -- Disable syntax highlighting and unescape control codes
+			elseif ( Edit.Lua ) then -- Disable syntax highlighting and unescape control codes
 				SetVertexColors( self.Lua, 0.4, 0.4, 0.4 );
 				if ( GUI.IndentationLib ) then
-					GUI.IndentationLib.Disable( self.Edit );
+					GUI.IndentationLib.Disable( Edit );
 				end
-				local Cursor = self:GetScriptCursorPosition();
-				self.LuaEnabled = false;
-				self.Edit:SetText( self.Edit:GetText():gsub( "||", "|" ) );
-				self:SetScriptCursorPosition( Cursor );
+				local Cursor = Edit:GetCursorPositionUnescaped();
+				Edit.Lua = false;
+				Edit:SetText( self.Script._Text );
+				Edit:SetCursorPositionUnescaped( Edit:ValidateCursorPosition( Cursor ) );
 			end
 		end
 	end
@@ -226,11 +288,11 @@ end
 --- Synchronizes editor text with the script object if it gets set externally while editing.
 function NS:ScriptSetText ( _, Script )
 	if ( Script == self.Script ) then
-		local Text = self.LuaEnabled and Script._Text:gsub( "|", "||" ) or Script._Text;
+		local Text = self.Edit.Lua and Script._Text:gsub( "|", "||" ) or Script._Text;
 		-- Don't clear syntax highlighting unnecessarily
 		if ( self.Edit:GetText() ~= Text ) then
 			self.Edit:SetText( Text );
-			if ( self.LuaEnabled and GUI.IndentationLib ) then -- Immediately recolor
+			if ( self.Edit.Lua and GUI.IndentationLib ) then -- Immediately recolor
 				GUI.IndentationLib.Update( self.Edit, false ); -- Suppress auto-indent
 			end
 		end
@@ -281,12 +343,14 @@ end
 
 --- Updates the margin's line numbers.
 function NS.Margin:Update ()
+	if ( not NS.Script ) then
+		return;
+	end
 	local Index, Count = 0, 0;
 	local Text, Lines = self.Text, self.Lines;
-	local Width = NS.ScrollFrame:GetWidth()
-		- ( self:GetWidth() + TextInset ); -- Size of margins
+	local Width = NS.ScrollFrame:GetWidth() - ( self:GetWidth() + TextInset ); -- Size of margins
 	local EndingLast;
-	for Line, Ending in NS.Edit:GetText( true ):gmatch( "([^\r\n]*)()" ) do
+	for Line, Ending in NS.Script._Text:gmatch( "([^\r\n]*)()" ) do
 		if ( EndingLast ~= Ending ) then
 			EndingLast = Ending;
 			Index, Count = Index + 1, Count + 1;
@@ -322,20 +386,20 @@ function NS.Margin:OnMouseDown ()
 			Index = Index - 1;
 		end
 		local Line = Lines[ Index ] or 1;
-		local Start = Edit:GetLinePosition( Line );
-		local End = Edit:GetLinePosition( Line + 1 );
+		local Start, End = NS:GetLinePosition( Line ), NS:GetLinePosition( Line + 1 );
 		if ( Start == End ) then -- Last line
-			End = #Edit:GetText();
+			End = #NS.Script._Text;
 		end
-		Edit:SetCursorPosition( End );
-		Edit:HighlightText( Start, End );
+		Start, End = Edit:ValidateCursorPosition( Start ), Edit:ValidateCursorPosition( End );
+		Edit:SetCursorPositionUnescaped( End );
+		Edit:HighlightTextUnescaped( Start, End );
 		Edit:SetFocus();
 	end
 end
 --- Focus the edit box text if empty space gets clicked.
 function NS.Focus:OnMouseDown ()
 	NS.Edit:HighlightText( 0, 0 );
-	NS.Edit:SetCursorPosition( #NS.Edit:GetText() );
+	NS.Edit:SetCursorPositionUnescaped( NS.Edit:ValidateCursorPosition( #NS.Script._Text ) );
 	NS.Edit:SetFocus();
 end
 --- Simulate a tab character with spaces.
@@ -365,17 +429,6 @@ do
 		end
 	end
 end
---- @return Cursor position for the start of Line within the edit box.
-function NS.Edit:GetLinePosition ( Line )
-	local Count, PositionLast = 1, 0;
-	for Position in self:GetText():gmatch( "()[\r\n]" ) do
-		if ( Count >= Line ) then
-			return PositionLast;
-		end
-		Count, PositionLast = Count + 1, Position;
-	end
-	return PositionLast;
-end
 do
 	--- Updates the margin a moment after the user quits typing.
 	local function OnFinished ( Updater )
@@ -388,7 +441,7 @@ do
 	function NS.Edit:OnTextChanged ()
 		if ( NS.Script ) then
 			local Text = self:GetText();
-			NS.Script:SetText( NS.LuaEnabled and Text:gsub( "||", "|" ) or Text );
+			NS.Script:SetText( self.Lua and Text:gsub( "||", "|" ) or Text );
 			Updater:Stop();
 			Updater:Play();
 		end
@@ -396,10 +449,10 @@ do
 end
 --- Links/opens the clicked link.
 function NS.Edit:OnMouseUp ( MouseButton )
-	if ( NS.LuaEnabled ) then
+	if ( self.Lua ) then
 		return;
 	end
-	local Text, Cursor = self:GetText(), self:GetCursorPosition();
+	local Text, Cursor = NS.Script._Text, self:GetCursorPositionUnescaped();
 
 	-- Find first unescaped link delimiter
 	local LinkEnd, Start, Code = Cursor;
@@ -476,7 +529,7 @@ function NS:GoToOnAccept ()
 		return true; -- Keep open
 	end
 	NS.Edit:HighlightText( 0, 0 );
-	NS.Edit:SetCursorPosition( NS.Edit:GetLinePosition( Line ) );
+	NS.Edit:SetCursorPositionUnescaped( NS.Edit:ValidateCursorPosition( NS:GetLinePosition( Line ) ) );
 	NS.Edit:SetFocus();
 end
 --- Undo changes to the edit box.
@@ -491,8 +544,8 @@ end
 function NS.Shortcuts:G ()
 	if ( IsControlKeyDown() ) then
 		local PositionLast, LineMax, LineCurrent = 0, 0, 1;
-		local Cursor = NS.Edit:GetCursorPosition() + 1;
-		for Start, End in NS.Edit:GetText():gmatch( "()[^\r\n]*()" ) do
+		local Cursor = NS.Edit:GetCursorPositionUnescaped() + 1;
+		for Start, End in NS.Script._Text:gmatch( "()[^\r\n]*()" ) do
 			if ( PositionLast ~= Start ) then
 				LineMax, PositionLast = LineMax + 1, End;
 				if ( Cursor and Start <= Cursor and Cursor <= End ) then
@@ -516,7 +569,7 @@ do
 	--- Hook to add clicked links' code to the edit box.
 	function NS.ChatEditInsertLink ( Link, ... )
 		if ( Link and NS.Edit:HasFocus() ) then
-			NS.Edit:Insert( NS.LuaEnabled and Link:gsub( "|", "||" ) or Link );
+			NS.Edit:Insert( NS.Edit.Lua and Link:gsub( "|", "||" ) or Link );
 			return true;
 		end
 		return Backup( Link, ... );

@@ -210,25 +210,6 @@ function NS:OnEditFocusLost ()
 		GUI.Editor.Edit:SetFocus();
 	end
 end
---- Jumps to next/previous search result.
-function NS:OnEnterPressed ()
-	if ( self.Pattern ) then
-		local Script, Cursor, Reverse = GUI.Editor.Script, 0, IsShiftKeyDown();
-		if ( Script ) then
-			Cursor = GUI.Editor:GetScriptCursorPosition();
-			if ( Reverse and Cursor > 0 ) then
-				Cursor = Cursor - 1;
-			end
-		end
-		local ScriptNew, Start, End = self:NextMatchGlobal( Script, Cursor, Reverse );
-		if ( ScriptNew ) then
-			GUI.Editor:SetScriptObject( ScriptNew );
-		end
-		GUI.Editor:SetScriptHighlight( Start, End, true );
-	else
-		return self:ClearFocus();
-	end
-end
 --- Refilters the list when the search pattern changes.
 function NS:OnTextChanged ()
 	return self:SetPattern( self:GetText():gsub( "||", "|" ) );
@@ -246,22 +227,50 @@ function NS:ScriptSetText ( _, Script )
 		return self:Update();
 	end
 end
-
-
+do
+	--- Highlights the given position and moves the cursor to End.
+	local function HighlightMatch ( self, Start, End )
+		-- Note: Start and End positions are intentionally left unvalidated, since
+		--   validating them would change the displayed result.  
+		if ( End ) then
+			self:SetCursorPositionUnescaped( End, true );
+		end
+		self:HighlightTextUnescaped( Start or 0, End or 0 );
+	end
+	--- Jumps to next/previous search result.
+	function NS:OnEnterPressed ()
+		if ( self.Pattern ) then
+			local Script, Cursor, Reverse = GUI.Editor.Script, 0, IsShiftKeyDown();
+			if ( Script ) then
+				Cursor = GUI.Editor.Edit:GetCursorPositionUnescaped();
+				if ( Reverse and Cursor > 0 ) then
+					Cursor = Cursor - 1;
+				end
+			end
+			local ScriptNew, Start, End = self:NextMatchGlobal( Script, Cursor, Reverse );
+			if ( ScriptNew ) then
+				GUI.Editor:SetScriptObject( ScriptNew );
+			end
+			HighlightMatch( GUI.Editor.Edit, Start, End );
+		else
+			return self:ClearFocus();
+		end
+	end
+	--- Jump to next/previous search result.
+	function GUI.Editor.Shortcuts:F3 ()
+		if ( NS.Pattern ) then
+			local Cursor, Reverse = GUI.Editor.Edit:GetCursorPositionUnescaped(), IsShiftKeyDown();
+			if ( Reverse and Cursor > 0 ) then
+				Cursor = Cursor - 1;
+			end
+			HighlightMatch( GUI.Editor.Edit, NS:NextMatchWrap( GUI.Editor.Script, Cursor, Reverse ) );
+		end
+	end
+end
 --- Focus search edit box.
 function GUI.Editor.Shortcuts:F ()
 	if ( IsControlKeyDown() ) then
 		self:SetFocus( NS );
-	end
-end
---- Jump to next/previous search result.
-function GUI.Editor.Shortcuts:F3 ()
-	if ( NS.Pattern and GUI.Editor.Script ) then
-		local Cursor, Reverse = GUI.Editor:GetScriptCursorPosition(), IsShiftKeyDown();
-		if ( Reverse and Cursor > 0 ) then
-			Cursor = Cursor - 1;
-		end
-		GUI.Editor:SetScriptHighlight( NS:NextMatchWrap( GUI.Editor.Script, Cursor, Reverse ) );
 	end
 end
 
