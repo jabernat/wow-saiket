@@ -95,6 +95,9 @@ _Underscore.Backdrop.Create( Minimap );
 Minimap:SetAllPoints( MinimapCluster );
 Minimap:SetMaskTexture( [[Interface\Buttons\WHITE8X8]] );
 GetMinimapShape = NS.GetMinimapShape;
+-- Hide blob clipping borders, since they only work for round minimaps
+Minimap:SetArchBlobRingAlpha( 0 );
+Minimap:SetQuestBlobRingAlpha( 0 );
 
 -- Hooks to allow pings on a square minimap
 Minimap_OnClick = NS.OnMouseUp;
