@@ -233,7 +233,8 @@ do
 		-- Note: Start and End positions are intentionally left unvalidated, since
 		--   validating them would change the displayed result.  
 		if ( End ) then
-			self:SetCursorPositionUnescaped( End, true );
+			self:ScrollToNextCursorPosition();
+			self:SetCursorPositionUnescaped( End );
 		end
 		self:HighlightTextUnescaped( Start or 0, End or 0 );
 	end

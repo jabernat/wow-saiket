@@ -160,6 +160,7 @@ do
 		Script:SetText( Text );
 		if ( NS.Script == Script ) then -- Move cursor to just after replaced text
 			Start = Start + #MiddleNew - 1;
+			GUI.Editor.Edit:ScrollToNextCursorPosition();
 			GUI.Editor.Edit:SetCursorPositionUnescaped( GUI.Editor.Edit:ValidateCursorPosition( Start ) );
 		end
 	end

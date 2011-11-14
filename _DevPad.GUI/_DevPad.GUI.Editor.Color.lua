@@ -228,6 +228,7 @@ do
 		Start = Edit:ValidateCursorPosition( Start );
 		End = Edit:ValidateCursorPosition( End + #ColorStart + ( #Replacement - #Selection ) );
 
+		Edit:ScrollToNextCursorPosition();
 		Edit:SetCursorPositionUnescaped( Edit:ValidateCursorPosition( Cursor ) );
 		Edit:HighlightTextUnescaped( Start, End );
 		return true;
