@@ -104,8 +104,9 @@ function NS:SetScriptObject ( Script )
 			self:ObjectSetName( nil, Script );
 			self:ScriptSetText( nil, Script );
 			self:ScriptSetLua( nil, Script );
+			self.Edit:ScrollToNextCursorPosition();
 			self.Edit:SetCursorPositionUnescaped(
-				self.Edit:ValidateCursorPosition( Script._EditCursor or 0 ), true );
+				self.Edit:ValidateCursorPosition( Script._EditCursor or 0 ) );
 			self.Margin:Update();
 			self:Show();
 		else
@@ -176,15 +177,14 @@ do
 		end
 		return self:HighlightText( Start, End );
 	end
+	--- Forces the cursor into view the next time it moves, even if this editbox isn't focused.
+	function NS.Edit:ScrollToNextCursorPosition ()
+		self.CursorForceUpdate = true;
+	end
 	--- Moves the cursor to a position in the current script, accounting for escaped pipes.
-	-- @param ForceUpdate  If true, the editbox will scroll to the cursor even if not focused.
-	-- @return Byte offset between requested position and actual position.
-	function NS.Edit:SetCursorPositionUnescaped ( Cursor, ForceUpdate )
+	function NS.Edit:SetCursorPositionUnescaped ( Cursor )
 		if ( self.Lua ) then
 			Cursor = Cursor + CountSubstring( NS.Script._Text, "|", 0, Cursor );
-		end
-		if ( ForceUpdate ) then
-			self.CursorForceUpdate = true;
 		end
 		return self:SetCursorPosition( Cursor );
 	end
@@ -391,6 +391,7 @@ function NS.Margin:OnMouseDown ()
 			End = #NS.Script._Text;
 		end
 		Start, End = Edit:ValidateCursorPosition( Start ), Edit:ValidateCursorPosition( End );
+		Edit:ScrollToNextCursorPosition();
 		Edit:SetCursorPositionUnescaped( End );
 		Edit:HighlightTextUnescaped( Start, End );
 		Edit:SetFocus();
@@ -399,6 +400,7 @@ end
 --- Focus the edit box text if empty space gets clicked.
 function NS.Focus:OnMouseDown ()
 	NS.Edit:HighlightText( 0, 0 );
+	NS.Edit:ScrollToNextCursorPosition();
 	NS.Edit:SetCursorPositionUnescaped( NS.Edit:ValidateCursorPosition( #NS.Script._Text ) );
 	NS.Edit:SetFocus();
 end
@@ -529,6 +531,7 @@ function NS:GoToOnAccept ()
 		return true; -- Keep open
 	end
 	NS.Edit:HighlightText( 0, 0 );
+	NS.Edit:ScrollToNextCursorPosition();
 	NS.Edit:SetCursorPositionUnescaped( NS.Edit:ValidateCursorPosition( NS:GetLinePosition( Line ) ) );
 	NS.Edit:SetFocus();
 end
