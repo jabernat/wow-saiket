@@ -60,8 +60,8 @@ do
 	-- @param Cursor  Optional cursor position to keep track of.
 	-- @return Stripped text, and the updated cursor position if Cursor was given.
 	function lib.StripColors ( Text, Cursor )
-		Text, Cursor = StripCode( "(|*)(|c%x%x%x%x%x%x%x%x)()", Text, Cursor );
-		return StripCode( "(|*)(|r)()", Text, Cursor );
+		Text, Cursor = StripCode( "(|*)(|[Cc]%x%x%x%x%x%x%x%x)()", Text, Cursor );
+		return StripCode( "(|*)(|[Rr])()", Text, Cursor );
 	end
 end
 
@@ -620,11 +620,10 @@ local Indents = {
 };
 
 
-local strrep = string.rep;
-local strsub = string.sub;
+local strrep, strsub = string.rep, string.sub;
 local tinsert = table.insert;
+local TERMINATOR = "|r";
 local Buffer = {};
-local ColorStop = "|r";
 --- Syntax highlights and indents a string of Lua code.
 -- @param CursorOld  Optional cursor position to keep track of.
 -- @see lib.Enable
@@ -656,7 +655,7 @@ function lib:FormatCode ( TabWidth, ColorTable, CursorOld )
 			if ( ColorTable ) then -- Add coloring
 				local Color = ColorTable[ Keywords[ Token ] and TK_KEYWORD or Token ]
 					or ColorTable[ TokenType ];
-				ColorCode = ( ColorLast and not Color and ColorStop ) -- End color
+				ColorCode = ( ColorLast and not Color and TERMINATOR ) -- End color
 					or ( Color ~= ColorLast and Color ); -- Change color
 				if ( ColorCode ) then
 					Buffer[ #Buffer + 1 ], BufferLen = ColorCode, BufferLen + #ColorCode;

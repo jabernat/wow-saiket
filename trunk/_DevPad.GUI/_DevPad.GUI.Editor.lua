@@ -224,11 +224,11 @@ do
 		if ( Cursor > 0 and IsPipeActive( Text, Cursor ) ) then
 			Cursor = Cursor - 1; -- Can't be just after an active pipe
 		end
-		local _, End = Text:find( "^|r", Cursor + 1 );
+		local _, End = Text:find( "^|[Rr]", Cursor + 1 );
 		if ( End ) then -- Cursor is just before a color terminator
 			Cursor = End;
 		elseif ( Cursor > 0 ) then
-			local Start = Text:find( "|c%x%x%x%x%x%x%x%x", max( 1, Cursor - COLOR_LENGTH + 1 ) );
+			local Start = Text:find( "|[Cc]%x%x%x%x%x%x%x%x", max( 1, Cursor - COLOR_LENGTH + 1 ) );
 			if ( Start and Start <= Cursor ) then -- Cursor is in or just after a color code
 				Cursor = Start - 1;
 			end

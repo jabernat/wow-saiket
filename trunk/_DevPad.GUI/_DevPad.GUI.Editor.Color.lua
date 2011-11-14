@@ -73,13 +73,13 @@ end
 
 
 do
-	--- @return Active color code at Position in Text, or nil if none.
+	--- @return Active color code (lowercase) at Position in Text, or nil if none.
 	local function GetActiveColor ( Text, Position )
 		-- Find last color code before Position
 		local Color, ColorEnd;
 		local CodeEnd, _, Escapes, Code = 0;
 		while ( true ) do
-			_, CodeEnd, Escapes, Code = Text:find( "(|*)(|c%x%x%x%x%x%x%x%x)", CodeEnd + 1 );
+			_, CodeEnd, Escapes, Code = Text:find( "(|*)(|[Cc]%x%x%x%x%x%x%x%x)", CodeEnd + 1 );
 			if ( not CodeEnd or CodeEnd > Position ) then
 				break;
 			end
@@ -94,7 +94,7 @@ do
 		-- Check if color gets terminated before Position
 		CodeEnd = 0;
 		while ( true ) do
-			_, CodeEnd, Escapes = Text:find( "(|*)|r", CodeEnd + 1 );
+			_, CodeEnd, Escapes = Text:find( "(|*)|[Rr]", CodeEnd + 1 );
 			if ( not CodeEnd or CodeEnd > Position ) then
 				break;
 			end
@@ -110,7 +110,7 @@ do
 		if ( self.Enabled ) then
 			local Color = GetActiveColor( self.Script._Text, GUI.Editor.Edit:GetCursorPosition() );
 			if ( Color ) then
-				local R, G, B = Color:match( "|c%x%x(%x%x)(%x%x)(%x%x)" );
+				local R, G, B = Color:match( "|[Cc]%x%x(%x%x)(%x%x)(%x%x)" );
 				return tonumber( R, 16 ) / 255, tonumber( G, 16 ) / 255, tonumber( B, 16 ) / 255;
 			else
 				return GUI.Editor.Edit:GetTextColor();
@@ -155,8 +155,8 @@ do
 		-- @param Cursor  Optional cursor position to keep track of.
 		-- @return Stripped text, and the updated cursor position if Cursor was given.
 		function StripColors ( Text, Cursor )
-			Text, Cursor = StripCode( "(|*)(|c%x%x%x%x%x%x%x%x)()", Text, Cursor );
-			return StripCode( "(|*)(|r)()", Text, Cursor );
+			Text, Cursor = StripCode( "(|*)(|[Cc]%x%x%x%x%x%x%x%x)()", Text, Cursor );
+			return StripCode( "(|*)(|[Rr])()", Text, Cursor );
 		end
 	end
 
@@ -180,7 +180,7 @@ do
 			return; -- Wrapping the cursor in a color code and hitting backspace crashes PTR clients!
 		end
 		-- Check for redundant color terminator before selection
-		if ( Start >= #TERMINATOR and Text:find( "^|r", Start - #TERMINATOR + 1 ) ) then
+		if ( Start >= #TERMINATOR and Text:find( "^|[Rr]", Start - #TERMINATOR + 1 ) ) then
 			local Index, Pipes, Byte = Start - #TERMINATOR, 0, BYTE_PIPE;
 			while ( Byte == BYTE_PIPE ) do
 				Index, Pipes, Byte = Index - 1, Pipes + 1, Text:byte( Index );
@@ -196,7 +196,7 @@ do
 		local ColorEnd = ColorEndOld;
 		-- Optimizations to avoid unnecessary color codes
 		if ( ColorEndOld == ColorStart -- End of selection is already this color
-			or Text:find( "^|c%x%x%x%x%x%x%x%x", End + 1 ) -- Color changes just after selection
+			or Text:find( "^|[Cc]%x%x%x%x%x%x%x%x", End + 1 ) -- Color changes just after selection
 		) then
 			ColorEnd = "";
 		elseif ( ColorEndOld == "" and ColorStart ~= "" ) then
