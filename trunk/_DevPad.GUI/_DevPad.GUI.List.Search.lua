@@ -124,6 +124,9 @@ do
 			while ( End and End <= Cursor ) do
 				StartLast, EndLast = Start, End;
 				Start, End = Script._Text:find( self.Pattern, End + 1 );
+				if ( Start and Start > End ) then
+					return; -- Matched an empty string, which will cause an infinite loop
+				end
 			end
 			return StartLast, EndLast;
 		else
