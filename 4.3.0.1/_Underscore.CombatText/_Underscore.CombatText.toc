@@ -1,0 +1,17 @@
+## Interface: 40300
+## Title: _|cffCCCC88Underscore|r.CombatText
+## Notes: Skins the default UI's floating combat text.
+## Author: Saiket
+## Version: 4.3.0.1
+## X-Date: 2011-09-01
+## X-Category: Frame Modification
+## X-License: GPLv3
+## X-Email: saiket.wow@gmail.com
+## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons
+## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Underscore
+## X-Child-Of: _Underscore
+## LoadOnDemand: 1
+## LoadWith: Blizzard_CombatText
+## RequiredDeps: _Underscore, Blizzard_CombatText
+
+_Underscore.CombatText.lua
