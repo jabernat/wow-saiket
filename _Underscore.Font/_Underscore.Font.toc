@@ -2,7 +2,7 @@
 ## Title: _|cffCCCC88Underscore|r.Font
 ## Notes: Changes some of the default fonts.
 ## Author: Saiket
-## Version: 4.1.0.1
+## Version: 4.3.0.1
 ## X-Date: 2011-05-07
 ## X-Category: Frame Modification
 ## X-License: GPLv3

@@ -22,7 +22,7 @@
 ## X-Credits-ruRU: Localization: The_DimoK, Sarymian
 ## X-Credits-zhCN: Localization: tss1398383123, zhTW, ananhaid, dh0000
 ## X-Credits-zhTW: Localization: s8095324, pepper_ep, zhTW, alpha2009
-## Version: 4.2.0.2
+## Version: 4.3.0.1
 ## X-Date: 2011-11-29
 ## X-Category: Map
 ## X-License: GPLv3

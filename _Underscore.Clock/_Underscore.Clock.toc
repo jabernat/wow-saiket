@@ -2,7 +2,7 @@
 ## Title: _|cffCCCC88Underscore|r.Clock
 ## Notes: Adds a clock to the top left of the screen.
 ## Author: Saiket
-## Version: 4.1.0.1
+## Version: 4.3.0.1
 ## X-Date: 2011-05-09
 ## X-Category: Frame Modification
 ## X-License: GPLv3
