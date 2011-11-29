@@ -2,7 +2,7 @@
 ## Title: _|cffCCCC88Underscore|r.Bags
 ## Notes: Moves Default UI bags relative to _|cffCCCC88Underscore|r.ActionBars.
 ## Author: Saiket
-## Version: 4.1.0.1
+## Version: 4.3.0.1
 ## X-Date: 2011-03-29
 ## X-Category: Frame Modification
 ## X-License: GPLv3
