@@ -219,7 +219,7 @@ function NS:New ( Name )
 	-- Bottom border
 	local Bottom = CreateFrame( "Frame", nil, Frame );
 	Frame.Bottom = Bottom;
-	Bottom:SetPoint( "BOTTOMLEFT", 6, 3 );
+	Bottom:SetPoint( "BOTTOMLEFT", 6, 4 );
 	Bottom:SetPoint( "RIGHT", -2, 0 );
 	Bottom:SetHeight( 8 );
 	local Background = Bottom:CreateTexture( nil, "BORDER" );
