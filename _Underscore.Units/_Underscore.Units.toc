@@ -3,7 +3,7 @@
 ## Notes: A set of skinned unit frames.
 ## Author: Saiket
 ## Version: 4.3.0.1
-## X-Date: 2011-10-28
+## X-Date: 2011-12-09
 ## X-Category: Frame Modification
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
@@ -17,5 +17,6 @@
 Locales\Locale-enUS.lua
 
 _Underscore.Units.lua
+_Underscore.Units.oUF.xml
 _Underscore.Units.oUF.lua
 _Underscore.Units.Grid.lua
