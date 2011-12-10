@@ -376,37 +376,37 @@ do
 			local IsBuff = Header:GetAttribute( "IsBuffs" );
 			local UnitID, Filter = Header:GetAttribute( "unit" ), Header:GetAttribute( "filter" );
 			for Index, Button in ipairs( Header ) do
-				if ( not Button:IsShown() ) then
+				local Slot = Button:GetAttribute( "target-slot" );
+				if ( Button:IsShown() ) then
+					local Texture, Count, Type, Duration, Expires, _;
+					if ( Slot ) then -- Temporary enchant
+						Texture = GetInventoryItemTexture( UnitID, Slot );
+						Type = ITEM_QUALITY_COLORS[ 4 ]; -- Epic
+					else
+						local TypeName;
+						_, _, Texture, Count, TypeName, Duration, Expires = UnitAura( UnitID, Button:GetID(), Filter );
+						if ( not IsBuff ) then -- Don't show buff types
+							Type = DebuffTypeColor[ TypeName ] or DebuffTypeColor[ "none" ];
+						end
+					end
+
+					Button.icon:SetTexture( Texture );
+					if ( Duration and Duration > 0 ) then
+						Button.cd:SetCooldown( Expires - Duration, Duration );
+						Button.cd:Show();
+					else
+						Button.cd:Hide();
+					end
+					if ( Type ) then
+						Button.overlay:SetVertexColor( Type.r, Type.g, Type.b );
+						Button.overlay:Show();
+					else
+						Button.overlay:Hide();
+					end
+					Button.count:SetText( ( Count and Count > 1 ) and Count or nil );
+				elseif ( not Slot ) then -- First hidden aura button
 					break;
 				end
-
-				local Texture, Count, Type, Duration, Expires, _;
-				local Slot = Button:GetAttribute( "target-slot" );
-				if ( Slot ) then -- Temporary enchant
-					Texture = GetInventoryItemTexture( UnitID, Slot );
-					Type = ITEM_QUALITY_COLORS[ 4 ]; -- Epic
-				else
-					local TypeName;
-					_, _, Texture, Count, TypeName, Duration, Expires = UnitAura( UnitID, Button:GetID(), Filter );
-					if ( not IsBuff ) then -- Don't show buff types
-						Type = DebuffTypeColor[ TypeName ] or DebuffTypeColor[ "none" ];
-					end
-				end
-
-				Button.icon:SetTexture( Texture );
-				if ( Duration and Duration > 0 ) then
-					Button.cd:SetCooldown( Expires - Duration, Duration );
-					Button.cd:Show();
-				else
-					Button.cd:Hide();
-				end
-				if ( Type ) then
-					Button.overlay:SetVertexColor( Type.r, Type.g, Type.b );
-					Button.overlay:Show();
-				else
-					Button.overlay:Hide();
-				end
-				Button.count:SetText( ( Count and Count > 1 ) and Count or nil );
 			end
 
 			-- Update tooltip if mouse was over an aura button
@@ -423,7 +423,11 @@ do
 	local function SetupButton ( Header )
 		local AuraMouseoverSecure = GetFrameHandleFrame( Header:GetAttribute( "AuraMouseoverSecure" ) );
 		local Button = GetFrameHandleFrame( AuraMouseoverSecure:GetAttribute( "ButtonLatest" ) );
-		Header[ #Header + 1 ] = Button;
+		if ( Button:GetAttribute( "IsEnchant" ) ) then
+			tinsert( Header, 1, Button ); -- Guarantee enchant buttons get updated
+		else
+			Header[ #Header + 1 ] = Button;
+		end
 		Button:SetScript( "OnEnter", ButtonOnEnter );
 		Button:SetScript( "OnLeave", ButtonOnLeave );
 		Button.UpdateTooltip = UpdateTooltip;
@@ -839,7 +843,7 @@ function NS.StyleMeta.__call ( Style, Frame, UnitID )
 			local Buffs = CreateAurasSecure( Frame, Style, UnitID );
 			Buffs:SetAttribute( "template", "SecureActionButtonTemplate" );
 			Buffs:SetAttribute( "includeWeapons", 1 );
-			Buffs:SetAttribute( "weaponTemplate", "SecureActionButtonTemplate" );
+			Buffs:SetAttribute( "weaponTemplate", "_UnderscoreUnitsEnchantTemplate" );
 			Buffs:SetAttribute( "consolidateTo", 1 );
 			Buffs:SetAttribute( "consolidateDuration", 0 ); -- Hide all consolidatable buffs
 			Buffs:SetAttribute( "IsBuffs", true );
