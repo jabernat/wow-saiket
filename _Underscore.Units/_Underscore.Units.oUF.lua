@@ -306,7 +306,9 @@ do
 	local SetStatusBarColorBackup;
 	--- Hook that sets bar text color along with actual bar color.
 	local function SetStatusBarColor ( self, ... )
-		self.Text:SetTextColor( ... );
+		if ( self.Text ) then
+			self.Text:SetTextColor( ... );
+		end
 		if ( not self.bg ) then -- Not a reverse bar
 			return SetStatusBarColorBackup( self, ... );
 		end
@@ -321,12 +323,11 @@ do
 		if ( TextFont ) then
 			Bar.Text = Bar:CreateFontString( nil, "OVERLAY", TextFont:GetName() );
 			Bar.Text:SetJustifyV( "MIDDLE" );
-
-			if ( not SetStatusBarColorBackup ) then
-				SetStatusBarColorBackup = Bar.SetStatusBarColor;
-			end
-			Bar.SetStatusBarColor = SetStatusBarColor;
 		end
+		if ( not SetStatusBarColorBackup ) then
+			SetStatusBarColorBackup = Bar.SetStatusBarColor;
+		end
+		Bar.SetStatusBarColor = SetStatusBarColor;
 		return Bar;
 	end
 end
