@@ -30,14 +30,14 @@ local MAX_FRIENDS = 100;
 function NS:CacheFriendInfo ( ... )
 	local Name = ...;
 	if ( Name ) then
-		local ConnectedStatus = select( 5, ... ) or 0;
-		if ( ConnectedStatus == 1 or self.Allies[ Name ] ~= 0 ) then
+		local Connected = select( 5, ... ) and 1 or 0;
+		if ( Connected == 1 or self.Allies[ Name ] ~= 0 ) then
 			-- Info changed
-			if ( Name == _Corpse.GetCorpseName() ) then -- Tooltip still up
-				_Corpse.BuildCorpseTooltip( false, ... );
+			if ( Name == _Corpse:GetCorpseName() ) then -- Tooltip still up
+				_Corpse:BuildTooltip( false, ... );
 			end
 		end
-		self.Allies[ Name ] = ConnectedStatus;
+		self.Allies[ Name ] = Connected;
 	end
 end
 
@@ -47,7 +47,7 @@ end
 --- Invites and saves the name of a player.
 -- @return True if invite was actually sent.
 function NS:InviteUnit ( Name )
-	if ( _Corpse.IsModuleActive( self ) and not self.InviteUnitLast ) then
+	if ( _Corpse.ActiveModule == self and not self.InviteUnitLast ) then
 		self.InviteUnitLast = Name;
 		self:ReregisterEvent( "UI_ERROR_MESSAGE" );
 		self:ReregisterEvent( "CHAT_MSG_SYSTEM" );
@@ -140,7 +140,7 @@ function NS:MessageEventHandler ( _, Message )
 end
 --- Unregisters for system chat message events when not expecting any more.
 function NS:UnregisterChatMsgSystemSafely ()
-	if ( not _Corpse.IsModuleActive( self )
+	if ( _Corpse.ActiveModule ~= self
 		and not (
 			self.AddFriendLast or self.RemoveFriendLast
 			or self.InviteUnitLast
@@ -166,8 +166,8 @@ function NS:CHAT_MSG_SYSTEM ( _, Message )
 		if ( Message == L.FRIEND_IS_ENEMY ) then
 			-- Add failed (Ambiguous); enemy
 			self.Enemies[ self.AddFriendLast ] = false;
-			if ( self.AddFriendLast == _Corpse.GetCorpseName() ) then -- Tooltip still up
-				_Corpse.BuildCorpseTooltip( true, self.AddFriendLast, nil, nil, nil, false );
+			if ( self.AddFriendLast == _Corpse:GetCorpseName() ) then -- Tooltip still up
+				_Corpse:BuildTooltip( true, self.AddFriendLast, nil, nil, nil, false );
 			end
 			self:InviteUnit( self.AddFriendLast );
 			self.AddFriendLast = nil;
@@ -199,8 +199,8 @@ function NS:CHAT_MSG_SYSTEM ( _, Message )
 				-- Enemy player is offline
 				if ( self.Enemies[ Name ] ~= 0 ) then
 					self.Enemies[ Name ] = 0;
-					if ( Name == _Corpse.GetCorpseName() ) then -- Tooltip still up
-						_Corpse.BuildCorpseTooltip( true, Name, nil, nil, nil, 0 );
+					if ( Name == _Corpse:GetCorpseName() ) then -- Tooltip still up
+						_Corpse:BuildTooltip( true, Name, nil, nil, nil, 0 );
 					end
 				end
 				self.InviteUnitLast = nil;
@@ -228,19 +228,19 @@ function NS:UI_ERROR_MESSAGE ( _, Message )
 		-- Enemy player is online (Ambiguous)
 		if ( self.Enemies[ self.InviteUnitLast ] ~= 1 ) then -- Changed
 			self.Enemies[ self.InviteUnitLast ] = 1;
-			if ( self.InviteUnitLast == _Corpse.GetCorpseName() ) then -- Tooltip still up
-				_Corpse.BuildCorpseTooltip( true, self.InviteUnitLast, nil, nil, nil, 1 );
+			if ( self.InviteUnitLast == _Corpse:GetCorpseName() ) then -- Tooltip still up
+				_Corpse:BuildTooltip( true, self.InviteUnitLast, nil, nil, nil, 1 );
 			end
 		end
 		self.InviteUnitLast = nil;
-		if ( not _Corpse.IsModuleActive( self ) ) then
+		if ( _Corpse.ActiveModule ~= self ) then
 			self:UnregisterEvent( "UI_ERROR_MESSAGE" );
 		end
 	end
 end
 --- Refreshes any shown corpse tooltip when cached friendlist data updates.
 function NS:FRIENDLIST_UPDATE ()
-	local Name = _Corpse.GetCorpseName();
+	local Name = _Corpse:GetCorpseName();
 	if ( Name ) then
 		self:CacheFriendInfo( GetFriendInfo( Name ) );
 	end
@@ -252,16 +252,16 @@ end
 --- Populates the corpse tooltip for the given player using friend list data.
 function NS:Update ( Name )
 	if ( self.Enemies[ Name ] ~= nil ) then
-		_Corpse.BuildCorpseTooltip( true, Name, nil, nil, nil, self.Enemies[ Name ] );
+		_Corpse:BuildTooltip( true, Name, nil, nil, nil, self.Enemies[ Name ] );
 		self:InviteUnit( Name );
 	else
 		if ( GetFriendInfo( Name ) ) then -- Player already a friend
 			ShowFriends();
 			-- Build tooltip with possibly old data
-			_Corpse.BuildCorpseTooltip( false, GetFriendInfo( Name ) );
+			_Corpse:BuildTooltip( false, GetFriendInfo( Name ) );
 		else
 			if ( self.Allies[ Name ] ~= nil ) then
-				_Corpse.BuildCorpseTooltip( false, Name , nil, nil, nil,
+				_Corpse:BuildTooltip( false, Name , nil, nil, nil,
 					self.Allies[ Name ] == 0 and 0 or false ); -- Don't fill in if last seen online
 			end
 			self:AddFriend( Name );
@@ -269,13 +269,13 @@ function NS:Update ( Name )
 	end
 end
 --- Initialize the module when activated.
-function NS:Enable ()
+function NS:OnEnable ()
 	self:RegisterEvent( "CHAT_MSG_SYSTEM" );
 	self:RegisterEvent( "UI_ERROR_MESSAGE" );
 	self:RegisterEvent( "FRIENDLIST_UPDATE" );
 end
 --- Uninitialize the module when deactivated.
-function NS:Disable ()
+function NS:OnDisable ()
 	self:UnregisterEvent( "FRIENDLIST_UPDATE" );
 	if ( not self.InviteUnitLast ) then
 		self:UnregisterEvent( "UI_ERROR_MESSAGE" );

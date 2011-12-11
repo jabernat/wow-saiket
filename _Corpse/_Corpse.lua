@@ -17,9 +17,9 @@ do
 	local GetMouseFocus = GetMouseFocus;
 	--- Gets the name from a visible corpse tooltip.
 	-- @return Corpse owner's name, or nil if the tooltip isn't for a corpse.
-	function NS.GetCorpseName ()
+	function NS:GetCorpseName ()
 		if ( not UnitExists( "mouseover" ) and GetMouseFocus() == WorldFrame and GameTooltip:IsVisible()
-			and GameTooltip:NumLines() <= 2 -- Must recognize tooltips already partially filled in by BuildCorpseTooltip
+			and GameTooltip:NumLines() <= 2 -- Must recognize tooltips already partially filled in by BuildTooltip
 		) then
 			local Text = GameTooltipTextLeft1:GetText();
 			if ( Text ) then
@@ -29,7 +29,6 @@ do
 				else
 					Name = Text:match( Pattern );
 				end
-
 				return Name;
 			end
 		end
@@ -39,15 +38,15 @@ end
 -- Adds info to fontstrings directly; avoids using ClearLines to keep other
 -- tooltip addons from thinking the tooltip is being reset.
 -- @param Hostile  Boolean, true if hostile to the player.
--- @param ConnectedStatus  0 for offline, 1 for online.
+-- @param Connected  0 for offline, 1 for online.
 -- @param Status  AFK or DND text label.
 -- @see GetFriendInfo
-function NS.BuildCorpseTooltip ( Hostile, Name, Level, Class, Location, ConnectedStatus, Status )
+function NS:BuildTooltip ( Hostile, Name, Level, Class, Location, Connected, Status )
 	if ( Hostile == nil ) then
 		return;
 	end
-	if ( ConnectedStatus == nil ) then -- Returned from GetFriendInfo
-		ConnectedStatus = 0; -- Offline represented differently
+	if ( Connected == nil ) then -- Returned from GetFriendInfo
+		Connected = 0; -- Offline represented differently
 	end
 
 	-- Build first line
@@ -64,9 +63,9 @@ function NS.BuildCorpseTooltip ( Hostile, Name, Level, Class, Location, Connecte
 	end
 
 	-- Add second status line
-	if ( ConnectedStatus ) then -- Connected status is known
+	if ( Connected ) then -- Connected status is known
 		local Text, Color;
-		if ( ConnectedStatus == 0 ) then
+		if ( Connected == 0 ) then
 			Text = L.OFFLINE;
 			Color = GRAY_FONT_COLOR;
 		else -- Online
@@ -95,28 +94,52 @@ function NS.BuildCorpseTooltip ( Hostile, Name, Level, Class, Location, Connecte
 	-- Hack to effectively resize the tooltip without breaking FadeOut() like Show() does
 	GameTooltip:AppendText( "" );
 end
+--- Builds a standard corpse tooltip for the given UnitID.
+function NS:BuildTooltipByUnitID ( UnitID )
+	local Hostile = UnitFactionGroup( UnitID ) ~= UnitFactionGroup( "player" );
+	return self:BuildTooltip( Hostile, UnitName( UnitID ),
+		UnitLevel( UnitID ), UnitClass( UnitID ), GetRealZoneText(), UnitIsConnected( UnitID ) and 1 or 0,
+		( UnitIsAFK( UnitID ) and CHAT_FLAG_AFK ) or ( UnitIsDND( UnitID ) and CHAT_FLAG_DND ) );
+end
+--- Generic iterator for unit IDs of a given prefix counting from Index down to 1.
+function NS.NextUnitID ( Prefix, Index )
+	if ( Index >= 1 ) then
+		return Index - 1, Prefix..Index;
+	end
+end
+--- Activates a module to handle filling corpse tooltips under specific settings such as cross-realm BGs.
+-- @param NewModule  Module table containing callbacks.
+-- @return True if module was changed.
+function NS:SetActiveModule ( NewModule )
+	if ( self.ActiveModule ~= NewModule ) then
+		local OldModule = self.ActiveModule;
+		self.ActiveModule = NewModule;
+
+		if ( OldModule and OldModule.OnDisable ) then
+			OldModule:OnDisable();
+		end
+		if ( NewModule and NewModule.OnEnable ) then
+			NewModule:OnEnable();
+		end
+		return true;
+	end
+end
 
 
-
-
---- Activates different modules when changing between instances/BGs/etc.
-function NS.Frame:PLAYER_ENTERING_WORLD ()
-	local Type = select( 2, IsInInstance() );
-	local Module;
-
-	if ( Type == "pvp" ) then -- In battleground
-		Module = NS.Battlegrounds;
-	elseif ( Type == "party" ) then -- In a 5-man dungeon
-		Module = NS.Dungeons;
-	elseif ( Type ~= "arena" ) then
-		Module = NS.Standard;
-	end -- Else disable in arenas
-
-	NS.SetActiveModule( Module );
+do
+	local WorldTypeModules = {
+		party = "Party"; raid = "Raid";
+		arena = "Battleground"; pvp = "Battleground";
+	};
+	--- Activates different modules when changing between instances/BGs/etc.
+	function NS.Frame:PLAYER_ENTERING_WORLD ()
+		local _, WorldType = IsInInstance();
+		NS:SetActiveModule( NS[ WorldTypeModules[ WorldType ] or "Standard" ] );
+	end
 end
 --- Deactivates modules when leaving game worlds.
 function NS.Frame:PLAYER_LEAVING_WORLD ()
-	NS.SetActiveModule( nil );
+	NS:SetActiveModule( nil );
 end
 --- Global event handler.
 function NS.Frame:OnEvent ( Event, ... )
@@ -124,53 +147,30 @@ function NS.Frame:OnEvent ( Event, ... )
 		return self[ Event ]( self, Event, ... );
 	end
 end
+--- Matches corpse tooltips after the tooltip gets set.
+GameTooltip:HookScript( "OnShow", function ()
+	if ( not NS.ActiveModule ) then
+		return;
+	end
+	local Name = NS:GetCorpseName();
+	if ( not Name ) then
+		return; -- Not a corpse tooltip
+	end
 
-
-
-
-do
-	local ActiveModule;
-	local PlayerName = UnitName( "player" );
-	--- Hook called when GameTooltip updates.
-	function NS:GameTooltipOnShow ()
-		-- Tooltip contents updated
-		if ( ActiveModule ) then
-			local Name = NS.GetCorpseName();
-			if ( Name ) then -- Found corpse tooltip
-				if ( Name == PlayerName ) then
-					-- Create a common tooltip for the player's corpse
-					NS.BuildCorpseTooltip( false, Name,
-						UnitLevel( "player" ), UnitClass( "player" ), GetRealZoneText(), 1,
-						( UnitIsAFK( "player" ) and CHAT_FLAG_AFK ) or ( UnitIsDND( "player" ) and CHAT_FLAG_DND ) );
-				else -- Add data to tooltip using module's info
-					ActiveModule:Update( Name );
-				end
+	if ( Name == UnitName( "player" ) ) then
+		NS:BuildTooltipByUnitID( "player" );
+	elseif ( NS.ActiveModule.IterateUnitIDs ) then
+		-- Match by module's unit IDs
+		for _, UnitID in NS.ActiveModule:IterateUnitIDs() do
+			if ( Name == UnitName( UnitID ) and UnitIsGhost( UnitID ) ) then -- Ignore non-ghost matches
+				NS:BuildTooltipByUnitID( UnitID );
+				break;
 			end
 		end
+	else -- Let module aquire unit info and build tooltip
+		NS.ActiveModule:Update( Name );
 	end
-	--- Activates a module to handle filling corpse tooltips under specific settings such as cross-realm BGs.
-	-- @param NewModule  Module table containing callbacks.
-	-- @return True if module was changed.
-	function NS.SetActiveModule ( NewModule )
-		if ( NewModule ~= ActiveModule ) then
-			local OldModule = ActiveModule;
-			ActiveModule = NewModule;
-
-			if ( OldModule and OldModule.Disable ) then
-				OldModule:Disable();
-			end
-			if ( NewModule and NewModule.Enable ) then
-				NewModule:Enable();
-			end
-
-			return true;
-		end
-	end
-	--- Returns true if a given module is the active one.
-	function NS.IsModuleActive ( Module )
-		return Module == ActiveModule;
-	end
-end
+end );
 
 
 
@@ -212,5 +212,3 @@ NS.Frame:RegisterEvent( "PLAYER_ENTERING_WORLD" );
 if ( IsLoggedIn() ) then -- Loaded on-demand
 	NS.Frame:PLAYER_ENTERING_WORLD();
 end
-
-GameTooltip:HookScript( "OnShow", NS.GameTooltipOnShow );
