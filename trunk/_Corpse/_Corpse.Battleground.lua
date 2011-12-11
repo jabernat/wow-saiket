@@ -27,7 +27,7 @@ do
 
 			if ( Name == NameBG ) then
 				local Hostile = Faction ~= FACTION_PLAYER;
-				if ( Hostile or UnitIsGhost( NameServer ) ) then -- Ignore name matches for living allies
+				if ( Hostile or _Corpse:UnitHasCorpse( NameServer ) ) then -- Ignore name matches for living allies
 					local Connected, Level, Status = 1;
 					if ( not Hostile ) then -- Get extra details for allies in raid
 						Level, Connected = UnitLevel( NameServer ), UnitIsConnected( NameServer ) and 1 or 0;

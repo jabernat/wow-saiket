@@ -107,6 +107,13 @@ function NS.NextUnitID ( Prefix, Index )
 		return Index - 1, Prefix..Index;
 	end
 end
+do
+	local GHOST = GetSpellInfo( 8326 );
+	--- @return True if the given unit should have a corpse object.
+	function NS:UnitHasCorpse ( UnitID )
+		return UnitDebuff( UnitID, GHOST ) ~= nil; -- UnitIsGhost is unreliable
+	end
+end
 --- Activates a module to handle filling corpse tooltips under specific settings such as cross-realm BGs.
 -- @param NewModule  Module table containing callbacks.
 -- @return True if module was changed.
@@ -162,7 +169,7 @@ GameTooltip:HookScript( "OnShow", function ()
 	elseif ( NS.ActiveModule.IterateUnitIDs ) then
 		-- Match by module's unit IDs
 		for _, UnitID in NS.ActiveModule:IterateUnitIDs() do
-			if ( Name == UnitName( UnitID ) and UnitIsGhost( UnitID ) ) then -- Ignore non-ghost matches
+			if ( Name == UnitName( UnitID ) and NS:UnitHasCorpse( UnitID ) ) then -- Ignore non-ghost matches
 				NS:BuildTooltipByUnitID( UnitID );
 				break;
 			end
