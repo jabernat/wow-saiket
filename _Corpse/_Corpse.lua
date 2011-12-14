@@ -109,9 +109,10 @@ function NS.NextUnitID ( Prefix, Index )
 end
 do
 	local GHOST = GetSpellInfo( 8326 );
-	--- @return True if the given unit should have a corpse object.
+	--- @return True if the given unit can possibly have a corpse object.
 	function NS:UnitHasCorpse ( UnitID )
-		return UnitDebuff( UnitID, GHOST ) ~= nil; -- UnitIsGhost is unreliable
+		return not UnitIsConnected( UnitID ) -- Can't detect dead/ghost status of offline units
+			or UnitDebuff( UnitID, GHOST ) ~= nil; -- UnitIsGhost is unreliable
 	end
 end
 --- Activates a module to handle filling corpse tooltips under specific settings such as cross-realm BGs.
