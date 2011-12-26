@@ -4,7 +4,7 @@
 ## Author: Saiket
 ## X-Credits: North101 (Original author)
 ## Version: 4.3.0.2
-## X-Date: 2011-12-21
+## X-Date: 2011-12-26
 ## X-Category: UnitFrame
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
