@@ -10,7 +10,10 @@ local NS = Grid:GetModule( "GridStatus" ):NewModule( "GridStatusHealthFade" );
 
 local STATUS_ID = "alert_healthFade";
 
-NS.ColorTables = {};
+local COLOR_CACHE_STEPS = 25; -- Number of color tables to pre-calculate
+-- Value should divide 100 without remainder so that colors change only when percent text changes
+local ColorCache = {};
+
 NS.menuName, NS.options = L.TITLE, false;
 NS.defaultDB = {
 	debug = false;
@@ -26,6 +29,19 @@ NS.defaultDB = {
 
 
 do
+	--- Recalculates cached gradient colors.
+	local function UpdateColorCache ()
+		local Low = NS.db.profile[ STATUS_ID ].ColorLow;
+		local High = NS.db.profile[ STATUS_ID ].ColorHigh;
+		for Step = 0, COLOR_CACHE_STEPS do
+			local Percentage = Step / COLOR_CACHE_STEPS;
+			local Color = ColorCache[ Step ];
+			Color.r = Low.r + ( High.r - Low.r ) * Percentage;
+			Color.g = Low.g + ( High.g - Low.g ) * Percentage;
+			Color.b = Low.b + ( High.b - Low.b ) * Percentage;
+			Color.a = Low.a + ( High.a - Low.a ) * Percentage;
+		end
+	end
 	local function ColorGet ( self )
 		local Property = self[ 3 ];
 		local Color = NS.db.profile[ STATUS_ID ][ Property ];
@@ -35,6 +51,7 @@ do
 		local Property = self[ 3 ];
 		local Color = NS.db.profile[ STATUS_ID ][ Property ];
 		Color.r, Color.g, Color.b, Color.a = R, G, B, A or 1;
+		UpdateColorCache();
 		NS:UpdateAllUnits();
 	end
 	local Options = {
@@ -52,6 +69,10 @@ do
 	};
 	--- Registers the HealthFade status and its options with Grid OnLoad.
 	function NS:PostInitialize ()
+		for Step = 0, COLOR_CACHE_STEPS do
+			ColorCache[ Step ] = {};
+		end
+		UpdateColorCache();
 		self:RegisterStatus( STATUS_ID, L.TITLE, Options, true );
 	end
 end
@@ -59,7 +80,6 @@ end
 function NS:OnStatusEnable ( Status )
 	if ( Status == STATUS_ID ) then
 		self:RegisterMessage( "Grid_UnitJoined" );
-		self:RegisterMessage( "Grid_UnitLeft" );
 		self:RegisterEvent( "UNIT_HEALTH_FREQUENT", "UpdateUnit" );
 		self:RegisterEvent( "UNIT_MAXHEALTH", "UpdateUnit" );
 		self:RegisterEvent( "UNIT_CONNECTION", "UpdateUnit" );
@@ -72,7 +92,6 @@ function NS:OnStatusDisable ( Status )
 	if ( Status == STATUS_ID ) then
 		self:UnregisterAllEvents();
 		self:UnregisterAllMessages();
-		wipe( self.ColorTables );
 		self.core:SendStatusLostAllUnits( STATUS_ID );
 	end
 end
@@ -85,10 +104,6 @@ end
 --- Immediately updates new raid units.
 function NS:Grid_UnitJoined ( Event, GUID, UnitID )
 	self:UpdateUnit( Event, UnitID );
-end
---- Removes cached color tables of units that leave group.
-function NS:Grid_UnitLeft ( Event, GUID, UnitID )
-	self.ColorTables[ GUID ] = nil;
 end
 do
 	local GridRoster = Grid:GetModule( "GridRoster" );
@@ -109,41 +124,23 @@ do
 		if ( not GridRoster:IsGUIDInRaid( GUID ) ) then
 			return;
 		end
-
 		local HealthMax = UnitHealthMax( UnitID );
-		local Health, Percentage;
 		if ( HealthMax == 0 ) then -- Unknown (offline, etc.)
-			Percentage = 1;
-		elseif ( UnitIsDeadOrGhost( UnitID ) ) then
-			Health, Percentage = 0, 0; -- Keep ghosts' low health from rounding to 1%
+			return self.core:SendStatusLost( GUID, STATUS_ID );
+		end
+
+		local Percentage;
+		if ( UnitIsDeadOrGhost( UnitID ) ) then
+			Percentage = 0; -- Keep ghosts' low health from rounding to 1%
 		else
-			Health = UnitHealth( UnitID );
-			Percentage = Health / HealthMax;
+			local Health = UnitHealth( UnitID );
+			Percentage = Health <= HealthMax and Health / HealthMax or 1; -- Cap at 100%
 		end
 
 		local DB = self.db.profile[ STATUS_ID ];
-		local Color = self.ColorTables[ GUID ];
-		if ( not Color ) then
-			Color = {};
-			self.ColorTables[ GUID ] = Color;
-		end
-		local High, Low = DB.ColorHigh, DB.ColorLow;
-		Color.r = High.r * Percentage + Low.r * ( 1 - Percentage );
-		Color.g = High.g * Percentage + Low.g * ( 1 - Percentage );
-		Color.b = High.b * Percentage + Low.b * ( 1 - Percentage );
-		Color.a = High.a * Percentage + Low.a * ( 1 - Percentage );
-
-		-- Hack to force updates when the color changes
-		local Cache = self.core:GetCachedStatus( GUID, STATUS_ID );
-		if ( Cache ) then
-			Cache.color = nil;
-		end
-		self.core:SendStatusGained( GUID, STATUS_ID,
-			DB.priority,
-			( DB.range and 40 ),
-			Color,
-			Health and L.LABEL_FORMAT:format( ceil( Percentage * 100 ) ),
-			Percentage, 1,
-			DB.icon );
+		return self.core:SendStatusGained( GUID, STATUS_ID,
+			DB.priority, ( DB.range and 40 ),
+			ColorCache[ ceil( Percentage * COLOR_CACHE_STEPS ) ],
+			L.LABEL_FORMAT:format( ceil( Percentage * 100 ) ) );
 	end
 end
