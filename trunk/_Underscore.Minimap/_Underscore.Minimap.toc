@@ -3,7 +3,7 @@
 ## Notes: Skins the default UI's minimap.
 ## Author: Saiket
 ## Version: 4.3.0.1
-## X-Date: 2011-04-28
+## X-Date: 2012-01-05
 ## X-Category: Frame Modification
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
@@ -11,7 +11,7 @@
 ## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Underscore
 ## X-Child-Of: _Underscore
 ## RequiredDeps: _Underscore
-## OptionalDeps: Carbonite
+## OptionalDeps: _Underscore.ActionBars, Carbonite
 
 _Underscore.Minimap.lua
 _Underscore.Minimap.LibDBIcon_1_0.lua
