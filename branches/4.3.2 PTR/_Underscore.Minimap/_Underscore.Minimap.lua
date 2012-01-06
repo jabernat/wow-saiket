@@ -196,6 +196,7 @@ TicketStatusFrame:SetScale( 0.85 );
 TicketStatusFrame:SetAlpha( 0.75 );
 if ( IsAddOnLoaded( "_Underscore.ActionBars" ) ) then
 	-- Move ticket button from help micro-button to the minimap
+	HelpOpenTicketButton:SetParent( Minimap );
 	HelpOpenTicketButton:ClearAllPoints();
 	HelpOpenTicketButton:SetPoint( "CENTER", Minimap, "BOTTOMLEFT", -2, -2 );
 	HelpOpenTicketButton:SetScale( 0.8 );
