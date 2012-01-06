@@ -1,0 +1,24 @@
+## Interface: 40300
+## Title: _|cffCCCC88Underscore|r
+## Notes: Core of the _Underscore suite.
+## Author: Saiket
+## Version: 4.3.0.1
+## X-Date: 2011-05-09
+## X-Category: Frame Modification
+## X-License: GPLv3
+## X-Email: saiket.wow@gmail.com
+## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons
+## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Underscore
+## X-Localizations: enUS
+## X-Embeds: LibSharedMedia-3.0
+## OptionalDeps: LibSharedMedia-3.0
+
+Libs\LibStub\LibStub.lua
+Libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
+Libs\LibSharedMedia-3.0\lib.xml
+
+Locales\Locale-enUS.lua
+
+_Underscore.lua
+_Underscore.Backdrop.lua
+_Underscore.ColorPicker.lua
