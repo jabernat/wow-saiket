@@ -20,8 +20,8 @@
 ## X-Credits-koKR: Localization: freshworks
 ## X-Credits-zhCN: Localization: Sparanoid
 ## X-Credits-zhTW: Localization: Sparanoid
-## Version: 4.3.0.3
-## X-Date: 2011-12-11
+## Version: 4.3.0.4
+## X-Date: 2012-01-05
 ## X-Category: Interface Enhancements
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
