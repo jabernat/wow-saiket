@@ -3,7 +3,7 @@
 ## Notes: Script list and editor for _|cffCCCC88DevPad|r.
 ## Author: Saiket
 ## Version: 4.3.0.1
-## X-Date: 2011-10-29
+## X-Date: 2012-02-12
 ## X-Category: Development Tools
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
@@ -34,3 +34,4 @@ _DevPad.GUI.Editor.lua
 _DevPad.GUI.List.Search.lua
 _DevPad.GUI.Editor.Color.lua
 _DevPad.GUI.Editor.History.lua
+_DevPad.GUI.Editor.LineNumbers.lua
