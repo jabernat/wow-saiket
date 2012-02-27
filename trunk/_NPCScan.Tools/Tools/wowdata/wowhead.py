@@ -6,7 +6,7 @@ import math
 import re
 import urllib2
 
-import BeautifulSoup
+import bs4
 import PyV8
 
 __author__ = 'Saiket'
@@ -27,6 +27,7 @@ _LOCALE_SUBDOMAINS = {  # Subdomains for localized Wowhead.com data
 _NPC_LEVEL_MIN = 0  # Querying level 0 returns mobs without a listed level
 _NPC_LEVEL_MAX = 85 + 3  # Max rare mob level (+3 for boss level)
 _NPC_LEVEL_UNKNOWN = 9999  # Sentinel value used for level "??"
+_BEAUTIFULSOUP_PARSER = 'lxml'
 
 class InvalidResultError(Exception):
   """Used when a requested web page can't be parsed properly."""
@@ -75,14 +76,15 @@ setattr(_Globals, '$WH', _WH())
 
 
 def getPage(locale, query):
-  """Returns a BeautifulSoup object for `query` from Wowhead's `locale` subdomain."""
+  """Returns a BeautifulSoup4 object for `query` from Wowhead's `locale` subdomain."""
   try:
     subdomain = _LOCALE_SUBDOMAINS[locale]
   except KeyError:
     raise ValueError('Unsupported locale code %r.' % locale)
   request = urllib2.Request('http://%s.wowhead.com/%s' % (subdomain, query), unverifiable=True)
   with contextlib.closing(urllib2.urlopen(request)) as response:
-    return BeautifulSoup.BeautifulSoup(response.read(), fromEncoding=response.info().getparam('charset'))
+    return bs4.BeautifulSoup(response.read(), _BEAUTIFULSOUP_PARSER,
+      from_encoding=response.info().getparam('charset'))
 
 
 def getSearchListview(type, locale, **filters):
@@ -96,7 +98,7 @@ def getSearchListview(type, locale, **filters):
   if div is None:
     raise EmptyResultError()
   try:
-    script = div.findNextSibling('script', type='text/javascript').getText()
+    script = div.find_next_sibling('script', type='text/javascript').get_text()
   except AttributeError:
     raise InvalidResultError('%r listview script not found for query %r.' % (type, query))
 

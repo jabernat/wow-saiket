@@ -19,7 +19,7 @@ __email__ = 'saiket.wow@gmail.com'
 __license__ = 'GPL'
 
 _BYTES_PER_COORD = 2
-_COORD_MAX = pow(2, 8 * _BYTES_PER_COORD) - 1
+_COORD_MAX = 2 ** (8 * _BYTES_PER_COORD) - 1
 _REQUEST_INTERVAL = 60  # Seconds between NPC requests
 
 class _JSBreak(Exception):
@@ -40,7 +40,7 @@ def _getNPCData(npcID, locale):
   displayID, areaData = None, None
 
   anchor = page.find('a', id='dsgndslgn464d')  # "View in 3D" button
-  if anchor is not None and anchor.has_key('onclick'):
+  if anchor is not None and anchor.has_attr('onclick'):
     match = re.search(r'\bdisplayId: (\d+)\b', anchor['onclick'])
     if match is None:
       raise wowdata.wowhead.InvalidResultError(
@@ -50,7 +50,7 @@ def _getNPCData(npcID, locale):
   div = page.find('div', id='k6b43j6b')  # Map view
   if div is not None:
     try:
-      script = div.findNextSibling('script', type='text/javascript').getText()
+      script = div.find_next_sibling('script', type='text/javascript').get_text()
     except AttributeError:
       raise wowdata.wowhead.InvalidResultError('Map data script not found.')
     with PyV8.JSContext(_Globals()) as context:

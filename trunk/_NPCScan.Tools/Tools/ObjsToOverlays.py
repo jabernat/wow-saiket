@@ -22,7 +22,7 @@ __license__ = 'GPL'
 class Obj(object):
   """Represents an *.obj model file to be packed for _NPCScan.Overlay."""
   _BYTES_PER_COORD = 2
-  _COORD_MAX = pow(2, 8 * _BYTES_PER_COORD) - 1
+  _COORD_MAX = 2 ** (8 * _BYTES_PER_COORD) - 1
 
   def __init__(self, filename):
     """Parses the *.obj file for vertex and face information."""
