@@ -3,6 +3,7 @@
 
 import contextlib
 import re
+import time
 import urllib2
 
 import bs4
@@ -23,6 +24,7 @@ _LOCALE_SUBDOMAINS = {  # Subdomains for localized Wowhead.com data
 	'ptPT': 'pt',
 	'ruRU': 'ru',
 }
+_REQUEST_INTERVAL = 30  # Seconds between requests to Wowhead
 _NPC_LEVEL_MIN = 0  # Querying level 0 returns mobs without a listed level
 _NPC_LEVEL_MAX = 85 + 3  # Max rare mob level (+3 for boss level)
 _NPC_LEVEL_UNKNOWN = 9999  # Sentinel value used for level "??"
@@ -74,6 +76,23 @@ class _Globals(PyV8.JSClass):
 setattr(_Globals, '$WH', _WH())
 
 
+class _MinInterval(object):
+  """Decorator to enforce a minimum wait between calls."""
+  def __init__(self, interval):
+    self.interval, self.last_call = interval, 0
+
+  def __call__(self, func):
+    def wrapped(*args, **kwargs):
+      interval_remaining = self.interval - (time.time() - self.last_call)
+      if interval_remaining > 0:
+        time.sleep(interval_remaining)
+      returns = func(*args, **kwargs)
+      self.last_call = time.time()  # Read after call, in case func takes a while
+      return returns
+    return wrapped
+
+
+@_MinInterval(_REQUEST_INTERVAL)
 def get_page(locale, query):
   """Returns a BeautifulSoup4 object for `query` from Wowhead's `locale` subdomain."""
   try:
