@@ -2,7 +2,6 @@
 """Shared routines to query Wowhead for game data."""
 
 import contextlib
-import math
 import re
 import urllib2
 
@@ -34,7 +33,7 @@ class InvalidResultError(Exception):
   pass
 
 class EmptyResultError(Exception):
-  """Used by `getSearchListview` when no results match a filter."""
+  """Used by `get_search_listview` when no results match a filter."""
   pass
 
 class TruncatedResultsError(Exception):
@@ -75,7 +74,7 @@ class _Globals(PyV8.JSClass):
 setattr(_Globals, '$WH', _WH())
 
 
-def getPage(locale, query):
+def get_page(locale, query):
   """Returns a BeautifulSoup4 object for `query` from Wowhead's `locale` subdomain."""
   try:
     subdomain = _LOCALE_SUBDOMAINS[locale]
@@ -87,13 +86,13 @@ def getPage(locale, query):
       from_encoding=response.info().getparam('charset'))
 
 
-def getSearchListview(type, locale, **filters):
+def get_search_listview(type, locale, **filters):
   """Returns listview data of the given search from Wowhead.
 
-  Keyword arguments are used as filter parameters in search query.
+  `filters` are used as search query parameters.
   """
   query = '%s?filter=%s' % (type, ';'.join('%s=%s' % item for item in filters.iteritems()))
-  page = getPage(locale, query)
+  page = get_page(locale, query)
   div = page.find('div', id='lv-' + type)
   if div is None:
     raise EmptyResultError()
@@ -120,30 +119,30 @@ def getSearchListview(type, locale, **filters):
   return listviews[type]
 
 
-def getSearchResults(type, locale, **filters):
-  """Returns a dict of IDs to result rows returned by `getSearchListview`."""
+def get_search_results(type, locale, **filters):
+  """Returns a `dict` of IDs with result rows returned by `get_search_listview`."""
   try:
     return {result['id']: result
-      for result in getSearchListview(type, locale, **filters)['data']}
+      for result in get_search_listview(type, locale, **filters)['data']}
   except EmptyResultError:
     return {}
 
 
-def getNPCsByLevel(locale, minle, maxle, **filters):
-  """Queries `getSearchResults` for NPCs by level, subdividing between `minle` and `maxle` if necessary."""
+def get_npcs_by_level(locale, minle, maxle, **filters):
+  """Queries `get_search_results` for NPCs by level, subdividing between `minle` and `maxle` if necessary."""
   try:
-    return getSearchResults('npcs', locale, minle=minle, maxle=maxle, **filters)
+    return get_search_results('npcs', locale, minle=minle, maxle=maxle, **filters)
   except TruncatedResultsError:
     if minle >= maxle:
       raise InvalidResultError('Too many level %d NPC results; Cannot subdivide further.' % minle)
-    mid = math.floor((minle + maxle) / 2)
-    npcs = getNPCsByLevel(locale, minle=minle, maxle=mid, **filters)
-    npcs.update(getNPCsByLevel(locale, minle=mid + 1, maxle=maxle, **filters))
+    mid = (minle + maxle) // 2
+    npcs = get_npcs_by_level(locale, minle=minle, maxle=mid, **filters)
+    npcs.update(get_npcs_by_level(locale, minle=mid + 1, maxle=maxle, **filters))
     return npcs
 
 
-def getNPCsAllLevels(locale, **filters):
-  """Queries `getNPCsByLevel` for NPCs of all levels."""
-  npcs = getNPCsByLevel(locale, minle=_NPC_LEVEL_MIN, maxle=_NPC_LEVEL_MAX, **filters)
-  npcs.update(getNPCsByLevel(locale, minle=_NPC_LEVEL_UNKNOWN, maxle=_NPC_LEVEL_UNKNOWN, **filters))
+def get_npcs_all_levels(locale, **filters):
+  """Queries `get_npcs_by_level` for NPCs of all levels."""
+  npcs = get_npcs_by_level(locale, minle=_NPC_LEVEL_MIN, maxle=_NPC_LEVEL_MAX, **filters)
+  npcs.update(get_npcs_by_level(locale, minle=_NPC_LEVEL_UNKNOWN, maxle=_NPC_LEVEL_UNKNOWN, **filters))
   return npcs
