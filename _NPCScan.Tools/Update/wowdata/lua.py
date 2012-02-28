@@ -10,23 +10,23 @@ __license__ = 'LGPL'
 runtime = lupa.LuaRuntime(encoding=None)
 """Shared Lua runtime environment with no automatic encoding."""
 
-escapeData = runtime.eval('''
-  function ( String )
-    return ( "%q" ):format( String );
+escape_data = runtime.eval('''
+  function ( Bytes )
+    return ( "%q" ):format( Bytes );
   end
   ''')
-"""Returns input bytes properly escaped and quoted for use in Lua source code."""
+"""Returns `Bytes` properly escaped and quoted for use in Lua source code."""
 
-_loadData = runtime.eval('''
-  --- @return Globals defined by String from Filename.
-  function ( String, Filename )
+_load_data = runtime.eval('''
+  function ( Bytes, Filename )
     local Env = {}; -- Fill with global definitions from file
-    setfenv( assert( loadstring( String, Filename ) ), Env )();
+    setfenv( assert( loadstring( Bytes, Filename ) ), Env )();
     return Env;
   end
   ''')
-def loadSavedVariables(filename):
+"""Returns globals defined by `Bytes` from `Filename`."""
+def load_saved_variables(filename):
   """Returns global variables defined by a World of Warcraft Lua saved variables file."""
-  # Can't use Lua's `loadfile` function since it can't handle Unicode paths
-  with open(filename, 'rb') as savedVariables:
-    return _loadData(savedVariables.read(), filename.encode('utf_8'))
+  # Note: Can't use Lua's `loadfile` function since it can't handle Unicode paths.
+  with open(filename, 'rb') as saved_variables:
+    return _load_data(saved_variables.read(), filename.encode('utf_8'))

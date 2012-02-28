@@ -25,7 +25,7 @@ class _Handle(object):
     """Format useful attributes into a constructor-like call string."""
     return '%s(%s)' % (self.__class__.__name__,
       ', '.join('%s=%r' % (key, getattr(self, key))
-        for key in self._reprAttributes if hasattr(self, key)))
+        for key in self._repr_attributes if hasattr(self, key)))
 
   def __del__(self):
     """Automatically close the handle when nothing is referencing it."""
@@ -41,9 +41,9 @@ class _Handle(object):
 class MPQFile(_Handle):
   """Simple binary mode read-only file object."""
   # Minimal implementation, similar to the standard file object.
-  bufferSize = 256
-  buffer = ctypes.create_string_buffer(bufferSize)
-  _reprAttributes = ('filename', 'mode', 'handle', 'closed', 'mpq')
+  buffer_size = 256
+  buffer = ctypes.create_string_buffer(buffer_size)
+  _repr_attributes = ('filename', 'mode', 'handle', 'closed', 'mpq')
 
   def __init__(self, mpq, filename):
     self.mpq, self.closed = mpq, True
@@ -53,14 +53,14 @@ class MPQFile(_Handle):
     mpq.files[self.handle] = self
 
   def __len__(self):
-    """Return the file's length."""
+    """Return this file's length."""
     return stormlib.SFileGetFileSize(self.handle)
 
   def __iter__(self):
     return self
 
   def next(self):
-    """Returns the file's next line for iteration."""
+    """Returns this file's next line for iteration."""
     line = self.readline()
     if line:
       return line
@@ -76,35 +76,35 @@ class MPQFile(_Handle):
         self.closed = True
 
   def tell(self):
-    """Return the file's current position."""
+    """Return this file's current position."""
     return stormlib.SFileSetFilePointer(self.handle, 0, whence=os.SEEK_CUR)
 
-  __seekLongSize = ctypes.sizeof(ctypes.c_int32) * 8
-  __seekLongMask = 2 ** __seekLongSize - 1
-  __seekOffsetHigh = ctypes.c_int32()
+  __seek_long_bits = ctypes.sizeof(ctypes.c_int32) * 8
+  __seek_long_mask = 2 ** __seek_long_bits - 1
+  __seek_offset_high = ctypes.c_int32()
   def seek(self, offset, whence=os.SEEK_SET):
-    """Set the file's current position."""
-    MPQFile.__seekOffsetHigh.value = offset >> MPQFile.__seekLongSize
-    offset = offset & MPQFile.__seekLongMask
-    stormlib.SFileSetFilePointer(self.handle, offset, MPQFile.__seekOffsetHigh, whence=whence)
+    """Set this file's current position."""
+    MPQFile.__seek_offset_high.value = offset >> MPQFile.__seek_long_bits
+    offset = offset & MPQFile.__seek_long_mask
+    stormlib.SFileSetFilePointer(self.handle, offset, MPQFile.__seek_offset_high, whence=whence)
 
-  __readMax = 2 ** (ctypes.sizeof(ctypes.c_uint32) * 8) - 1
+  __read_max = 2 ** (ctypes.sizeof(ctypes.c_uint32) * 8) - 1
   def read(self, size=-1):
-    """Read file contents up to a maximum of size bytes.
+    """Read file contents up to a maximum of `size` bytes.
 
-    The size parameter cannot be larger than a DWORD.
+    The `size` parameter cannot be larger than a `DWORD`.
     """
-    if size > self.__readMax:
+    if size > self.__read_max:
       raise ValueError('Read size too large.')
     if size < 0:  # Read rest of file
       size = max(0, len(self) - self.tell())  # tell can return positions beyond EOF
-    if size > MPQFile.bufferSize:  # Redimension buffer
-      MPQFile.bufferSize, MPQFile.buffer = size, ctypes.create_string_buffer(size)
-    bytesread = stormlib.SFileReadFile(self.handle, MPQFile.buffer, size)
-    return ''.join(MPQFile.buffer[:bytesread])
+    if size > MPQFile.buffer_size:  # Redimension buffer
+      MPQFile.buffer_size, MPQFile.buffer = size, ctypes.create_string_buffer(size)
+    bytes_read = stormlib.SFileReadFile(self.handle, MPQFile.buffer, size)
+    return ''.join(MPQFile.buffer[:bytes_read])
 
   def readline(self, size=-1):
-    """Read one entire line from the file."""
+    """Read one entire line from this file."""
     if size < 0:  # Read rest of file
       size = len(self) - self.tell()
     bytes = []
@@ -119,7 +119,7 @@ class MPQFile(_Handle):
     return ''.join(bytes)
 
   def readlines(self, sizehint=None):
-    """Read the rest of the file into a list of lines using readline."""
+    """Read the rest of this file into a list of lines using `readline`."""
     return list(self)
 
 
@@ -129,7 +129,7 @@ class MPQ(_Handle):
   All resources created by an MPQ object are only valid while the MPQ is open.
   Once an MPQ closes, all files will close as well.
   """
-  _reprAttributes = ('filename', 'mode', 'locale', 'handle', 'closed')
+  _repr_attributes = ('filename', 'mode', 'locale', 'handle', 'closed')
 
   def __init__(self, filename, locale=0):
     """Opens the MPQ archive at filename.
@@ -162,34 +162,35 @@ class MPQ(_Handle):
         finally:
           self.closed = True
 
-  def addPatch(self, filename, prefix=''):
+  def add_patch(self, filename, prefix=''):
     """Overlay another MPQ's contents over this one."""
-    stormlib.SFileOpenPatchArchive(self.handle, str(filename), prefix)
+    stormlib.SFileOpenPatchArchive(self.handle, str(filename), prefix.encode('utf_8'))
 
   def contains(self, filename):
-    """Check if a given filename is listed by the MPQ."""
+    """Check if `filename` exists in this MPQ."""
     stormlib.SFileSetLocale(self.locale)
     return stormlib.SFileHasFile(self.handle, filename.encode('utf_8'))
 
   def open(self, filename):
-    """Open a file contained in the MPQ for reading."""
+    """Open a file contained in this MPQ for reading."""
     stormlib.SFileSetLocale(self.locale)
-    return MPQFile(self, filename.encode('utf_8'))
+    return MPQFile(self, filename)
 
 
-def openLocaleMPQ(dataPath, locale):
+def open_locale_mpq(data_path, locale):
   """Open a World of Warcraft locale MPQ with all patches."""
-  dataPath = os.path.join(os.path.normpath(dataPath), locale)
-  archive = MPQ(os.path.join(dataPath, u'locale-' + locale + '.MPQ'))
+  locale = unicode(locale)
+  data_path = os.path.join(os.path.normpath(data_path), locale)
+  archive = MPQ(os.path.join(data_path, 'locale-' + locale + '.MPQ'))
   try:
     # Iterate over patch MPQs in revision order
     pattern = re.compile(r'^wow\-update\-' + re.escape(locale) + r'\-(?P<revision>\d+)\.MPQ$', re.IGNORECASE)
     for revision, filename in sorted(
       (int(match.group('revision')), match.string) for match in (
-        pattern.match(filename) for filename in os.listdir(unicode(dataPath))
+        pattern.match(filename) for filename in os.listdir(data_path)
       ) if match is not None
     ):
-      archive.addPatch(os.path.join(dataPath, filename), prefix=locale)
+      archive.add_patch(os.path.join(data_path, filename), prefix=locale)
   except:
     archive.close()
     raise

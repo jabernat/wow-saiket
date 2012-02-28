@@ -4,11 +4,11 @@
 import os.path
 import subprocess
 
-import RoutesToObjs
-import ObjsToOverlays
-import UpdateTamableIDs
-import UpdateNPCScanOptions
-import UpdateNPCData
+import npcscan_options
+import npc_data
+import objs_to_overlays
+import routes_to_objs
+import tamable_ids
 
 __author__ = 'Saiket'
 __email__ = 'saiket.wow@gmail.com'
@@ -19,8 +19,8 @@ def _path(*args):
   return os.path.normcase(os.path.join(*args))
 
 
-def updateAll(account=None, realm=None, character=None,
-  dataPath=None, interfacePath=None, wtfPath=None, objPath=None, locale=None
+def run_all(account=None, realm=None, character=None,
+  data_path=None, interface_path=None, wtf_path=None, obj_path=None, locale=None
 ):
   """Runs each update script with simplified path arguments."""
   print 'Running all update scripts...'
@@ -33,36 +33,40 @@ def updateAll(account=None, realm=None, character=None,
   if locale is None:
     locale = 'enUS'
 
-  dataPath = (_path(dataPath) if dataPath is not None
+  data_path = (_path(data_path) if data_path is not None
     else _path('..', '..', '..', '..', 'Data'))
-  interfacePath = (_path(interfacePath) if interfacePath is not None
+  interface_path = (_path(interface_path) if interface_path is not None
     else _path('..', '..', '..'))
-  wtfPath = (_path(wtfPath) if wtfPath is not None
+  wtf_path = (_path(wtf_path) if wtf_path is not None
     else _path('..', '..', '..', '..', 'WTF'))
-  objPath = (_path(objPath) if objPath is not None
+  obj_path = (_path(obj_path) if obj_path is not None
     else _path('PathData'))
 
   print
-  RoutesToObjs.routesToObjs(dataPath,
-    _path(wtfPath, 'Account', account, 'SavedVariables', 'Routes.lua'), objPath)
+  routes_to_objs.write(obj_path,
+    data_path, _path(wtf_path, 'Account', account, 'SavedVariables', 'Routes.lua'))
   print
-  ObjsToOverlays.objsToOverlays(objPath,
-    _path(interfacePath, 'AddOns', '_NPCScan.Overlay', '_NPCScan.Overlay.PathData.lua'))
+  objs_to_overlays.write(
+    _path(interface_path, 'AddOns', '_NPCScan.Overlay', '_NPCScan.Overlay.PathData.lua'),
+    obj_path)
   print
   print 'Staging new *.obj files for commit...'
   try:
-    subprocess.check_call(('svn', 'add', '--force', '--non-interactive', objPath))
+    subprocess.check_call(('svn', 'add', '--force', '--non-interactive', obj_path))
   except (OSError, subprocess.CalledProcessError) as e:
     print '\t%r' % e
   print
-  UpdateTamableIDs.updateTamableIDs(dataPath,
-    _path(interfacePath, 'AddOns', '_NPCScan', '_NPCScan.TamableIDs.lua'), locale)
+  tamable_ids.write(
+    _path(interface_path, 'AddOns', '_NPCScan', '_NPCScan.TamableIDs.lua'),
+    data_path, locale)
   print
-  UpdateNPCScanOptions.updateNPCScanOptions(dataPath,
-    _path(interfacePath, 'AddOns', '_NPCScan.Tools', '_NPCScan.lua'), locale)
+  npcscan_options.write(
+    _path(interface_path, 'AddOns', '_NPCScan.Tools', '_NPCScan.lua'),
+    data_path, locale)
   print
-  UpdateNPCData.updateNPCData(dataPath,
-    _path(interfacePath, 'AddOns', '_NPCScan.Tools', '_NPCScan.Tools.NPCData.lua'), locale)
+  npc_data.write(
+    _path(interface_path, 'AddOns', '_NPCScan.Tools', '_NPCScan.Tools.NPCData.lua'),
+    data_path, locale)
 
 
 if __name__ == '__main__':
@@ -74,14 +78,14 @@ if __name__ == '__main__':
     help='Name or full path of server-wide settings folder.')
   parser.add_argument('--character', type=unicode,
     help='Name or full path of character-wide settings folder.')
-  parser.add_argument('--data', '-d', type=unicode, dest='dataPath',
+  parser.add_argument('--data', '-d', type=unicode, dest='data_path',
     help='Path to WoW\'s Data folder.  If omitted, assume the default location relative to this script.')
-  parser.add_argument('--interface', '-i', type=unicode, dest='interfacePath',
+  parser.add_argument('--interface', '-i', type=unicode, dest='interface_path',
     help='Path to WoW\'s Interface folder.  If omitted, assume the default location relative to this script.')
-  parser.add_argument('--wtf', '-w', type=unicode, dest='wtfPath',
+  parser.add_argument('--wtf', '-w', type=unicode, dest='wtf_path',
     help='Path to WoW\'s WTF folder.  If omitted, assume the default location relative to this script.')
-  parser.add_argument('--objs', '-o', type=unicode, dest='objPath',
+  parser.add_argument('--objs', '-o', type=unicode, dest='obj_path',
     help='Path to save overlay *.obj model files to.  Defaults to a PathData sub-directory if omitted.')
   parser.add_argument('--locale', '-l', type=unicode,
     help='Locale code to read and write data files for.')
-  updateAll(**vars(parser.parse_args()))
+  run_all(**vars(parser.parse_args()))

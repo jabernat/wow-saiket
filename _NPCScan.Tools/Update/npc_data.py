@@ -34,10 +34,10 @@ class _Globals(PyV8.JSClass):
     raise _JSBreak()
 
 
-def _getNPCData(npcID, locale):
-  """Returns this NPC's display ID and map data by areaID and dungeon level."""
-  page = wowdata.wowhead.getPage(locale, 'npc=%d' % npcID)
-  displayID, areaData = None, None
+def _get_npc_data(npc_id, locale):
+  """Returns this NPC's display ID and map data by AreaID and dungeon level."""
+  page = wowdata.wowhead.get_page(locale, 'npc=%d' % npc_id)
+  display_id, area_data = None, None
 
   anchor = page.find('a', id='dsgndslgn464d')  # "View in 3D" button
   if anchor is not None and anchor.has_attr('onclick'):
@@ -45,7 +45,7 @@ def _getNPCData(npcID, locale):
     if match is None:
       raise wowdata.wowhead.InvalidResultError(
         'DisplayID not found in onclick handler %r.' % anchor['onclick'])
-    displayID = int(match.group(1))
+    display_id = int(match.group(1))
 
   div = page.find('div', id='k6b43j6b')  # Map view
   if div is not None:
@@ -62,103 +62,103 @@ def _getNPCData(npcID, locale):
         if e.message != _JSBreak.__name__:
           raise
       try:
-        mapperData = context.locals.g_mapperData
+        mapper_data = context.locals.g_mapperData
       except AttributeError:
         raise wowdata.wowhead.InvalidResultError('Map data didn\'t define g_mapperData.')
-      getValue = context.eval('''
-        /// Note: Workaround for PyV8.JSObject only allowing string keys
+      # Note: Workaround for PyV8.JSObject only allowing string keys
+      get_value = context.eval('''
         (function ( Object, Key ) {
           return Object[ Key ];
         })
         ''')
-      areaData = {}
-      for areaID in mapperData.keys():
-        levels = getValue(mapperData, areaID)
-        areaData[areaID] = {}
+      area_data = {}
+      for area_id in mapper_data.keys():
+        levels = get_value(mapper_data, area_id)
+        area_data[area_id] = {}
         for level in levels.keys():
           vertices = []
-          for vertex in getValue(levels, level)['coords']:
+          for vertex in get_value(levels, level)['coords']:
             vertices.append((float(vertex[0]) / 100, float(vertex[1]) / 100))
-          areaData[areaID][level] = vertices
-  return displayID, areaData
+          area_data[area_id][level] = vertices
+  return display_id, area_data
 
 
-def _nestedDefaultDict():
+def _nested_default_dict():
   """Returns a `defaultdict` which automatically creates sub-dictionaries."""
-  return collections.defaultdict(_nestedDefaultDict)
+  return collections.defaultdict(_nested_default_dict)
 
 
-def updateNPCData(dataPath, outputFilename, locale):
+def write(output_filename, data_path, locale):
   """Compiles data about rare mobs from Wowhead to a Lua source file."""
-  dataPath = os.path.normcase(dataPath)
-  outputFilename = os.path.normcase(outputFilename)
-  print 'Writing all rare NPC data from %s Wowhead to <%s>...' % (locale, outputFilename)
-  npcs = wowdata.wowhead.getNPCsAllLevels(locale, cl='2:4')  # Rare and rare elite
+  output_filename = os.path.normcase(output_filename)
+  data_path = os.path.normcase(data_path)
+  print 'Writing all rare NPC data from %s Wowhead to <%s>...' % (locale, output_filename)
+  npcs = wowdata.wowhead.get_npcs_all_levels(locale, cl='2:4')  # Rare and rare elite
 
   # Create a lookup for zone AreaTable IDs used by WowHead to WorldMapArea IDs
-  with wowdata.mpq.openLocaleMPQ(dataPath, locale) as archive:
+  with wowdata.mpq.open_locale_mpq(data_path, locale) as archive:
     with dbc.DBC(archive.open('DBFilesClient/WorldMapArea.dbc'),
-      'id', None, 'areaTableID', flags=11) as worldMapAreas \
+      'id', None, 'area_id', flags=11) as worldmaps \
     :
       FLAG_PHASE = 0x2
-      worldMapAreaIDs = {}
-      for worldMap in worldMapAreas:
-        areaTableID = worldMap.int('areaTableID')
-        if (areaTableID  # Not a continent
-          and not worldMap.int('flags') & FLAG_PHASE  # Not a phased map
+      area_worldmap_ids = {}
+      for worldmap in worldmaps:
+        area_id = worldmap.int('area_id')
+        if (area_id  # Not a continent
+          and not worldmap.int('flags') & FLAG_PHASE  # Not a phased map
         ):
-          worldMapAreaIDs[areaTableID] = worldMap.int('id')
+          area_worldmap_ids[area_id] = worldmap.int('id')
 
   # Query each NPC for details
-  displayIDs, worldMapData = {}, _nestedDefaultDict()
-  for npcID, npcData in sorted(npcs.iteritems()):
-    print '\tNpc%d - %r' % (npcID, npcData['name'].decode('utf_8'))
+  display_ids, worldmap_data = {}, _nested_default_dict()
+  for npc_id, npc_data in sorted(npcs.iteritems()):
+    print '\tNpc%d - %r' % (npc_id, npc_data['name'].decode('utf_8'))
     try:
-      displayID, areaData = _getNPCData(npcID, locale)
+      display_id, area_data = _get_npc_data(npc_id, locale)
     except Exception as e:
       print '\t\tError reading NPC Data: %r' % e
     else:
-      if displayID is not None:
-        displayIDs[npcID] = displayID
-      if areaData is not None:
+      if display_id is not None:
+        display_ids[npc_id] = display_id
+      if area_data is not None:
         # Merge into main world map data
-        for areaID, levels in areaData.iteritems():
-          if areaID in worldMapAreaIDs:  # Has a world map
+        for area_id, levels in area_data.iteritems():
+          if area_id in area_worldmap_ids:  # Has a world map
             for level, vertices in levels.iteritems():
-              worldMapData[worldMapAreaIDs[areaID]][level][npcID] = vertices
+              worldmap_data[area_worldmap_ids[area_id]][level][npc_id] = vertices
     time.sleep(_REQUEST_INTERVAL)
 
-  with open(outputFilename, 'w+b') as output:
+  with open(output_filename, 'w+b') as output:
     output.write('-- AUTOMATICALLY GENERATED BY <%s>!\n' % __file__)
     output.write('select( 2, ... ).NPCData = {\n')
 
     output.write('\tNames = {\n')
-    for npcID, npcData in sorted(npcs.iteritems()):
-      name = wowdata.lua.escapeData(npcData['name'])
-      output.write('\t\t[ %d ] = %s;\n' % (npcID, name))
+    for npc_id, npc_data in sorted(npcs.iteritems()):
+      name = wowdata.lua.escape_data(npc_data['name'])
+      output.write('\t\t[ %d ] = %s;\n' % (npc_id, name))
     output.write('\t};\n')
 
     output.write('\tDisplayIDs = {\n')
-    for npcID, displayID in sorted(displayIDs.iteritems()):
-      output.write('\t\t[ %d ] = %d;\n' % (npcID, displayID))
+    for npc_id, display_id in sorted(display_ids.iteritems()):
+      output.write('\t\t[ %d ] = %d;\n' % (npc_id, display_id))
     output.write('\t};\n')
 
     # Write point data per world map per floor.
     output.write('\tMapData = {\n')
-    for worldMapID, worldMap in sorted(worldMapData.iteritems()):
-      if worldMap:  # At least one level in world map
-        output.write('\t\t[ %d ] = {\n' % worldMapID)
-        for level, npcData in sorted(worldMap.iteritems()):
-          if npcData:  # At least one NPC on this level
+    for worldmap_id, worldmap in sorted(worldmap_data.iteritems()):
+      if worldmap:  # At least one level in world map
+        output.write('\t\t[ %d ] = {\n' % worldmap_id)
+        for level, npc_data in sorted(worldmap.iteritems()):
+          if npc_data:  # At least one NPC on this level
             output.write('\t\t\t[ %d ] = {\n' % level)
-            for npcID, vertices in sorted(npcData.iteritems()):
+            for npc_id, vertices in sorted(npc_data.iteritems()):
               if vertices:  # At least one known coordinate
                 bytes = []
                 for vertex in sorted(vertices):
                   for coord in vertex:
                     bytes.append(struct.pack('>H', round(coord * _COORD_MAX)))  # Big-endian unsigned short
-                data = wowdata.lua.escapeData(''.join(bytes))
-                output.write('\t\t\t\t[ %d ] = %s;\n' % (npcID, data))
+                data = wowdata.lua.escape_data(''.join(bytes))
+                output.write('\t\t\t\t[ %d ] = %s;\n' % (npc_id, data))
             output.write('\t\t\t};\n')
         output.write('\t\t};\n')
     output.write('\t};\n')
@@ -171,8 +171,8 @@ if __name__ == '__main__':
     description='Compiles NPC data for _NPCScan.Tools.')
   parser.add_argument('--locale', '-l', type=unicode, required=True,
     help='Locale code to retrieve data for.')
-  parser.add_argument('dataPath', type=unicode,
+  parser.add_argument('data_path', type=unicode,
     help='The path to World of Warcraft\'s Data folder.')
-  parser.add_argument('outputFilename', type=unicode,
+  parser.add_argument('output_filename', type=unicode,
     help='Output path for the resulting Lua source file.')
-  updateNPCData(**vars(parser.parse_args()))
+  write(**vars(parser.parse_args()))
