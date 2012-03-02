@@ -4,6 +4,7 @@
 import contextlib
 import re
 import time
+import urllib
 import urllib2
 
 import bs4
@@ -105,12 +106,19 @@ def get_page(locale, query):
       from_encoding=response.info().getparam('charset'))
 
 
+def _percent_encode(value):
+  """Percent encodes `value` for use in a URL."""
+  return urllib.quote_plus(
+    str(value.encode('utf_8') if isinstance(value, unicode) else value))
+
+
 def get_search_listview(type, locale, **filters):
   """Returns listview data of the given search from Wowhead.
 
   `filters` are used as search query parameters.
   """
-  query = '%s?filter=%s' % (type, ';'.join('%s=%s' % item for item in filters.iteritems()))
+  query = '%s?filter=%s' % (type, ';'.join(
+    '%s=%s' % tuple(map(_percent_encode, item)) for item in filters.iteritems()))
   page = get_page(locale, query)
   div = page.find('div', id='lv-' + type)
   if div is None:
