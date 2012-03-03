@@ -61,7 +61,7 @@ class _LANG(PyV8.JSClass):
     try:
       return super(_LANG, self).__getattr__(name)
     except AttributeError:
-      return '{LANG.%s}' % name
+      return '<LANG.{:s}>'.format(name)
 
 
 class _Globals(PyV8.JSClass):
@@ -99,8 +99,8 @@ def get_page(locale, query):
   try:
     subdomain = _LOCALE_SUBDOMAINS[locale]
   except KeyError:
-    raise ValueError('Unsupported locale code %r.' % locale)
-  request = urllib2.Request('http://%s.wowhead.com/%s' % (subdomain, query), unverifiable=True)
+    raise ValueError('Unsupported locale code {!r}.'.format(locale))
+  request = urllib2.Request('http://{:s}.wowhead.com/{:s}'.format(subdomain, query), unverifiable=True)
   with contextlib.closing(urllib2.urlopen(request)) as response:
     return bs4.BeautifulSoup(response.read(), _BEAUTIFULSOUP_PARSER,
       from_encoding=response.info().getparam('charset'))
@@ -117,8 +117,8 @@ def get_search_listview(type, locale, **filters):
 
   `filters` are used as search query parameters.
   """
-  query = '%s?filter=%s' % (type, ';'.join(
-    '%s=%s' % tuple(map(_percent_encode, item)) for item in filters.iteritems()))
+  query = '{:s}?filter={:s}'.format(type, ';'.join(
+    '{:s}={:s}'.format(*map(_percent_encode, item)) for item in filters.iteritems()))
   page = get_page(locale, query)
   div = page.find('div', id='lv-' + type)
   if div is None:
@@ -126,7 +126,7 @@ def get_search_listview(type, locale, **filters):
   try:
     script = div.find_next_sibling('script', type='text/javascript').get_text()
   except AttributeError:
-    raise InvalidResultError('%r listview script not found for query %r.' % (type, query))
+    raise InvalidResultError('{!r} listview script not found for query {!r}.'.format(type, query))
 
   # Run JS source and intercept Listview definitions
   with PyV8.JSContext(_Globals()) as context:
@@ -134,14 +134,14 @@ def get_search_listview(type, locale, **filters):
     listviews = context.locals._listviews
 
   if type not in listviews:
-    raise InvalidResultError('%r listview not initialized for query %r.' % (type, query))
+    raise InvalidResultError('{!r} listview not initialized for query {!r}.'.format(type, query))
   elif '_errors' in listviews[type]:
-    raise InvalidResultError('Invalid %r query filter %r.' % (type, query))
+    raise InvalidResultError('Invalid {!r} query filter {!r}.'.format(type, query))
   elif '_truncated' in listviews[type]:
     note = listviews[type]['note'].decode('utf_8')
-    match = re.search(r'\[\{LANG\.lvnote_' + re.escape(type) + 'found\},(?P<total>\d+),(?P<displayed>\d+)\]', note)
+    match = re.search(r'\[<LANG\.lvnote_' + re.escape(type) + 'found>,(?P<total>\d+),(?P<displayed>\d+)\]', note)
     if match is None:
-      raise InvalidResultError('Result total not found in view note %r.' % note)
+      raise InvalidResultError('Result total not found in view note {!r}.'.format(note))
     raise TruncatedResultsError(int(match.group('total')), int(match.group('displayed')))
   return listviews[type]
 
@@ -161,7 +161,7 @@ def get_npcs_by_level(locale, minle, maxle, **filters):
     return get_search_results('npcs', locale, minle=minle, maxle=maxle, **filters)
   except TruncatedResultsError:
     if minle >= maxle:
-      raise InvalidResultError('Too many level %d NPC results; Cannot subdivide further.' % minle)
+      raise InvalidResultError('Too many level {:d} NPC results; Cannot subdivide further.'.format(minle))
     mid = (minle + maxle) // 2
     npcs = get_npcs_by_level(locale, minle=minle, maxle=mid, **filters)
     npcs.update(get_npcs_by_level(locale, minle=mid + 1, maxle=maxle, **filters))

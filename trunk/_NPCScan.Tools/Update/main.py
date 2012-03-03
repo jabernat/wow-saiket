@@ -54,7 +54,7 @@ def run_all(account=None, realm=None, character=None,
   try:
     subprocess.check_call(('svn', 'add', '--force', '--non-interactive', obj_path))
   except (OSError, subprocess.CalledProcessError) as e:
-    print '\t%r' % e
+    print '\t{!r}'.format(e)
   print
   tamable_ids.write(
     _path(interface_path, 'AddOns', '_NPCScan', '_NPCScan.TamableIDs.lua'),

@@ -23,8 +23,8 @@ class _Handle(object):
   """Abstract class for resource handles."""
   def __repr__(self):
     """Format useful attributes into a constructor-like call string."""
-    return '%s(%s)' % (self.__class__.__name__,
-      ', '.join('%s=%r' % (key, getattr(self, key))
+    return '{:s}({:s})'.format(self.__class__.__name__,
+      ', '.join('{:s}={!r}'.format(key, getattr(self, key))
         for key in self._repr_attributes if hasattr(self, key)))
 
   def __del__(self):

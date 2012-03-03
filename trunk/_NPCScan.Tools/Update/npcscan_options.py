@@ -22,7 +22,7 @@ def write(output_filename, data_path, locale):
   """Writes a settings file including all rare mobs from Wowhead."""
   output_filename = os.path.normcase(output_filename)
   data_path = os.path.normcase(data_path)
-  print 'Writing all rares from %s Wowhead to <%s>...' % (locale, output_filename)
+  print 'Writing all rares from {:s} Wowhead to <{:s}>...'.format(locale, output_filename)
   npcs = wowdata.wowhead.get_npcs_all_levels(locale, cl='2:4')  # Rare and rare elite
 
   with wowdata.mpq.open_locale_mpq(data_path, locale) as archive:
@@ -36,7 +36,7 @@ def write(output_filename, data_path, locale):
       def add_kill_achievement(achievement_id):
         """Adds an achievement and all its parents to the filter."""
         achievement = achievements.rows[achievement_id]
-        print '\t\tAchievement%d - %r' % (achievement_id, achievement.str('name'))
+        print '\t\tAchievement{:d} - {!r}'.format(achievement_id, achievement.str('name'))
         kill_achievements.add(achievement_id)
         parent_id = achievement.int('criteria_parent')
         if parent_id:
@@ -90,11 +90,12 @@ def write(output_filename, data_path, locale):
         output.write('\tVersion = "4.0.3.5";\n')
         output.write('\tAchievements = {\n')
         for achievement_id in sorted(_KILL_ACHIEVEMENTS):
-          output.write('\t\t[ %d ] = true;\n' % achievement_id)
+          output.write('\t\t[ ' + str(achievement_id) + ' ] = true;\n')
         output.write('\t};\n')
         output.write('\tNPCs = {\n')
         for npc_id, npc_data in sorted(npcs.iteritems()):
-          output.write('\t\t[ %d ] = %s;\n' % (npc_id, wowdata.lua.escape_data(npc_data['name'])))
+          output.write('\t\t[ ' + str(npc_id) + ' ] = '
+            + wowdata.lua.escape_data(npc_data['name']) + ';\n')
         output.write('\t};\n')
         output.write('\tNPCWorldIDs = {\n')
         for npc_id, npc_data in sorted(npcs.iteritems()):
@@ -103,10 +104,10 @@ def write(output_filename, data_path, locale):
             if len(world_ids) == 1:  # Only spawns on one map
               world_id = world_ids.pop()
               if isinstance(world_id, unicode):
-                output.write('\t\t[ %d ] = %s;\n' % (
-                  npc_id, wowdata.lua.escape_data(world_id.encode('utf_8'))))
+                output.write('\t\t[ ' + str(npc_id) + ' ] = '
+                  + wowdata.lua.escape_data(world_id.encode('utf_8')) + ';\n')
               else: # ContinentID
-                output.write('\t\t[ %d ] = %d;\n' % (npc_id, world_id))
+                output.write('\t\t[ ' + str(npc_id) + ' ] = ' + str(world_id) + ';\n')
         output.write('\t};\n')
         output.write('};')
 

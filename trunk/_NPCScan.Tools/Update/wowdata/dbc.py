@@ -37,8 +37,8 @@ class DBCUnsupportedError(DBCError):
 
 def _repr(self):
   """Format useful attributes from this object into a constructor-like call string."""
-  return '%s(%s)' % (self.__class__.__name__,
-    ', '.join('%s=%r' % (key, getattr(self, key))
+  return '{:s}({:s})'.format(self.__class__.__name__,
+    ', '.join('{:s}={!r}'.format(key, getattr(self, key))
       for key in self._repr_attributes if hasattr(self, key)))
 
 
@@ -110,7 +110,7 @@ class DBC(object):
       self._string_block_size = struct.unpack('<I', file.read(DBC._INT_SIZE))[0]
       size_expected = self._string_block_start + self._string_block_size
       if size != size_expected:
-        raise DBCFormatError('Calculated size mismatch: %d != expected %d bytes.' % (
+        raise DBCFormatError('Calculated size mismatch: {:d} != expected {:d} bytes.'.format(
           size, size_expected))
       self.set_keys(*keys, **kwkeys)
     except:  # Invalid header; Abort
@@ -158,10 +158,10 @@ class DBC(object):
     if isinstance(column, basestring):  # Named column
       column = self.keys[column]
     if not 0 <= row < self.row_count:
-      raise DBCRangeError('Row %d out of bounds [0, %d).' % (
+      raise DBCRangeError('Row {:d} out of bounds [0, {:d}).'.format(
         row, self.row_count))
     if not 0 <= column < self.column_count:
-      raise DBCRangeError('Column %d out of bounds [0, %d).' % (
+      raise DBCRangeError('Column {:d} out of bounds [0, {:d}).'.format(
         column, self.column_count))
     self.file.seek(DBC._HEADER_SIZE + row * self.row_size + column * self.column_size)
 
@@ -171,7 +171,7 @@ class DBC(object):
     The DBC's `column_size` must be wide enough to hold `size` bytes.
     """
     if size > self.column_size:
-      raise DBCUnsupportedError('DBC column size %d too small to contain %d-byte field.' % (
+      raise DBCUnsupportedError('DBC column size {:d} too small to contain {:d}-byte field.'.format(
         self.column_size, size))
     self._seek_to_field(row, column)
     return self.file.read(size)
@@ -179,7 +179,7 @@ class DBC(object):
   def _get_string_data(self, offset):
     """Retrieve a null-terminated string value from the string block."""
     if offset >= self._string_block_size:
-      raise DBCStringError('String offset %d out of bounds [0, %d).' % (
+      raise DBCStringError('String offset {:d} out of bounds [0, {:d}).'.format(
         offset, self._string_block_size))
 
     # Read null-terminated string
@@ -200,7 +200,7 @@ class DBC(object):
     Columns with omitted keys or keys set to `None` will not be assigned names.
     """
     if len(keys) > self.column_count:
-      raise DBCUnsupportedError('Too many column keys in list (got %d, max of %d).' % (
+      raise DBCUnsupportedError('Too many column keys in list (got {:d}, max of {:d}).'.format(
         len(keys), self.column_count))
     for key in keys:
       if key is not None and not isinstance(key, basestring):
@@ -209,7 +209,7 @@ class DBC(object):
       if not isinstance(key, basestring):
         raise TypeError('Keys in kwargs must be strings.')
       if not 0 <= kwkeys[key] < self.column_count:
-        raise DBCUnsupportedError('Column index %d out of bounds [0, %d) in kwargs.' % (
+        raise DBCUnsupportedError('Column index {:d} out of bounds [0, {:d}) in kwargs.'.format(
           kwkeys[key], self.column_count))
 
     self.keys.clear()
