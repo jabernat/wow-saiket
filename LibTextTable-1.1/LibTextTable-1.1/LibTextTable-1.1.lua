@@ -4,7 +4,7 @@
   ****************************************************************************]]
 
 
-local MAJOR, MINOR = "LibTextTable-1.1", 2;
+local MAJOR, MINOR = "LibTextTable-1.1", 3;
 
 local lib = LibStub:NewLibrary( MAJOR, MINOR );
 if ( not lib ) then
@@ -16,8 +16,8 @@ local RowMethods = lib.RowMeta.__index;
 lib.TableMeta = lib.TableMeta or { __index = {}; };
 local TableMethods = lib.TableMeta.__index;
 
-local RowHeight = 14;
-local ColumnPadding = 6;
+local ROW_HEIGHT = 14;
+local COLUMN_PADDING = 6;
 
 
 
@@ -104,18 +104,18 @@ do
 		local Arrow = Column:CreateTexture( nil, "OVERLAY" );
 		Column.Arrow = Arrow;
 		Arrow:Hide();
-		Arrow:SetSize( RowHeight * 0.5, RowHeight * 0.8 );
+		Arrow:SetSize( ROW_HEIGHT * 0.5, ROW_HEIGHT * 0.8 );
 		Arrow:SetTexture( [[Interface\Buttons\UI-SortArrow]] );
 		local Left = Column:CreateTexture( nil, "BACKGROUND" );
 		Left:SetPoint( "TOPLEFT" );
 		Left:SetPoint( "BOTTOM" );
-		Left:SetWidth( 5 );
+		Left:SetWidth( COLUMN_PADDING );
 		Left:SetTexture( [[Interface\FriendsFrame\WhoFrame-ColumnTabs]] );
 		Left:SetTexCoord( 0, 0.078125, 0, 0.75 );
 		local Right = Column:CreateTexture( nil, "BACKGROUND" );
 		Right:SetPoint( "TOPRIGHT" );
 		Right:SetPoint( "BOTTOM" );
-		Right:SetWidth( 4 );
+		Right:SetWidth( COLUMN_PADDING );
 		Right:SetTexture( [[Interface\FriendsFrame\WhoFrame-ColumnTabs]] );
 		Right:SetTexCoord( 0.90625, 0.96875, 0, 0.75 );
 		local Middle = Column:CreateTexture( nil, "BACKGROUND" );
@@ -160,6 +160,7 @@ do
 			local Value = select( Index, ... );
 			Column:SetText( Value ~= nil and tostring( Value ) or nil );
 			Column:Show();
+			Column.Width, Column.WidthChanged = Column:GetTextWidth(), true;
 		end
 		for Index = NumColumns + 1, #Header do -- Hide unused
 			local Column = Header[ Index ];
@@ -241,8 +242,6 @@ function TableMethods:SetSortColumn ( Column, Inverted )
 	end
 end
 do
-	local type = type;
-	local tostring = tostring;
 	--- Default sort handler for columns.
 	-- Uses Lua's less-than operator.  Nil values are sorted as empty strings.
 	-- @param Val1  Element value for row 1.
@@ -269,21 +268,28 @@ do
 			return Row1:GetID() < Row2:GetID(); -- Fall back on previous row order
 		end
 	end
-	--- Throttles resorts to once per frame.
+	--- Throttles re-sorts to once per frame.
 	local function OnUpdate ( Header )
 		Header:SetScript( "OnUpdate", nil );
-		local Rows = Header.Table.Rows;
+		local Rows, View = Header.Table.Rows, Header.Table.View;
 		if ( Header.SortColumn and #Rows > 0 ) then
 			Column = Header.SortColumn:GetID();
 			Handler, Inverted = Header.SortColumn.Sort, Header.SortInverted;
 			if ( Handler == true ) then
 				Handler = SortSimple; -- Less-than operator
 			end
+
+			for Index = View.RowTop, min( #Rows, View.RowBottom ) do
+				Rows[ Index ]:Hide();
+			end
 			sort( Rows, Compare );
+			for Index = View.RowTop, min( #Rows, View.RowBottom ) do
+				Rows[ Index ]:Show();
+			end
 
 			for Index, Row in ipairs( Rows ) do
 				Row:SetID( Index );
-				Row:SetPoint( "TOPLEFT", 0, ( 1 - Index ) * RowHeight );
+				Row:SetPoint( "TOPLEFT", 0, ( 1 - Index ) * ROW_HEIGHT );
 			end
 		end
 	end
@@ -302,7 +308,7 @@ do
 		local Row = CreateFrame( "Button", nil, self.Rows );
 		Row:SetScript( "OnClick", RowOnClick );
 		Row:RegisterForClicks( "AnyUp" );
-		Row:SetHeight( RowHeight );
+		Row:SetHeight( ROW_HEIGHT );
 		Row:SetPoint( "RIGHT", self.Body ); -- Expand to right side of view
 		Row:SetHighlightTexture( [[Interface\FriendsFrame\UI-FriendsFrame-HighlightBar]], "ADD" );
 		-- Apply row methods
@@ -314,7 +320,6 @@ do
 	end
 end
 do
-	local select = select;
 	--- Adds and anchors missing element strings.
 	local function RowAddElements ( Table, Row )
 		local Columns = Table.Header;
@@ -322,10 +327,11 @@ do
 			local Element = Row:CreateFontString( nil, "ARTWORK", Table.ElementFont );
 			Element:SetPoint( "TOP" );
 			Element:SetPoint( "BOTTOM" );
-			Element:SetPoint( "LEFT", Columns[ Index ], ColumnPadding, 0 );
-			Element:SetPoint( "RIGHT", Columns[ Index ], -ColumnPadding, 0 );
+			Element:SetPoint( "LEFT", Columns[ Index ], COLUMN_PADDING, 0 );
+			Element:SetPoint( "RIGHT", Columns[ Index ], -COLUMN_PADDING, 0 );
 		end
 	end
+	local select = select;
 	--- Sets a row's elements to a set of values.
 	-- @param ...  Row element fontstrings.
 	local function UpdateElements ( Table, Row, ... )
@@ -335,6 +341,11 @@ do
 			Element:SetText( Value );
 			Element:Show();
 			Element:SetJustifyH( type( Value ) == "number" and "RIGHT" or "LEFT" );
+			local Column = Table.Header[ Index ];
+			local Width = Element:GetStringWidth();
+			if ( Column.Width < Width ) then
+				Column.Width, Column.WidthChanged = Width, true;
+			end
 		end
 		for Index = Table.NumColumns + 1, select( "#", ... ) do
 			select( Index, ... ):Hide();
@@ -347,18 +358,14 @@ do
 	-- @return Row object that was added.
 	function TableMethods:AddRow ( Key, ... )
 		assert( Key == nil or self.Keys[ Key ] == nil, "Index key must be unique." );
-
-		local Rows = self.Rows;
-		local Index = #Rows + 1;
-
-		local Row = next( self.UnusedRows );
+		local Row, Index = next( self.UnusedRows ), #self.Rows + 1;
 		if ( Row ) then
 			self.UnusedRows[ Row ] = nil;
-			Row:Show();
+			Row:Show()
 		else
 			Row = self:CreateRow();
 		end
-		Rows[ Index ] = Row;
+		self.Rows[ Index ] = Row;
 
 		if ( Key ~= nil ) then
 			self.Keys[ Key ] = Row;
@@ -369,9 +376,13 @@ do
 		end
 
 		Row:SetID( Index );
-		Row:SetPoint( "TOPLEFT", 0, ( 1 - Index ) * RowHeight );
+		Row:SetPoint( "TOPLEFT", 0, ( 1 - Index ) * ROW_HEIGHT );
 		RowAddElements( self, Row );
+		-- Note: Row must be shown for GetStringWidth to return correct results.
 		UpdateElements( self, Row, Row:GetRegions() );
+		if ( Index < self.View.RowBottom or self.View.RowTop < Index ) then
+			Row:Hide();
+		end
 
 		self:Resize();
 		self:Sort();
@@ -379,43 +390,21 @@ do
 	end
 end
 do
-	local ColumnWidths = {};
-	local select = select;
-	--- Expands columns to fit a row's element contents.
-	local function GetElementWidths ( NumColumns, ... )
-		for Index = 1, NumColumns do
-			local Width = select( Index, ... ):GetStringWidth();
-			if ( Width > ColumnWidths[ Index ] ) then
-				ColumnWidths[ Index ] = Width;
-			end
-		end
-	end
 	--- Resizes all columns to fit table headers and element values.
-	local function Resize ( Rows )
-		local Table = Rows.Table;
-		local Header = Table.Header;
-		local NumColumns = Table.NumColumns;
-
-		for Index = 1, NumColumns do
-			ColumnWidths[ Index ] = Header[ Index ]:GetTextWidth();
-		end
-		for _, Row in ipairs( Rows ) do
-			GetElementWidths( NumColumns, Row:GetRegions() );
-		end
-
-		local TotalWidth = 0;
-		for Index = 1, NumColumns do
-			local Width = ColumnWidths[ Index ] + ColumnPadding * 2;
-			Header[ Index ]:SetWidth( Width );
-			TotalWidth = TotalWidth + Width;
-		end
-		local Height = #Rows * RowHeight;
-		Rows:SetSize( TotalWidth > 1e-3 and TotalWidth or 1e-3, Height > 1e-3 and Height or 1e-3 );
-	end
-	--- Throttles resizes to once per frame.
 	local function OnUpdate ( Rows )
 		Rows:SetScript( "OnUpdate", nil );
-		Resize( Rows );
+		local Header, TotalWidth = Rows.Table.Header, 0;
+		for Index = 1, Rows.Table.NumColumns do
+			local Column = Header[ Index ];
+			local Width = Column.Width + COLUMN_PADDING * 2;
+			if ( Column.WidthChanged ) then
+				Column.WidthChanged = nil;
+				Column:SetWidth( Width );
+			end
+			TotalWidth = TotalWidth + Width;
+		end
+		local Height = #Rows * ROW_HEIGHT;
+		Rows:SetSize( TotalWidth > 1e-3 and TotalWidth or 1e-3, Height > 1e-3 and Height or 1e-3 );
 	end
 	--- Requests that the table be resized on the next frame.
 	function TableMethods:Resize ()
@@ -463,11 +452,11 @@ end
 do
 	local ViewOnSizeChanged, RowsOnSizeChanged;
 	do
-		local Padding = 2; -- Keeps the Body frame from causing scrolling
+		local PADDING = 2; -- Keeps the Body frame from causing scrolling
 		--- Adjusts row widths and table height to fill the scrollframe without changing the scrollable area.
 		local function Resize ( Table, RowsX, RowsY, ViewX, ViewY )
-			RowsY = RowsY + RowHeight; -- Allow room for header
-			local Width, Height = ( RowsX > ViewX and RowsX or ViewX ) - Padding, ( RowsY > ViewY and RowsY or ViewY ) - Padding;
+			RowsY = RowsY + ROW_HEIGHT; -- Allow room for header
+			local Width, Height = ( RowsX > ViewX and RowsX or ViewX ) - PADDING, ( RowsY > ViewY and RowsY or ViewY ) - PADDING;
 			Table.Body:SetSize( Width > 1e-3 and Width or 1e-3, Height > 1e-3 and Height or 1e-3 );
 		end
 		--- Resize when viewing area changes.
@@ -494,7 +483,26 @@ do
 	end
 
 
-	local OnScrollRangeChanged;
+	--- Updates visible rows when the table scrolls vertically.
+	local function ViewOnVerticalScroll ( View, Offset )
+		local Rows = View.Table.Rows;
+		local TopOld, BottomOld = View.RowTop, View.RowBottom;
+		-- Note: Header takes up one row of space at the top.
+		View.RowTop = floor( Offset / ROW_HEIGHT ) + 1;
+		View.RowBottom = ceil( ( Offset + View:GetHeight() ) / ROW_HEIGHT ) - 1;
+		for Index = TopOld, min( #Rows, BottomOld, View.RowTop - 1 ) do
+			Rows[ Index ]:Hide();
+		end
+		for Index = View.RowTop, min( #Rows, View.RowBottom ) do
+			Rows[ Index ]:Show();
+			-- Note: Fixes issue where buttons sometimes appear as if anchored to bottom of scrollframe.
+			Rows[ Index ]:SetHeight( ROW_HEIGHT );
+		end
+		for Index = max( TopOld, View.RowBottom + 1 ), min( #Rows, BottomOld ) do
+			Rows[ Index ]:Hide();
+		end
+	end
+	local ViewOnScrollRangeChanged;
 	do
 		--- Syncs view and scroll buttons when scrollbars move.
 		local function ScrollOnValueChanged ( Scroll, Position )
@@ -515,6 +523,7 @@ do
 			Scroll:SetThumbTexture( [[Interface\Buttons\UI-ScrollBar-Knob]] );
 			Scroll.GetLength = Scroll[ IsHorizontal and "GetWidth" or "GetHeight" ];
 			Scroll.SetScroll = View[ IsHorizontal and "SetHorizontalScroll" or "SetVerticalScroll" ];
+			Scroll:SetScript( "OnValueChanged", ScrollOnValueChanged );
 
 			Scroll.Dec = CreateFrame( "Button", nil, Scroll, "UIPanelScrollUpButtonTemplate" );
 			Scroll.Dec:SetScript( "OnClick", ScrollButtonOnClick );
@@ -539,7 +548,7 @@ do
 			end
 		end
 		--- Adds and adjusts scrollbars when necessary.
-		function OnScrollRangeChanged ( View, XRange, YRange )
+		function ViewOnScrollRangeChanged ( View, XRange, YRange )
 			local XScroll, YScroll = View.XScroll, View.YScroll;
 			View.Table:EnableMouseWheel( XRange > 0 or YRange > 0 ); -- Enable only if scrollable
 
@@ -552,7 +561,6 @@ do
 					XScroll:SetPoint( "BOTTOMLEFT", XScroll.Dec, "BOTTOMRIGHT" );
 					XScroll:SetPoint( "TOPRIGHT", XScroll.Inc, "TOPLEFT" );
 					XScroll:SetOrientation( "HORIZONTAL" );
-					XScroll:SetScript( "OnValueChanged", ScrollOnValueChanged );
 					RotateTextures( XScroll.Dec:GetRegions() );
 					RotateTextures( XScroll.Inc:GetRegions() );
 				end
@@ -578,7 +586,6 @@ do
 					YScroll.Dec:SetPoint( "TOPRIGHT", View.Table );
 					YScroll:SetPoint( "TOPRIGHT", YScroll.Dec, "BOTTOMRIGHT" );
 					YScroll:SetPoint( "BOTTOMLEFT", YScroll.Inc, "TOPLEFT" );
-					YScroll:SetScript( "OnValueChanged", ScrollOnValueChanged );
 				end
 				if ( not YScroll:IsShown() ) then -- Show and position scrollbar
 					YScroll:Show();
@@ -593,6 +600,7 @@ do
 				YScroll:Hide();
 				View:SetPoint( "RIGHT", View.Table );
 			end
+			ViewOnVerticalScroll( View, View:GetVerticalScroll() );
 		end
 	end
 
@@ -612,11 +620,13 @@ do
 		local View = CreateFrame( "ScrollFrame", nil, Table );
 		Table.View = View;
 		View.Table = Table;
+		View.RowTop, View.RowBottom = 1, 0;
 		View:SetPoint( "TOPLEFT" );
 		View:SetPoint( "BOTTOM" ); -- Bottom and right anchors moved independently by scrollbars
 		View:SetPoint( "RIGHT" );
-		View:SetScript( "OnScrollRangeChanged", OnScrollRangeChanged );
 		View:SetScript( "OnSizeChanged", ViewOnSizeChanged );
+		View:SetScript( "OnScrollRangeChanged", ViewOnScrollRangeChanged );
+		View:SetScript( "OnVerticalScroll", ViewOnVerticalScroll );
 
 		-- Body frame expands to fill the scrollframe
 		local Body = CreateFrame( "Frame" );
@@ -627,7 +637,7 @@ do
 		local Rows = CreateFrame( "Frame", nil, Body );
 		Table.Rows = Rows;
 		Rows.Table = Table;
-		Rows:SetPoint( "TOPLEFT", 0, -RowHeight ); -- Leave room for header
+		Rows:SetPoint( "TOPLEFT", 0, -ROW_HEIGHT ); -- Leave room for header
 		Rows:SetScript( "OnSizeChanged", RowsOnSizeChanged );
 
 		local Header = CreateFrame( "Frame", nil, Body );
@@ -636,7 +646,7 @@ do
 		Header:SetPoint( "TOP", Table, 0, 1 ); -- Make sure rows don't show in the crack above the header
 		Header:SetPoint( "LEFT", Rows );
 		Header:SetPoint( "RIGHT", Rows );
-		Header:SetHeight( RowHeight );
+		Header:SetHeight( ROW_HEIGHT );
 		local Background = Header:CreateTexture( nil, "OVERLAY" );
 		Background:SetTexture( 0, 0, 0 );
 		Background:SetPoint( "TOPLEFT" );
