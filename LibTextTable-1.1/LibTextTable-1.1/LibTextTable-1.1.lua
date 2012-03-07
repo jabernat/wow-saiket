@@ -18,6 +18,7 @@ local TableMethods = lib.TableMeta.__index;
 
 local ROW_HEIGHT = 14;
 local COLUMN_PADDING = 6;
+local MIN_SIZE = 1e-3; -- Smallest frame size that the layout engine can render
 
 
 
@@ -276,11 +277,11 @@ do
 				Handler = SortSimple; -- Less-than operator
 			end
 
-			for Index = View.RowTop, min( #Rows, View.RowBottom ) do
+			for Index = View.Top, min( #Rows, View.Bottom ) do
 				Rows[ Index ]:Hide();
 			end
 			sort( Rows, Compare );
-			for Index = View.RowTop, min( #Rows, View.RowBottom ) do
+			for Index = View.Top, min( #Rows, View.Bottom ) do
 				Rows[ Index ]:Show();
 			end
 
@@ -381,7 +382,7 @@ do
 		RowAddElements( self, Row );
 		-- Note: Row must be shown for GetStringWidth to return correct results.
 		UpdateElements( self, Row, Row:GetElements() );
-		if ( Index < self.View.RowBottom or self.View.RowTop < Index ) then
+		if ( Index < self.View.Top or self.View.Bottom < Index ) then
 			Row:Hide();
 		end
 
@@ -405,11 +406,31 @@ do
 			TotalWidth = TotalWidth + Width;
 		end
 		local Height = #Rows * ROW_HEIGHT;
-		Rows:SetSize( TotalWidth > 1e-3 and TotalWidth or 1e-3, Height > 1e-3 and Height or 1e-3 );
+		Rows:SetSize( TotalWidth > MIN_SIZE and TotalWidth or MIN_SIZE, Height > MIN_SIZE and Height or MIN_SIZE );
 	end
 	--- Requests that the table be resized on the next frame.
 	function TableMethods:Resize ()
 		self.Rows:SetScript( "OnUpdate", OnUpdate );
+	end
+end
+--- Updates which rows are visible in the table.
+function TableMethods:UpdateView ()
+	local View, Rows = self.View, self.Rows;
+	local Offset = View:GetVerticalScroll();
+	local TopOld, BottomOld = View.Top, View.Bottom;
+	-- Note: Header takes up one row of space at the top.
+	View.Top = floor( Offset / ROW_HEIGHT ) + 1;
+	View.Bottom = ceil( ( Offset + View:GetHeight() ) / ROW_HEIGHT ) - 1;
+	for Index = TopOld, min( #Rows, BottomOld, View.Top - 1 ) do
+		Rows[ Index ]:Hide();
+	end
+	for Index = View.Top, min( #Rows, View.Bottom ) do
+		Rows[ Index ]:Show();
+		-- Note: Fixes issue where buttons sometimes appear as if anchored to bottom of scrollframe.
+		Rows[ Index ]:SetHeight( ROW_HEIGHT );
+	end
+	for Index = max( TopOld, View.Bottom + 1 ), min( #Rows, BottomOld ) do
+		Rows[ Index ]:Hide();
 	end
 end
 --- @return The selected table row.  Use Row:GetData to get its key and element values.
@@ -443,9 +464,12 @@ function TableMethods:SetSelection ( Row )
 	end
 end
 --- Sets the selection to the given row index.
--- @param Index  Row number to select.  Out of range indices will clear the selection.
+-- @param Index  Row number to select.  Out of range indices do nothing.
 function TableMethods:SetSelectionByIndex ( Index )
-	return self:SetSelection( Index >= 1 and self.Rows[ Index ] or nil );
+	local Row = self.Rows[ Index ];
+	if ( Row and Index >= 1 ) then
+		return self:SetSelection( Row );
+	end
 end
 --- Sets the selection to a row indexed by the given key.
 -- @param Key  Unique key used to add the row with AddRow.  Unknown keys will clear the selection.
@@ -478,12 +502,13 @@ do
 		local function Resize ( Table, RowsX, RowsY, ViewX, ViewY )
 			RowsY = RowsY + ROW_HEIGHT; -- Allow room for header
 			local Width, Height = ( RowsX > ViewX and RowsX or ViewX ) - PADDING, ( RowsY > ViewY and RowsY or ViewY ) - PADDING;
-			Table.Body:SetSize( Width > 1e-3 and Width or 1e-3, Height > 1e-3 and Height or 1e-3 );
+			Table.Body:SetSize( Width > MIN_SIZE and Width or MIN_SIZE, Height > MIN_SIZE and Height or MIN_SIZE );
 		end
 		--- Resize when viewing area changes.
 		function ViewOnSizeChanged ( View, ViewX, ViewY )
 			local RowsX, RowsY = View.Table.Rows:GetSize();
 			Resize( View.Table, RowsX, RowsY, ViewX, ViewY );
+			View.Table:UpdateView();
 		end
 		--- Resize when table data size changes.
 		function RowsOnSizeChanged ( Rows, RowsX, RowsY )
@@ -505,23 +530,8 @@ do
 
 
 	--- Updates visible rows when the table scrolls vertically.
-	local function ViewOnVerticalScroll ( View, Offset )
-		local Rows = View.Table.Rows;
-		local TopOld, BottomOld = View.RowTop, View.RowBottom;
-		-- Note: Header takes up one row of space at the top.
-		View.RowTop = floor( Offset / ROW_HEIGHT ) + 1;
-		View.RowBottom = ceil( ( Offset + View:GetHeight() ) / ROW_HEIGHT ) - 1;
-		for Index = TopOld, min( #Rows, BottomOld, View.RowTop - 1 ) do
-			Rows[ Index ]:Hide();
-		end
-		for Index = View.RowTop, min( #Rows, View.RowBottom ) do
-			Rows[ Index ]:Show();
-			-- Note: Fixes issue where buttons sometimes appear as if anchored to bottom of scrollframe.
-			Rows[ Index ]:SetHeight( ROW_HEIGHT );
-		end
-		for Index = max( TopOld, View.RowBottom + 1 ), min( #Rows, BottomOld ) do
-			Rows[ Index ]:Hide();
-		end
+	local function ViewOnVerticalScroll ( View )
+		View.Table:UpdateView();
 	end
 	local ViewOnScrollRangeChanged;
 	do
@@ -621,7 +631,7 @@ do
 				YScroll:Hide();
 				View:SetPoint( "RIGHT", View.Table );
 			end
-			ViewOnVerticalScroll( View, View:GetVerticalScroll() );
+			View.Table:UpdateView();
 		end
 	end
 
@@ -641,7 +651,7 @@ do
 		local View = CreateFrame( "ScrollFrame", nil, Table );
 		Table.View = View;
 		View.Table = Table;
-		View.RowTop, View.RowBottom = 1, 0;
+		View.Top, View.Bottom = 1, 0;
 		View:SetPoint( "TOPLEFT" );
 		View:SetPoint( "BOTTOM" ); -- Bottom and right anchors moved independently by scrollbars
 		View:SetPoint( "RIGHT" );
