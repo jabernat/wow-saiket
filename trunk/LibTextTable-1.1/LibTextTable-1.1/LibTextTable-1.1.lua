@@ -4,7 +4,7 @@
   ****************************************************************************]]
 
 
-local MAJOR, MINOR = "LibTextTable-1.1", 3;
+local MAJOR, MINOR = "LibTextTable-1.1", 4;
 
 local lib = LibStub:NewLibrary( MAJOR, MINOR );
 if ( not lib ) then
@@ -291,6 +291,10 @@ do
 				Row:SetID( Index );
 				Row:SetPoint( "TOPLEFT", 0, ( 1 - Index ) * ROW_HEIGHT );
 			end
+			local Selection = Header.Table:GetSelection();
+			if ( Selection ) then
+				Header.Table:ScrollToRow( Selection );
+			end
 		end
 	end
 	--- Schedules rows to be resorted on the next frame.
@@ -420,7 +424,7 @@ end
 -- @param Row  A table row, or nil to clear the selection.
 -- @return True if selection changed.
 function TableMethods:SetSelection ( Row )
-	assert( Row == nil or type( Row ) == "table", "Row must be an existing table row." );
+	assert( Row == nil or Row:GetParent() == self.Rows, "Row must be an existing table row." );
 	if ( Row ~= self.Selection ) then
 		if ( self.Selection ) then -- Remove old selection
 			self.Selection:UnlockHighlight();
@@ -429,6 +433,7 @@ function TableMethods:SetSelection ( Row )
 		self.Selection = Row;
 		if ( Row ) then
 			Row:LockHighlight();
+			self:ScrollToRow( Row );
 		end
 		if ( self.OnSelect ) then
 			if ( Row ) then
@@ -440,10 +445,29 @@ function TableMethods:SetSelection ( Row )
 		return true;
 	end
 end
+--- Sets the selection to the given row index.
+-- @param Index  Row number to select.  Out of range indices will clear the selection.
+function TableMethods:SetSelectionByIndex ( Index )
+	return self:SetSelection( Index >= 1 and self.Rows[ Index ] or nil );
+end
 --- Sets the selection to a row indexed by the given key.
 -- @param Key  Unique key used to add the row with AddRow.  Unknown keys will clear the selection.
 function TableMethods:SetSelectionByKey ( Key )
 	return self:SetSelection( self.Keys[ Key ] );
+end
+--- Vertically scrolls the table to include Row if it isn't already visible.
+-- @param Row  The table row to scroll to.
+function TableMethods:ScrollToRow ( Row )
+	assert( Row:GetParent() == self.Rows, "Row must be an existing table row." );
+	local Scroll = self.View:GetVerticalScroll();
+	local Top = ( Row:GetID() - 1 ) * ROW_HEIGHT;
+	local Bottom = Top + ROW_HEIGHT * 2 - self.View:GetHeight();
+	if ( Bottom > Scroll ) then
+		self.View.YScroll:SetValue( Bottom );
+	end
+	if ( Top < Scroll ) then
+		self.View.YScroll:SetValue( Top );
+	end
 end
 
 
