@@ -22,16 +22,13 @@ local COLUMN_PADDING = 6;
 
 
 
-do
-	local RowMethodsOriginal = getmetatable( BasicScriptErrorsButton ).__index; -- Generic button metatable
-	--- @return Number of element regions in the row.
-	function RowMethods:GetNumRegions ()
-		return RowMethodsOriginal.GetNumRegions( self ) - 1; -- Skip highlight region
-	end
-	--- @return Element regions in the row.
-	function RowMethods:GetRegions ()
-		return select( 2, RowMethodsOriginal.GetRegions( self ) ); -- Skip highlight region
-	end
+--- @return Number of element regions in the row.
+function RowMethods:GetNumElements ()
+	return self:GetNumRegions() - 1; -- Skip highlight region
+end
+--- @return Element regions in the row.
+function RowMethods:GetElements ()
+	return select( 2, self:GetRegions() ); -- Skip highlight region
 end
 --- Returns the row's key and all original element data.
 function RowMethods:GetData ()
@@ -68,7 +65,7 @@ do
 				self.UnusedRows[ Row ] = true;
 				Row:Hide();
 				Row.Key = nil;
-				ClearElements( self.NumColumns, Row:GetRegions() );
+				ClearElements( self.NumColumns, Row:GetElements() );
 				for Column = 1, self.NumColumns do -- Remove values
 					Row[ Column ] = nil;
 				end
@@ -327,7 +324,7 @@ do
 	--- Adds and anchors missing element strings.
 	local function RowAddElements ( Table, Row )
 		local Columns = Table.Header;
-		for Index = Row:GetNumRegions() + 1, Table.NumColumns do
+		for Index = Row:GetNumElements() + 1, Table.NumColumns do
 			local Element = Row:CreateFontString( nil, "ARTWORK", Table.ElementFont );
 			Element:SetPoint( "TOP" );
 			Element:SetPoint( "BOTTOM" );
@@ -383,7 +380,7 @@ do
 		Row:SetPoint( "TOPLEFT", 0, ( 1 - Index ) * ROW_HEIGHT );
 		RowAddElements( self, Row );
 		-- Note: Row must be shown for GetStringWidth to return correct results.
-		UpdateElements( self, Row, Row:GetRegions() );
+		UpdateElements( self, Row, Row:GetElements() );
 		if ( Index < self.View.RowBottom or self.View.RowTop < Index ) then
 			Row:Hide();
 		end
