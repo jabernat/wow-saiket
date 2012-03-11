@@ -1,129 +1,107 @@
 --[[****************************************************************************
   * _NPCScan.Tools by Saiket                                                   *
-  * _NPCScan.Tools.Overlay.lua - _NPCScan.Overlay module to show mob map data. *
+  * _NPCScan.Tools.Overlay.lua - Module to show and manipulate map overlays.   *
   ****************************************************************************]]
 
 
-local Routes = LibStub( "AceAddon-3.0" ):GetAddon( "Routes" );
 local Tools = select( 2, ... );
 local Overlay = _NPCScan.Overlay;
-local NS = Overlay.Modules.WorldMapTemplate.Embed( CreateFrame( "Frame", nil, WorldMapDetailFrame ) );
+local NS = CreateFrame( "Frame", nil, WorldMapDetailFrame );
 Tools.Overlay = NS;
 
 NS.Control = CreateFrame( "Button", nil, nil, "UIPanelButtonTemplate" );
 
-NS.AlphaDefault = 1;
+local POINT_SIZE = 8;
+local POINT_COLOR = { r = 1.0; g = 0.1; b = 1.0; }; -- Purple
 
 
 
 
 do
-	local MapCurrent;
-	local Max = 2 ^ 16 - 1;
+	local COORD_MAX = 2 ^ 16 - 1;
 	local X, X2, Y, Y2;
-	local SelectionDrawn;
 	--- Draws an NPC's points from WowHead on the worldmap.
-	local function PaintPoints ( self, _, _, _, R, G, B, NpcID )
-		if ( self.NpcID == NpcID ) then
-			SelectionDrawn = true;
-			local Data = Tools.NPCPointData[ NpcID ];
-			if ( Data ) then
-				local Width, Height = self:GetSize();
-				for Index = 1, #Data, 4 do
-					X, X2, Y, Y2 = Data:byte( Index, Index + 3 );
-					X, Y = ( X * 256 + X2 ) / Max, ( Y * 256 + Y2 ) / Max;
+	local function PaintPoints ( self, Points, R, G, B )
+		local Width, Height = self:GetSize();
+		for Index = 1, #Points, 4 do
+			X, X2, Y, Y2 = Points:byte( Index, Index + 3 );
+			X, Y = ( X * 256 + X2 ) / COORD_MAX, ( Y * 256 + Y2 ) / COORD_MAX;
 
-					local Texture = Overlay.TextureCreate( self, "OVERLAY", R, G, B );
-					Texture:SetTexture( [[Interface\OPTIONSFRAME\VoiceChat-Record]] );
-					Texture:SetTexCoord( 0, 1, 0, 1 );
-					Texture:SetSize( 8, 8 );
-					Texture:SetPoint( "CENTER", self, "TOPLEFT", X * Width, -Y * Height );
-				end
-			end
+			local Texture = Overlay.TextureCreate( self, "OVERLAY", R, G, B );
+			Texture:SetTexture( [[Interface\OPTIONSFRAME\VoiceChat-Record]] );
+			Texture:SetTexCoord( 0, 1, 0, 1 );
+			Texture:SetSize( POINT_SIZE, POINT_SIZE );
+			Texture:SetPoint( "CENTER", self, "TOPLEFT", X * Width, -Y * Height );
+		end
+	end
+	--- Throttles repaints to once per frame.
+	local function OnUpdate ( self )
+		self:SetScript( "OnUpdate", nil );
+		local NpcID, _, MapID, Floor = Tools:GetSelectedNPC();
+		local MapIDCurrent, FloorCurrent = GetCurrentMapAreaID(), GetCurrentMapDungeonLevel();
+		if ( self.NpcID == NpcID and self.MapID == MapIDCurrent and self.Floor == FloorCurrent ) then
+			return; -- Already rendered this map
+		end
+		self.NpcID, self.MapID, self.Floor = NpcID, MapIDCurrent, FloorCurrent;
+
+		Overlay.TextureRemoveAll( self );
+		if ( self.MapID ~= MapID or self.Floor ~= Floor ) then
+			return; -- Viewing wrong map
+		end
+		local Points = Tools.NPCData.MapData[ MapID ][ Floor ][ NpcID ];
+		if ( Points ) then
+			PaintPoints( self, Points, POINT_COLOR.r, POINT_COLOR.g, POINT_COLOR.b );
 		end
 	end
 	--- Draws points on the map for where this NPC was spotted by WowHead.
-	function NS:Paint ( Map )
-		Overlay.TextureRemoveAll( self );
-		if ( Map and self.MapID == Map ) then
-			MapCurrent, SelectionDrawn = Map, false;
-			Overlay.ApplyZone( self, Map, PaintPoints );
-			if ( not SelectionDrawn ) then
-				-- _NPCScan.Overlay has no data on mob, and therefore no assigned color
-				local Color = HIGHLIGHT_FONT_COLOR;
-				PaintPoints( self, nil, nil, nil, Color.r, Color.g, Color.b, self.NpcID );
-			end
-		end
+	function NS:Paint ()
+		self:SetScript( "OnUpdate", OnUpdate );
 	end
 end
+NS.OnShow = NS.Paint;
+NS.WORLD_MAP_UPDATE = NS.Paint;
 
 
-
-
---- Enables or disables paths for NpcID on MapFile.
-function NS.SetRoutesEnabled ( MapFile, NpcID, Enable )
-	local RoutesDB = Routes.db.global.routes[ MapFile ];
-	if ( RoutesDB ) then
-		for Name, Route in pairs( RoutesDB ) do
-			local CurrentNpcID = tonumber( Name:match( "^Overlay:([^:]+)" ) );
-			if ( CurrentNpcID == NpcID ) then -- Path of selected mob
-				Route.hidden = not Enable;
-				Routes:DrawWorldmapLines();
-				Routes:DrawMinimapLines( true );
-			end
-		end
+--- Validates that the selected NPC's map can be shown.
+function NS:OnSelectNPC ( _, NpcID, _, MapID )
+	if ( MapID and MapID ~= 0 ) then
+		self:Show();
+		self.Control:Enable();
+	else
+		self:Hide();
+		self.Control:Disable();
 	end
-end
-do
-	-- Extract alias MapFiles used by Routes for phased terrain
-	local MapFiles = {}; -- [ MapID ] = MapFile;
-	for _, Data in pairs( Routes.LZName ) do
-		MapFiles[ Data[ 2 ] ] = Data[ 1 ];
-	end
-	--- Validates that the selected NPC's map can be shown.
-	function NS.Control:OnSelect ( NpcID )
-		if ( NS.MapFile ) then
-			-- Re-hide routes for last shown mob
-			NS.SetRoutesEnabled( NS.MapFile, NS.NpcID, false );
-			NS:OnMapUpdate( NS.MapID );
-			NS.MapFile = nil;
-		end
-
-		NS.NpcID, NS.MapID = NpcID, Tools.NPCMapIDs[ NpcID ];
-		if ( NS.MapID ) then
-			-- Show routes for this mob
-			NS.MapFile = MapFiles[ NS.MapID ];
-			NS.SetRoutesEnabled( NS.MapFile, NS.NpcID, true );
-			NS:OnMapUpdate( NS.MapID );
-
-			self:Enable();
-			NS:Show();
+	if ( MapID and WorldMapFrame:IsShown() ) then
+		if ( MapID == 0 ) then
+			SetMapZoom( WORLDMAP_COSMIC_ID ); -- Mapless NPC
 		else
-			self:Disable();
-			NS:Hide();
+			self.Control:OnClick(); -- View map
 		end
 	end
+	self:Paint();
 end
 --- Shows the selected NPC's map.
 function NS.Control:OnClick ()
 	ShowUIPanel( WorldMapFrame, true );
-	SetMapByID( NS.MapID );
-end
---- Hides shown routes on logout.
-function NS:PLAYER_LOGOUT ()
-	self.Control:OnSelect();
+	local _, _, MapID, Floor = Tools:GetSelectedNPC();
+	SetMapByID( MapID );
+	SetDungeonMapLevel( Floor );
 end
 
 
 
 
 NS:Hide();
-NS:RegisterEvent( "PLAYER_LOGOUT" );
-Overlay.Modules.Register( ..., NS, Tools.L.OVERLAY_TITLE );
+NS:SetAllPoints();
+NS:SetScript( "OnShow", NS.OnShow );
+NS:SetScript( "OnEvent", _NPCScan.Frame.OnEvent );
+NS:RegisterEvent( "WORLD_MAP_UPDATE" );
 
 local Control = NS.Control;
-Control:SetSize( 144, 21 );
 Control:SetText( Tools.L.OVERLAY_CONTROL );
+Control:SetSize( Control:GetTextWidth() + 16, 21 );
 Control:SetScript( "OnClick", Control.OnClick );
 
-Tools.Config.Controls:Add( Control );
+Tools:AddControl( Control );
+Tools.RegisterCallback( NS, "OnSelectNPC" );
+NS:OnSelectNPC( nil, Tools:GetSelectedNPC() );

@@ -5,18 +5,12 @@
 
 
 select( 2, ... ).L = setmetatable( {
-	CONFIG_TITLE = "|cff888888Tools|r";
-	CONFIG_DESC = "Manage mob location data for _NPCScan.";
-
-	CONFIG_MAPID = "MapID";
-	CONFIG_ID = "ID";
-	CONFIG_NAME = "Name";
-	CONFIG_DISPLAYID = "DisplayID";
-
-	MODEL_CONTROL = "Show Model";
-
-	OVERLAY_TITLE = "_|cffCCCC88NPCScan|r.|cff888888Tools|r";
-	OVERLAY_CONTROL = "Show Map";
-
-	DATASOURCE_FORMAT = "[%d] %s"; -- NpcID, NpcName
+	DESC = "Manage mob location data for _|cffCCCC88NPCScan|r and _|cffCCCC88NPCScan|r.Overlay.  Use |cff808080<Up>|r/|cff808080<Down>|r to quickly change selection.",
+	MODEL_CONTROL = "Show Model",
+	NPC_ID = "NpcID",
+	NPC_NAME = "Name",
+	OVERLAY_CONTROL = "Show Map",
+	WORLDMAP_ID = "MapID",
+	WORLDMAP_LEVEL = "Floor",
+	WORLDMAP_NAME = "Map Name",
 }, getmetatable( _NPCScanLocalization ) );
