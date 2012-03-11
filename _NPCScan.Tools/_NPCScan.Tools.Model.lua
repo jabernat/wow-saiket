@@ -52,20 +52,21 @@ end
 
 
 --- Validates that the selected NPC's model can be shown.
-function NS.Control:OnSelect ( NpcID, _, _, Name )
-	NS.NpcID, NS.Name, NS.DisplayID = NpcID, Name, Tools.NPCDisplayIDs[ NpcID ];
-	if ( NS.DisplayID and not InCombatLockdown() ) then
-		self:Enable();
+function NS:OnSelectNPC ( _, NpcID )
+	if ( NpcID and Tools.NPCData.DisplayIDs[ NpcID ] and not InCombatLockdown() ) then
+		self.Control:Enable();
 	else
-		self:Disable();
+		self.Control:Disable();
 	end
 end
 --- Shows the selected NPC in _NPCScan's alert button.
 function NS.Control:OnClick ()
-	Button:Update( NS.NpcID, NS.Name );
-	Button.Model:SetDisplayInfo( NS.DisplayID );
+	local NpcID, Name = Tools:GetSelectedNPC();
+	local DisplayID = Tools.NPCData.DisplayIDs[ NpcID ];
+	Button:Update( NpcID, Name );
+	Button.Model:SetDisplayInfo( DisplayID );
 
-	local Settings = Button.ModelCameras[ GetDisplayModel( NS.DisplayID ) ] or "";
+	local Settings = Button.ModelCameras[ GetDisplayModel( DisplayID ) ] or "";
 	NS.EditBox:SetText( Settings:gsub( "|", "||" ) );
 	NS.EditBox:Show();
 	NS.Backdrop:Show();
@@ -89,15 +90,20 @@ EditBox:SetAutoFocus( false );
 EditBox:SetScript( "OnEnterPressed", EditBox.OnEnterPressed );
 EditBox:SetScript( "OnEditFocusGained", nil );
 
-NS.Backdrop = Button:CreateTexture( nil, "BACKGROUND" );
+NS.Backdrop = Button.Model:CreateTexture( nil, "BACKGROUND" );
 NS.Backdrop:Hide();
-NS.Backdrop:SetAllPoints( Button.Model );
+NS.Backdrop:SetAllPoints();
 NS.Backdrop:SetTexture( [[textures\ShaneCube]] );
 NS.Backdrop:SetVertexColor( 0.5, 0.5, 0.5 );
 
-
 local Control = NS.Control;
-Control:SetSize( 144, 21 );
 Control:SetText( Tools.L.MODEL_CONTROL );
+Control:SetSize( Control:GetTextWidth() + 16, 21 );
 Control:SetScript( "OnClick", Control.OnClick );
-Tools.Config.Controls:Add( Control );
+
+Tools:AddControl( Control );
+Tools.RegisterCallback( NS, "OnSelectNPC" );
+NS:OnSelectNPC( nil, Tools:GetSelectedNPC() );
+if ( InCombatLockdown() ) then
+	NS:PLAYER_REGEN_DISABLED();
+end
