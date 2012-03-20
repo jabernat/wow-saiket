@@ -17,6 +17,12 @@ __author__ = 'Saiket'
 __email__ = 'saiket.wow@gmail.com'
 __license__ = 'GPL'
 
+_EXTRA_NPCS = set((
+  50409,  # Mysterious Camel Figurine
+  50410,  # Mysterious Camel Figurine
+))
+_FILTER_BY_ID = 37
+_FILTER_EQUALS = 3
 _BYTES_PER_COORD = 2
 _COORD_MAX = 2 ** (8 * _BYTES_PER_COORD) - 1
 
@@ -92,6 +98,9 @@ def write(output_filename, data_path, locale):
   data_path = os.path.normcase(data_path)
   print 'Writing all rare NPC data from {:s} Wowhead to <{:s}>...'.format(locale, output_filename)
   npcs = wowdata.wowhead.get_npcs_all_levels(locale, cl='2:4')  # Rare and rare elite
+  for npc_id in _EXTRA_NPCS.difference(npcs):
+    npcs.update(wowdata.wowhead.get_search_results('npcs', locale,
+      cr=_FILTER_BY_ID, crs=_FILTER_EQUALS, crv=npc_id))
 
   # Create a lookup for zone AreaTable IDs used by WowHead to WorldMapArea IDs
   with wowdata.mpq.open_locale_mpq(data_path, locale) as archive:
