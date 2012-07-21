@@ -17,11 +17,12 @@
 ## X-Credits-esES: Localization: galen2
 ## X-Credits-esMX: Localization: galen2
 ## X-Credits-frFR: Localization: Pettigrow
+## X-Credits-itIT: Localization: Asixandur
 ## X-Credits-koKR: Localization: freshworks
 ## X-Credits-zhCN: Localization: Sparanoid
 ## X-Credits-zhTW: Localization: Sparanoid
 ## Version: 5.0.0.1
-## X-Date: 2012-07-14
+## X-Date: 2012-07-21
 ## X-Category: Interface Enhancements
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
@@ -29,8 +30,8 @@
 ## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Corpse
 ## X-WoWI-ID: 12901
 ## X-Curse-Project-ID: corpse
-## X-Localizations: deDE, enTW, enUS, esES, esMX, frFR, koKR, ptBR, ptPT, ruRU, zhCN, zhTW
-## X-CompatibleLocales: deDE, enTW, enUS, esES, esMX, frFR, koKR, ptBR, ptPT, ruRU, zhCN, zhTW
+## X-Localizations: deDE, enTW, enUS, esES, esMX, frFR, itIT, koKR, ptBR, ptPT, ruRU, zhCN, zhTW
+## X-CompatibleLocales: deDE, enTW, enUS, esES, esMX, frFR, itIT, koKR, ptBR, ptPT, ruRU, zhCN, zhTW
 ## SavedVariables: _CorpseLocale
 
 # See http://wow.curseforge.com/addons/corpse/localization/
@@ -38,6 +39,7 @@ Locales\Locale-enUS.lua
 Locales\Locale-deDE.lua
 Locales\Locale-esES.lua
 Locales\Locale-frFR.lua
+Locales\Locale-itIT.lua
 Locales\Locale-koKR.lua
 Locales\Locale-ptBR.lua
 Locales\Locale-ruRU.lua
