@@ -1,4 +1,4 @@
-## Interface: 40300
+## Interface: 50001
 ## Title: _|cffCCCC88NPCScan|r.Overlay
 ## Notes: Adds mob patrol paths to your map.
 ## Notes-deDE: Fügt deiner Karte die Laufpfade hinzu
@@ -22,8 +22,8 @@
 ## X-Credits-ruRU: Localization: The_DimoK, Sarymian
 ## X-Credits-zhCN: Localization: tss1398383123, zhTW, ananhaid, dh0000
 ## X-Credits-zhTW: Localization: s8095324, pepper_ep, zhTW, alpha2009
-## Version: 4.3.0.1
-## X-Date: 2011-11-29
+## Version: 5.0.0.1
+## X-Date: 2012-07-14
 ## X-Category: Map
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com

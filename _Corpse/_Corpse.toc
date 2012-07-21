@@ -1,4 +1,4 @@
-## Interface: 40300
+## Interface: 50001
 ## Title: _|cffCCCC88Corpse|r
 ## Notes: Adds online/offline status and other info to corpse tooltips.
 ## Notes-deDE: Fügt Online-/Offline-Status sowie weitere Informationen zu Leichnam-Tooltips hinzu.
@@ -20,8 +20,8 @@
 ## X-Credits-koKR: Localization: freshworks
 ## X-Credits-zhCN: Localization: Sparanoid
 ## X-Credits-zhTW: Localization: Sparanoid
-## Version: 4.3.0.4
-## X-Date: 2012-01-05
+## Version: 5.0.0.1
+## X-Date: 2012-07-14
 ## X-Category: Interface Enhancements
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com

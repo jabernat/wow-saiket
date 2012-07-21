@@ -1,11 +1,11 @@
-## Interface: 40300
+## Interface: 50001
 ## Title: _|cffCCCC88Cursor|r
 ## Notes: Adds custom effects to your cursor.
 ## Notes-koKR: 사용자가 정의한 효과를 커서에 추가합니다.
 ## Author: Saiket
 ## X-Credits-koKR: Localization: freshworks
-## Version: 4.3.0.1
-## X-Date: 2011-03-29
+## Version: 5.0.0.1
+## X-Date: 2012-07-14
 ## X-Category: Interface Enhancements
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com

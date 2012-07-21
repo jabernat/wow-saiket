@@ -312,8 +312,8 @@ do
 			local Color = ChatTypeInfo[ Info.arg1 ];
 			Info.colorCode = GUI.FormatColorCode( Color.r, Color.g, Color.b );
 		end
-		Menu[ 2 ].disabled = GetNumPartyMembers() == 0;
-		Menu[ 3 ].disabled = GetNumRaidMembers() == 0;
+		Menu[ 2 ].disabled = not IsInGroup();
+		Menu[ 3 ].disabled = not IsInRaid();
 		Menu[ 4 ].disabled = not IsInGuild();
 		Menu[ 5 ].disabled = not IsInGuild();
 		EasyMenu( Menu, Dropdown, "cursor", nil, nil, "MENU" );

@@ -14,5 +14,5 @@ _Corpse.Raid = NS;
 --- Returns an iterator for all raid UnitIDs.
 function NS:IterateUnitIDs ()
 	-- Last ID is always player, so skip it
-	return _Corpse.NextUnitID, "raid", GetNumRaidMembers() - 1;
+	return _Corpse.NextUnitID, "raid", GetNumGroupMembers() - 1;
 end

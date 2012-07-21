@@ -126,11 +126,7 @@ function NS.Toggle ( Show )
 	if ( Show == nil ) then
 		Show = not NS:IsShown();
 	end
-	if ( Show ) then
-		NS:Show();
-	else
-		NS:Hide();
-	end
+	NS:SetShown( Show );
 end
 --- Slash command that toggles the _UTF browse window.
 function NS.ToggleSlashCommand ()

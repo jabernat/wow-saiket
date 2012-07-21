@@ -217,6 +217,6 @@ end
 
 NS.Frame:SetScript( "OnEvent", NS.Frame.OnEvent );
 NS.Frame:RegisterEvent( "PLAYER_ENTERING_WORLD" );
-if ( IsLoggedIn() ) then -- Loaded on-demand
+if ( IsPlayerInWorld() ) then -- Loaded on-demand
 	NS.Frame:PLAYER_ENTERING_WORLD();
 end

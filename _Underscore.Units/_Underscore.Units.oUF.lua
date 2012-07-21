@@ -155,7 +155,6 @@ function NS:AuraPostCreateIcon ( Frame )
 	_Underscore.SkinButtonIcon( Frame.icon );
 	Frame.icon:SetNonBlocking( true );
 	Frame.cd:SetReverse( true );
-	Frame.cd:SetDrawEdge( true ); -- Adds a line along the cooldown's edge
 
 	-- Keep count from going off left side of screen for units on the edge
 	Frame.count:ClearAllPoints();
@@ -253,9 +252,8 @@ do
 	local Plus = { worldboss = true; elite = true; rareelite = true; };
 	--- Tag that displays level/classification or group # in raid.
 	function NS.TagClassification ( UnitID )
-		local RaidID = GetNumRaidMembers();
-		if ( UnitID == "player" and RaidID > 0 ) then
-			return L.OUF_GROUP_FORMAT:format( ( select( 3, GetRaidRosterInfo( RaidID ) ) ) );
+		if ( UnitID == "player" and IsInRaid() ) then
+			return L.OUF_GROUP_FORMAT:format( ( select( 3, GetRaidRosterInfo( GetNumGroupMembers() ) ) ) );
 		else
 			local Level = UnitLevel( UnitID );
 			if ( Plus[ UnitClassification( UnitID ) ] or Level ~= MAX_PLAYER_LEVEL or UnitLevel( "player" ) ~= MAX_PLAYER_LEVEL ) then
@@ -281,11 +279,11 @@ function NS.TagName ( UnitID, Override )
 	return L.OUF_NAME_FORMAT:format( Hex( Color ), ( Server and Server ~= "" ) and Name.."-"..Server or Name );
 end
 
-oUF.Tags[ "_UnderscoreUnitsClassification" ] = NS.TagClassification;
-oUF.TagEvents[ "_UnderscoreUnitsClassification" ] = "RAID_ROSTER_UPDATE "..oUF.TagEvents[ "smartlevel" ];
+oUF.Tags.Methods[ "_UnderscoreUnitsClassification" ] = NS.TagClassification;
+oUF.Tags.Events[ "_UnderscoreUnitsClassification" ] = "GROUP_ROSTER_UPDATE "..oUF.Tags.Events[ "smartlevel" ];
 
-oUF.Tags[ "_UnderscoreUnitsName" ] = NS.TagName;
-oUF.TagEvents[ "_UnderscoreUnitsName" ] = "UNIT_NAME_UPDATE UNIT_FACTION";
+oUF.Tags.Methods[ "_UnderscoreUnitsName" ] = NS.TagName;
+oUF.Tags.Events[ "_UnderscoreUnitsName" ] = "UNIT_NAME_UPDATE UNIT_FACTION";
 
 
 
