@@ -43,12 +43,7 @@ function NS.Toggle ( Enable )
 	if ( Enable == nil ) then
 		Enable = not NS.Frame:IsShown();
 	end
-
-	if ( Enable ) then
-		NS.Frame:Show();
-	else
-		NS.Frame:Hide();
-	end
+	NS.Frame:SetShown( Enable );
 end
 --- Toggles whether the frame is locked or not.
 -- @param Enable  True or false to lock/unlock controls, or nil to toggle.

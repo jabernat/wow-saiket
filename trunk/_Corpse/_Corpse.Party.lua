@@ -13,5 +13,5 @@ _Corpse.Party = NS;
 
 --- Returns an iterator for all party UnitIDs.
 function NS:IterateUnitIDs ()
-	return _Corpse.NextUnitID, "party", GetNumPartyMembers();
+	return _Corpse.NextUnitID, "party", GetNumSubgroupMembers();
 end

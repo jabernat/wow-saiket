@@ -13,7 +13,7 @@ NS.Machine = NS.NewStateMachine();
 
 
 NS.Item = "item:34599"; -- Juggling Torch
-NS.CriteriaID = 6937; -- Torch Juggler: Juggle 40 torches in 15 seconds in Dalaran.
+NS.ACHIEVEMENT_ID, NS.CRITERIA_ID = 272, 6937; -- Torch Juggler: Juggle 40 torches in 15 seconds in Dalaran.
 NS.Bindings = { -- Spammable bindings to override while active
 	"MOUSEWHEELUP",
 	"MOUSEWHEELDOWN",
@@ -114,12 +114,12 @@ end
 
 
 do
-	local GetAchievementCriteriaInfo = GetAchievementCriteriaInfo;
+	local GetAchievementCriteriaInfoByID = GetAchievementCriteriaInfoByID;
 	--- Updates the progress bar's value at most once per frame.
 	local function OnUpdate ( self )
 		self:SetScript( "OnUpdate", nil );
 
-		local _, _, Completed, Quantity, MaxQuantity, _, _, _, String = GetAchievementCriteriaInfo( NS.CriteriaID );
+		local _, _, Completed, Quantity, MaxQuantity, _, _, _, String = GetAchievementCriteriaInfoByID( NS.ACHIEVEMENT_ID, NS.CRITERIA_ID );
 		self:SetMinMaxValues( 0, MaxQuantity );
 		self:SetValue( Quantity );
 		if ( not Completed ) then
@@ -175,7 +175,7 @@ function NS.Button:CRITERIA_UPDATE ()
 end
 --- Updates the progress bar's text when criteria update.
 function NS.Button:TRACKED_ACHIEVEMENT_UPDATE ( _, _, CriteriaID, Elapsed, Duration )
-	if ( CriteriaID == NS.CriteriaID and Elapsed and Duration ) then
+	if ( CriteriaID == NS.CRITERIA_ID and Elapsed and Duration ) then
 		if ( Elapsed >= Duration ) then -- Failed
 			NS.Timer:Hide();
 		else
@@ -200,12 +200,9 @@ end
 --- Slash command to open or close the button.
 function NS.SlashCommand ()
 	if ( InCombatLockdown() ) then
-		NS.Print( NS.L.ERROR_COMBAT, RED_FONT_COLOR );
-	elseif ( NS.Button:IsShown() ) then
-		NS.Button:Hide();
-	else
-		NS.Button:Show();
+		return NS.Print( NS.L.ERROR_COMBAT, RED_FONT_COLOR );
 	end
+	NS.Button:SetShown( not NS.Button:IsShown() ); -- Toggle
 end
 
 

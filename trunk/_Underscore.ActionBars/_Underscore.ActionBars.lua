@@ -210,9 +210,9 @@ for Index = 1, NUM_MULTIBAR_BUTTONS do
 	ActionButtonModify( _G[ "MultiBarRightButton"..Index ], 270 );
 end
 
--- Shapeshift bar (These get replaced by Dominos later)
-for Index = 1, NUM_SHAPESHIFT_SLOTS do
-	ActionButtonModify( _G[ "ShapeshiftButton"..Index ], 180 );
+-- Stance bar (These get replaced by Dominos later)
+for Index = 1, NUM_STANCE_SLOTS do
+	ActionButtonModify( _G[ "StanceButton"..Index ], 180 );
 end
 
 -- Bag buttons

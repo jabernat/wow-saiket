@@ -447,11 +447,7 @@ end
 
 --- Shows or hides the filter pane.
 function NS.Toggle ()
-	if ( NS.Frame:IsShown() ) then
-		NS.Frame:Hide();
-	else
-		NS.Frame:Show();
-	end
+	NS.Frame:SetShown( not NS.Frame:IsShown() );
 end
 
 

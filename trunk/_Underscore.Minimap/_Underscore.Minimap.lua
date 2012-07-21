@@ -158,13 +158,8 @@ SkinButton( MiniMapMailFrame, 1, MiniMapMailBorder, MiniMapMailIcon, true );
 MiniMapMailFrame:SetPoint( "BOTTOMRIGHT", Minimap, -1, 0 );
 MiniMapMailIcon:SetTexture( [[Interface\Minimap\Tracking\Mailbox]] ); -- No black background
 
-SkinButton( MiniMapBattlefieldFrame, 1.5, MiniMapBattlefieldBorder, MiniMapBattlefieldIcon );
-MiniMapBattlefieldFrame:SetPoint( "RIGHT", MiniMapMailFrame, "LEFT" );
-BattlegroundShine:SetAllPoints();
-
-SkinButton( MiniMapLFGFrame, 1.75, MiniMapLFGFrameBorder, MiniMapLFGFrameIconTexture );
-MiniMapLFGFrame:SetPoint( "RIGHT", MiniMapBattlefieldFrame, "LEFT" );
-MiniMapLFGFrameIcon:SetAllPoints();
+SkinButton( QueueStatusMinimapButton, 1.5, QueueStatusMinimapButtonBorder, QueueStatusMinimapButtonIconTexture );
+QueueStatusMinimapButton:SetPoint( "RIGHT", MiniMapMailFrame, "LEFT" );
 
 
 -- Move the zone text inside of the square
