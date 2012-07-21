@@ -61,6 +61,7 @@ function NS:OnSelectNPC ( _, NpcID )
 end
 --- Shows the selected NPC in _NPCScan's alert button.
 function NS.Control:OnClick ()
+	PlaySound( "igMainMenuOptionCheckBoxOn" );
 	local NpcID, Name = Tools:GetSelectedNPC();
 	local DisplayID = Tools.NPCData.DisplayIDs[ NpcID ];
 	Button:Update( NpcID, Name );
