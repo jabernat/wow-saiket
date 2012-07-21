@@ -72,7 +72,7 @@ do
 		self.Edit:SetFontObject( self.Table.ElementFont );
 
 		local NpcIDs = {};
-		for WorldMapID, WorldMap in pairs( NS.NPCData.MapData ) do
+		for WorldMapID, WorldMap in pairs( NS.NPCData.Sightings ) do
 			for Floor, NPCs in pairs( WorldMap ) do
 				for NpcID in pairs( NPCs ) do
 					NpcIDs[ NpcID ] = true;
@@ -100,11 +100,11 @@ function Panel:ADDON_LOADED ( Event, AddOn )
 		-- Fix Wowhead's invalid map floors
 		local MapIDBackup = GetCurrentMapAreaID();
 		local MapIDs = {};
-		for MapID in pairs( NS.NPCData.MapData ) do
+		for MapID in pairs( NS.NPCData.Sightings ) do
 			MapIDs[ #MapIDs + 1 ] = MapID;
 		end
 		for _, MapID in ipairs( MapIDs ) do
-			local FloorNPCs = NS.NPCData.MapData[ MapID ][ 0 ];
+			local FloorNPCs = NS.NPCData.Sightings[ MapID ][ 0 ];
 			if ( FloorNPCs ) then
 				SetMapByID( MapID );
 				if ( GetNumDungeonMapLevels() >= 1 ) then
@@ -113,20 +113,20 @@ function Panel:ADDON_LOADED ( Event, AddOn )
 					local MapIDNew, FloorNew = GetCurrentMapAreaID(), GetCurrentMapDungeonLevel();
 
 					-- Merge old floor into new one
-					if ( not NS.NPCData.MapData[ MapIDNew ] ) then
-						NS.NPCData.MapData[ MapIDNew ] = {};
+					if ( not NS.NPCData.Sightings[ MapIDNew ] ) then
+						NS.NPCData.Sightings[ MapIDNew ] = {};
 					end
-					if ( not NS.NPCData.MapData[ MapIDNew ][ FloorNew ] ) then
-						NS.NPCData.MapData[ MapIDNew ][ FloorNew ] = {};
+					if ( not NS.NPCData.Sightings[ MapIDNew ][ FloorNew ] ) then
+						NS.NPCData.Sightings[ MapIDNew ][ FloorNew ] = {};
 					end
-					local FloorNPCsNew = NS.NPCData.MapData[ MapIDNew ][ FloorNew ];
+					local FloorNPCsNew = NS.NPCData.Sightings[ MapIDNew ][ FloorNew ];
 					for NpcID, Points in pairs( FloorNPCs ) do
 						FloorNPCsNew[ NpcID ] = ( FloorNPCsNew[ NpcID ] or "" )..Points;
 					end
 
-					NS.NPCData.MapData[ MapID ][ 0 ] = nil;
-					if ( next( NS.NPCData.MapData[ MapID ] ) == nil ) then -- Old map is now empty
-						NS.NPCData.MapData[ MapID ] = nil;
+					NS.NPCData.Sightings[ MapID ][ 0 ] = nil;
+					if ( next( NS.NPCData.Sightings[ MapID ] ) == nil ) then -- Old map is now empty
+						NS.NPCData.Sightings[ MapID ] = nil;
 					end
 				end
 			end
@@ -146,10 +146,7 @@ function Panel.Keys:OnShow ()
 	SetOverrideBindingClick( self, false, "UP", Panel.Up:GetName() );
 	SetOverrideBindingClick( self, false, "DOWN", Panel.Down:GetName() );
 end
---- Unregisters keys when hidden.
-function Panel.Keys:OnHide ()
-	ClearOverrideBindings( self );
-end
+Panel.Keys.OnHide = ClearOverrideBindings;
 Panel.Keys.PLAYER_REGEN_DISABLED = Panel.Keys.Hide;
 Panel.Keys.PLAYER_REGEN_ENABLED = Panel.Keys.Show;
 --- Scroll selection up.

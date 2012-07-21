@@ -150,7 +150,7 @@ def write(output_filename, data_path, locale):
     output.write('\t};\n')
 
     # Write point data per world map per floor.
-    output.write('\tMapData = {\n')
+    output.write('\tSightings = {\n')
     for worldmap_id, worldmap in sorted(worldmap_data.iteritems()):
       if worldmap:  # At least one level in world map
         output.write('\t\t[ ' + str(worldmap_id) + ' ] = {\n')
