@@ -27,7 +27,7 @@ end
 
 
 do
-	local Backup = updateContainerFrameAnchors;
+	local Backup = UpdateContainerFrameAnchors;
 	--- Reparents bags before positioning them for scaling.
 	function NS.Update ( ... )
 		for Index, Name in ipairs( ContainerFrame1.bags ) do
@@ -58,8 +58,8 @@ NS.Frame:SetPoint( "TOPLEFT", _Underscore.TopMargin, "BOTTOMLEFT", BagPadding, -
 NS.Frame:SetPoint( "BOTTOMRIGHT", _Underscore.ActionBars.BackdropRight, "BOTTOMLEFT", -BagPadding, BagPadding );
 NS.Frame:SetScale( BagScale );
 
-setfenv( updateContainerFrameAnchors, NS.ContainerEnv );
-updateContainerFrameAnchors = NS.Update;
+setfenv( UpdateContainerFrameAnchors, NS.ContainerEnv );
+UpdateContainerFrameAnchors = NS.Update;
 
 
 -- Enable scrolling the stack split dialog
