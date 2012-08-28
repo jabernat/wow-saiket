@@ -495,7 +495,7 @@ end
 
 -- Set up filter button
 NS.ToggleButton:SetSize( 100, 21 );
-NS.ToggleButton:SetPoint( "TOPRIGHT", -11, -40 );
+NS.ToggleButton:SetPoint( "TOPRIGHT", -11, -30 );
 NS.ToggleButton:SetText( L.FILTER );
 NS.ToggleButton:SetScript( "OnClick", NS.Toggle );
 
@@ -504,7 +504,7 @@ NS.ToggleButton:SetScript( "OnClick", NS.Toggle );
 local Frame = NS.Frame;
 Frame:Hide();
 Frame:SetSize( 187, 409 );
-Frame:SetPoint( "TOPLEFT", GuildBankFrame, "TOPRIGHT", -2, -28 );
+Frame:SetPoint( "TOPLEFT", GuildBankFrame, "TOPRIGHT", -2, -18 );
 Frame:EnableMouse( true );
 Frame:SetToplevel( true );
 
