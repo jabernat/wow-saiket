@@ -31,6 +31,9 @@ NS.defaultDB = {
 do
 	--- Recalculates cached gradient colors.
 	local function UpdateColorCache ()
+		-- Rotate color tables so SendStatusGained thinks the colors changed
+		table.insert( ColorCache, table.remove( ColorCache, 1 ) );
+
 		local Low = NS.db.profile[ STATUS_ID ].ColorLow;
 		local High = NS.db.profile[ STATUS_ID ].ColorHigh;
 		for Step = 0, COLOR_CACHE_STEPS do
@@ -139,7 +142,7 @@ do
 
 		local DB = self.db.profile[ STATUS_ID ];
 		return self.core:SendStatusGained( GUID, STATUS_ID,
-			DB.priority, ( DB.range and 40 ),
+			DB.priority, DB.range and 40,
 			ColorCache[ ceil( Percentage * COLOR_CACHE_STEPS ) ],
 			L.LABEL_FORMAT:format( ceil( Percentage * 100 ) ) );
 	end
