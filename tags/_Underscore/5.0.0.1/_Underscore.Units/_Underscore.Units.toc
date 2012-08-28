@@ -1,0 +1,22 @@
+## Interface: 50001
+## Title: _|cffCCCC88Underscore|r.Units
+## Notes: A set of skinned unit frames.
+## Author: Saiket
+## Version: 5.0.0.1
+## X-Date: 2012-07-14
+## X-Category: Frame Modification
+## X-License: GPLv3
+## X-Email: saiket.wow@gmail.com
+## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons
+## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:Underscore
+## X-Child-Of: _Underscore
+## X-Localizations: enUS
+## RequiredDeps: _Underscore, oUF
+## OptionalDeps: oUF_CombatFeedback, oUF_DebuffHighlight, oUF_Experience, oUF_Reputation, oUF_Smooth, oUF_SpellRange, Grid
+
+Locales\Locale-enUS.lua
+
+_Underscore.Units.lua
+_Underscore.Units.oUF.xml
+_Underscore.Units.oUF.lua
+_Underscore.Units.Grid.lua
