@@ -1,0 +1,17 @@
+<Bindings>
+	<Binding name="_DEV_RELOADUI" header="_DEV">
+		_Dev.ReloadUIBinding();
+	</Binding>
+	<Binding name="_DEV_OPENCHATSCRIPT">
+		_Dev.OpenChatScriptBinding();
+	</Binding>
+	<Binding name="_DEV_FRAMESTOGGLE">
+		_Dev.Frames.Toggle();
+	</Binding>
+
+	<ModifiedClick action="_DEV_ENABLECONSOLE" default="CTRL"/>
+	<ModifiedClick action="_DEV_FRAMES_INTERACTIVE" default="ALT"/>
+	<ModifiedClick action="_DEV_FRAMES_OUTLINE" default="ALT-BUTTON1"/>
+	<ModifiedClick action="_DEV_FRAMES_NAME" default="ALT-BUTTON2"/>
+	<ModifiedClick action="_DEV_FRAMES_DUMP" default="ALT-BUTTON3"/>
+</Bindings>
