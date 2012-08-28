@@ -1,0 +1,37 @@
+## Interface: 50001
+## Title: _|cffCCCC88DevPad|r.GUI
+## Notes: Script list and editor for _|cffCCCC88DevPad|r.
+## Author: Saiket
+## Version: 5.0.0.1
+## X-Date: 2012-07-14
+## X-Category: Development Tools
+## X-License: GPLv3
+## X-Email: saiket.wow@gmail.com
+## X-Website: http://sites.google.com/site/wowsaiket/Add-Ons/DevPad
+## X-Feedback: http://code.google.com/p/wow-saiket/issues/list?can=1&q=AddOn:DevPad
+## X-WoWI-ID: 19403
+## X-Curse-Project-ID: devpad
+## X-Child-Of: _DevPad
+## X-Localizations: enUS
+## X-CompatibleLocales: deDE, enCN, enTW, enUS, esES, esMX, frFR, koKR, ptBR, ptPT, ruRU, zhCN, zhTW
+## X-Embeds: FlyPaper
+## SavedVariables: _DevPadGUIOptions
+## RequiredDeps: _DevPad
+## OptionalDeps: FlyPaper
+## LoadOnDemand: 1
+
+Libs\FlyPaper\FlyPaper.lua
+Libs\ForAllIndentsAndPurposes\indent.lua
+
+# See http://wow.curseforge.com/addons/devpad/localization/
+Locales\Locale-enUS.lua
+
+_DevPad.GUI.lua
+_DevPad.GUI.Dialog.lua
+_DevPad.GUI.List.lua
+_DevPad.GUI.Editor.lua
+# Optional modules
+_DevPad.GUI.List.Search.lua
+_DevPad.GUI.Editor.Color.lua
+_DevPad.GUI.Editor.History.lua
+_DevPad.GUI.Editor.LineNumbers.lua
