@@ -164,7 +164,7 @@ class MPQ(_Handle):
 
   def add_patch(self, filename, prefix=''):
     """Overlay another MPQ's contents over this one."""
-    stormlib.SFileOpenPatchArchive(self.handle, str(filename), prefix.encode('utf_8'))
+    stormlib.SFileOpenPatchArchive(self.handle, os.path.normcase(str(filename)), prefix.encode('utf_8'))
 
   def contains(self, filename):
     """Check if `filename` exists in this MPQ."""
@@ -174,23 +174,34 @@ class MPQ(_Handle):
   def open(self, filename):
     """Open a file contained in this MPQ for reading."""
     stormlib.SFileSetLocale(self.locale)
-    return MPQFile(self, filename)
+    return MPQFile(self, os.path.normcase(filename))
 
 
-def open_locale_mpq(data_path, locale):
-  """Open a World of Warcraft locale MPQ with all patches."""
+def open_dbc_mpq(data_path, locale):
+  """Open a World of Warcraft patched MPQ containing all game DBCs."""
   locale = unicode(locale)
-  data_path = os.path.join(os.path.normpath(data_path), locale)
-  archive = MPQ(os.path.join(data_path, 'locale-' + locale + '.MPQ'))
+  data_path = os.path.normpath(data_path)
+  locale_path = os.path.join(data_path, locale)
+  archive = MPQ(os.path.join(data_path, 'misc.MPQ'))
   try:
-    # Iterate over patch MPQs in revision order
-    pattern = re.compile(r'^wow\-update\-' + re.escape(locale) + r'\-(?P<revision>\d+)\.MPQ$', re.IGNORECASE)
+    # Iterate over base patch MPQs in revision order
+    pattern = re.compile(r'^wow\-update\-base\-(?P<revision>\d+)\.MPQ$', re.IGNORECASE)
     for revision, filename in sorted(
       (int(match.group('revision')), match.string) for match in (
         pattern.match(filename) for filename in os.listdir(data_path)
       ) if match is not None
     ):
-      archive.add_patch(os.path.join(data_path, filename), prefix=locale)
+      archive.add_patch(os.path.join(data_path, filename))
+
+    archive.add_patch(os.path.join(locale_path, 'locale-' + locale + '.MPQ'))
+    # Iterate over locale patch MPQs in revision order
+    pattern = re.compile(r'^wow\-update\-' + re.escape(locale) + r'\-(?P<revision>\d+)\.MPQ$', re.IGNORECASE)
+    for revision, filename in sorted(
+      (int(match.group('revision')), match.string) for match in (
+        pattern.match(filename) for filename in os.listdir(locale_path)
+      ) if match is not None
+    ):
+      archive.add_patch(os.path.join(locale_path, filename), prefix=locale)
   except:
     archive.close()
     raise

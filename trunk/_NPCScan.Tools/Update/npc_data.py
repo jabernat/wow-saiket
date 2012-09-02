@@ -103,7 +103,7 @@ def write(output_filename, data_path, locale):
       cr=_FILTER_BY_ID, crs=_FILTER_EQUALS, crv=npc_id))
 
   # Create a lookup for zone AreaTable IDs used by WowHead to WorldMapArea IDs
-  with wowdata.mpq.open_locale_mpq(data_path, locale) as archive:
+  with wowdata.mpq.open_dbc_mpq(data_path, locale) as archive:
     with dbc.DBC(archive.open('DBFilesClient/WorldMapArea.dbc'),
       'id', None, 'area_id', flags=11) as worldmaps \
     :
