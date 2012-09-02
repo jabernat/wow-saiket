@@ -266,6 +266,32 @@ function NS:ApplyZone ( Map, Callback )
 end
 
 
+--- @return ID of the current "world"/instance/continent, even if it has no map areas.
+function NS.GetCurrentMapID ()
+	return ( select( 8, GetInstanceInfo() ) );
+end
+--- @return ((``Left``,``Top``), (``Right``, ``Bottom``)) boundaries of the current map area.
+function NS.GetCurrentMapAreaRectangle ()
+	local _, Right, Bottom, Left, Top = GetCurrentMapDungeonLevel();
+	if ( not Right ) then
+		_, Left, Top, Right, Bottom = GetCurrentMapZone();
+	end
+	return -Left, Top, -Right, Bottom; -- X-axis is flipped in map coordinates
+end
+--- @return (``X``, ``Y``) coordinate of the player on the current map area.
+function NS.GetPlayerPoint ()
+	local X, Y = GetPlayerMapPosition( "player" );
+	if ( X ~= 0 and Y ~= 0 ) then -- Player appears on the current map area
+		local MapID, Y, X = GetWorldLocFromMapPos( X, Y );
+		if ( MapID == NS.GetCurrentMapID() ) then -- Not a virtual map transformation
+			return -X, Y; -- X-axis is flipped in map coordinates
+		end
+	end
+end
+--- @return ID of map that `MapAreaID` exists on.
+function NS.GetMapAreaMapID ( MapAreaID )
+	return ( GetAreaMapInfo( MapAreaID ) );
+end
 
 
 --- @return Aliased NPC ID, or original if not aliased.
