@@ -25,7 +25,7 @@ def write(output_filename, data_path, locale):
   print 'Writing all rares from {:s} Wowhead to <{:s}>...'.format(locale, output_filename)
   npcs = wowdata.wowhead.get_npcs_all_levels(locale, cl='2:4')  # Rare and rare elite
 
-  with wowdata.mpq.open_locale_mpq(data_path, locale) as archive:
+  with wowdata.mpq.open_dbc_mpq(data_path, locale) as archive:
     # Remove NPCs that _NPCScan already tracks as part of achievements
     print '\tRemoving achievement criteria rares...'
     with dbc.DBC(archive.open('DBFilesClient/Achievement.dbc'),

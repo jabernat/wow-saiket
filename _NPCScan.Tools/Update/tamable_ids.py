@@ -28,7 +28,7 @@ def write(output_filename, data_path, locale):
   output_filename = os.path.normcase(output_filename)
   data_path = os.path.normcase(data_path)
   print 'Writing tamable rares from {:s} Wowhead to <{:s}>...'.format(locale, output_filename)
-  with wowdata.mpq.open_locale_mpq(data_path, locale) as archive:
+  with wowdata.mpq.open_dbc_mpq(data_path, locale) as archive:
     # Build a list of all pet types to query for
     with dbc.DBC(archive.open('DBFilesClient/CreatureFamily.dbc'),
       'id', pet_talent_type=8) as creature_families \

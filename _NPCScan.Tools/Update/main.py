@@ -40,14 +40,14 @@ def run_all(account=None, realm=None, character=None,
   wtf_path = (_path(wtf_path) if wtf_path is not None
     else _path('..', '..', '..', '..', 'WTF'))
   obj_path = (_path(obj_path) if obj_path is not None
-    else _path('PathData'))
+    else _path('geometry'))
 
   print
   routes_to_objs.write(obj_path,
     data_path, _path(wtf_path, 'Account', account, 'SavedVariables', 'Routes.lua'))
   print
   objs_to_overlays.write(
-    _path(interface_path, 'AddOns', '_NPCScan.Overlay', '_NPCScan.Overlay.PathData.lua'),
+    _path(interface_path, 'AddOns', '_NPCScan.Overlay', '_NPCScan.Overlay.Geometry.lua'),
     obj_path)
   print
   print 'Staging new *.obj files for commit...'
@@ -56,6 +56,7 @@ def run_all(account=None, realm=None, character=None,
   except (OSError, subprocess.CalledProcessError) as e:
     print '\t{!r}'.format(e)
   print
+  '''
   tamable_ids.write(
     _path(interface_path, 'AddOns', '_NPCScan', '_NPCScan.TamableIDs.lua'),
     data_path, locale)
@@ -67,6 +68,7 @@ def run_all(account=None, realm=None, character=None,
   npc_data.write(
     _path(interface_path, 'AddOns', '_NPCScan.Tools', '_NPCScan.Tools.NPCData.lua'),
     data_path, locale)
+  '''
 
 
 if __name__ == '__main__':
@@ -85,7 +87,7 @@ if __name__ == '__main__':
   parser.add_argument('--wtf', '-w', type=unicode, dest='wtf_path',
     help='Path to WoW\'s WTF folder.  If omitted, assume the default location relative to this script.')
   parser.add_argument('--objs', '-o', type=unicode, dest='obj_path',
-    help='Path to save overlay *.obj model files to.  Defaults to a PathData sub-directory if omitted.')
+    help='Path to save overlay *.obj model files to.  Defaults to the "geometry" sub-directory if omitted.')
   parser.add_argument('--locale', '-l', type=unicode,
     help='Locale code to read and write data files for.')
   run_all(**vars(parser.parse_args()))

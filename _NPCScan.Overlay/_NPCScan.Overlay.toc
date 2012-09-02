@@ -27,7 +27,7 @@
 ## X-Credits-zhCN: Localization: tss1398383123, zhTW, ananhaid, dh0000
 ## X-Credits-zhTW: Localization: s8095324, pepper_ep, zhTW, alpha2009
 ## Version: 5.0.0.1
-## X-Date: 2012-07-21
+## X-Date: 2012-09-01
 ## X-Category: Map
 ## X-License: GPLv3
 ## X-Email: saiket.wow@gmail.com
@@ -59,6 +59,7 @@ _NPCScan.Overlay.lua
 _NPCScan.Overlay.Config.lua
 _NPCScan.Overlay.Modules.lua
 _NPCScan.Overlay.PathData.lua
+_NPCScan.Overlay.Geometry.lua
 
 # Canvas modules
 Modules\WorldMapTemplate.lua
