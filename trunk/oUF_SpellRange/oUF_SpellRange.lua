@@ -39,6 +39,7 @@ do
 	local UnitIsDead = UnitIsDead;
 	local UnitOnTaxi = UnitOnTaxi;
 	local UnitInRange = UnitInRange;
+	local IsInGroup = IsInGroup;
 	local IsSpellInRange = IsSpellInRange;
 	local CheckInteractDistance = CheckInteractDistance;
 	--- Uses an appropriate range check for the given unit.
@@ -50,11 +51,15 @@ do
 			if ( UnitCanAssist( "player", UnitID ) ) then
 				if ( HelpName and not UnitIsDead( UnitID ) ) then
 					return IsSpellInRange( HelpName, UnitID ) == 1;
-				elseif ( not UnitOnTaxi( "player" ) -- UnitInRange always returns nil while on flightpaths
-					and ( UnitIsUnit( UnitID, "player" ) or UnitIsUnit( UnitID, "pet" )
-						or UnitPlayerOrPetInParty( UnitID ) or UnitPlayerOrPetInRaid( UnitID ) )
-				) then
-					return UnitInRange( UnitID ); -- Fast checking for self and party members (38 yd range)
+				elseif ( not UnitOnTaxi( "player" ) ) then -- UnitInRange always returns nil while on flightpaths
+					-- Use UnitInRange if available (38 yd range)
+					if ( IsInGroup() ) then -- UnitInRange only works while in a group
+						if ( UnitIsUnit( UnitID, "player" ) or UnitIsUnit( UnitID, "pet" ) ) then
+							return UnitInRange( UnitID );
+						end
+					elseif ( UnitPlayerOrPetInParty( UnitID ) or UnitPlayerOrPetInRaid( UnitID ) ) then
+						return UnitInRange( UnitID );
+					end
 				end
 			elseif ( HarmName and not UnitIsDead( UnitID ) and UnitCanAttack( "player", UnitID ) ) then
 				return IsSpellInRange( HarmName, UnitID ) == 1;
