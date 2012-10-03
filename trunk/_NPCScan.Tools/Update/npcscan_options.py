@@ -15,6 +15,7 @@ __license__ = 'GPL'
 _KILL_ACHIEVEMENTS = set((  # Rare mob achievements tracked by _NPCScan
   1312,  # Bloody Rare
   2257,  # Frostbitten
+  7439,  # Glorious!
 ))
 _KILL_CRITERIA_TYPE = 0  # Criteria TypeID for NPC kills
 
