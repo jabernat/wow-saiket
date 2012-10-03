@@ -56,7 +56,6 @@ def run_all(account=None, realm=None, character=None,
   except (OSError, subprocess.CalledProcessError) as e:
     print '\t{!r}'.format(e)
   print
-  '''
   tamable_ids.write(
     _path(interface_path, 'AddOns', '_NPCScan', '_NPCScan.TamableIDs.lua'),
     data_path, locale)
@@ -68,7 +67,6 @@ def run_all(account=None, realm=None, character=None,
   npc_data.write(
     _path(interface_path, 'AddOns', '_NPCScan.Tools', '_NPCScan.Tools.NPCData.lua'),
     data_path, locale)
-  '''
 
 
 if __name__ == '__main__':

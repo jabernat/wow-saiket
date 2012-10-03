@@ -21,6 +21,7 @@ _CREATURE_FAMILY_BLACKLIST = set((  # Querying Wowhead for these causes an error
   59,  # Duplicate silithid entry
   66,  # Duplicate wasp entry
   68,  # Hydra
+  126,  # Water Strider
 ))
 
 def write(output_filename, data_path, locale):
@@ -37,7 +38,7 @@ def write(output_filename, data_path, locale):
         in creature_families if row.int('pet_talent_type') >= 0)
       pet_families -= _CREATURE_FAMILY_BLACKLIST
     npcs = wowdata.wowhead.get_npcs_all_levels(locale, cl='2:4',  # Rare and rare elite
-      fa=':'.join(map(unicode, pet_families)))
+      fa=':'.join(map(unicode, sorted(pet_families))))
 
     with \
       dbc.DBC(archive.open('DBFilesClient/WorldMapArea.dbc'),
