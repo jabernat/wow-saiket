@@ -69,9 +69,9 @@ def write(output_filename, data_path, locale):
 
     with \
       dbc.DBC(archive.open('DBFilesClient/AreaTable.dbc'),
-        'id', 'map_id', name=11) as areas, \
+        'id', 'map_id', name=13) as areas, \
       dbc.DBC(archive.open('DBFilesClient/Map.dbc'),
-        'id', name=6, area_id=7) as maps \
+        'id', name=5, area_id=7) as maps \
     :
       areas.rows = {area.int('id'): area for area in areas}
       maps.rows = {map.int('id'): map for map in maps}
