@@ -44,7 +44,7 @@ def write(output_filename, data_path, locale):
       dbc.DBC(archive.open('DBFilesClient/WorldMapArea.dbc'),
         'id', None, 'area_id', flags=11) as worldmaps, \
       dbc.DBC(archive.open('DBFilesClient/AreaTable.dbc'),
-        'id', name=11) as areas \
+        'id', name=13) as areas \
     :
       areas.rows = {area.int('id'): area for area in areas}
       # Create a lookup for zone AreaTable IDs used by WowHead to WorldMapArea IDs
