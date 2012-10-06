@@ -131,7 +131,7 @@ def write(output_path, data_path, routes_filename):
 
         # Add faces to overlays
         for name in routes.keys():
-          match = re.match(r'^Overlay:(?P<npc_id>\d+):(?P<name>[^:]+):\d+$',
+          match = re.match(r'^Overlay:(?P<npc_id>\d+):(?P<name>[^:]+)(:.+)?$',
             name.decode('utf_8'))
           if match:  # Path is an overlay face
             npc_id = int(match.group('npc_id'))
