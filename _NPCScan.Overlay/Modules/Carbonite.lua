@@ -18,7 +18,7 @@ if ( not ( WorldMap and WorldMap.Registered ) ) then
 	return;
 end
 
-local CarboniteMap = NxMap1.NxM1;
+local CarboniteMap = NxMap1.NxMap;
 local NS = CreateFrame( "Frame", nil, WorldMap );
 Overlay.Modules.Carbonite = NS;
 
@@ -27,9 +27,9 @@ Overlay.Modules.Carbonite = NS;
 
 --- Repositions the canvas as the Carbonite map moves.
 function NS:OnUpdate ()
-	CarboniteMap:CZF( CarboniteMap.Con, CarboniteMap.Zon, WorldMap, 1 );
+	CarboniteMap:ClipZoneFrm( CarboniteMap.Con, CarboniteMap.Zon, WorldMap, 1 );
 	WorldMap.RangeRing.Child:SetScale( WorldMap:GetScale() ); -- CarboniteMap:CZF also sets point
-	WorldMap.KeyParent:SetAlpha( NxMap1.NxW.BaF ); -- Obey window's "Fade Out" setting
+	WorldMap.KeyParent:SetAlpha( NxMap1.NxWin.BackgndFade ); -- Obey window's "Fade Out" setting
 end
 
 
@@ -63,7 +63,7 @@ function NS:WorldMapFrameOnHide ()
 		NS:Show(); -- Begin updating with Carbonite
 		WorldMap.Toggle:Hide();
 
-		local ScrollFrame = CarboniteMap.TSF;
+		local ScrollFrame = CarboniteMap.TextScFrm;
 		WorldMap:SetParent( ScrollFrame:GetScrollChild() );
 		WorldMap:ClearAllPoints();
 
@@ -72,7 +72,7 @@ function NS:WorldMapFrameOnHide ()
 
 		WorldMap.RangeRing:SetParent( ScrollFrame );
 		WorldMap.RangeRing:SetAllPoints();
-		WorldMap.RangeRingSetTarget( CarboniteMap.PlF );
+		WorldMap.RangeRingSetTarget( CarboniteMap.PlyrFrm );
 	end
 end
 
