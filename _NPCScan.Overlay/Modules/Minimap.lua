@@ -25,7 +25,6 @@ do
 	local SplitPoints = {};
 	local X, Y, Facing, Width, Height;
 	local FacingSin, FacingCos;
-	local MaxDataValue = 2 ^ 16 - 1;
 
 	local PaintPath;
 	do
@@ -240,6 +239,8 @@ do
 			end
 		end
 
+		local COORD_MAX = 2 ^ 8 - 1;
+		local BYTES_PER_TRIANGLE = 2 * 3;
 		local wipe = wipe;
 		local Ax, Ax2, Ay, Ay2, Bx, Bx2, By, By2, Cx, Cx2, Cy, Cy2;
 		local ABx, ABy, BCx, BCy, ACx, ACy;
@@ -253,7 +254,7 @@ do
 		-- @see Overlay.ApplyZone
 		function PaintPath ( self, PathData, FoundX, FoundY, R, G, B )
 			if ( FoundX ) then
-				FoundX, FoundY = FoundX * MaxDataValue * Width - X, FoundY * MaxDataValue * Height - Y;
+				FoundX, FoundY = FoundX * Width - X, FoundY * Height - Y;
 				if ( RotateMinimap ) then
 					FoundX, FoundY = FoundX * FacingCos - FoundY * FacingSin, FoundX * FacingSin + FoundY * FacingCos;
 				end
@@ -261,12 +262,12 @@ do
 				Overlay.DrawFound( self, FoundX + 0.5, FoundY + 0.5, Overlay.DetectionRadius / ( Radius * 2 ), "OVERLAY", R, G, B );
 			end
 
-			for Index = 1, #PathData, 12 do
-				Ax, Ax2, Ay, Ay2, Bx, Bx2, By, By2, Cx, Cx2, Cy, Cy2 = PathData:byte( Index, Index + 11 );
-				Ax, Ay = ( Ax * 256 + Ax2 ) * Width - X, ( Ay * 256 + Ay2 ) * Height - Y;
-				Bx, By = ( Bx * 256 + Bx2 ) * Width - X, ( By * 256 + By2 ) * Height - Y;
-				Cx, Cy = ( Cx * 256 + Cx2 ) * Width - X, ( Cy * 256 + Cy2 ) * Height - Y;
-
+			local PointsOffset, LinesOffset, TrianglesOffset = Overlay.GetPathPrimitiveOffsets( PathData );
+			for Index = TrianglesOffset, #PathData, BYTES_PER_TRIANGLE do
+				Ax, Ax2, Ay, Ay2, Bx, Bx2, By, By2, Cx, Cx2, Cy, Cy2 = PathData:byte( Index, Index + BYTES_PER_TRIANGLE - 1 );
+				Ax, Ay = ( Ax * 256 + Ax2 ) / COORD_MAX * Width - X, ( 1 - ( Ay * 256 + Ay2 ) / COORD_MAX ) * Height - Y;
+				Bx, By = ( Bx * 256 + Bx2 ) / COORD_MAX * Width - X, ( 1 - ( By * 256 + By2 ) / COORD_MAX ) * Height - Y;
+				Cx, Cy = ( Cx * 256 + Cx2 ) / COORD_MAX * Width - X, ( 1 - ( Cy * 256 + Cy2 ) / COORD_MAX ) * Height - Y;
 
 				if ( RotateMinimap ) then
 					Ax, Ay = Ax * FacingCos - Ay * FacingSin, Ax * FacingSin + Ay * FacingCos;
@@ -476,7 +477,7 @@ do
 
 		local Side = Radius * 2;
 		Width, Height = Overlay.GetMapSize( Map );
-		Width, Height = Width / MaxDataValue / Side, Height / MaxDataValue / Side; -- Simplifies data decompression
+		Width, Height = Width / Side, Height / Side; -- Simplifies data decompression
 		X, Y = NewX / Side, NewY / Side;
 		Facing = NewFacing;
 
@@ -540,15 +541,14 @@ do
 	local GetCurrentMapAreaID = GetCurrentMapAreaID;
 	local UpdateNext = 0;
 	local LastX, LastY, LastFacing;
-	local Map, X, Y, Facing, Width, Height;
 	--- Throttles repaints based on a timer, and only repaints if the minimap view changes.
 	function NS:OnUpdate ( Elapsed )
 		UpdateNext = UpdateNext - Elapsed;
 		if ( UpdateForce or UpdateNext <= 0 ) then
 			UpdateNext = UpdateRate;
 
-			Map = Overlay.GetMapID( GetRealZoneText() );
-			X, Y = GetPlayerMapPosition( "player" );
+			local Map = Overlay.GetMapID( GetRealZoneText() );
+			local X, Y = GetPlayerMapPosition( "player" );
 			if ( not Map
 				or ( X == 0 and Y == 0 )
 				or X < 0 or X > 1 or Y < 0 or Y > 1
@@ -563,8 +563,8 @@ do
 			RotateMinimap = GetCVarBool( "rotateMinimap" );
 			UpdateRate = self[ RotateMinimap and "UpdateRateRotating" or "UpdateRateDefault" ];
 
-			Facing = RotateMinimap and GetPlayerFacing() or 0;
-			Width, Height = Overlay.GetMapSize( Map );
+			local Facing = RotateMinimap and GetPlayerFacing() or 0;
+			local Width, Height = Overlay.GetMapSize( Map );
 			X, Y = X * Width, Y * Height;
 
 			if ( UpdateForce or Facing ~= LastFacing or ( X - LastX ) ^ 2 + ( Y - LastY ) ^ 2 >= self.UpdateDistance ) then
