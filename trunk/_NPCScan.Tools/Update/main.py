@@ -46,15 +46,15 @@ def run_all(account=None, realm=None, character=None,
   routes_to_objs.write(obj_path,
     data_path, _path(wtf_path, 'Account', account, 'SavedVariables', 'Routes.lua'))
   print
-  objs_to_overlays.write(
-    _path(interface_path, 'AddOns', '_NPCScan.Overlay', '_NPCScan.Overlay.Geometry.lua'),
-    obj_path)
-  print
   print 'Staging new *.obj files for commit...'
   try:
     subprocess.check_call(('svn', 'add', '--force', '--non-interactive', obj_path))
   except (OSError, subprocess.CalledProcessError) as e:
     print '\t{!r}'.format(e)
+  print
+  objs_to_overlays.write(
+    _path(interface_path, 'AddOns', '_NPCScan.Overlay', '_NPCScan.Overlay.PathData.lua'),
+    obj_path)
   print
   tamable_ids.write(
     _path(interface_path, 'AddOns', '_NPCScan', '_NPCScan.TamableIDs.lua'),
