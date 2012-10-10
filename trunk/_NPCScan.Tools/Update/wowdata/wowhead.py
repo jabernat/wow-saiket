@@ -27,7 +27,7 @@ _LOCALE_SUBDOMAINS = {  # Subdomains for localized Wowhead.com data
 }
 _REQUEST_INTERVAL = 30  # Seconds between requests to Wowhead
 _NPC_LEVEL_MIN = 0  # Querying level 0 returns mobs without a listed level
-_NPC_LEVEL_MAX = 85 + 3  # Max rare mob level (+3 for boss level)
+_NPC_LEVEL_MAX = 90 + 3  # Max rare mob level (+3 for boss level)
 _NPC_LEVEL_UNKNOWN = 9999  # Sentinel value used for level "??"
 _BEAUTIFULSOUP_PARSER = 'lxml'
 
