@@ -45,6 +45,7 @@ NS.NPCAliases = { -- (Key) NPC shows (Value) NPC's path instead
 NS.Achievements = { -- Achievements whos criteria mobs are all mapped
 	[ 1312 ] = true; -- Bloody Rare (Outlands)
 	[ 2257 ] = true; -- Frostbitten (Northrend)
+	[ 7439 ] = true; -- Glorious! (Pandaria)
 };
 
 NS.Colors = {
