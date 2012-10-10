@@ -60,12 +60,13 @@ def write(output_filename, data_path, locale):
       'id', 'map_id', 'area_id', flags=11) as worldmaps \
     :
       worldmaps.rows = {worldmap.int('id'): worldmap for worldmap in worldmaps}
-      FLAG_PHASE = 0x2
+      FLAG_PHASE, FLAG_VIRTUAL_CONTINENT = 0x2, 0x8
       map_continent_ids = {map_id: continent_id
         for continent_id, map_id in enumerate(start=1, sequence=(worldmap.int('map_id')
           for worldmap_id, worldmap in sorted(worldmaps.rows.iteritems())  # Ordered by WorldMapID
-            if not worldmap.int('area_id')  # Is a continent
-              and not worldmap.int('flags') & FLAG_PHASE))}  # Not a phased map
+            if (not worldmap.int('area_id') or worldmap.int('flags') & FLAG_VIRTUAL_CONTINENT)  # Is a continent
+              and not worldmap.int('flags') & FLAG_PHASE))  # Not a phased map
+        if map_id >= 0}  # Don't include map areas with no map terrain
 
     with \
       dbc.DBC(archive.open('DBFilesClient/AreaTable.dbc'),
