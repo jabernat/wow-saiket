@@ -33,12 +33,13 @@ def run_all(account=None, realm=None, character=None,
   if locale is None:
     locale = 'enUS'
 
+  up = os.pardir
   data_path = (_path(data_path) if data_path is not None
-    else _path('..', '..', '..', '..', 'Data'))
+    else _path(up, up, up, up, 'Data'))
   interface_path = (_path(interface_path) if interface_path is not None
-    else _path('..', '..', '..'))
+    else _path(up, up, up))
   wtf_path = (_path(wtf_path) if wtf_path is not None
-    else _path('..', '..', '..', '..', 'WTF'))
+    else _path(up, up, up, up, 'WTF'))
   obj_path = (_path(obj_path) if obj_path is not None
     else _path('geometry'))
 
