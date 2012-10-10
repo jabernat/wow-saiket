@@ -44,6 +44,7 @@ Overlay.L = setmetatable( {
 		[ 50159 ] = "Sambas",
 		[ 51071 ] = "Capitán Florence",
 		[ 51079 ] = "Capitán Vientinfecto",
+		[ 62346 ] = "Galeón", -- Needs review
 	}, { __index = Overlay.L.NPCs; } );
 
 	CONFIG_ALPHA = "Alfa",
