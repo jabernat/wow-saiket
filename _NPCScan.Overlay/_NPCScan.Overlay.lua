@@ -58,6 +58,8 @@ NS.Colors = {
 	UnitPopupButtons.RAID_TARGET_5.color,
 	UnitPopupButtons.RAID_TARGET_6.color,
 	UnitPopupButtons.RAID_TARGET_3.color,
+	RAID_CLASS_COLORS.MONK,
+	RAID_CLASS_COLORS.HUNTER,
 };
 
 NS.DetectionRadius = 100; -- yards
