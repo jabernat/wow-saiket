@@ -239,8 +239,8 @@ do
 			end
 		end
 
-		local COORD_MAX = 2 ^ 8 - 1;
-		local BYTES_PER_TRIANGLE = 2 * 3;
+		local COORD_MAX = 2 ^ 16 - 1;
+		local BYTES_PER_TRIANGLE = 2 * 2 * 3;
 		local wipe = wipe;
 		local Ax, Ax2, Ay, Ay2, Bx, Bx2, By, By2, Cx, Cx2, Cy, Cy2;
 		local ABx, ABy, BCx, BCy, ACx, ACy;
