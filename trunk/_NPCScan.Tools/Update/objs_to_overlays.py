@@ -156,7 +156,7 @@ class Overlay(object):
         elif line[1][1] <= point[1]:  # Crossed downwards
           if line.distance_to_point(point) > 0:  # Intersects right of x
             winding -= 1
-      return winding > 0
+      return winding != 0
 
     def get_area(self):
       """Returns the area of this polygon."""
