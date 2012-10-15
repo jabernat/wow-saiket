@@ -27,7 +27,7 @@ Overlay.Modules.Carbonite = NS;
 
 --- Repositions the canvas as the Carbonite map moves.
 function NS:OnUpdate ()
-	CarboniteMap:ClipZoneFrm( CarboniteMap.Con, CarboniteMap.Zon, WorldMap, 1 );
+	CarboniteMap:ClipZoneFrm( CarboniteMap.Cont, CarboniteMap.Zone, WorldMap );
 	WorldMap.RangeRing.Child:SetScale( WorldMap:GetScale() ); -- CarboniteMap:CZF also sets point
 	WorldMap.KeyParent:SetAlpha( NxMap1.NxWin.BackgndFade ); -- Obey window's "Fade Out" setting
 end
