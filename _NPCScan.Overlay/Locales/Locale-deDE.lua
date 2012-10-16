@@ -54,6 +54,8 @@ Overlay.L = setmetatable( {
 		[ 54323 ] = "Kirix",
 		[ 54324 ] = "Flickerflamm",
 		[ 54338 ] = "Anthriss",
+		[ 60491 ] = "Sha des Zorns",
+		[ 62346 ] = "Galleon",
 	}, { __index = Overlay.L.NPCs; } );
 
 	CONFIG_ALPHA = "Alpha",

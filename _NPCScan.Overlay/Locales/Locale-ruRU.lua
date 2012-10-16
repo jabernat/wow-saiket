@@ -56,6 +56,7 @@ Overlay.L = setmetatable( {
 		[ 54338 ] = "Антрисс",
 		[ 60491 ] = "Ша Злости", -- Needs review
 		[ 62346 ] = "Галеон", -- Needs review
+		[ 64403 ] = "Алани", -- Needs review
 	}, { __index = Overlay.L.NPCs; } );
 
 	CONFIG_ALPHA = "Альфа",

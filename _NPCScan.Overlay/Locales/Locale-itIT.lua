@@ -54,6 +54,8 @@ Overlay.L = setmetatable( {
 		[ 54323 ] = "Kirix",
 		[ 54324 ] = "Balzafiamme",
 		[ 54338 ] = "Anthriss",
+		[ 60491 ] = "Sha della Rabbia",
+		[ 62346 ] = "Galeone",
 	}, { __index = Overlay.L.NPCs; } );
 
 	CONFIG_ALPHA = "Alfa",
@@ -63,7 +65,7 @@ Overlay.L = setmetatable( {
 	CONFIG_TITLE = "Overlay",
 	CONFIG_TITLE_STANDALONE = "_|cffCCCC88NPCScan|r.Overlay",
 	MODULE_ALPHAMAP3 = "AddOn AlphaMap3",
-	MODULE_BATTLEFIELDMINIMAP = "Minimappa del campo di battaglia.",
+	MODULE_BATTLEFIELDMINIMAP = "Minimappa del Campo di Battaglia.",
 	MODULE_MINIMAP = "Minimappa",
 	MODULE_RANGERING_DESC = "Nota: il cerchio della distanza appare solo nelle zone dove si possono trovare mostri rari.",
 	MODULE_RANGERING_FORMAT = "Mostra un cerchio di %d metri per approssimare il raggio di ricerca.",
