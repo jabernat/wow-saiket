@@ -56,6 +56,7 @@ Overlay.L = setmetatable( {
 		[ 54338 ] = "Anthriss", -- Needs review
 		[ 60491 ] = "Sha da Raiva", -- Needs review
 		[ 62346 ] = "Gailleon", -- Needs review
+		[ 64403 ] = "Alani", -- Needs review
 	}, { __index = Overlay.L.NPCs; } );
 
 	CONFIG_ALPHA = "Alfa",

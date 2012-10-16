@@ -56,6 +56,7 @@ Overlay.L = setmetatable( {
 		[ 54338 ] = "Anthriss",
 		[ 60491 ] = "Sha de la colère", -- Needs review
 		[ 62346 ] = "Galion", -- Needs review
+		[ 64403 ] = "Alani", -- Needs review
 	}, { __index = Overlay.L.NPCs; } );
 
 	CONFIG_ALPHA = "Transparence",
