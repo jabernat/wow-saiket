@@ -142,7 +142,7 @@ do
 			AddChatTypeButton( Info, "OFFICER" );
 			AddChatTypeButton( Info, "RAID" );
 			AddChatTypeButton( Info, "PARTY" );
-			AddChatTypeButton( Info, "BATTLEGROUND" );
+			AddChatTypeButton( Info, "INSTANCE" );
 			AddChatTypeButton( Info, "WHISPER" );
 		end
 	end
