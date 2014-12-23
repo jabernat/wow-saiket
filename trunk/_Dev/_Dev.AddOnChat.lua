@@ -112,7 +112,7 @@ end
   ****************************************************************************]]
 do
 	local function AddChatTypeButton ( Info, Type )
-		local Color = ChatTypeInfo[ Type ];
+		local Color = ChatTypeInfo[ Type:upper() == "BATTLEGROUND" and "INSTANCE_CHAT" or Type ];
 		local TypeList = ChatFrames[ FCF_GetCurrentChatFrame() ];
 
 		Info.colorCode = ( "|cff%02x%02x%02x" ):format( Color.r * 255 + 0.5, Color.g * 255 + 0.5, Color.b * 255 + 0.5 );
@@ -142,7 +142,7 @@ do
 			AddChatTypeButton( Info, "OFFICER" );
 			AddChatTypeButton( Info, "RAID" );
 			AddChatTypeButton( Info, "PARTY" );
-			AddChatTypeButton( Info, "INSTANCE" );
+			AddChatTypeButton( Info, "BATTLEGROUND" );
 			AddChatTypeButton( Info, "WHISPER" );
 		end
 	end
