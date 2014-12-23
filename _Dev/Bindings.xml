@@ -1,11 +1,11 @@
 <Bindings>
-	<Binding name="_DEV_RELOADUI" header="_DEV">
+	<Binding name="_DEV_RELOADUI" header="_DEV" category="ADDONS">
 		_Dev.ReloadUIBinding();
 	</Binding>
-	<Binding name="_DEV_OPENCHATSCRIPT">
+	<Binding name="_DEV_OPENCHATSCRIPT" category="ADDONS">
 		_Dev.OpenChatScriptBinding();
 	</Binding>
-	<Binding name="_DEV_FRAMESTOGGLE">
+	<Binding name="_DEV_FRAMESTOGGLE" category="ADDONS">
 		_Dev.Frames.Toggle();
 	</Binding>
 
