@@ -69,10 +69,6 @@ end
 
 
 
---- Hook to skin new class buttons as Dominos creates them.
-function NS:ClassBarAddButton ( ID )
-	ActionButtonModify( _G[ "DominosClassButton"..ID ], 180 );
-end
 --- Positions parts of the UI around bars once they are created.
 function NS.Frame:PLAYER_LOGIN ()
 	self.PLAYER_LOGIN = nil;
@@ -93,11 +89,10 @@ function NS.Frame:PLAYER_LOGIN ()
 				Bar = type( Bar ) == "table" and Bar or Dominos.Frame:Get( Bar );
 				Bar.sets.anchor = AnchorString;
 				if ( Point ) then
+					Bar:ClearAllPoints();
 					Bar:SetFramePoint( Point );
-				else
-					Bar:SavePosition();
 				end
-				Bar.sets.scale = Scale or 0.75; -- Note: Must occur after SavePosition call.
+				Bar.sets.scale = Scale or 0.75;
 				Bar.Layout = _Underscore.NilFunction; -- Prevent full updates on each call
 				if ( not VariableButtons ) then
 					Bar:SetNumButtons( NUM_ACTIONBAR_BUTTONS );
@@ -117,7 +112,7 @@ function NS.Frame:PLAYER_LOGIN ()
 			-- Right corner
 			InitializeBar( "bags", nil, "BOTTOMRIGHT", 0.9, true ); -- Bags
 			InitializeBar( 5, "bagsTR" ); -- MultiBarBottomRight
-			InitializeBar( Dominos.Frame:Get( "class" ) or Dominos.ClassBar:New(), "5BL", nil, 0.65, true, 8, 6 ); -- Class bar
+			InitializeBar( Dominos.Frame:Get( "class" ), "5BL", nil, 0.65, true, 8, 6 ); -- Class bar
 			InitializeBar( 3, "5TR" ):SetColumns( 1 ); -- MultiBarRight
 			InitializeBar( 4, "3LB" ):SetColumns( 1 ); -- MultiBarLeft
 
@@ -142,7 +137,6 @@ function NS.Frame:PLAYER_LOGIN ()
 			ActionButtonModify( Button, 180 );
 		end
 	end
-	hooksecurefunc( Dominos.ClassBar, "AddButton", NS.ClassBarAddButton );
 
 
 	-- Add backdrops
@@ -185,7 +179,8 @@ function NS.Frame:PLAYER_LOGIN ()
 
 	-- Move pet bar to middle of screen
 	local PetBar = Dominos.Frame:Get( "pet" );
-	PetBar:SetFramePoint( "BOTTOM", UIParent, 0, Backdrop:GetTop() * Backdrop:GetParent():GetEffectiveScale() / PetBar:GetEffectiveScale() );
+	PetBar:ClearAllPoints();
+	PetBar:SetPoint( "BOTTOM", UIParent, 0, Backdrop:GetTop() * Backdrop:GetParent():GetEffectiveScale() / PetBar:GetEffectiveScale() );
 
 	-- Prevent any profile changes in Dominos
 	Dominos.SaveProfile = _Underscore.NilFunction;
