@@ -20,11 +20,10 @@ do
 	end
 
 	-- Hook Grid frame creation
-	local GridFrame = Grid:GetModule( "GridFrame" );
-	hooksecurefunc( GridFrame, "InitialConfigFunction", FrameInitialize );
+	hooksecurefunc( Grid:GetModule( "GridLayout" ).prototype, "initialConfigFunction", FrameInitialize );
 
 	-- Modify all existing frames
-	GridFrame:WithAllFrames( function ( self )
+	Grid:GetModule( "GridFrame" ):WithAllFrames( function ( self )
 		FrameInitialize( self.frame );
 	end );
 end
