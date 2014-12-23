@@ -159,20 +159,19 @@ end;
   ****************************************************************************]]
 function NS.ToggleAddOn ( AddOnName )
 	local Loaded, ErrorReason;
-	ErrorReason = select( 6, GetAddOnInfo( AddOnName ) );
-
-	if ( not ErrorReason or ErrorReason == "DISABLED" ) then
-		if ( IsAddOnLoaded( AddOnName ) ) then
-			DisableAddOn( AddOnName );
-			ReloadUI();
+	if ( IsAddOnLoaded( AddOnName ) ) then
+		DisableAddOn( AddOnName );
+		ReloadUI();
+		return;
+	elseif ( IsAddOnLoadOnDemand( AddOnName ) ) then
+		EnableAddOn( AddOnName );
+		Loaded, ErrorReason = LoadAddOn( AddOnName );
+		if ( Loaded ) then
 			return;
-		elseif ( IsAddOnLoadOnDemand( AddOnName ) ) then
-			EnableAddOn( AddOnName );
-			Loaded, ErrorReason = LoadAddOn( AddOnName );
-			if ( Loaded ) then
-				return;
-			end
-		else
+		end
+	else
+		ErrorReason = select( 6, GetAddOnInfo( AddOnName ) );
+		if ( not ErrorReason or ErrorReason == "DISABLED" ) then
 			EnableAddOn( AddOnName );
 			ReloadUI();
 			return;
