@@ -92,6 +92,9 @@ do
 	local AddOnInitializers = {};
 	--- @return True if an addon can possibly load this session.
 	function NS.IsAddOnLoadable ( Name )
+		if ( IsAddOnLoaded( Name ) ) then
+			return true;
+		end
 		local Loadable, Reason = select( 5, GetAddOnInfo( Name ) );
 		return Loadable or ( Reason == "DISABLED" and IsAddOnLoadOnDemand( Name ) ); -- Loadable or can become loadable
 	end
