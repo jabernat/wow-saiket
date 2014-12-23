@@ -171,7 +171,7 @@ function NS.ToggleAddOn ( AddOnName )
 		end
 	else
 		ErrorReason = select( 6, GetAddOnInfo( AddOnName ) );
-		if ( not ErrorReason or ErrorReason == "DISABLED" ) then
+		if ( not ErrorReason or ErrorReason == "DISABLED" or ErrorReason == "INSECURE" ) then
 			EnableAddOn( AddOnName );
 			ReloadUI();
 			return;
