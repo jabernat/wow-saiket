@@ -1,1 +1,0 @@
-__all__ = ['dbc', 'lua', 'mpq', 'wowhead']
