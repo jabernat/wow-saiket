@@ -439,16 +439,16 @@ function NS.Frame:ADDON_LOADED ( Event, AddOn )
 		if ( Scripts ) then
 			NS.FolderRoot:Unpack( Scripts );
 		end
-		for Object in NS.FolderRoot:IterateChildren() do
-			if ( Object._Class == "Script" and Object._AutoRun ) then
-				NS.SafeCall( Object );
-			end
-		end
 		AceComm.RegisterComm( NS, COMM_PREFIX );
 		-- Replace settings last in case of errors loading them
 		self:RegisterEvent( "PLAYER_LOGOUT" );
 		--_DevPadOptions = nil; -- GC options
 		NS.DefaultScripts = nil;
+		for Object in NS.FolderRoot:IterateChildren() do
+			if ( Object._Class == "Script" and Object._AutoRun ) then
+				NS.SafeCall( Object );
+			end
+		end
 	end
 end
 --- Save settings before exiting.
