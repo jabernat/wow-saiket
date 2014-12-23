@@ -13,8 +13,13 @@ local Units = select( 2, ... );
 
 
 do
+	local SkinnedFrames = {}
 	--- Adds a backdrop and enables dropdown menus for new Grid unit frames.
 	local function FrameInitialize ( Frame )
+		if ( SkinnedFrames[ Frame ] ) then
+			return;
+		end
+		SkinnedFrames[ Frame ] = true;
 		Frame.menu = Units.ShowGenericMenu;
 		_Underscore.Backdrop.Create( Frame, -2 );
 	end
