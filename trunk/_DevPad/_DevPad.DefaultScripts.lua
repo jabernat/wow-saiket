@@ -199,14 +199,15 @@ end
 
 --- @return True if an addon can possibly load this session.
 function lib:IsLoadable ( Name )
-  if ( IsAddOnLoaded( Name ) ) then -- Already loaded
-    return true;
+  local Enabled, Loadable, Reason = select( 4, GetAddOnInfo( Name ) );
+  if ( IsAddOnLoadOnDemand( Name ) ) then
+    if ( Reason == "DISABLED" ) then
+      return true; -- Can be loaded after enabling
+    end
+  elseif ( Enabled and Reason == "INSECURE" ) then
+    return true; -- Still loadable despite what GetAddOnInfo claims
   end
-  local Loadable, Reason = select( 5, GetAddOnInfo( Name ) );
-  return Loadable or (
-    Reason == "DISABLED"
-    and IsAddOnLoadOnDemand( Name ) -- Loadable or can become loadable
-  );
+  return Loadable;
 end
 return lib;]=];
 		},
