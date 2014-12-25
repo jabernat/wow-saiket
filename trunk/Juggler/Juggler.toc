@@ -1,4 +1,4 @@
-## Interface: 50001
+## Interface: 60000
 ## Title: Juggler
 ## Notes: Use your mousewheel to throw Midsummer Fire Festival torches.
 ## Author: Saiket

@@ -1,4 +1,4 @@
-## Interface: 50001
+## Interface: 60000
 ## Title: _|cffCCCC88Underscore|r.Clock
 ## Notes: Adds a clock to the top left of the screen.
 ## Author: Saiket
