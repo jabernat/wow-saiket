@@ -184,15 +184,15 @@ local _, Class = UnitClass( "player" );
 -- First known spell in the appropriate class list gets used.
 -- Note: Spells probably shouldn't have minimum ranges!
 HelpIDs = ( {
-	DEATHKNIGHT = { 47541 }; -- Death Coil (40yd) - Starter
-	DRUID = { 5185 }; -- Healing Touch (40yd) - Lvl 3
+	-- DEATHKNIGHT = {};
+	DRUID = { 774 }; -- Rejuvination (40yd) - Lvl 4
 	-- HUNTER = {};
-	MAGE = { 475 }; -- Remove Curse (40yd) - Lvl 30
+	MAGE = { 475 }; -- Remove Curse (40yd) - Lvl 29
 	PALADIN = { 85673 }; -- Word of Glory (40yd) - Lvl 9
-	PRIEST = { 2061 }; -- Flash Heal (40yd) - Lvl 3
+	PRIEST = { 17 }; -- Power Word: Shield (40yd) - Lvl 5
 	-- ROGUE = {};
-	SHAMAN = { 331 }; -- Healing Wave (40yd) - Lvl 7
-	WARLOCK = { 5697 }; -- Unending Breath (30yd) - Lvl 16
+	SHAMAN = { 8004 }; -- Healing Surge (40yd) - Lvl 7
+	WARLOCK = { 5697 }; -- Unending Breath (30yd) - Lvl 24
 	-- WARRIOR = {};
 } )[ Class ];
 
@@ -200,12 +200,9 @@ HarmIDs = ( {
 	DEATHKNIGHT = { 47541 }; -- Death Coil (30yd) - Starter
 	DRUID = { 5176 }; -- Wrath (40yd) - Starter
 	HUNTER = { 75 }; -- Auto Shot (5-40yd) - Starter
-	MAGE = { 133 }; -- Fireball (40yd) - Starter
-	PALADIN = {
-		62124, -- Hand of Reckoning (30yd) - Lvl 14
-		879, -- Exorcism (30yd) - Lvl 18
-	};
-	PRIEST = { 589 }; -- Shadow Word: Pain (40yd) - Lvl 4
+	MAGE = { 44614 }; -- Frostfire Bolt (40yd) - Starter
+	PALADIN = { 62124 }; -- Reckoning (30yd) - Lvl 15
+	PRIEST = { 589 }; -- Shadow Word: Pain (40yd) - Lvl 3
 	-- ROGUE = {};
 	SHAMAN = { 403 }; -- Lightning Bolt (30yd) - Starter
 	WARLOCK = { 686 }; -- Shadow Bolt (40yd) - Starter
