@@ -1,4 +1,4 @@
-## Interface: 50001
+## Interface: 60000
 ## Title: _|cffCCCC88Underscore|r.CastingBar
 ## Notes: Skins the default UI's player and pet cast bars.
 ## Author: Saiket

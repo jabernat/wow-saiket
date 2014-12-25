@@ -1,4 +1,4 @@
-## Interface: 50001
+## Interface: 60000
 ## Title: GridStatusHealthFade
 ## Notes: A status that fadess between two colors based on health.
 ## Author: Saiket

@@ -1,4 +1,4 @@
-## Interface: 50001
+## Interface: 60000
 ## Title: _|cffCCCC88Underscore|r.Chat.CombatLog
 ## Notes: Skins the default UI's combat log.
 ## Author: Saiket

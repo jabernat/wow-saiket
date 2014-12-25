@@ -1,4 +1,4 @@
-## Interface: 50001
+## Interface: 60000
 ## Title: _|cffCCCC88DevPad|r
 ## Notes: Notepad for Lua scripts and mini-addons.
 ## Author: Saiket

@@ -1,4 +1,4 @@
-## Interface: 50001
+## Interface: 60000
 ## Title: _|cffCCCC88Underscore|r.Minimap
 ## Notes: Skins the default UI's minimap.
 ## Author: Saiket
