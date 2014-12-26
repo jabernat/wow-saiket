@@ -201,10 +201,10 @@ end
 function NS:MODIFIER_STATE_CHANGED ( _, Modifier, State )
 	Modifier = Modifier:sub( 2 );
 	if ( GetModifiedClick( "_DEV_ENABLECONSOLE" ):find( Modifier, 1, true ) ) then
-		SetConsoleKey( State == 1 and "`" or nil );
+		SetConsoleKey( State and "`" or nil );
 	end
 	if ( GetModifiedClick( "_DEV_FRAMES_INTERACTIVE" ):find( Modifier, 1, true ) ) then
-		NS.Frames.SetInteractive( State == 1 );
+		NS.Frames.SetInteractive( State );
 	end
 end
 --[[****************************************************************************
@@ -252,15 +252,15 @@ do
 		Shift, Ctrl, Alt = IsShiftKeyDown(), IsControlKeyDown(), IsAltKeyDown();
 		if ( Shift ~= LastShift ) then
 			LastShift = Shift;
-			NS:OnEvent( "MODIFIER_STATE_CHANGED", "*SHIFT", Shift or 0 );
+			NS:OnEvent( "MODIFIER_STATE_CHANGED", "*SHIFT", Shift );
 		end
 		if ( Ctrl ~= LastCtrl ) then
 			LastCtrl = Ctrl;
-			NS:OnEvent( "MODIFIER_STATE_CHANGED", "*CTRL", Ctrl or 0 );
+			NS:OnEvent( "MODIFIER_STATE_CHANGED", "*CTRL", Ctrl );
 		end
 		if ( Alt ~= LastAlt ) then
 			LastAlt = Alt;
-			NS:OnEvent( "MODIFIER_STATE_CHANGED", "*ALT", Alt or 0 );
+			NS:OnEvent( "MODIFIER_STATE_CHANGED", "*ALT", Alt );
 		end
 	end
 end
