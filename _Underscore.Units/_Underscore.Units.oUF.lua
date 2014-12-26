@@ -431,7 +431,8 @@ do
 		Button:SetScript( "OnLeave", ButtonOnLeave );
 		Button.UpdateTooltip = UpdateTooltip;
 
-		local Cooldown = CreateFrame( "Cooldown", nil, Button );
+		local Cooldown = CreateFrame( "Cooldown", nil, Button, "CooldownFrameTemplate" );
+		Cooldown:Show();
 		Button.cd = Cooldown;
 		Cooldown:SetAllPoints();
 
