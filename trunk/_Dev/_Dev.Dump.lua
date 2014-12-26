@@ -91,9 +91,17 @@ do
 		local Count = Temp[ Type ] and Temp[ Type ][ Input ];
 
 		if ( Count ) then -- Table, function, userdata, or thread
-			Input = _Dev.IsUIObject( Input )
-				and L.DUMP_UIOBJECT_FORMAT:format( Count, Input:GetObjectType(), NS.ToString( Input:GetName() ) )
-				or Count;
+			if ( _Dev.IsUIObject( Input ) ) then
+				local Type, Name;
+				if ( Input.IsForbidden and Input:IsForbidden() ) then
+					Type, Name = L.DUMP_FORBIDDEN_TYPE, L.DUMP_FORBIDDEN;
+				else
+					Type, Name = Input:GetObjectType(), NS.ToString( Input:GetName() );
+				end
+				Input = L.DUMP_UIOBJECT_FORMAT:format( Count, Type, Name );
+			else
+				Input = Count;
+			end
 		elseif ( Type == "string" ) then
 			Input = NS.EscapeString( Input );
 		else -- Numbers and booleans

@@ -81,19 +81,26 @@ end
   *   borders and returns true if successful.                                  *
   ****************************************************************************]]
 function NS:Add ( Region )
-	if ( not self.Targets[ Region ] and _Dev.IsUIObject( Region ) and Region:IsObjectType( "Region" ) ) then
-		local OutlineFrame = next( self.UnusedOutlines ) or CreateFrame( "Frame", nil, self, self.TemplateName );
-
-		self.Targets[ Region ] = OutlineFrame;
-		self.UnusedOutlines[ OutlineFrame ] = nil;
-		OutlineFrame:SetAllPoints( Region );
-		if ( self.OnSetTarget ) then
-			self.OnSetTarget( OutlineFrame, Region );
-		end
-		OutlineFrame:Show();
-
-		return true;
+	if ( self.Targets[ Region ] or not _Dev.IsUIObject( Region ) ) then
+		return;
 	end
+	if ( Region.IsForbidden and Region:IsForbidden() ) then
+		return; -- Cannot highlight forbidden frames
+	end
+	if ( not Region:IsObjectType( "Region" ) ) then
+		return;
+	end
+	local OutlineFrame = next( self.UnusedOutlines ) or CreateFrame( "Frame", nil, self, self.TemplateName );
+
+	self.Targets[ Region ] = OutlineFrame;
+	self.UnusedOutlines[ OutlineFrame ] = nil;
+	OutlineFrame:SetAllPoints( Region );
+	if ( self.OnSetTarget ) then
+		self.OnSetTarget( OutlineFrame, Region );
+	end
+	OutlineFrame:Show();
+
+	return true;
 end
 
 

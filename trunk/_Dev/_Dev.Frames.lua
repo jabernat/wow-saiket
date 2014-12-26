@@ -45,6 +45,9 @@ function NS.GetMouseFocus ()
 		return Primary.Target;
 	else
 		local Target = GetMouseFocus();
+		if ( Target and Target.IsForbidden and Target:IsForbidden() ) then
+			return; -- Can't highlight forbidden frames
+		end
 		if ( Target ~= WorldFrame ) then
 			return Target;
 		end
