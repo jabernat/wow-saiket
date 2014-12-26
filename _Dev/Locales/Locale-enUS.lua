@@ -32,6 +32,8 @@ _DevLocalization = setmetatable( {
 	DUMP_MAXSTRLEN_ABBR = "|cffff2020…|r";
 	DUMP_MAXTABLELEN_ABBR = "|cffff2020…|r";
 	DUMP_MAXEXPLORETIME_ABBR = "|cffff2020…|r";
+	DUMP_FORBIDDEN = "(Forbidden)";
+	DUMP_FORBIDDEN_TYPE = "Unknown";
 
 
 	-- Events
