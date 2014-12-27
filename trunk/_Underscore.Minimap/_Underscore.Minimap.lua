@@ -123,8 +123,6 @@ MinimapZoomOut:Hide();
 
 
 -- Move default buttons that sit around the minimap
-local R, G, B, A = unpack( _Underscore.Colors.Foreground );
-
 TextureHide( MinimapBorderTop );
 TextureHide( MinimapBorder );
 TextureHide( MinimapNorthTag );
@@ -139,11 +137,15 @@ MiniMapVoiceChatFrame:Hide();
 local function SkinButton ( self, Scale, Border, Icon, NoRecolor )
 	self:ClearAllPoints();
 	self:SetSize( Scale * IconSize, Scale * IconSize );
-	TextureHide( Border );
-	Icon:SetAllPoints();
-	_Underscore.SkinButtonIcon( Icon );
-	if ( not NoRecolor ) then
-		Icon:SetVertexColor( R, G, B, A );
+	if ( Border ) then
+		TextureHide( Border );
+	end
+	if ( Icon ) then
+		Icon:SetAllPoints();
+		_Underscore.SkinButtonIcon( Icon );
+		if ( not NoRecolor ) then
+			Icon:SetVertexColor( unpack( _Underscore.Colors.Foreground ) );
+		end
 	end
 end
 SkinButton( MiniMapTracking, 1, MiniMapTrackingButtonBorder, MiniMapTrackingIcon );
@@ -161,9 +163,13 @@ MiniMapMailIcon:SetTexture( [[Interface\Minimap\Tracking\Mailbox]] ); -- No blac
 SkinButton( QueueStatusMinimapButton, 1.5, QueueStatusMinimapButtonBorder, QueueStatusMinimapButtonIconTexture );
 QueueStatusMinimapButton:SetPoint( "RIGHT", MiniMapMailFrame, "LEFT" );
 
+SkinButton( GarrisonLandingPageMinimapButton, 1 );
+GarrisonLandingPageMinimapButton:SetHitRectInsets( 0, 0, 0, 0 );
+GarrisonLandingPageMinimapButton:SetPoint( "LEFT", MiniMapTracking, "RIGHT" );
+
 
 -- Move the zone text inside of the square
-MinimapZoneTextButton:SetFrameStrata( "LOW" );
+MinimapZoneTextButton:SetFrameLevel( Minimap:GetFrameLevel() + 1 );
 MinimapZoneTextButton:ClearAllPoints();
 MinimapZoneTextButton:SetPoint( "TOPRIGHT", Minimap, 0, -2 );
 MinimapZoneTextButton:SetPoint( "LEFT", Minimap );
