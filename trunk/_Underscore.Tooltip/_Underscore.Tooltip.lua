@@ -155,7 +155,7 @@ end
 do
 	--- Hook to add spell icons when shown.
 	local function OnTooltipSetSpell ( self )
-		NS.IconSet( self, GetSpellTexture( ( select( 3, self:GetSpell() ) ) ) );
+		NS.IconSet( self, ( GetSpellTexture( ( select( 3, self:GetSpell() ) ) ) ) );
 	end
 	--- Register a tooltip to add spell icons.
 	function NS:RegisterSpell ()
