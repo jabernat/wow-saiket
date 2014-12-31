@@ -13,7 +13,7 @@ local L = NS.L;
 
 NS.Frame = CreateFrame( "Frame", nil, WorldMapButton );
 -- Note: Parent ScrollHandler to WorldMapFrame so it gets disabled when Carbonite takes over
-NS.ScrollHandler = CreateFrame( "Frame", nil, WorldMapFrame ); -- Can insecurely toggle mousewheel input
+NS.ScrollHandler = CreateFrame( "Frame", nil, WorldMapScrollFrame ); -- Can insecurely toggle mousewheel input
 
 local Tooltip = CreateFrame( "Frame", nil, NS.Frame );
 NS.Tooltip = Tooltip;
@@ -109,7 +109,7 @@ Tooltip.Text:SetAllPoints();
 
 
 local ScrollHandler = NS.ScrollHandler;
-ScrollHandler:SetAllPoints( WorldMapButton );
+ScrollHandler:SetAllPoints();
 ScrollHandler:SetScript( "OnMouseWheel", ScrollHandler.OnMouseWheel );
 ScrollHandler:EnableMouseWheel( false );
 ScrollHandler:SetScript( "OnShow", ScrollHandler.OnShow );
