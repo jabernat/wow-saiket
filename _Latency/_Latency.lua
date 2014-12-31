@@ -155,8 +155,10 @@ function NS.Frame:PLAYER_ENTERING_WORLD ()
 	NS.NumPings = 0; -- Prevent issue with losing messages when entering/leaving BGs.
 end
 --- Reads round trip ping messages and times them.
-function NS.Frame:CHAT_MSG_ADDON ( _, Prefix, Message, Type, Author )
-	if ( Prefix == NS.COMM_PREFIX and Type == "WHISPER" and Author == UnitName( "player" ) ) then
+function NS.Frame:CHAT_MSG_ADDON ( _, Prefix, Message, Type, AuthorAndServer, Author )
+	if ( Prefix == NS.COMM_PREFIX and Type == "WHISPER"
+		and AuthorAndServer == ( "-" ):join( UnitFullName( "player" ) )
+	) then
 		if ( NS.NumPings > 0 ) then
 			NS.NumPings = NS.NumPings - 1;
 		end
