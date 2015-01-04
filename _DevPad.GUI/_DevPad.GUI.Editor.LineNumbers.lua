@@ -79,7 +79,8 @@ function NS:Update ()
 	end
 	local Index, Count = 0, 0;
 	local Text, Lines = self.Text, self.Lines;
-	local Width = Editor.ScrollFrame:GetWidth() - ( self:GetWidth() + Editor.TEXT_INSET ); -- Editor width
+	local LineHeight = Editor.Edit:GetSpacing() + select( 2, Editor.Edit:GetFont() );
+	Text:SetWidth( Editor.Edit:GetWidth() - Editor.TEXT_INSET );
 	local EndingLast;
 	for Line, Ending in Editor.Edit:GetText():gmatch( "([^\r\n]*)()" ) do
 		if ( EndingLast ~= Ending ) then
@@ -89,7 +90,7 @@ function NS:Update ()
 
 			-- Add blank space for wrapped lines
 			Text:SetText( Line );
-			for Extra = 1, Text:GetStringWidth() / Width do
+			for Extra = 2, math.floor( Text:GetStringHeight() / LineHeight + 0.5 ) do
 				Index = Index + 1;
 				Lines[ Index ] = "";
 			end
@@ -99,6 +100,7 @@ function NS:Update ()
 		Lines[ Index ] = nil;
 	end
 
+	Text:SetWidth( 0 ); -- Remove constraint
 	Text:SetText( table.concat( Lines, "\n" ) );
 	local Width, Height = Text:GetSize();
 	self:SetSize( Width + Editor.TEXT_INSET, Height + Editor.TEXT_INSET * 2 );
