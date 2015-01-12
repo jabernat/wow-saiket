@@ -203,7 +203,8 @@ end
 
 
 --- Recolors the reputation bar on update.
-function NS:ReputationPostUpdate ( _, _, StandingID )
+function NS:ReputationPostUpdate ( _, _, _, _, _, StandingID )
+	TEST=StandingID
 	self:SetStatusBarColor( unpack( Colors.reaction[ StandingID ] ) );
 end
 
