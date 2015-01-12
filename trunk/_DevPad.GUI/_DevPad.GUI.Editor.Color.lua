@@ -9,8 +9,7 @@ local _DevPad, GUI = _DevPad, select( 2, ... );
 local NS = {};
 GUI.Editor.Color = NS;
 
-NS.ButtonContainer = CreateFrame( "Frame", nil, GUI.Editor );
-NS.Swatch = CreateFrame( "Button", nil, NS.ButtonContainer );
+NS.Swatch = CreateFrame( "Button", nil, GUI.Editor );
 NS.Dropper = GUI.Editor:NewButton( [[Interface\AddOns\]]..( ... )..[[\Skin\ColorDropper]] );
 NS.Dropdown = CreateFrame( "Frame", nil, NS.Swatch );
 NS.Dropdown.Custom = CreateFrame( "Button", nil, NS.Dropdown, "UIPanelButtonTemplate" );
@@ -22,9 +21,11 @@ do
 	-- Hides or shows the title button when enabled or disabled.
 	local function UpdateEnabled ( self )
 		if ( self.Enabled ) then
-			self.ButtonContainer:Show();
+			self.Swatch:Show();
+			self.Dropper:Show();
 		else
-			self.ButtonContainer:Hide();
+			self.Swatch:Hide();
+			self.Dropper:Hide();
 		end
 	end
 	--- Enables coloring only when Lua mode is disabled.
@@ -236,13 +237,8 @@ do
 end
 
 
---- Restores the container's size when shown.
-function NS.ButtonContainer:OnShow ()
-	self:SetWidth( self.Width );
-end
---- Shrinks the container when hidden so other title buttons will collapse.
-function NS.ButtonContainer:OnHide ()
-	self:SetWidth( self.Padding ); -- Negates padding offset
+--- Hides the color swatch's dropdown menu and color chooser when not available.
+function NS.Swatch:OnHide ()
 	-- Cancel pending color selection
 	NS.Dropdown:Hide();
 	if ( ColorPickerFrame:IsShown()
@@ -251,7 +247,6 @@ function NS.ButtonContainer:OnHide ()
 		ColorPickerCancelButton:Click();
 	end
 end
-
 --- Highlights selected text when left clicked, or opens dropdown on right click.
 function NS.Swatch:OnClick ( Button )
 	PlaySound( "igMainMenuOptionCheckBoxOn" );
@@ -334,12 +329,6 @@ end
 
 
 
--- Title buttons
-local Container = NS.ButtonContainer;
-Container:Hide();
-Container:SetScript( "OnShow", Container.OnShow );
-Container:SetScript( "OnHide", Container.OnHide );
-Container:SetHeight( 1 );
 --- Configures this button as a color swatch.
 local function SetupSwatch ( self )
 	self:SetSize( 16, 16 );
@@ -353,20 +342,19 @@ local function SetupSwatch ( self )
 	return self;
 end
 local Swatch = NS.Swatch;
+Swatch:Hide();
 SetupSwatch( Swatch );
-Swatch:SetPoint( "RIGHT" );
 Swatch:RegisterForClicks( "LeftButtonUp", "RightButtonUp" );
+Swatch:SetScript( "OnHide", Swatch.OnHide );
 Swatch:SetScript( "OnClick", Swatch.OnClick );
 Swatch.tooltipText = GUI.L.COLOR_SWATCH;
+GUI.Editor:AddTitleButton( Swatch, -4 );
 local Dropper = NS.Dropper;
-Dropper:SetParent( Container );
+Dropper:Hide();
 Dropper:SetHitRectInsets( 2, 2, 2, 2 );
-Dropper:SetPoint( "LEFT" );
 Dropper:SetScript( "OnClick", Dropper.OnClick );
 Dropper.tooltipText = GUI.L.COLOR_DROPPER;
-Container.Padding, Container.Width = -8, Swatch:GetWidth() + Dropper:GetWidth();
-Container:OnHide();
-GUI.Editor:AddTitleButton( Container, Container.Padding );
+GUI.Editor:AddTitleButton( Dropper );
 
 -- Color dropdown
 local Dropdown = NS.Dropdown;
