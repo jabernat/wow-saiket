@@ -47,7 +47,12 @@ local Filter = {
 NS.Filter = Filter;
 
 NS.Qualities = {};
-NS.Types = { GetAuctionItemClasses() };
+NS.Types = {};
+
+for Index = 0, NUM_LE_ITEM_CLASSS-1 do
+	NS.Types[ Index ] = GetItemClassInfo( Index );
+end
+
 NS.SubTypes = {};
 NS.Slots = {}; -- Sorted list of inventory types that can be searched for
 NS.SlotGroups = { -- Categories paired with the inventory types that can match them (can be multiple)
@@ -460,7 +465,10 @@ for Index = 0, #ITEM_QUALITY_COLORS do
 end
 -- Fill in and sort subtypes
 for Index, Type in ipairs( NS.Types ) do
-	NS.SubTypes[ Type ] = { GetAuctionItemSubClasses( Index ) };
+	NS.SubTypes[ Type ] = { };
+	for SubIndex, SubValue in pairs( { GetAuctionItemSubClasses( Index ) } ) do
+		NS.SubTypes[ Type ] [ SubIndex ] = GetItemSubClassInfo( Index, SubValue );
+	end
 	sort( NS.SubTypes[ Type ] );
 end
 -- Sort types
